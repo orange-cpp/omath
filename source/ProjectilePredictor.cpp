@@ -65,7 +65,7 @@ namespace uml::prediction
                                                                   const Vector3 &targetPosition)
                                                                   const
     {
-        auto bulletGravity = projectile.m_gravityMultiplier*750.f;
+        const auto bulletGravity = projectile.m_gravityMultiplier*750.f;
         const auto delta = targetPosition - projectile.m_origin;;
 
         const auto distance2d = delta.Length2D();
