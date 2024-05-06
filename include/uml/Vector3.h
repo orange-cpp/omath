@@ -47,7 +47,18 @@ namespace uml
         Vector3 operator*(const Vector3& v) const;
         Vector3 operator/(float fl) const;
         Vector3 operator/(const Vector3& v) const;
-        [[nodiscard]] static Vector3 CreateVelocity(const Vector3& angles, const float length) ;
+
+        template<class type>
+        const type& As() const
+        {
+            return *reinterpret_cast<const type*>(this);
+        }
+        template<class type>
+        type& As()
+        {
+            return *reinterpret_cast<type*>(this);
+        }
+        [[nodiscard]] static Vector3 CreateVelocity(const Vector3& angles, const float length);
         [[nodiscard]] float  Sum() const;
         [[nodiscard]] float  Sum2D() const;
         [[nodiscard]] Vector3 ViewAngleTo(const Vector3& other) const;
