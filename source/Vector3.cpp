@@ -132,7 +132,7 @@ namespace uml
         return sqrt(x * x + y * y + z * z);
     }
 
-    float Vector3::LengthSqr(void) const
+    float Vector3::LengthSqr() const
     {
         return (x * x + y * y + z * z);
     }
@@ -143,7 +143,7 @@ namespace uml
 
     }
 
-    Vector3 Vector3::operator-(void) const
+    Vector3 Vector3::operator-() const
     {
         return {-x, -y, -z};
     }
