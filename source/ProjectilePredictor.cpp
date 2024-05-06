@@ -87,7 +87,6 @@ namespace uml::prediction
                                                     const Projectile &projectile,
                                                     const float angle) const
     {
-        // return std::abs((end -projectile.m_origin).Length2D() / (std::cos(angles::DegToRad(angle)) * projectile.m_velocity));
         auto launchAngles = projectile.m_origin.ViewAngleTo(end);
         launchAngles.x = angle;
 
@@ -97,8 +96,7 @@ namespace uml::prediction
         for (float time = 0.0f; time <= m_maxTravelTime; time += m_timeStepSize)
         {
             auto currentPos = projectile.m_origin + velocity * time;
-            currentPos.z -= (m_gravity * projectile.m_gravityMultiplier)
-                    * std::pow(time, 2.f) * 0.5f;
+            currentPos.z -= m_gravity * projectile.m_gravityMultiplier * std::pow(time, 2.f) * 0.5f;
 
             if (prevProjectilePosition.DistTo(end) < currentPos.DistTo(end))
                 return time;
