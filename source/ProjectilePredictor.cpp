@@ -29,7 +29,7 @@ namespace uml::prediction
             const auto projectilePitch =
                     MaybeCalculateProjectileLaunchPitchAngle(projectile, predictedTargetPosition);
 
-            if (!projectilePitch.has_value())
+            if (!projectilePitch.has_value()) [[unlikely]]
                 return std::nullopt;
 
             const auto timeToHit = ProjectileTravelTime(predictedTargetPosition,
@@ -65,7 +65,6 @@ namespace uml::prediction
                                                                   const Vector3 &targetPosition)
                                                                   const
     {
-        auto bulletSpeed = projectile.m_velocity;
         auto bulletGravity = projectile.m_gravityMultiplier*750.f;
         const auto delta = targetPosition - projectile.m_origin;;
 
@@ -73,9 +72,9 @@ namespace uml::prediction
 
 
         float root = std::pow(projectile.m_velocity, 4.f) - bulletGravity * (bulletGravity *
-            std::pow(distance2d, 2.f) + 2.0f * delta.z * std::pow(projectile.m_velocity, 2));
+            std::pow(distance2d, 2.f) + 2.0f * delta.z * std::pow(projectile.m_velocity, 2.f));
 
-        if (root < 0.0f)
+        if (root < 0.0f) [[unlikely]]
             return std::nullopt;
 
         root = std::sqrt(root);
