@@ -47,7 +47,7 @@ namespace uml
         Vector3 operator*(const Vector3& v) const;
         Vector3 operator/(float fl) const;
         Vector3 operator/(const Vector3& v) const;
-        [[nodiscard]] Vector3 Transform(const Vector3& angles, float length) const;
+        [[nodiscard]] static Vector3 CreateVelocity(const Vector3& angles, const float length) ;
         [[nodiscard]] float  Sum() const;
         [[nodiscard]] float  Sum2D() const;
         [[nodiscard]] Vector3 ViewAngleTo(const Vector3& other) const;
