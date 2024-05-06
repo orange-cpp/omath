@@ -17,6 +17,9 @@ namespace uml::color
     class Color : public Vector4
     {
         public:
+            Color(float r, float g, float, float b, float a = 1.f);
+            Color(const Vector4& vec);
             [[nodiscard]] Color Blend(const Color& other, float ratio) const;
+        explicit operator Vector4() {return {x,y,z,w};}
     };
 }
