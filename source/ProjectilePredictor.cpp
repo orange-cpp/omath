@@ -21,7 +21,7 @@ namespace uml::prediction
                                              bool inAir)
     {
         constexpr float maxTime = 3.0f;
-        constexpr float timeStep = 0.01f;
+        constexpr float timeStep = 0.001f;
 
         for (float time = 0.0f; time <= maxTime; time += timeStep)
         {
@@ -63,8 +63,8 @@ namespace uml::prediction
             return std::nullopt;
         }
         root = sqrt(root);
-        float angle = atanf((powf(bulletSpeed, 2) - root) / (bulletGravity * distance)) * 180.f / (float)M_PI;
-        return -angle;
+        float angle = atanf((powf(bulletSpeed, 2) - root) / (bulletGravity * distance));
+        return -angles::RadToDeg(angle);
     }
 
     float ProjectilePredictor::ProjectileTravelTime(float distance, float angle, float speed)
