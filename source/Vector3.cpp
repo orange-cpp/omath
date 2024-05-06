@@ -178,14 +178,14 @@ namespace uml
         return {x / v.x, y / v.y, z / v.z};
     }
 
-    Vector3 Vector3::Transform(const Vector3 &angles, const float length) const
+    Vector3 Vector3::CreateVelocity(const Vector3 &angles, const float length)
     {
-        Vector3 transformed;
-        transformed.x += cosf(angles.y * static_cast<float>(M_PI / 180.f)) * length;
-        transformed.y += sinf(angles.y * static_cast<float>(M_PI / 180.f)) * length;
-        transformed.z += tanf(angles.x * static_cast<float>(M_PI / 180.f)) * length;
-
-        return transformed;
+        return
+        {
+            std::cos(angles::DegToRad(angles.y)) * length,
+            std::sin(angles::DegToRad(angles.y)) * length,
+            std::tan(angles::DegToRad(angles.x)) * length,
+        };
     }
 
     float Vector3::Sum() const
