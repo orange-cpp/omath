@@ -1,12 +1,11 @@
 //
 // Created by vlad on 10/28/23.
 //
-
+#define _USE_MATH_DEFINES
 
 #include <uml/Vector3.h>
 #include <cmath>
 #include <uml/angles.h>
-
 
 namespace uml
 {
