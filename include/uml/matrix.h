@@ -17,7 +17,7 @@ namespace uml
 
         matrix(const matrix &other);
 
-        matrix(size_t rows, size_t columns, float *pRaw);
+        matrix(size_t rows, size_t columns, const float *pRaw);
 
         matrix(matrix &&other) noexcept;
 
@@ -30,7 +30,7 @@ namespace uml
         float &at(size_t iRow, size_t iCol);
 
         float get_sum();
-
+        void set_from_raw(const float* pRawMatrix);
         matrix transpose();
 
         void set(float val);
@@ -56,7 +56,7 @@ namespace uml
         [[nodiscard]] float alg_complement(size_t i, size_t j) const;
 
         [[nodiscard]] float det() const;
-
+        [[nodiscard]] const float* raw() const;
         matrix &operator=(const matrix &other);
 
         matrix &operator=(matrix &&other) noexcept;
