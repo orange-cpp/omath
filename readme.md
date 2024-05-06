@@ -24,7 +24,8 @@ The Universal Math Library (UML) is a comprehensive, open-source library aimed a
    ```
 3. Build the project using CMake:
    ```
-   cmake --build cmake-build-debug --target uml -j 6
+   cmake --preset x64-release -S .
+   cmake --build cmake-build/build/x64-release --target server -j 6
    ```
 
 ## Usage
