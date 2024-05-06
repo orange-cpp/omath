@@ -7,6 +7,7 @@
 #include "uml/angles.h"
 
 #include <cmath>
+#include <cstdio>
 
 namespace uml::prediction
 {
@@ -23,7 +24,7 @@ namespace uml::prediction
     {
         for (float time = 0.0f; time <= m_maxTravelTime; time += m_timeStepSize)
         {
-            const auto predictedTargetPosition = LinearPrediction(target, time);
+            auto predictedTargetPosition = LinearPrediction(target, time);
 
             const auto projectilePitch =
                     MaybeCalculateProjectileLaunchPitchAngle(projectile, predictedTargetPosition);
@@ -37,8 +38,12 @@ namespace uml::prediction
             if (timeToHit > time)
                 continue;
 
-            return Vector3();
+            const auto delta2d = (predictedTargetPosition - projectile.m_origin).Length2D();
+            const auto height = delta2d * std::tan(angles::DegToRad(projectilePitch.value()));
 
+            predictedTargetPosition.z = projectile.m_origin.z + height;
+
+            return predictedTargetPosition;
         }
 
 
@@ -60,21 +65,21 @@ namespace uml::prediction
                                                                   const Vector3 &targetPosition)
                                                                   const
     {
-        const auto delta = targetPosition - projectile.m_origin;
-        const auto distance2d = delta.Length2D();
-        const auto projectileGravity = m_gravity * projectile.m_gravityMultiplier;
+        auto bulletSpeed = projectile.m_velocity;
+        auto bulletGravity = projectile.m_gravityMultiplier*750.f;
+        const auto delta = targetPosition - projectile.m_origin;;
 
-        float root = std::pow(projectile.m_velocity, 4.f) - projectileGravity *
-                (projectileGravity * std::pow(distance2d, 2.f)
-                + 2.0f * delta.z * std::pow(projectile.m_velocity, 2.f));
+        const auto distance2d = delta.Length2D();
+
+
+        float root = std::pow(projectile.m_velocity, 4.f) - bulletGravity * (bulletGravity *
+            std::pow(distance2d, 2.f) + 2.0f * delta.z * std::pow(projectile.m_velocity, 2));
 
         if (root < 0.0f)
             return std::nullopt;
 
         root = std::sqrt(root);
-
-        const float angle = std::atan((std::pow(projectile.m_velocity, 2.f) - root)
-                / (projectile.m_velocity * distance2d));
+        const float angle = std::atan((std::pow(projectile.m_velocity, 2.f) - root) / (bulletGravity * distance2d));
 
         return angles::RadToDeg(angle);
     }
@@ -90,7 +95,7 @@ namespace uml::prediction
         const auto velocity = Vector3::CreateVelocity(launchAngles, projectile.m_velocity);
         auto prevProjectilePosition = projectile.m_origin;
 
-        for (float time = 0.0f; time <= m_maxTravelTime; time += 0.0001f)
+        for (float time = 0.0f; time <= m_maxTravelTime; time += m_timeStepSize)
         {
             auto currentPos = projectile.m_origin + velocity * time;
             currentPos.z -= (m_gravity * projectile.m_gravityMultiplier)
