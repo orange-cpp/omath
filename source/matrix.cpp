@@ -50,7 +50,7 @@ namespace uml
                 at(i, j) = other.at(i, j);
     }
 
-    matrix::matrix(const size_t rows, const size_t columns, float *pRaw)
+    matrix::matrix(const size_t rows, const size_t columns, const float *pRaw)
     {
         m_rows = rows;
         m_columns = columns;
@@ -284,5 +284,16 @@ namespace uml
                               {0.f,               0.f,                 1.f, 0.f},
                               {screenWidth / 2.f, screenHeight / 2.f,  0.f, 1.f},
                       });
+    }
+
+    const float * matrix::raw() const
+    {
+        return m_pData.get();
+    }
+
+    void matrix::set_from_raw(const float *pRawMatrix)
+    {
+        for (size_t i = 0; i < m_columns*m_rows; ++i)
+            at(i / m_rows, i % m_columns) = pRawMatrix[i];
     }
 }
