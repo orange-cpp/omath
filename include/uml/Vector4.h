@@ -7,7 +7,7 @@
 
 namespace uml
 {
-    class Vector4 final : public Vector3
+    class Vector4 : public Vector3
     {
     public:
         float w = 0.f;
