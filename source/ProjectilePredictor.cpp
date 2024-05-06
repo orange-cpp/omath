@@ -35,7 +35,7 @@ namespace uml::prediction
             const auto timeToHit = ProjectileTravelTime(predictedTargetPosition,
                                                         projectile,
                                                         projectilePitch.value());
-            if (timeToHit > time)
+            if (!timeToHit.has_value() || timeToHit.value() > time)
                 continue;
 
             const auto delta2d = (predictedTargetPosition - projectile.m_origin).Length2D();
@@ -65,7 +65,7 @@ namespace uml::prediction
                                                                   const Vector3 &targetPosition)
                                                                   const
     {
-        const auto bulletGravity = projectile.m_gravityMultiplier*750.f;
+        const auto bulletGravity = m_gravity * projectile.m_gravityMultiplier;
         const auto delta = targetPosition - projectile.m_origin;;
 
         const auto distance2d = delta.Length2D();
@@ -83,7 +83,7 @@ namespace uml::prediction
         return angles::RadToDeg(angle);
     }
 
-    float ProjectilePredictor::ProjectileTravelTime(const Vector3 &end,
+    std::optional<float> ProjectilePredictor::ProjectileTravelTime(const Vector3 &end,
                                                     const Projectile &projectile,
                                                     const float angle) const
     {
@@ -91,19 +91,16 @@ namespace uml::prediction
         launchAngles.x = angle;
 
         const auto velocity = Vector3::CreateVelocity(launchAngles, projectile.m_velocity);
-        auto prevProjectilePosition = projectile.m_origin;
 
         for (float time = 0.0f; time <= m_maxTravelTime; time += m_timeStepSize)
         {
             auto currentPos = projectile.m_origin + velocity * time;
             currentPos.z -= m_gravity * projectile.m_gravityMultiplier * std::pow(time, 2.f) * 0.5f;
 
-            if (prevProjectilePosition.DistTo(end) < currentPos.DistTo(end))
+            if (currentPos.DistTo(end) <= 25.f)
                 return time;
-
-            prevProjectilePosition = currentPos;
         }
 
-        return 0;
+        return std::nullopt;
     }
 }

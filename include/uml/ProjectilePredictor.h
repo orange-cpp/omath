@@ -49,7 +49,7 @@ namespace uml::prediction
                                                  const Vector3& targetPosition) const;
 
         [[nodiscard]]
-        float ProjectileTravelTime(const Vector3& end, const Projectile& projectile,
+        std::optional<float> ProjectileTravelTime(const Vector3& end, const Projectile& projectile,
                                    const float angle) const;
     };
 
