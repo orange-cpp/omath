@@ -28,8 +28,25 @@ The Universal Math Library (UML) is a comprehensive, open-source library aimed a
    ```
 
 ## Usage
-(Provide examples of how to use the library. Include basic code snippets demonstrating the use of key functions.)
+Simple world to screen function
+```c++
+std::optional<uml::Vector3> WorldToScreen(uml::Vector3 worldPosition, float width, float height)
+    {
+        auto projected = (GetViewProjectionMatrix() * worldPosition).transpose();
 
+        projected /= projected.at(0, 3);
+
+        const auto out = projected * uml::matrix::to_screen_matrix(width,
+                                                                   height);
+
+        if (out.at(0,2) <= 0.f)
+            return std::nullopt;
+        auto final = uml::Vector3(out.at(0,0),
+                                  out.at(0, 1),
+                                  out.at(0,2));
+        return {final};
+    }
+```
 ## Contributing
 Contributions to UML are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
 
@@ -37,4 +54,4 @@ Contributions to UML are welcome! Please read `CONTRIBUTING.md` for details on o
 This project is licensed under the GPL V3 - see the `LICENSE` file for details.
 
 ## Acknowledgments
-- (List any contributors, third-party libraries, or resources used in the development of UML)
+- Vladislav Alpatov | [Telegram](https://t.me/nullifiedvlad)
