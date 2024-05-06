@@ -1,6 +1,7 @@
 //
 // Created by vlad on 11/6/23.
 //
+#define _USE_MATH_DEFINES
 #include "uml/angles.h"
 #include <cmath>
 
