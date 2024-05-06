@@ -1,6 +1,7 @@
 //
 // Created by vlad on 10/28/23.
 //
+
 #define _USE_MATH_DEFINES
 
 #include <uml/Vector3.h>
@@ -104,9 +105,9 @@ namespace uml
 
     Vector3 &Vector3::Abs()
     {
-        x = fabsf(x);
-        y = fabsf(y);
-        z = fabsf(z);
+        x = std::abs(x);
+        y = std::abs(y);
+        z = std::abs(z);
 
         return *this;
     }
@@ -129,7 +130,7 @@ namespace uml
 
     float Vector3::Length() const
     {
-        return sqrt(x * x + y * y + z * z);
+        return std::sqrt(x * x + y * y + z * z);
     }
 
     float Vector3::LengthSqr() const
@@ -139,7 +140,7 @@ namespace uml
 
     float Vector3::Length2D() const
     {
-        return sqrt(x * x + y * y);
+        return std::sqrt(x * x + y * y);
 
     }
 
