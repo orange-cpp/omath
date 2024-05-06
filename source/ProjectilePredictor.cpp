@@ -55,15 +55,17 @@ namespace uml::prediction
     {
          const auto delta = target - origin;
 
-        const auto distance = delta.Length2D();
+        const auto distance2d = delta.Length2D();
 
 
-        float root = powf(bulletSpeed, 4) - bulletGravity * (bulletGravity * distance * distance + 2.0f * delta.z * powf(bulletSpeed, 2));
-        if (root < 0.0f) {
+        float root = powf(bulletSpeed, 4) - bulletGravity * (bulletGravity * distance2d * distance2d + 2.0f * delta.z * powf(bulletSpeed, 2));
+
+        if (root < 0.0f)
             return std::nullopt;
-        }
-        root = sqrt(root);
-        float angle = atanf((powf(bulletSpeed, 2) - root) / (bulletGravity * distance));
+
+        root = std::sqrt(root);
+        float angle = std::atan((powf(bulletSpeed, 2) - root) / (bulletGravity * distance2d));
+
         return -angles::RadToDeg(angle);
     }
 
