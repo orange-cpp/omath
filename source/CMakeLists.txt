@@ -3,4 +3,5 @@ target_sources(uml PRIVATE
         matrix.cpp
         angles.cpp
         ProjectilePredictor.cpp
-        color.cpp)
+        color.cpp
+        Vector4.cpp)
