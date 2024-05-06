@@ -2,8 +2,6 @@
 // Created by vlad on 10/28/23.
 //
 
-#define _USE_MATH_DEFINES
-
 #include <uml/Vector3.h>
 #include <cmath>
 #include <uml/angles.h>
@@ -183,9 +181,9 @@ namespace uml
     {
         return
         {
-            std::cos(angles::DegToRad(angles.y)) * length,
-            std::sin(angles::DegToRad(angles.y)) * length,
-            std::tan(angles::DegToRad(angles.x)) * length,
+            std::cos(angles::DegToRad(angles.x)) * std::cos(angles::DegToRad(angles.y)) * length,
+            std::cos(angles::DegToRad(angles.x)) * std::sin(angles::DegToRad(angles.y)) * length,
+            std::sin(angles::DegToRad(angles.x)) * length,
         };
     }
 
