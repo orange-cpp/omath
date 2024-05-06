@@ -10,67 +10,98 @@
 
 namespace uml::prediction
 {
-
-    std::optional<Vector3>
-    ProjectilePredictor::CalculateViewAngles(const Vector3 &origin,
-                                             const Vector3 &target,
-                                             const Vector3 &targetVelocity,
-                                             float gravity,
-                                             float bulletSpeed,
-                                             float bulletGravity,
-                                             bool inAir)
+    ProjectilePredictor::ProjectilePredictor(float gravityValue,
+                                             float maxTimeToTravel,
+                                             float timeStep)
+    : m_gravity(gravityValue), m_maxTravelTime(maxTimeToTravel), m_timeStepSize(timeStep)
     {
-        constexpr float maxTime = 3.0f;
-        constexpr float timeStep = 0.001f;
 
-        for (float time = 0.0f; time <= maxTime; time += timeStep)
+    }
+
+    std::optional<Vector3> ProjectilePredictor::PredictPointToAim(
+            const Target &target, const Projectile &projectile) const
+    {
+        for (float time = 0.0f; time <= m_maxTravelTime; time += m_timeStepSize)
         {
-            auto predPos = target + targetVelocity * time;
+            const auto predictedTargetPosition = LinearPrediction(target, time);
 
-            if (inAir)
-                predPos -= Vector3(0, 0, gravity * (time * time) * 0.5);
+            const auto projectilePitch =
+                    MaybeCalculateProjectileLaunchPitchAngle(projectile, predictedTargetPosition);
 
-            const auto angle = CalculateAimPitch(origin, predPos, bulletSpeed, bulletGravity);
-
-            if (!angle.has_value())
+            if (!projectilePitch.has_value())
                 return std::nullopt;
 
-            const auto timeToHit = ProjectileTravelTime((predPos - origin).Length2D(), *angle, bulletSpeed);
-
+            const auto timeToHit = ProjectileTravelTime(predictedTargetPosition,
+                                                        projectile,
+                                                        projectilePitch.value());
             if (timeToHit > time)
                 continue;
 
+            return Vector3();
 
-            auto viewAngles = origin.ViewAngleTo(predPos);
-            viewAngles.x = angle.value();
-
-            return viewAngles;
         }
+
+
         return std::nullopt;
     }
 
-    std::optional<float>
-    ProjectilePredictor::CalculateAimPitch(const Vector3 &origin, const Vector3 &target,
-                                           float bulletSpeed, float bulletGravity)
+    Vector3 ProjectilePredictor::LinearPrediction(const Target &target, float time) const
     {
-         const auto delta = target - origin;
+        auto predicted = target.m_origin + target.m_vecVelocity * time;
 
+        if (target.m_IsAirborne)
+            predicted.z -= m_gravity * std::pow(time, 2.f) * 0.5f;
+
+        return predicted;
+    }
+
+    std::optional<float>
+    ProjectilePredictor::MaybeCalculateProjectileLaunchPitchAngle(const Projectile &projectile,
+                                                                  const Vector3 &targetPosition)
+                                                                  const
+    {
+        const auto delta = targetPosition - projectile.m_origin;
         const auto distance2d = delta.Length2D();
+        const auto projectileGravity = m_gravity * projectile.m_gravityMultiplier;
 
-
-        float root = powf(bulletSpeed, 4) - bulletGravity * (bulletGravity * distance2d * distance2d + 2.0f * delta.z * powf(bulletSpeed, 2));
+        float root = std::pow(projectile.m_velocity, 4.f) - projectileGravity *
+                (projectileGravity * std::pow(distance2d, 2.f)
+                + 2.0f * delta.z * std::pow(projectile.m_velocity, 2.f));
 
         if (root < 0.0f)
             return std::nullopt;
 
         root = std::sqrt(root);
-        float angle = std::atan((powf(bulletSpeed, 2) - root) / (bulletGravity * distance2d));
 
-        return -angles::RadToDeg(angle);
+        const float angle = std::atan((std::pow(projectile.m_velocity, 2.f) - root)
+                / (projectile.m_velocity * distance2d));
+
+        return angles::RadToDeg(angle);
     }
 
-    float ProjectilePredictor::ProjectileTravelTime(float distance, float angle, float speed)
+    float ProjectilePredictor::ProjectileTravelTime(const Vector3 &end,
+                                                    const Projectile &projectile,
+                                                    const float angle) const
     {
-        return std::abs(distance / (std::cos(angles::DegToRad(angle)) * speed));
+        // return std::abs((end -projectile.m_origin).Length2D() / (std::cos(angles::DegToRad(angle)) * projectile.m_velocity));
+        auto launchAngles = projectile.m_origin.ViewAngleTo(end);
+        launchAngles.x = angle;
+
+        const auto velocity = Vector3::CreateVelocity(launchAngles, projectile.m_velocity);
+        auto prevProjectilePosition = projectile.m_origin;
+
+        for (float time = 0.0f; time <= m_maxTravelTime; time += 0.0001f)
+        {
+            auto currentPos = projectile.m_origin + velocity * time;
+            currentPos.z -= (m_gravity * projectile.m_gravityMultiplier)
+                    * std::pow(time, 2.f) * 0.5f;
+
+            if (prevProjectilePosition.DistTo(end) < currentPos.DistTo(end))
+                return time;
+
+            prevProjectilePosition = currentPos;
+        }
+
+        return 0;
     }
 }

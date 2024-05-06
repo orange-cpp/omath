@@ -10,7 +10,3 @@ add_subdirectory(extlibs)
 add_subdirectory(tests)
 
 target_include_directories(uml PUBLIC include)
-
-if (BUILD_TESTS)
-    add_subdirectory(tests)
-endif ()
