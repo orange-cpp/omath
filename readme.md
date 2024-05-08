@@ -16,7 +16,7 @@ The Universal Math Library (UML) is a comprehensive, open-source library aimed a
 ### Installation
 1. Clone the repository:
    ```
-   git clone https://github.com/VladislavAlpatov/uml.git
+   git clone https://github.com/orange-cpp/uml.git
    ```
 2. Navigate to the project directory:
    ```
