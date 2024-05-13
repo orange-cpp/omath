@@ -97,7 +97,7 @@ namespace uml::prediction
             auto currentPos = projectile.m_origin + velocity * time;
             currentPos.z -= m_gravity * projectile.m_gravityMultiplier * std::pow(time, 2.f) * 0.5f;
 
-            if (currentPos.DistTo(end) <= 25.f)
+            if (currentPos.DistTo(end) <= 10.f)
                 return time;
         }
 
