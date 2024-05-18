@@ -4,6 +4,9 @@
  */
 
 #include "uml/matrix.h"
+
+#include <format>
+
 #include "uml/Vector3.h"
 #include <utility>
 #include <stdexcept>
@@ -204,6 +207,25 @@ namespace uml
         return out;
     }
 
+    std::string matrix::to_string() const
+    {
+        std::string str;
+
+        for (size_t i = 0; i < m_rows; i++)
+        {
+            for (size_t j = 0; j < m_columns; ++j)
+            {
+                str += std::format("{:.1f}",at(i, j));
+
+                if (j == m_columns-1)
+                    str += '\n';
+                else
+                    str += ' ';
+            }
+        }
+        return str;
+    }
+
     float matrix::det() const
     {
         if (m_rows + m_columns == 2)
@@ -279,11 +301,11 @@ namespace uml
     matrix matrix::to_screen_matrix(float screenWidth, float screenHeight)
     {
         return matrix({
-                              {screenWidth / 2.f, 0.f,                 0.f, 0.f},
-                              {0.f,               -screenHeight / 2.f, 0.f, 0.f},
-                              {0.f,               0.f,                 1.f, 0.f},
-                              {screenWidth / 2.f, screenHeight / 2.f,  0.f, 1.f},
-                      });
+        {screenWidth / 2.f, 0.f,                 0.f, 0.f},
+        {0.f,               -screenHeight / 2.f, 0.f, 0.f},
+        {0.f,               0.f,                 1.f, 0.f},
+        {screenWidth / 2.f, screenHeight / 2.f,  0.f, 1.f},
+       });
     }
 
     const float * matrix::raw() const
