@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <string>
+
 
 namespace uml
 {
@@ -13,7 +15,8 @@ namespace uml
 
         explicit matrix(const std::vector<std::vector<float>> &rows);
 
-        [[nodiscard]] static matrix to_screen_matrix(float screenWidth, float screenHeight);
+        [[nodiscard]]
+        static matrix to_screen_matrix(float screenWidth, float screenHeight);
 
         matrix(const matrix &other);
 
@@ -21,21 +24,30 @@ namespace uml
 
         matrix(matrix &&other) noexcept;
 
-        [[nodiscard]] size_t get_rows_count() const noexcept;
+        [[nodiscard]]
+        size_t get_rows_count() const noexcept;
 
-        [[nodiscard]] size_t get_columns_count() const noexcept;
+        [[nodiscard]]
+        size_t get_columns_count() const noexcept;
 
-        [[nodiscard]] std::pair<size_t, size_t> get_size() const noexcept;
+        [[nodiscard]]
+        std::pair<size_t, size_t> get_size() const noexcept;
 
+        [[nodiscard]]
         float &at(size_t iRow, size_t iCol);
 
+        [[nodiscard]]
         float get_sum();
+
         void set_from_raw(const float* pRawMatrix);
+
+        [[nodiscard]]
         matrix transpose();
 
         void set(float val);
 
-        [[nodiscard]] const float &at(size_t iRow, size_t iCol) const;
+        [[nodiscard]]
+        const float &at(size_t iRow, size_t iCol) const;
 
         matrix operator*(const matrix &other) const;
 
@@ -49,19 +61,29 @@ namespace uml
 
         void clear();
 
-        [[nodiscard]] matrix strip(size_t row, size_t column) const;
+        [[nodiscard]]
+        matrix strip(size_t row, size_t column) const;
 
-        [[nodiscard]] float minor(size_t i, size_t j) const;
+        [[nodiscard]]
+        float minor(size_t i, size_t j) const;
 
-        [[nodiscard]] float alg_complement(size_t i, size_t j) const;
+        [[nodiscard]]
+        float alg_complement(size_t i, size_t j) const;
 
-        [[nodiscard]] float det() const;
-        [[nodiscard]] const float* raw() const;
+        [[nodiscard]]
+        float det() const;
+
+        [[nodiscard]]
+        const float* raw() const;
+
         matrix &operator=(const matrix &other);
 
         matrix &operator=(matrix &&other) noexcept;
 
         matrix operator/(float f) const;
+
+        [[nodiscard]]
+        std::string to_string() const;
 
         ~matrix();
 
