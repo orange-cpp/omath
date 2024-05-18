@@ -3,6 +3,8 @@
 //
 
 #include "uml/Vector4.h"
+
+#include <algorithm>
 #include <cmath>
 
 namespace uml
@@ -81,39 +83,48 @@ namespace uml
         return *this;
     }
 
+    Vector4& Vector4::Clamp(const float min, const float max)
+    {
+        x = std::clamp(x, min, max);
+        y = std::clamp(y, min, max);
+        z = std::clamp(z, min, max);
+
+        return *this;
+    }
+
     Vector4 Vector4::operator-() const
     {
-        return Vector4(-x, -y, -z, -w);
+        return {-x, -y, -z, -w};
     }
 
     Vector4 Vector4::operator+(const Vector4& v) const
     {
-        return Vector4(x + v.x, y + v.y, z + v.z, w + v.w);
+        return {x + v.x, y + v.y, z + v.z, w + v.w};
     }
 
     Vector4 Vector4::operator-(const Vector4& v) const
     {
-        return Vector4(x - v.x, y - v.y, z - v.z, w - v.w);
+        return {x - v.x, y - v.y, z - v.z, w - v.w};
     }
 
     Vector4 Vector4::operator*(float scalar) const
     {
-        return Vector4(x * scalar, y * scalar, z * scalar, w * scalar);
+        return {x * scalar, y * scalar, z * scalar, w * scalar};
     }
 
     Vector4 Vector4::operator*(const Vector4& v) const
     {
-        return Vector4(x * v.x, y * v.y, z * v.z, w * v.w);
+        return {x * v.x, y * v.y, z * v.z, w * v.w};
     }
 
     Vector4 Vector4::operator/(float scalar) const
     {
-        return Vector4(x / scalar, y / scalar, z / scalar, w / scalar);
+        return {x / scalar, y / scalar, z / scalar, w / scalar};
     }
 
     Vector4 Vector4::operator/(const Vector4& v) const
     {
-        return Vector4(x / v.x, y / v.y, z / v.z, w / v.w);
+        return {x / v.x, y / v.y, z / v.z, w / v.w};
     }
 
     float Vector4::Sum() const

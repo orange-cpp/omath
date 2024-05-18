@@ -17,20 +17,22 @@ namespace uml::color
         return Color( (*this * (1.f - ratio)) + (other * ratio) );
     }
 
-    Color::Color(float r, float g, float b, float a) : Vector4(r,g,b,a)
+    Color::Color(const float r, const float g, const float b, const float a)
+    : Vector4(std::clamp(r, 0.f, 1.f),
+              std::clamp(g, 0.f, 1.f),
+              std::clamp(b, 0.f, 1.f),
+              std::clamp(a, 0.f, 1.f))
     {
 
     }
 
-    Color::Color(const Vector4 &vec) : Vector4(vec)
+    Color::Color(Vector4 vec) : Vector4(vec.Clamp(0.f, 1.f))
     {
 
     }
 
     Color Color::FromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
     {
-
         return Color{Vector4(r, g, b, a) / 255.f};
-
     }
 }

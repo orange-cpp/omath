@@ -4,7 +4,6 @@
 
 #pragma once
 #include <optional>
-#include <vector>
 #include <uml/Vector3.h>
 
 
@@ -35,7 +34,6 @@ namespace uml::prediction
                                                  const Projectile& projectile) const;
 
     private:
-
         const float m_gravity;
         const float m_maxTravelTime;
         const float m_timeStepSize;
@@ -49,8 +47,9 @@ namespace uml::prediction
                                                  const Vector3& targetPosition) const;
 
         [[nodiscard]]
-        std::optional<float> ProjectileTravelTime(const Vector3& end, const Projectile& projectile,
-                                   const float angle) const;
+        std::optional<float> ProjectileTravelTime(const Vector3& end,
+                                                  const Projectile& projectile,
+                                                  float angle) const;
     };
 
 };
