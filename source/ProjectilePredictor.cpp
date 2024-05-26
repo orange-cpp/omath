@@ -32,10 +32,7 @@ namespace uml::prediction
             if (!projectilePitch.has_value()) [[unlikely]]
                 return std::nullopt;
 
-            const auto timeToHit = ProjectileTravelTime(predictedTargetPosition,
-                                                        projectile,
-                                                        projectilePitch.value());
-            if (!timeToHit.has_value() || timeToHit.value() > time)
+            if (!IsTargetWasHit(predictedTargetPosition, projectile, projectilePitch.value(), time))
                 continue;
 
             const auto delta2d = (predictedTargetPosition - projectile.m_origin).Length2D();
@@ -102,5 +99,20 @@ namespace uml::prediction
         }
 
         return std::nullopt;
+    }
+
+    bool ProjectilePredictor::IsTargetWasHit(const Vector3 &end, const Projectile &projectile, const float angle,
+                                             const float time) const
+    {
+        auto launchAngles = projectile.m_origin.ViewAngleTo(end);
+        launchAngles.x = angle;
+
+        const auto velocity = Vector3::CreateVelocity(launchAngles, projectile.m_velocity);
+
+        auto currentPos = projectile.m_origin + velocity * time;
+        currentPos.z -= m_gravity * projectile.m_gravityMultiplier * std::pow(time, 2.f) * 0.5f;
+
+
+        return currentPos.DistTo(end) <= 10.f;
     }
 }

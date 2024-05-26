@@ -50,6 +50,9 @@ namespace uml::prediction
         std::optional<float> ProjectileTravelTime(const Vector3& end,
                                                   const Projectile& projectile,
                                                   float angle) const;
+
+        [[nodiscard]]
+        bool IsTargetWasHit(const Vector3& end, const Projectile& projectile, float angle, float time) const;
     };
 
 };
