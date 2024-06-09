@@ -57,7 +57,7 @@ namespace uml
         {
             return *reinterpret_cast<type*>(this);
         }
-        [[nodiscard]] static Vector3 CreateVelocity(const Vector3& angles, float length);
+        [[nodiscard]] static Vector3 CreateVelocity(float pitch, float yaw, float speed);
         [[nodiscard]] float  Sum() const;
         [[nodiscard]] float  Sum2D() const;
         [[nodiscard]] Vector3 ViewAngleTo(const Vector3& other) const;

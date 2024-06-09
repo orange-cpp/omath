@@ -177,13 +177,13 @@ namespace uml
         return {x / v.x, y / v.y, z / v.z};
     }
 
-    Vector3 Vector3::CreateVelocity(const Vector3 &angles, const float length)
+    Vector3 Vector3::CreateVelocity(const float pitch, const float yaw, const float speed)
     {
         return
         {
-            std::cos(angles::DegToRad(angles.x)) * std::cos(angles::DegToRad(angles.y)) * length,
-            std::cos(angles::DegToRad(angles.x)) * std::sin(angles::DegToRad(angles.y)) * length,
-            std::sin(angles::DegToRad(angles.x)) * length,
+            std::cos(angles::DegreesToRadians(pitch)) * std::cos(angles::DegreesToRadians(yaw)) * speed,
+            std::cos(angles::DegreesToRadians(pitch)) * std::sin(angles::DegreesToRadians(yaw)) * speed,
+            std::sin(angles::DegreesToRadians(pitch)) * speed,
         };
     }
 
@@ -205,8 +205,8 @@ namespace uml
         // Make x negative since -89 is top and 89 is bottom
         return
         {
-            -angles::RadToDeg(asinf(delta.z / distance)),
-            angles::RadToDeg(atan2f(delta.y, delta.x)),
+            -angles::RadiansToDegrees(asinf(delta.z / distance)),
+            angles::RadiansToDegrees(atan2f(delta.y, delta.x)),
             0.f
         };
     }
