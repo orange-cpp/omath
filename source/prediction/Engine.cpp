@@ -10,10 +10,12 @@
 
 namespace uml::prediction
 {
-    Engine::Engine(const float gravityConstant, const float simulationTimeStep, const float maximumSimulationTime)
+    Engine::Engine(const float gravityConstant, const float simulationTimeStep,
+        const float maximumSimulationTime, float distanceTolerance)
     : m_gravityConstant(gravityConstant),
     m_simulationTimeStep(simulationTimeStep),
-    m_maximumSimulationTime(maximumSimulationTime)
+    m_maximumSimulationTime(maximumSimulationTime),
+    m_distanceTolerance(distanceTolerance)
     {
     }
 
@@ -66,6 +68,6 @@ namespace uml::prediction
         const auto yaw = projectile.m_origin.ViewAngleTo(targetPosition).y;
         const auto projectilePosition = projectile.PredictPosition(pitch, yaw, time, m_gravityConstant);
 
-        return projectilePosition.DistTo(targetPosition) <= 10.f;
+        return projectilePosition.DistTo(targetPosition) <= m_distanceTolerance;
     }
 }
