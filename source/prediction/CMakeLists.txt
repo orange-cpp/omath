@@ -1,0 +1,1 @@
+target_sources(uml PRIVATE Engine.cpp Projectile.cpp Target.cpp)

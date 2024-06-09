@@ -6,6 +6,6 @@
 
 namespace uml::angles
 {
-    [[nodiscard]] float RadToDeg(float rads);
-    [[nodiscard]] float DegToRad(float degrees);
+    [[nodiscard]] float RadiansToDegrees(float rads);
+    [[nodiscard]] float DegreesToRadians(float degrees);
 }

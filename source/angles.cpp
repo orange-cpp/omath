@@ -8,13 +8,13 @@
 
 namespace uml::angles
 {
-    float RadToDeg(float rads)
+    float RadiansToDegrees(const float radiands)
     {
-        return rads * 180.f / std::numbers::pi_v<float>;
+        return radiands * (180.f / std::numbers::pi_v<float>);
     }
 
-    float DegToRad(float degrees)
+    float DegreesToRadians(const float degrees)
     {
-        return degrees * std::numbers::pi_v<float> / 180.f;
+        return degrees * (std::numbers::pi_v<float> / 180.f);
     }
 }
