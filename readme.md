@@ -55,4 +55,4 @@ Contributions to UML are welcome! Please read `CONTRIBUTING.md` for details on o
 This project is licensed under the GPL V3 - see the `LICENSE` file for details.
 
 ## Acknowledgments
-- Vladislav Alpatov | [Telegram](https://t.me/nullifiedvlad)
+- Orange | [Telegram](https://t.me/nullifiedvlad)
