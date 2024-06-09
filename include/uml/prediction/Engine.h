@@ -15,7 +15,8 @@ namespace uml::prediction
     class Engine
     {
     public:
-        explicit Engine(float gravityConstant, float simulationTimeStep, float maximumSimulationTime);
+        explicit Engine(float gravityConstant, float simulationTimeStep,
+                        float maximumSimulationTime, float distanceTolerance);
 
         [[nodiscard]]
         std::optional<Vector3> MaybeCalculateAimPoint(const Projectile& projectile, const Target& target) const;
@@ -24,6 +25,7 @@ namespace uml::prediction
         const float m_gravityConstant;
         const float m_simulationTimeStep;
         const float m_maximumSimulationTime;
+        const float m_distanceTolerance;
 
         [[nodiscard]]
         std::optional<float> MaybeCalculateProjectileLaunchPitchAngle(const Projectile& projectile,
