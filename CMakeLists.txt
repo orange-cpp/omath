@@ -3,8 +3,7 @@ project(uml)
 
 set(CMAKE_CXX_STANDARD 26)
 option(BUILD_TESTS "Build test programs" ON)
-add_library(uml STATIC source/Vector3.cpp
-        include/uml/prediction/engine.h)
+add_library(uml STATIC source/Vector3.cpp)
 
 add_subdirectory(source)
 add_subdirectory(extlibs)
