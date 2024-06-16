@@ -210,4 +210,23 @@ namespace uml
             0.f
         };
     }
+
+    Vector3 Vector3::Cross(const Vector3 &v) const
+    {
+        return {
+                y * v.z - z * v.y,
+                z * v.x - x * v.z,
+                x * v.y - y * v.x
+        };
+    }
+
+    Vector3 Vector3::Normalized() const
+    {
+        float length = this->Length();
+        if (length != 0)
+        {
+            return *this / length;
+        }
+        return *this;
+    }
 }
