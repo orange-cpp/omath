@@ -57,9 +57,13 @@ namespace uml
         {
             return *reinterpret_cast<type*>(this);
         }
+        [[nodiscard]] Vector3 Cross(const Vector3 &v) const;
         [[nodiscard]] static Vector3 CreateVelocity(float pitch, float yaw, float speed);
         [[nodiscard]] float  Sum() const;
         [[nodiscard]] float  Sum2D() const;
         [[nodiscard]] Vector3 ViewAngleTo(const Vector3& other) const;
+
+        [[nodiscard]]
+        Vector3 Normalized() const;
     };
 }
