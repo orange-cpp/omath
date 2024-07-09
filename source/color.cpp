@@ -2,12 +2,12 @@
 // Created by vlad on 2/4/24.
 //
 
-#include "uml/color.h"
+#include "omath/color.h"
 #include <algorithm>
 #include <cmath>
 
 
-namespace uml::color
+namespace omath::color
 {
     Vector3 Blend(const Vector3 &first, const Vector3 &second, float ratio)
     {

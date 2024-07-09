@@ -1,4 +1,4 @@
-target_sources(uml PRIVATE
+target_sources(omath PRIVATE
         Vector3.cpp
         matrix.cpp
         angles.cpp

@@ -3,10 +3,10 @@
 //
 
 #pragma once
-#include "uml/Vector3.h"
+#include "omath/Vector3.h"
 
 
-namespace uml::prediction
+namespace omath::prediction
 {
     class Projectile final
     {

@@ -2,11 +2,11 @@
 // Created by Vlad on 6/9/2024.
 //
 
-#include "uml/prediction/Target.h"
+#include "omath/prediction/Target.h"
 #include <cmath>
 
 
-namespace uml::prediction
+namespace omath::prediction
 {
     Vector3 Target::PredictPosition(const float time, const float gravity) const
     {

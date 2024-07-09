@@ -3,9 +3,9 @@
 //
 #pragma once
 
-#include <uml/Vector3.h>
+#include <omath/Vector3.h>
 
-namespace uml
+namespace omath
 {
     class Vector4 : public Vector3
     {

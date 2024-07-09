@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "uml/Vector3.h"
+#include "omath/Vector3.h"
 #include <cstdint>
-#include "uml/Vector4.h"
+#include "omath/Vector4.h"
 
 
-namespace uml::color
+namespace omath::color
 {
     struct HSV
     {
