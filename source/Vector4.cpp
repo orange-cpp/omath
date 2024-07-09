@@ -2,12 +2,12 @@
 // Vector4.cpp
 //
 
-#include "uml/Vector4.h"
+#include "omath/Vector4.h"
 
 #include <algorithm>
 #include <cmath>
 
-namespace uml
+namespace omath
 {
     bool Vector4::operator==(const Vector4& src) const
     {

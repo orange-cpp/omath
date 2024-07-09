@@ -3,15 +3,15 @@
 //
 
 
-#include "uml/prediction/Engine.h"
+#include "omath/prediction/Engine.h"
 #include <cmath>
-#include <uml/angles.h>
+#include <omath/angles.h>
 
 
-namespace uml::prediction
+namespace omath::prediction
 {
     Engine::Engine(const float gravityConstant, const float simulationTimeStep,
-        const float maximumSimulationTime, float distanceTolerance)
+        const float maximumSimulationTime, const float distanceTolerance)
     : m_gravityConstant(gravityConstant),
     m_simulationTimeStep(simulationTimeStep),
     m_maximumSimulationTime(maximumSimulationTime),

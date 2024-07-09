@@ -2,11 +2,11 @@
 // Created by Vlad on 6/9/2024.
 //
 
-#include "uml/prediction/Projectile.h"
+#include "omath/prediction/Projectile.h"
 #include <cmath>
 
 
-namespace uml::prediction
+namespace omath::prediction
 {
     Vector3 Projectile::CalculateVelocity(const float pitch, const float yaw) const
     {

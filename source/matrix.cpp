@@ -3,17 +3,17 @@
  * Created by Alpatov Softworks with love in Russia.
  */
 
-#include "uml/matrix.h"
+#include "omath/matrix.h"
 
 #include <format>
 
-#include "uml/Vector3.h"
+#include "omath/Vector3.h"
 #include <utility>
 #include <stdexcept>
 #include <utility>
 
 
-namespace uml
+namespace omath
 {
     matrix::matrix(const size_t rows, const size_t columns)
     {

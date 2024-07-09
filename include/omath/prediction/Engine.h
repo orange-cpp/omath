@@ -5,12 +5,12 @@
 #pragma once
 
 #include <optional>
-#include "uml/Vector3.h"
-#include "uml/prediction/Projectile.h"
-#include "uml/prediction/Target.h"
+#include "omath/Vector3.h"
+#include "omath/prediction/Projectile.h"
+#include "omath/prediction/Target.h"
 
 
-namespace uml::prediction
+namespace omath::prediction
 {
     class Engine
     {

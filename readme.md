@@ -1,7 +1,7 @@
-# Universal Math Library (UML)
+# Oranges's Math Library (omath)
 
 ## Overview
-The Universal Math Library (UML) is a comprehensive, open-source library aimed at providing efficient, reliable, and versatile mathematical functions and algorithms. Developed primarily in C++, this library is designed to cater to a wide range of mathematical operations essential in scientific computing, engineering, and academic research.
+Oranges's Math Library (omath) is a comprehensive, open-source library aimed at providing efficient, reliable, and versatile mathematical functions and algorithms. Developed primarily in C++, this library is designed to cater to a wide range of mathematical operations essential in scientific computing, engineering, and academic research.
 
 ## Features
 - **Efficiency**: Optimized for performance, ensuring quick computations.
@@ -31,25 +31,25 @@ The Universal Math Library (UML) is a comprehensive, open-source library aimed a
 ## Usage
 Simple world to screen function
 ```c++
-std::optional<uml::Vector3> WorldToScreen(uml::Vector3 worldPosition, float width, float height)
+std::optional<omath::Vector3> WorldToScreen(omath::Vector3 worldPosition, float width, float height)
     {
         auto projected = (GetViewProjectionMatrix() * worldPosition).transpose();
 
         projected /= projected.at(0, 3);
 
-        const auto out = projected * uml::matrix::to_screen_matrix(width,
-                                                                   height);
+        const auto out = projected * omath::matrix::to_screen_matrix(width,
+                                                                     height);
 
-        if (out.at(0,2) <= 0.f)
+        if (out.at(0, 2) <= 0.f)
             return std::nullopt;
-        auto final = uml::Vector3(out.at(0,0),
-                                  out.at(0, 1),
-                                  out.at(0,2));
+        auto final = omath::Vector3(out.at(0, 0),
+                                    out.at(0, 1),
+                                    out.at(0, 3));
         return {final};
     }
 ```
 ## Contributing
-Contributions to UML are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
+Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
 
 ## License
 This project is licensed under the GPL V3 - see the `LICENSE` file for details.

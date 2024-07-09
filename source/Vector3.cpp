@@ -2,11 +2,11 @@
 // Created by vlad on 10/28/23.
 //
 
-#include <uml/Vector3.h>
+#include <omath/Vector3.h>
 #include <cmath>
-#include <uml/angles.h>
+#include <omath/angles.h>
 
-namespace uml
+namespace omath
 {
     bool Vector3::operator==(const Vector3 &src) const
     {
@@ -209,6 +209,35 @@ namespace uml
             angles::RadiansToDegrees(atan2f(delta.y, delta.x)),
             0.f
         };
+    }
+
+    Vector3 Vector3::ForwardVector(const float pitch, const float yaw)
+    {
+        const auto cosPitch = std::cos(angles::DegreesToRadians(pitch));
+        const auto sinPitch = std::sin(angles::DegreesToRadians(pitch));
+
+        const auto cosYaw = std::cos(angles::DegreesToRadians(yaw));
+        const auto sinYaw = std::sin(angles::DegreesToRadians(yaw));
+
+
+        return {cosPitch*cosYaw, cosPitch*sinYaw, sinPitch};
+    }
+
+    Vector3 Vector3::RightVector(const float pitch, const float yaw, const float roll)
+    {
+        const auto cosPitch = std::cos(angles::DegreesToRadians(pitch));
+        const auto sinPitch = std::sin(angles::DegreesToRadians(pitch));
+
+        const auto cosYaw = std::cos(angles::DegreesToRadians(yaw));
+        const auto sinYaw = std::sin(angles::DegreesToRadians(yaw));
+
+        const auto cosRoll = std::cos(angles::DegreesToRadians(yaw));
+        const auto sinRoll = std::sin(angles::DegreesToRadians(yaw));
+
+
+        return {-sinRoll*sinPitch*cosYaw + -cosRoll*-sinYaw,
+                -sinRoll*sinPitch*sinYaw + -cosRoll*cosYaw,
+                sinRoll*cosPitch};
     }
 
     Vector3 Vector3::Cross(const Vector3 &v) const

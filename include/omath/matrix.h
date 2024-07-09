@@ -4,7 +4,7 @@
 #include <string>
 
 
-namespace uml
+namespace omath
 {
     class Vector3;
 
