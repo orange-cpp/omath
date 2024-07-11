@@ -1,12 +1,6 @@
-/*
- * Copyright (c) 2022.
- * Created by Alpatov Softworks with love in Russia.
- */
-
 #include "omath/matrix.h"
 
 #include <format>
-
 #include "omath/Vector3.h"
 #include <utility>
 #include <stdexcept>
