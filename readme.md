@@ -16,7 +16,7 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 ### Installation
 1. Clone the repository:
    ```
-   git clone https://github.com/orange-cpp/uml.git
+   git clone https://github.com/orange-cpp/omath.git
    ```
 2. Navigate to the project directory:
    ```
