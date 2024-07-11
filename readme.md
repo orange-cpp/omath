@@ -20,7 +20,7 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
    ```
 2. Navigate to the project directory:
    ```
-   cd uml
+   cd omath
    ```
 3. Build the project using CMake:
    ```
