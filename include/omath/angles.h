@@ -6,6 +6,6 @@
 
 namespace omath::angles
 {
-    [[nodiscard]] constexpr float RadiansToDegrees(float rads);
-    [[nodiscard]] constexpr float DegreesToRadians(float degrees);
+    [[nodiscard]] float RadiansToDegrees(float rads);
+    [[nodiscard]] float DegreesToRadians(float degrees);
 }
