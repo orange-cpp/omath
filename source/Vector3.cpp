@@ -202,10 +202,9 @@ namespace omath
         const float distance = DistTo(other);
         const auto delta = other - *this;
 
-        // Make x negative since -89 is top and 89 is bottom
         return
         {
-            -angles::RadiansToDegrees(asinf(delta.z / distance)),
+            angles::RadiansToDegrees(asinf(delta.z / distance)),
             angles::RadiansToDegrees(atan2f(delta.y, delta.x)),
             0.f
         };
@@ -251,7 +250,7 @@ namespace omath
 
     Vector3 Vector3::Normalized() const
     {
-        float length = this->Length();
+        const float length = this->Length();
         if (length != 0)
         {
             return *this / length;
