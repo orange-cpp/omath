@@ -204,8 +204,8 @@ namespace omath
 
         return
         {
-            angles::RadiansToDegrees(asinf(delta.z / distance)),
-            angles::RadiansToDegrees(atan2f(delta.y, delta.x)),
+            angles::RadiansToDegrees(std::asin(delta.z / distance)),
+            angles::RadiansToDegrees(std::atan2(delta.y, delta.x)),
             0.f
         };
     }
@@ -241,7 +241,8 @@ namespace omath
 
     Vector3 Vector3::Cross(const Vector3 &v) const
     {
-        return {
+        return 
+        {
                 y * v.z - z * v.y,
                 z * v.x - x * v.z,
                 x * v.y - y * v.x
@@ -251,10 +252,7 @@ namespace omath
     Vector3 Vector3::Normalized() const
     {
         const float length = this->Length();
-        if (length != 0)
-        {
-            return *this / length;
-        }
-        return *this;
+
+        return length != 0 ? *this / length : *this;
     }
 }
