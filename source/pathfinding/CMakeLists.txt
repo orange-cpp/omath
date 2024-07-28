@@ -1,0 +1,1 @@
+target_sources(omath PRIVATE NavigationMesh.cpp Astar.cpp)
