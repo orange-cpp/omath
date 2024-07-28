@@ -5,3 +5,4 @@ target_sources(omath PRIVATE
         Vector4.cpp)
 
 add_subdirectory(prediction)
+add_subdirectory(pathfinding)
