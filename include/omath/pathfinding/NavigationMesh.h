@@ -15,7 +15,7 @@ namespace omath::pathfinding
     struct NavigationVertex
     {
         Vector3 origin;
-        std::vector<Vector3*> connections;
+        std::vector<NavigationVertex*> connections;
     };
 
 
