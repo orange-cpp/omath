@@ -30,7 +30,7 @@ namespace omath::pathfinding
     {
         auto dumpToVector =[]<typename T>(const T& t, std::vector<uint8_t>& vec){
             for (size_t i = 0; i < sizeof(t); i++)
-                vec.push_back(*(reinterpret_cast<uint8_t*>(&t)+i));
+                vec.push_back(*(reinterpret_cast<const uint8_t*>(&t)+i));
         };
 
         std::vector<uint8_t> raw;
@@ -52,8 +52,10 @@ namespace omath::pathfinding
 
     void NavigationMesh::Deserialize(const std::vector<uint8_t> &raw)
     {
-        auto loadFromVector = [](const std::vector<uint8_t>& vec, size_t& offset, auto& value) {
-            if (offset + sizeof(value) > vec.size()) {
+        auto loadFromVector = [](const std::vector<uint8_t>& vec, size_t& offset, auto& value)
+        {
+            if (offset + sizeof(value) > vec.size())
+            {
                 throw std::runtime_error("Deserialize: Invalid input data size.");
             }
             std::memcpy(&value, vec.data() + offset, sizeof(value));
@@ -64,7 +66,8 @@ namespace omath::pathfinding
 
         size_t offset = 0;
 
-        while (offset < raw.size()) {
+        while (offset < raw.size())
+        {
             Vector3 vertex;
             loadFromVector(raw, offset, vertex);
 
@@ -74,7 +77,8 @@ namespace omath::pathfinding
             std::vector<Vector3> neighbors;
             neighbors.reserve(neighborsCount);
 
-            for (size_t i = 0; i < neighborsCount; ++i) {
+            for (size_t i = 0; i < neighborsCount; ++i)
+            {
                 Vector3 neighbor;
                 loadFromVector(raw, offset, neighbor);
                 neighbors.push_back(neighbor);
