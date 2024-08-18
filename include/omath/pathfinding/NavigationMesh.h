@@ -30,8 +30,9 @@ namespace omath::pathfinding
         [[nodiscard]]
         const std::vector<Vector3>& GetNeighbors(const Vector3& vertex) const;
 
-        std::list<NavigationVertex> m_vertexes;
-
+        [[nodiscard]] std::vector<uint8_t> Serialize() const;
+        void Deserialize(const std::vector<uint8_t>& raw);
+        
         std::unordered_map<Vector3, std::vector<Vector3>> m_verTextMap;
     };
 }
