@@ -9,8 +9,8 @@
 TEST(UnitTestMatrix, ToString)
 {
     omath::Matrix matrix(2, 2);
-    matrix.set(1.1);
-    const auto str = matrix.to_string();
+    matrix.Set(1.1);
+    const auto str = matrix.ToSrtring();
 
     std::cout << str;
 

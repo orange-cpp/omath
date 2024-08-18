@@ -8,7 +8,7 @@ namespace omath
 {
     class Vector3;
 
-    class Matrix
+    class Matrix final
     {
     public:
         Matrix(size_t rows, size_t columns);
@@ -16,7 +16,7 @@ namespace omath
         explicit Matrix(const std::vector<std::vector<float>> &rows);
 
         [[nodiscard]]
-        static Matrix to_screen_matrix(float screenWidth, float screenHeight);
+        static Matrix ToScreenMatrix(float screenWidth, float screenHeight);
 
         Matrix(const Matrix &other);
 
@@ -25,29 +25,29 @@ namespace omath
         Matrix(Matrix &&other) noexcept;
 
         [[nodiscard]]
-        size_t get_rows_count() const noexcept;
+        size_t RowCount() const noexcept;
 
         [[nodiscard]]
-        size_t get_columns_count() const noexcept;
+        size_t ColumnsCount() const noexcept;
 
         [[nodiscard]]
-        std::pair<size_t, size_t> get_size() const noexcept;
+        std::pair<size_t, size_t> Size() const noexcept;
 
         [[nodiscard]]
-        float &at(size_t iRow, size_t iCol);
+        float &At(size_t iRow, size_t iCol);
 
         [[nodiscard]]
-        float get_sum();
+        float Sum();
 
-        void set_from_raw(const float* pRawMatrix);
-
-        [[nodiscard]]
-        Matrix transpose();
-
-        void set(float val);
+        void SetDataFromRaw(const float* pRawMatrix);
 
         [[nodiscard]]
-        const float &at(size_t iRow, size_t iCol) const;
+        Matrix Transpose();
+
+        void Set(float val);
+
+        [[nodiscard]]
+        const float &At(size_t iRow, size_t iCol) const;
 
         Matrix operator*(const Matrix &other) const;
 
@@ -59,22 +59,22 @@ namespace omath
 
         Matrix &operator/=(float f);
 
-        void clear();
+        void Clear();
 
         [[nodiscard]]
-        Matrix strip(size_t row, size_t column) const;
+        Matrix Strip(size_t row, size_t column) const;
 
         [[nodiscard]]
-        float minor(size_t i, size_t j) const;
+        float Minor(size_t i, size_t j) const;
 
         [[nodiscard]]
-        float alg_complement(size_t i, size_t j) const;
+        float AlgComplement(size_t i, size_t j) const;
 
         [[nodiscard]]
-        float det() const;
+        float Determinant() const;
 
         [[nodiscard]]
-        const float* raw() const;
+        const float* Raw() const;
 
         Matrix &operator=(const Matrix &other);
 
@@ -83,13 +83,13 @@ namespace omath
         Matrix operator/(float f) const;
 
         [[nodiscard]]
-        std::string to_string() const;
+        std::string ToSrtring() const;
 
         ~Matrix();
 
     private:
         size_t m_rows = 0;
         size_t m_columns = 0;
-        std::unique_ptr<float[]> m_pData = nullptr;
+        std::unique_ptr<float[]> m_data = nullptr;
     };
 }

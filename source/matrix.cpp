@@ -17,9 +17,9 @@ namespace omath
         m_rows = rows;
         m_columns = columns;
 
-        m_pData = std::make_unique<float[]>(m_rows * m_columns);
+        m_data = std::make_unique<float[]>(m_rows * m_columns);
 
-        set(0.f);
+        Set(0.f);
     }
 
     Matrix::Matrix(const std::vector<std::vector<float>> &rows)
@@ -28,11 +28,11 @@ namespace omath
         m_columns = rows[0].size();
 
 
-        m_pData = std::make_unique<float[]>(m_rows * m_columns);
+        m_data = std::make_unique<float[]>(m_rows * m_columns);
 
         for (size_t i = 0; i < m_rows; ++i)
             for (size_t j = 0; j < m_columns; ++j)
-                at(i,j) = rows[i][j];
+                At(i,j) = rows[i][j];
     }
 
     Matrix::Matrix(const Matrix &other)
@@ -40,11 +40,11 @@ namespace omath
         m_rows = other.m_rows;
         m_columns = other.m_columns;
 
-        m_pData = std::make_unique<float[]>(m_rows * m_columns);
+        m_data = std::make_unique<float[]>(m_rows * m_columns);
 
         for (size_t i = 0; i < m_rows; ++i)
             for (size_t j = 0; j < m_columns; ++j)
-                at(i, j) = other.at(i, j);
+                At(i, j) = other.At(i, j);
     }
 
     Matrix::Matrix(const size_t rows, const size_t columns, const float *pRaw)
@@ -53,14 +53,14 @@ namespace omath
         m_columns = columns;
 
 
-        m_pData = std::make_unique<float[]>(m_rows * m_columns);
+        m_data = std::make_unique<float[]>(m_rows * m_columns);
 
         for (size_t i = 0; i < rows*columns; ++i)
-            at(i / rows, i % columns) = pRaw[i];
+            At(i / rows, i % columns) = pRaw[i];
 
     }
 
-    size_t Matrix::get_rows_count() const noexcept
+    size_t Matrix::RowCount() const noexcept
     {
         return m_rows;
     }
@@ -69,39 +69,39 @@ namespace omath
     {
         m_rows = other.m_rows;
         m_columns = other.m_columns;
-        m_pData = std::move(other.m_pData);
+        m_data = std::move(other.m_data);
 
     }
 
-    size_t Matrix::get_columns_count() const noexcept
+    size_t Matrix::ColumnsCount() const noexcept
     {
         return m_columns;
     }
 
-    std::pair<size_t, size_t> Matrix::get_size() const noexcept
+    std::pair<size_t, size_t> Matrix::Size() const noexcept
     {
-        return {get_rows_count(), get_columns_count()};
+        return {RowCount(), ColumnsCount()};
     }
 
-    float &Matrix::at(const size_t iRow, const size_t iCol)
+    float &Matrix::At(const size_t iRow, const size_t iCol)
     {
-        return const_cast<float&>(std::as_const(*this).at(iRow, iCol));
+        return const_cast<float&>(std::as_const(*this).At(iRow, iCol));
     }
 
-    float Matrix::get_sum()
+    float Matrix::Sum()
     {
         float sum = 0;
 
-        for (size_t i = 0; i < get_rows_count(); i++)
-            for (size_t j = 0; j < get_columns_count(); j++)
-                sum += at(i, j);
+        for (size_t i = 0; i < RowCount(); i++)
+            for (size_t j = 0; j < ColumnsCount(); j++)
+                sum += At(i, j);
 
         return sum;
     }
 
-    const float &Matrix::at(const size_t iRow, const size_t iCol) const
+    const float &Matrix::At(const size_t iRow, const size_t iCol) const
     {
-        return m_pData[iRow * m_columns + iCol];
+        return m_data[iRow * m_columns + iCol];
     }
 
     Matrix Matrix::operator*(const Matrix &other) const
@@ -114,7 +114,7 @@ namespace omath
         for (size_t d = 0; d < m_rows; ++d)
             for (size_t i = 0; i < other.m_columns; ++i)
                 for (size_t j = 0; j < other.m_rows; ++j)
-                    outMat.at(d, i) += at(d, j) * other.at(j, i);
+                    outMat.At(d, i) += At(d, j) * other.At(j, i);
 
 
         return outMat;
@@ -125,31 +125,31 @@ namespace omath
         auto out = *this;
         for (size_t i = 0; i < m_rows; ++i)
             for (size_t j = 0; j < m_columns; ++j)
-                out.at(i, j) *= f;
+                out.At(i, j) *= f;
 
         return out;
     }
 
     Matrix &Matrix::operator*=(const float f)
     {
-        for (size_t i = 0; i < get_rows_count(); i++)
-            for (size_t j = 0; j < get_columns_count(); j++)
-                at(i, j) *= f;
+        for (size_t i = 0; i < RowCount(); i++)
+            for (size_t j = 0; j < ColumnsCount(); j++)
+                At(i, j) *= f;
         return *this;
     }
 
-    void Matrix::clear()
+    void Matrix::Clear()
     {
-        set(0.f);
+        Set(0.f);
     }
 
     Matrix Matrix::operator*(const Vector3 &vec3) const
     {
         auto vecmatrix = Matrix(m_rows, 1);
-        vecmatrix.set(1.f);
-        vecmatrix.at(0, 0) = vec3.x;
-        vecmatrix.at(1, 0) = vec3.y;
-        vecmatrix.at(2, 0) = vec3.z;
+        vecmatrix.Set(1.f);
+        vecmatrix.At(0, 0) = vec3.x;
+        vecmatrix.At(1, 0) = vec3.y;
+        vecmatrix.At(2, 0) = vec3.z;
 
         return *this * vecmatrix;
 
@@ -163,7 +163,7 @@ namespace omath
 
         for (size_t i = 0; i < m_rows; ++i)
             for (size_t j = 0; j < m_columns; ++j)
-                at(i, j) = other.at(i, j);
+                At(i, j) = other.At(i, j);
 
         return *this;
 
@@ -176,7 +176,7 @@ namespace omath
 
         m_rows = other.m_rows;
         m_columns = other.m_columns;
-        m_pData = std::move(other.m_pData);
+        m_data = std::move(other.m_data);
 
         return *this;
 
@@ -186,7 +186,7 @@ namespace omath
     {
         for (size_t i = 0; i < m_rows; ++i)
             for (size_t j = 0; j < m_columns; ++j)
-                at(i, j) /= f;
+                At(i, j) /= f;
 
         return *this;
     }
@@ -196,12 +196,12 @@ namespace omath
         auto out = *this;
         for (size_t i = 0; i < m_rows; ++i)
             for (size_t j = 0; j < m_columns; ++j)
-                out.at(i, j) /= f;
+                out.At(i, j) /= f;
 
         return out;
     }
 
-    std::string Matrix::to_string() const
+    std::string Matrix::ToSrtring() const
     {
         std::string str;
 
@@ -209,7 +209,7 @@ namespace omath
         {
             for (size_t j = 0; j < m_columns; ++j)
             {
-                str += std::format("{:.1f}",at(i, j));
+                str += std::format("{:.1f}",At(i, j));
 
                 if (j == m_columns-1)
                     str += '\n';
@@ -220,48 +220,48 @@ namespace omath
         return str;
     }
 
-    float Matrix::det() const
+    float Matrix::Determinant() const
     {
         if (m_rows + m_columns == 2)
-            return at(0, 0);
+            return At(0, 0);
 
         if (m_rows == 2 and m_columns == 2)
-            return at(0, 0) * at(1, 1) - at(0, 1) * at(1, 0);
+            return At(0, 0) * At(1, 1) - At(0, 1) * At(1, 0);
 
         float fDet = 0;
         for (size_t i = 0; i < m_columns; i++)
-            fDet += alg_complement(0, i) * at(0, i);
+            fDet += AlgComplement(0, i) * At(0, i);
 
         return fDet;
     }
 
-    float Matrix::alg_complement(const size_t i, const size_t j) const
+    float Matrix::AlgComplement(const size_t i, const size_t j) const
     {
-        const auto tmp = minor(i, j);
+        const auto tmp = Minor(i, j);
         return ((i + j + 2) % 2 == 0) ? tmp : -tmp;
     }
 
-    Matrix Matrix::transpose()
+    Matrix Matrix::Transpose()
     {
         Matrix transposed = {m_columns, m_rows};
 
         for (size_t i = 0; i < m_rows; ++i)
             for (size_t j = 0; j < m_columns; ++j)
-                transposed.at(j, i) = at(i, j);
+                transposed.At(j, i) = At(i, j);
 
         return transposed;
     }
 
     Matrix::~Matrix() = default;
 
-    void Matrix::set(const float val)
+    void Matrix::Set(const float val)
     {
         for (size_t i = 0; i < m_rows; ++i)
             for (size_t j = 0; j < m_columns; ++j)
-                at(i, j) = val;
+                At(i, j) = val;
     }
 
-    Matrix Matrix::strip(const size_t row, const size_t column) const
+    Matrix Matrix::Strip(const size_t row, const size_t column) const
     {
         Matrix stripped = {m_rows - 1, m_columns - 1};
         size_t iStripRowIndex = 0;
@@ -277,7 +277,7 @@ namespace omath
                 if (j == column)
                     continue;
 
-                stripped.at(iStripRowIndex, iStripColumnIndex) = at(i, j);
+                stripped.At(iStripRowIndex, iStripColumnIndex) = At(i, j);
                 iStripColumnIndex++;
             }
 
@@ -287,12 +287,12 @@ namespace omath
         return stripped;
     }
 
-    float Matrix::minor(const size_t i, const size_t j) const
+    float Matrix::Minor(const size_t i, const size_t j) const
     {
-        return strip(i, j).det();
+        return Strip(i, j).Determinant();
     }
 
-    Matrix Matrix::to_screen_matrix(float screenWidth, float screenHeight)
+    Matrix Matrix::ToScreenMatrix(float screenWidth, float screenHeight)
     {
         return Matrix({
         {screenWidth / 2.f, 0.f,                 0.f, 0.f},
@@ -302,14 +302,14 @@ namespace omath
        });
     }
 
-    const float * Matrix::raw() const
+    const float * Matrix::Raw() const
     {
-        return m_pData.get();
+        return m_data.get();
     }
 
-    void Matrix::set_from_raw(const float *pRawMatrix)
+    void Matrix::SetDataFromRaw(const float *pRawMatrix)
     {
         for (size_t i = 0; i < m_columns*m_rows; ++i)
-            at(i / m_rows, i % m_columns) = pRawMatrix[i];
+            At(i / m_rows, i % m_columns) = pRawMatrix[i];
     }
 }
