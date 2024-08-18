@@ -8,21 +8,21 @@ namespace omath
 {
     class Vector3;
 
-    class matrix
+    class Matrix
     {
     public:
-        matrix(size_t rows, size_t columns);
+        Matrix(size_t rows, size_t columns);
 
-        explicit matrix(const std::vector<std::vector<float>> &rows);
+        explicit Matrix(const std::vector<std::vector<float>> &rows);
 
         [[nodiscard]]
-        static matrix to_screen_matrix(float screenWidth, float screenHeight);
+        static Matrix to_screen_matrix(float screenWidth, float screenHeight);
 
-        matrix(const matrix &other);
+        Matrix(const Matrix &other);
 
-        matrix(size_t rows, size_t columns, const float *pRaw);
+        Matrix(size_t rows, size_t columns, const float *pRaw);
 
-        matrix(matrix &&other) noexcept;
+        Matrix(Matrix &&other) noexcept;
 
         [[nodiscard]]
         size_t get_rows_count() const noexcept;
@@ -42,27 +42,27 @@ namespace omath
         void set_from_raw(const float* pRawMatrix);
 
         [[nodiscard]]
-        matrix transpose();
+        Matrix transpose();
 
         void set(float val);
 
         [[nodiscard]]
         const float &at(size_t iRow, size_t iCol) const;
 
-        matrix operator*(const matrix &other) const;
+        Matrix operator*(const Matrix &other) const;
 
-        matrix operator*(float f) const;
+        Matrix operator*(float f) const;
 
-        matrix operator*(const Vector3 &vec3) const;
+        Matrix operator*(const Vector3 &vec3) const;
 
-        matrix &operator*=(float f);
+        Matrix &operator*=(float f);
 
-        matrix &operator/=(float f);
+        Matrix &operator/=(float f);
 
         void clear();
 
         [[nodiscard]]
-        matrix strip(size_t row, size_t column) const;
+        Matrix strip(size_t row, size_t column) const;
 
         [[nodiscard]]
         float minor(size_t i, size_t j) const;
@@ -76,16 +76,16 @@ namespace omath
         [[nodiscard]]
         const float* raw() const;
 
-        matrix &operator=(const matrix &other);
+        Matrix &operator=(const Matrix &other);
 
-        matrix &operator=(matrix &&other) noexcept;
+        Matrix &operator=(Matrix &&other) noexcept;
 
-        matrix operator/(float f) const;
+        Matrix operator/(float f) const;
 
         [[nodiscard]]
         std::string to_string() const;
 
-        ~matrix();
+        ~Matrix();
 
     private:
         size_t m_rows = 0;

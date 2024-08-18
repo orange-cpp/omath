@@ -8,7 +8,7 @@
 
 TEST(UnitTestMatrix, ToString)
 {
-    omath::matrix matrix(2, 2);
+    omath::Matrix matrix(2, 2);
     matrix.set(1.1);
     const auto str = matrix.to_string();
 
