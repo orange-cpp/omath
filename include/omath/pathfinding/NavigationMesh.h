@@ -24,10 +24,14 @@ namespace omath::pathfinding
     public:
 
         [[nodiscard]]
-        std::expected<const NavigationVertex, std::string> GetClossestVertex(const Vector3& point) const;
-
-    private:
+        std::expected<Vector3, std::string> GetClossestVertex(const Vector3& point) const;
 
 
+        [[nodiscard]]
+        const std::vector<Vector3>& GetNeighbors(const Vector3& vertex) const;
+
+        std::list<NavigationVertex> m_vertexes;
+
+        std::unordered_map<Vector3, std::vector<Vector3>> m_verTextMap;
     };
 }

@@ -2,6 +2,8 @@
 // Created by Vlad on 28.07.2024.
 //
 #include "omath/pathfinding/Astar.h"
+
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -10,8 +12,7 @@ namespace omath::pathfinding
 {
     struct PathNode final
     {
-        Vector3 cameFrom;
-        NavigationVertex const* navVertex;
+        std::optional<Vector3> cameFrom;
         float gCost = 0.f;
     };
 
@@ -21,26 +22,38 @@ namespace omath::pathfinding
         std::unordered_map<Vector3, PathNode> closedList;
         std::unordered_map<Vector3, PathNode> openList;
 
-        const auto& startVertex = navMesh.GetClossestVertex(start).value();
-        const auto& endVertex = navMesh.GetClossestVertex(end).value();
+        const auto startVertex = navMesh.GetClossestVertex(start).value();
+        const auto endVertex = navMesh.GetClossestVertex(end).value();
 
-        openList.emplace(startVertex.origin, PathNode{startVertex.origin, &startVertex, 0.f});
+        openList.emplace(startVertex, PathNode{std::nullopt, 0.f});
 
         while (!openList.empty())
         {
-            const auto [cord, node] = *std::ranges::min_element(openList,
+            const auto perfectVertex = *std::ranges::min_element(openList,
                 [&endVertex](const auto& a, const auto& b) -> bool
                 {
-                    const auto aCost = a.second.gCost + a.second.navVertex->origin.DistTo(endVertex.origin);
-                    const auto bCost = b.second.gCost + b.second.navVertex->origin.DistTo(endVertex.origin);
+                    const auto aCost = a.second.gCost + a.first.DistTo(endVertex);
+                    const auto bCost = b.second.gCost + b.first.DistTo(endVertex);
                     return aCost < bCost;
                 });
 
-            openList.erase(cord);
+            closedList.emplace(perfectVertex);
+            openList.erase(perfectVertex.first);
 
-            for (const auto& neighbor : node.navVertex->connections)
-                if (!closedList.contains(neighbor->origin))
-                    closedList.emplace(neighbor->origin, PathNode{cord, neighbor, neighbor->origin.DistTo(cord) + node.gCost});
+            for (const auto& neighbor : navMesh.GetNeighbors(perfectVertex.first))
+                if (!closedList.contains(neighbor))
+                    openList.emplace(neighbor, PathNode{perfectVertex.first, neighbor.DistTo(perfectVertex.first) + perfectVertex.second.gCost});
+
+
+            if (perfectVertex.first != endVertex)
+                continue;
+
+            std::vector<Vector3> path = {};
+
+            for (std::optional current = perfectVertex.first; current; current = closedList.at(*current).cameFrom )
+                path.push_back(current.value());
+
+            return path;
         }
 
         return {};
