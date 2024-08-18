@@ -4,7 +4,7 @@
 #include "omath/pathfinding/NavigationMesh.h"
 
 #include <stdexcept>
-
+#include <algorithm>
 namespace omath::pathfinding
 {
     std::expected<Vector3, std::string> NavigationMesh::GetClossestVertex(const Vector3 &point) const
@@ -24,6 +24,11 @@ namespace omath::pathfinding
     const std::vector<Vector3>& NavigationMesh::GetNeighbors(const Vector3 &vertex) const
     {
         return m_verTextMap.at(vertex);
+    }
+
+    bool NavigationMesh::Empty() const
+    {
+        return m_verTextMap.empty();
     }
 
     std::vector<uint8_t> NavigationMesh::Serialize() const
@@ -58,7 +63,7 @@ namespace omath::pathfinding
             {
                 throw std::runtime_error("Deserialize: Invalid input data size.");
             }
-            std::memcpy(&value, vec.data() + offset, sizeof(value));
+            std::copy_n(vec.data() + offset, sizeof(value), (uint8_t*)&value);
             offset += sizeof(value);
         };
 
