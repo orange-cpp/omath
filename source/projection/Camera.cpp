@@ -2,7 +2,9 @@
 // Created by Vlad on 27.08.2024.
 //
 #include "omath/projection/Camera.h"
+
 #include <complex>
+
 #include "omath/angles.h"
 
 
@@ -36,20 +38,23 @@ namespace omath::projection
 
     Matrix Camera::GetProjectionMatrix() const
     {
-        const float right = m_nearPlaneDistance * std::tan(angles::DegreesToRadians(m_fieldOfView) / 2.f);
+        const float right = std::tan(angles::DegreesToRadians(m_fieldOfView) / 2.f);
         const float left  = -right;
 
-        const float top   = right * (m_viewPort.y / m_viewPort.x);
+        const float verticalFov = angles::DegreesToRadians(m_fieldOfView) * (m_viewPort.y / m_viewPort.x);
+
+        const float top   = std::tan(verticalFov / 2.f);
         const float bottom = -top;
 
-        const float near = m_nearPlaneDistance;
-        const float far = m_farPlaneDistance;
+        const auto far = m_farPlaneDistance;
+        const auto near = m_nearPlaneDistance;
 
-        return Matrix({
-            {2 * near / (right - left), 0.f, (right + left) / (right - left), 0.f},
-            {0.f, 2 * near / (top - bottom), (top + bottom) / (top - bottom), 0.f},
-            {0.f, 0.f, (far + near) / (far - near), 2 * near * far / (far - near)},
-            {0.f, 0.f, -1.f, 0.f},
+        return Matrix(
+        {
+            {GetFloat1() * 2.f * near / (right - left), 0.f, (right + left) / (right - left), 0.f},
+            {0.f, GetFloat1() * 2.f * near / (top - bottom), (top + bottom) / (top - bottom), 0.f},
+            {0.f, 0.f, (far + near) / (far - near), 2.f * near * far / (far - near)},
+            {0.f, 0.f, 1.f, 0.f},
         });
     }
 
