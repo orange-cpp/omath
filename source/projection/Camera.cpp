@@ -2,6 +2,9 @@
 // Created by Vlad on 27.08.2024.
 //
 #include "omath/projection/Camera.h"
+
+#include <complex>
+
 #include "omath/angles.h"
 
 
