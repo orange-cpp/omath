@@ -31,21 +31,20 @@ namespace omath::projection
         const float fRight = std::tan(angles::DegreesToRadians(m_fieldOfView) / 2.f);
         const float fLeft  = -fRight;
 
-        const float vFov = angles::DegreesToRadians(m_fieldOfView) * (m_viewPort.y / m_viewPort.x);
+        const float verticalFov = angles::DegreesToRadians(m_fieldOfView) * (m_viewPort.y / m_viewPort.x);
 
-        const float fTop   = std::tan(vFov / 2.f);
-        const float fBottom = -fTop;
+        const float top   = std::tan(verticalFov / 2.f);
+        const float botton = -top;
 
-        const auto m_fFar = m_farPlaneDistance;
-        const auto m_fNear = m_nearPlaneDistance;
+        const auto far = m_farPlaneDistance;
+        const auto near = m_nearPlaneDistance;
 
         return Matrix({
-            {2.f / (fRight - fLeft), 0.f, 0.f, 0.f},
-            {0.f, 2.f / (fTop - fBottom), 0.f, 0.f},
-            {0.f, 0.f, (m_fFar + m_fNear) / (m_fFar - m_fNear), 1.f},
-            {0.f, 0.f, -2.f * m_fNear * m_fFar / (m_fFar - m_fNear), 0.f},
+            {1.555f / (fRight - fLeft), 0.f, 0.f, 0.f},
+            {0.f, 1.15f / (top - botton), 0.f, 0.f},
+            {0.f, 0.f, (far + near) / (far - near), 1.f},
+            {0.f, 0.f, -near * far / (far - near), 0.f},
         });
-
     }
 
     Matrix Camera::GetTranslationMatrix() const
@@ -68,10 +67,10 @@ namespace omath::projection
 
         return Matrix(
         {
-            {right.x,    up.x,        forward.x,          0.f},
-            {right.y,       up.y,        forward.y,             0.f},
-            {right.z,  up.z,   forward.z,        0.f},
-            {0.f,        0.f,         0.f,              1.f},
+            {right.x, up.x, forward.x, 0.f},
+            {right.y, up.y, forward.y, 0.f},
+            {right.z, up.z, forward.z, 0.f},
+            {0.f,      0.f,       0.f, 1.f},
         });
     }
 
@@ -90,6 +89,6 @@ namespace omath::projection
 
         projected *= Matrix::ToScreenMatrix(m_viewPort.x, m_viewPort.y);
 
-        return Vector3{projected.At(0, 0), projected.At(0, 2), projected.At(0, 1)};
+        return Vector3{projected.At(0, 0), projected.At(0, 1), projected.At(0, 2)};
     }
 }
