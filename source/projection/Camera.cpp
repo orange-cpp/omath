@@ -21,12 +21,22 @@ namespace omath::projection
         m_farPlaneDistance = far;
     }
 
+    float & Camera::GetFloat1() {
+        static float m_float1 = 1.52550f;
+        return m_float1;
+    }
+
+    float & Camera::GetFloat2() {
+        static float m_float2 = 1.14500f;
+        return m_float2;
+    }
+
     Matrix Camera::GetViewMatrix() const
     {
         return GetTranslationMatrix() * GetOrientationMatrix();
     }
 
-    Matrix Camera::GetProjectionMatrix() const
+    Matrix Camera::GetProjectionMatrix(const float scaleX, const float scaleY) const
     {
         const float fRight = std::tan(angles::DegreesToRadians(m_fieldOfView) / 2.f);
         const float fLeft  = -fRight;
@@ -40,8 +50,8 @@ namespace omath::projection
         const auto near = m_nearPlaneDistance;
 
         return Matrix({
-            {1.555f / (fRight - fLeft), 0.f, 0.f, 0.f},
-            {0.f, 1.15f / (top - botton), 0.f, 0.f},
+            {scaleX / (fRight - fLeft), 0.f, 0.f, 0.f},
+            {0.f, scaleY / (top - botton), 0.f, 0.f},
             {0.f, 0.f, (far + near) / (far - near), 1.f},
             {0.f, 0.f, -near * far / (far - near), 0.f},
         });
@@ -78,7 +88,7 @@ namespace omath::projection
     {
         const auto posVecAsMatrix = Matrix({{worldPosition.x, worldPosition.y, worldPosition.z, 1.f}});
 
-        const auto viewProjectionMatrix = GetViewMatrix() * GetProjectionMatrix();
+        const auto viewProjectionMatrix = GetViewMatrix() * GetProjectionMatrix(GetFloat1(), GetFloat2());
 
         auto projected = posVecAsMatrix * viewProjectionMatrix;
 
