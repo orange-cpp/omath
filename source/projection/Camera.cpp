@@ -23,7 +23,7 @@ namespace omath::projection
 
     Matrix Camera::GetViewMatrix() const
     {
-        return GetOrientationMatrix() * GetTranslationMatrix();
+        return GetTranslationMatrix() * GetOrientationMatrix();
     }
 
     Matrix Camera::GetProjectionMatrix() const
@@ -40,10 +40,10 @@ namespace omath::projection
         const auto m_fNear = m_nearPlaneDistance;
 
         return Matrix({
-            {2.f / (fRight - fLeft), 0.f,                               0.f,                                              0.f},
-            {0.f,                    0.f,            2.f / (fTop - fBottom),                                              0.f},
-            {0.f,                    (m_fFar + m_fNear) / (m_fFar - m_fNear),                               0.f,          1.f},
-            {0.f,                    -2.f * m_fNear * m_fFar / (m_fFar - m_fNear),                               0.f,     0.f},
+            {2.f / (fRight - fLeft), 0.f, 0.f, 0.f},
+            {0.f, 2.f / (fTop - fBottom), 0.f, 0.f},
+            {0.f, 0.f, (m_fFar + m_fNear) / (m_fFar - m_fNear), 1.f},
+            {0.f, 0.f, -2.f * m_fNear * m_fFar / (m_fFar - m_fNear), 0.f},
         });
 
     }
@@ -52,10 +52,10 @@ namespace omath::projection
     {
         return Matrix(
         {
-            {1.f, 0.f, 0.f, -m_origin.x},
-            {0.f, 1.f, 0.f, -m_origin.y},
-            {0.f, 0.f, 1.f, -m_origin.z},
-            {0.f, 0.f, 0.f, 1.f},
+            {1.f, 0.f, 0.f, 0.f},
+            {0.f, 1.f, 0.f, 1.f},
+            {0.f, 0.f, 1.f, 0.f},
+            {-m_origin.x, -m_origin.y, -m_origin.z, 1.f},
         });
     }
 
@@ -90,6 +90,6 @@ namespace omath::projection
 
         projected *= Matrix::ToScreenMatrix(m_viewPort.x, m_viewPort.y);
 
-        return Vector3{projected.At(0, 0), projected.At(0, 1), projected.At(0, 2)};
+        return Vector3{projected.At(0, 0), projected.At(0, 2), projected.At(0, 1)};
     }
 }
