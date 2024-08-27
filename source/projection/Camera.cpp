@@ -38,20 +38,20 @@ namespace omath::projection
 
     Matrix Camera::GetProjectionMatrix(const float scaleX, const float scaleY) const
     {
-        const float fRight = std::tan(angles::DegreesToRadians(m_fieldOfView) / 2.f);
-        const float fLeft  = -fRight;
+        const float right = std::tan(angles::DegreesToRadians(m_fieldOfView) / 2.f);
+        const float left  = -right;
 
         const float verticalFov = angles::DegreesToRadians(m_fieldOfView) * (m_viewPort.y / m_viewPort.x);
 
         const float top   = std::tan(verticalFov / 2.f);
-        const float botton = -top;
+        const float bottom = -top;
 
         const auto far = m_farPlaneDistance;
         const auto near = m_nearPlaneDistance;
 
         return Matrix({
-            {scaleX / (fRight - fLeft), 0.f, 0.f, 0.f},
-            {0.f, scaleY / (top - botton), 0.f, 0.f},
+            {scaleX / (right - left), 0.f, 0.f, 0.f},
+            {0.f, scaleY / (top - bottom), 0.f, 0.f},
             {0.f, 0.f, (far + near) / (far - near), 1.f},
             {0.f, 0.f, -near * far / (far - near), 0.f},
         });
