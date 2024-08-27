@@ -28,26 +28,33 @@ namespace omath::projection
 
     Matrix Camera::GetProjectionMatrix() const
     {
-        const auto aspectRatio = m_viewPort.x / m_viewPort.y;
-        const auto verticalFov = std::tan(angles::DegreesToRadians(m_fieldOfView) / 2.f);
+        const float fRight = std::tan(angles::DegreesToRadians(m_fieldOfView) / 2.f);
+        const float fLeft  = -fRight;
 
+        const float vFov = angles::DegreesToRadians(m_fieldOfView) * (m_viewPort.y / m_viewPort.x);
 
-        return Matrix(
-            {
-                {1.f / (aspectRatio * verticalFov), 0.f, 0.f, 0.f},
-                {0.f, 1.f / verticalFov, 0.f, 0.f},
-                {0.f, 0.f, m_farPlaneDistance / (m_farPlaneDistance-m_nearPlaneDistance), -m_farPlaneDistance*m_nearPlaneDistance / (m_farPlaneDistance-m_nearPlaneDistance)},
-                {0.f, 0.f, 1.f, 0.f}
-            });
+        const float fTop   = std::tan(vFov / 2.f);
+        const float fBottom = -fTop;
+
+        const auto m_fFar = m_farPlaneDistance;
+        const auto m_fNear = m_nearPlaneDistance;
+
+        return Matrix({
+            {2.f / (fRight - fLeft), 0.f,                               0.f,                                              0.f},
+            {0.f,                    0.f,            2.f / (fTop - fBottom),                                              0.f},
+            {0.f,                    (m_fFar + m_fNear) / (m_fFar - m_fNear),                               0.f,          1.f},
+            {0.f,                    -2.f * m_fNear * m_fFar / (m_fFar - m_fNear),                               0.f,     0.f},
+        });
+
     }
 
     Matrix Camera::GetTranslationMatrix() const
     {
         return Matrix(
         {
-            {1.f, 0.f, 0.f, m_origin.x},
-            {0.f, 1.f, 0.f, m_origin.y},
-            {0.f, 0.f, 1.f, m_origin.z},
+            {1.f, 0.f, 0.f, -m_origin.x},
+            {0.f, 1.f, 0.f, -m_origin.y},
+            {0.f, 0.f, 1.f, -m_origin.z},
             {0.f, 0.f, 0.f, 1.f},
         });
     }
@@ -61,9 +68,9 @@ namespace omath::projection
 
         return Matrix(
         {
-            {right.x,    up.y,        right.z,          0.f},
-            {up.x,       up.y,        up.y,             0.f},
-            {forward.x,  forward.y,   forward.z,        0.f},
+            {right.x,    up.x,        forward.x,          0.f},
+            {right.y,       up.y,        forward.y,             0.f},
+            {right.z,  up.z,   forward.z,        0.f},
             {0.f,        0.f,         0.f,              1.f},
         });
     }
