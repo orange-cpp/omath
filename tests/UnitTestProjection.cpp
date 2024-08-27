@@ -9,10 +9,10 @@
 
 TEST(UnitTestProjection, IsPointOnScreen)
 {
-    const omath::projection::Camera camera({5, 0, 0}, {0, 0.f, 0.f} , {1920.f, 1080.f, 0.f}, 110, 0.1, 500);
+    const omath::projection::Camera camera({0, 0, 0}, {0, 0.f, 0.f} , {1920.f, 1080.f, 0.f}, 110, 0.1, 500);
 
-    const auto proj = camera.WorldToScreen({10, 0, 0});
+    const auto proj = camera.WorldToScreen({100, 0, 15});
     if (proj)
-        std::print("{} {} {}", proj->x, proj->y, proj->z);
+        std::print("{} {}", proj->x, proj->y);
     EXPECT_TRUE(proj.has_value());
 }
