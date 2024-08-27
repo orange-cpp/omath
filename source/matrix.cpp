@@ -1,10 +1,11 @@
-#include "omath/matrix.h"
+#include "omath/Matrix.h"
 
 #include <format>
 #include "omath/Vector3.h"
 #include <utility>
 #include <stdexcept>
 #include <utility>
+#include <cmath>
 
 
 namespace omath
