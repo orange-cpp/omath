@@ -62,7 +62,7 @@ namespace omath::projection
         return Matrix(
         {
             {1.f, 0.f, 0.f, 0.f},
-            {0.f, 1.f, 0.f, 1.f},
+            {0.f, 1.f, 0.f, 0.f},
             {0.f, 0.f, 1.f, 0.f},
             {-m_origin.x, -m_origin.y, -m_origin.z, 1.f},
         });
