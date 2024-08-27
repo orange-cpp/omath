@@ -23,7 +23,7 @@ namespace omath::projection
         static float& GetFloat2();
 
         [[nodiscard]] Matrix GetViewMatrix() const;
-        [[nodiscard]] Matrix GetProjectionMatrix(float scaleX, float scaleY) const;
+        [[nodiscard]] Matrix GetProjectionMatrix() const;
         [[nodiscard]] Matrix GetTranslationMatrix() const;
         [[nodiscard]] Matrix GetOrientationMatrix() const;
 
