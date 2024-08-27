@@ -120,6 +120,12 @@ namespace omath
         return outMat;
     }
 
+    Matrix & Matrix::operator*=(const Matrix &other)
+    {
+        *this = *this * other;
+        return *this;
+    }
+
     Matrix Matrix::operator*(const float f) const
     {
         auto out = *this;
