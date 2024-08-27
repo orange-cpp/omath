@@ -6,3 +6,4 @@ target_sources(omath PRIVATE
 
 add_subdirectory(prediction)
 add_subdirectory(pathfinding)
+add_subdirectory(projection)
