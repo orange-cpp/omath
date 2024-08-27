@@ -2,7 +2,7 @@
 // Created by vlad on 5/18/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/matrix.h>
+#include <omath/Matrix.h>
 #include <print>
 
 
