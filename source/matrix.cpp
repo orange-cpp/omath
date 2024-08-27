@@ -5,7 +5,6 @@
 #include <utility>
 #include <stdexcept>
 #include <utility>
-#include <cmath>
 
 
 namespace omath
