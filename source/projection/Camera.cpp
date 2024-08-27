@@ -7,6 +7,17 @@
 
 namespace omath::projection
 {
+    Camera::Camera(const Vector3 &position, const Vector3 &viewAngles, const Vector3 &viewPort, const float fov, const float near,
+        const float far)
+    {
+        m_origin = position;
+        m_viewAngles = viewAngles;
+        m_viewPort = viewPort;
+        m_fieldOfView = fov;
+        m_nearPlaneDistance = near;
+        m_farPlaneDistance = far;
+    }
+
     Matrix Camera::GetViewMatrix() const
     {
         return GetOrientationMatrix() * GetTranslationMatrix();

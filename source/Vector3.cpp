@@ -238,10 +238,12 @@ namespace omath
         const auto cosRoll = std::cos(angles::DegreesToRadians(roll));
         const auto sinRoll = std::sin(angles::DegreesToRadians(roll));
 
-
-        return {-sinRoll*sinPitch*cosYaw + -cosRoll*-sinYaw,
-                -sinRoll*sinPitch*sinYaw + -cosRoll*cosYaw,
-                -sinRoll*cosPitch};
+        // Right vector calculation
+        return {
+            cosYaw * cosRoll - sinYaw * sinPitch * sinRoll,  // X component
+            sinRoll * cosPitch,                              // Y component
+            sinYaw * cosRoll + cosYaw * sinPitch * sinRoll   // Z component
+        };
     }
 
     Vector3 Vector3::UpVector(float pitch, float yaw, float roll)
@@ -255,12 +257,11 @@ namespace omath
         const auto cosRoll = std::cos(angles::DegreesToRadians(roll));
         const auto sinRoll = std::sin(angles::DegreesToRadians(roll));
 
-
-        return
-        {
-            cosRoll*sinPitch*cosYaw+-sinRoll*-sinYaw,
-            cosRoll*sinPitch*cosYaw+-sinRoll*-sinYaw,
-            cosRoll*cosPitch,
+        // Up vector calculation
+        return {
+            -sinRoll * cosYaw + cosRoll * sinPitch * sinYaw, // X component
+            cosRoll * cosPitch,                              // Y component
+            -sinRoll * sinYaw - cosRoll * sinPitch * cosYaw  // Z component
         };
     }
 

@@ -15,6 +15,7 @@ namespace omath::projection
     class Camera
     {
     public:
+        Camera(const Vector3& position, const Vector3& viewAngles, const Vector3& viewPort, float fov, float near, float far);
         void SetViewAngles(const Vector3& viewAngles);
         [[nodiscard]] const Vector3& GetViewAngles() const;
 
