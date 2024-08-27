@@ -2,7 +2,7 @@
 // Created by Vlad on 27.08.2024.
 //
 #include <gtest/gtest.h>
-#include <omath/matrix.h>
+#include <omath/Matrix.h>
 #include <print>
 #include <omath/projection/Camera.h>
 
