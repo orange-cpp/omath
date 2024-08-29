@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <cstdint>
+#include <functional>
+
 namespace omath
 {
     class Vector3 {
@@ -71,5 +74,24 @@ namespace omath
 
         [[nodiscard]]
         Vector3 Normalized() const;
+    };
+}
+// ReSharper disable once CppRedundantNamespaceDefinition
+namespace std
+{
+    template<>
+    struct hash<omath::Vector3>
+    {
+        std::size_t operator()(const omath::Vector3& vec) const noexcept
+        {
+            std::size_t hash = 0;
+            constexpr std::hash<float> hasher;
+
+            hash ^= hasher(vec.x) + 0x9e3779b9 + (hash<<6) + (hash>>2);
+            hash ^= hasher(vec.y) + 0x9e3779b9 + (hash<<6) + (hash>>2);
+            hash ^= hasher(vec.z) + 0x9e3779b9 + (hash<<6) + (hash>>2);
+
+            return hash;
+        }
     };
 }
