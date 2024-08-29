@@ -21,16 +21,6 @@ namespace omath::projection
         m_farPlaneDistance = far;
     }
 
-    float& Camera::GetFloat1() {
-        static float m_float1 = 0.36689f;
-        return m_float1;
-    }
-
-    float& Camera::GetFloat2() {
-        static float m_float2 = 1.14500f;
-        return m_float2;
-    }
-
     Matrix Camera::GetViewMatrix() const
     {
         const auto forward = Vector3::ForwardVector(m_viewAngles.x, m_viewAngles.y);
