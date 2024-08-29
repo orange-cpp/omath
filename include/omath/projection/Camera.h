@@ -26,11 +26,8 @@ namespace omath::projection
     public:
         Camera(const Vector3& position, const Vector3& viewAngles, const ViewPort& viewPort, float fov, float near, float far);
         void SetViewAngles(const Vector3& viewAngles);
+
         [[nodiscard]] const Vector3& GetViewAngles() const;
-        static float& GetFloat1();
-
-        static float& GetFloat2();
-
         [[nodiscard]] Matrix GetViewMatrix() const;
         [[nodiscard]] Matrix GetProjectionMatrix() const;
         [[nodiscard]] Matrix GetTranslationMatrix() const;
