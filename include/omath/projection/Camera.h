@@ -12,10 +12,19 @@
 
 namespace omath::projection
 {
+    class ViewPort final
+    {
+    public:
+        float m_width;
+        float m_height;
+
+        [[nodiscard]] float AspectRatio() const {return  m_width / m_height;}
+    };
+
     class Camera
     {
     public:
-        Camera(const Vector3& position, const Vector3& viewAngles, const Vector3& viewPort, float fov, float near, float far);
+        Camera(const Vector3& position, const Vector3& viewAngles, const ViewPort& viewPort, float fov, float near, float far);
         void SetViewAngles(const Vector3& viewAngles);
         [[nodiscard]] const Vector3& GetViewAngles() const;
         static float& GetFloat1();
@@ -29,7 +38,7 @@ namespace omath::projection
 
         [[nodiscard]] std::expected<Vector3, std::string_view> WorldToScreen(const Vector3& worldPosition) const;
 
-        Vector3 m_viewPort;
+        ViewPort m_viewPort{};
         float m_fieldOfView;
 
         float m_farPlaneDistance;

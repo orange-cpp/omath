@@ -9,7 +9,7 @@
 
 TEST(UnitTestProjection, IsPointOnScreen)
 {
-    const omath::projection::Camera camera({0, 0, 0}, {0, 0.f, 0.f} , {1920.f, 1080.f, 0.f}, 110, 0.1, 500);
+    const omath::projection::Camera camera({0.f, 0.f, 0.f}, {0, 0.f, 0.f} , {1920.f, 1080.f}, 110.f, 0.1f, 500.f);
 
     const auto proj = camera.WorldToScreen({100, 0, 15});
     if (proj)
