@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 #include <string>
-
+#include <initializer_list>
 
 namespace omath
 {
@@ -13,10 +13,19 @@ namespace omath
     public:
         Matrix(size_t rows, size_t columns);
 
-        explicit Matrix(const std::vector<std::vector<float>> &rows);
+        Matrix(const std::initializer_list<std::initializer_list<float>>& rows);
 
         [[nodiscard]]
         static Matrix ToScreenMatrix(float screenWidth, float screenHeight);
+
+        [[nodiscard]]
+        static Matrix TranslationMatrix(const Vector3& diff);
+
+        [[nodiscard]]
+        static Matrix OrientationMatrix(const Vector3& forward, const Vector3& right, const Vector3& up);
+
+        [[nodiscard]]
+        static Matrix ProjectionMatrix(float fielOfView, float aspectRatio,float near, float far);
 
         Matrix(const Matrix &other);
 
@@ -42,7 +51,7 @@ namespace omath
         void SetDataFromRaw(const float* pRawMatrix);
 
         [[nodiscard]]
-        Matrix Transpose();
+        Matrix Transpose() const;
 
         void Set(float val);
 
@@ -50,6 +59,8 @@ namespace omath
         const float &At(size_t iRow, size_t iCol) const;
 
         Matrix operator*(const Matrix &other) const;
+
+        Matrix& operator*=(const Matrix &other);
 
         Matrix operator*(float f) const;
 

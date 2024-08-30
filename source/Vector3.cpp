@@ -219,7 +219,12 @@ namespace omath
         const auto sinYaw = std::sin(angles::DegreesToRadians(yaw));
 
 
-        return {cosPitch*cosYaw, cosPitch*sinYaw, sinPitch};
+        return
+        {
+            cosPitch*cosYaw,
+            cosPitch*sinYaw,
+            sinPitch
+        };
     }
 
     Vector3 Vector3::RightVector(const float pitch, const float yaw, const float roll)
@@ -230,13 +235,18 @@ namespace omath
         const auto cosYaw = std::cos(angles::DegreesToRadians(yaw));
         const auto sinYaw = std::sin(angles::DegreesToRadians(yaw));
 
-        const auto cosRoll = std::cos(angles::DegreesToRadians(yaw));
-        const auto sinRoll = std::sin(angles::DegreesToRadians(yaw));
+        const auto cosRoll = std::cos(angles::DegreesToRadians(roll));
+        const auto sinRoll = std::sin(angles::DegreesToRadians(roll));
 
 
         return {-sinRoll*sinPitch*cosYaw + -cosRoll*-sinYaw,
                 -sinRoll*sinPitch*sinYaw + -cosRoll*cosYaw,
                 sinRoll*cosPitch};
+    }
+
+    Vector3 Vector3::UpVector(float pitch, float yaw, float roll)
+    {
+        return RightVector(pitch, yaw, roll).Cross(ForwardVector(pitch, yaw));
     }
 
     Vector3 Vector3::Cross(const Vector3 &v) const

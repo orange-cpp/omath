@@ -1,10 +1,13 @@
-#include "omath/matrix.h"
+#include "omath/Matrix.h"
+#include "omath/Vector3.h"
+#include "omath/angles.h"
+
 
 #include <format>
-#include "omath/Vector3.h"
 #include <utility>
 #include <stdexcept>
 #include <utility>
+#include <complex>
 
 
 namespace omath
@@ -22,17 +25,26 @@ namespace omath
         Set(0.f);
     }
 
-    Matrix::Matrix(const std::vector<std::vector<float>> &rows)
+    Matrix::Matrix(const std::initializer_list<std::initializer_list<float>>& rows)
     {
         m_rows = rows.size();
-        m_columns = rows[0].size();
+        m_columns = rows.begin()->size();
 
+
+        for (const auto& row : rows)
+            if (row.size() != m_columns)
+                throw std::invalid_argument("All rows must have the same number of columns.");
 
         m_data = std::make_unique<float[]>(m_rows * m_columns);
 
-        for (size_t i = 0; i < m_rows; ++i)
-            for (size_t j = 0; j < m_columns; ++j)
-                At(i,j) = rows[i][j];
+        size_t i = 0;
+        for (const auto& row : rows)
+        {
+            size_t j = 0;
+            for (const auto& value : row)
+                At(i, j++) = value;
+            ++i;
+        }
     }
 
     Matrix::Matrix(const Matrix &other)
@@ -118,6 +130,12 @@ namespace omath
 
 
         return outMat;
+    }
+
+    Matrix & Matrix::operator*=(const Matrix &other)
+    {
+        *this = *this * other;
+        return *this;
     }
 
     Matrix Matrix::operator*(const float f) const
@@ -241,7 +259,7 @@ namespace omath
         return ((i + j + 2) % 2 == 0) ? tmp : -tmp;
     }
 
-    Matrix Matrix::Transpose()
+    Matrix Matrix::Transpose() const
     {
         Matrix transposed = {m_columns, m_rows};
 
@@ -292,14 +310,51 @@ namespace omath
         return Strip(i, j).Determinant();
     }
 
-    Matrix Matrix::ToScreenMatrix(float screenWidth, float screenHeight)
+    Matrix Matrix::ToScreenMatrix(const float screenWidth, const float screenHeight)
     {
-        return Matrix({
-        {screenWidth / 2.f, 0.f,                 0.f, 0.f},
-        {0.f,               -screenHeight / 2.f, 0.f, 0.f},
-        {0.f,               0.f,                 1.f, 0.f},
-        {screenWidth / 2.f, screenHeight / 2.f,  0.f, 1.f},
-       });
+        return
+        {
+            {screenWidth / 2.f, 0.f,                 0.f, 0.f},
+            {0.f,               -screenHeight / 2.f, 0.f, 0.f},
+            {0.f,               0.f,                 1.f, 0.f},
+            {screenWidth / 2.f, screenHeight / 2.f,  0.f, 1.f},
+       };
+    }
+
+    Matrix Matrix::TranslationMatrix(const Vector3 &diff)
+    {
+        return
+        {
+            {1.f,     0.f,     0.f,     0.f},
+            {0.f,     1.f,     0.f,     0.f},
+            {0.f,     0.f,     1.f,     0.f},
+            {diff.x,  diff.y,  diff.z,  1.f},
+        };
+    }
+
+    Matrix Matrix::OrientationMatrix(const Vector3 &forward, const Vector3 &right, const Vector3 &up)
+    {
+        return
+        {
+            {right.x, up.x, forward.x, 0.f},
+            {right.y, up.y, forward.y, 0.f},
+            {right.z, up.z, forward.z, 0.f},
+            {0.f,      0.f,       0.f, 1.f},
+        };
+    }
+
+    Matrix Matrix::ProjectionMatrix(const float fielOfView, const float aspectRatio, const float near,
+                                    const float far)
+    {
+        const float fovHalfTan = std::tan(angles::DegreesToRadians(fielOfView) / 2.f);
+
+        return
+        {
+            {1.f / (aspectRatio*fovHalfTan), 0.f, 0.f, 0.f},
+            {0.f, 1.f / fovHalfTan, 0.f, 0.f},
+            {0.f, 0.f, (far + near) / (far - near), 2.f * near * far / (far - near)},
+            {0.f, 0.f, -1.f, 0.f}
+        };
     }
 
     const float * Matrix::Raw() const
