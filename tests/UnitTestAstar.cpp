@@ -13,5 +13,5 @@ TEST(UnitTestAstar, FindingRightPath)
     mesh.m_verTextMap[{0.f, 1.f, 0.f}] = {{0.f, 2.f, 0.f}};
     mesh.m_verTextMap[{0.f, 2.f, 0.f}] = {{0.f, 3.f, 0.f}};
     mesh.m_verTextMap[{0.f, 3.f, 0.f}] = {};
-    omath::pathfinding::Astar::FindPath({}, {0.f, 3.f, 0.f}, mesh);
+    std::ignore = omath::pathfinding::Astar::FindPath({}, {0.f, 3.f, 0.f}, mesh);
 }
