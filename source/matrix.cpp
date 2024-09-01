@@ -83,6 +83,10 @@ namespace omath
         m_columns = other.m_columns;
         m_data = std::move(other.m_data);
 
+        other.m_rows = 0;
+        other.m_columns = 0;
+
+        other.m_data = nullptr;
     }
 
     size_t Matrix::ColumnsCount() const noexcept
@@ -357,7 +361,7 @@ namespace omath
         };
     }
 
-    const float * Matrix::Raw() const
+    const float* Matrix::Raw() const
     {
         return m_data.get();
     }
@@ -366,5 +370,12 @@ namespace omath
     {
         for (size_t i = 0; i < m_columns*m_rows; ++i)
             At(i / m_rows, i % m_columns) = pRawMatrix[i];
+    }
+
+    Matrix::Matrix()
+    {
+        m_columns = 0;
+        m_rows = 0;
+        m_data = nullptr;
     }
 }
