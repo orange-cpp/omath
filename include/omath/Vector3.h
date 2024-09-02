@@ -15,42 +15,166 @@ namespace omath
     {
     public:
         float z = 0.f;
-        Vector3(float x, float y, float z);
-        Vector3() = default;
+        constexpr Vector3(float x, float y, float z) : Vector2(x, y), z(z) { }
+        constexpr Vector3() : Vector2(), z(0.f) {};
 
-        bool operator==(const Vector3& src) const;
-        bool operator!=(const Vector3& src) const;
+        [[nodiscard]] constexpr bool operator==(const Vector3& src) const
+        {
+            return Vector2::operator==(src) && (src.z == z);
+        }
 
-        Vector3& operator+=(const Vector3& v);
-        Vector3& operator-=(const Vector3& v);
-        Vector3& operator*=(float fl);
-        Vector3& operator*=(const Vector3& v);
-        Vector3& operator/=(const Vector3& v);
-        Vector3& operator+=(float fl);
-        Vector3& operator/=(float fl);
-        Vector3& operator-=(float fl);
+        [[nodiscard]] constexpr bool operator!=(const Vector3& src) const
+        {
+            return !(*this == src);
+        }
 
-        [[nodiscard]] float DistTo(const Vector3& vOther) const;
-        Vector3& Abs();
-        [[nodiscard]] float DistToSqr(const Vector3& vOther) const;
-        [[nodiscard]] float Dot(const Vector3& vOther) const;
+        constexpr Vector3& operator+=(const Vector3& v)
+        {
+            Vector2::operator+=(v);
+            z += v.z;
+
+            return *this;
+        }
+
+        constexpr Vector3& operator-=(const Vector3& v)
+        {
+            Vector2::operator-=(v);
+            z -= v.z;
+
+            return *this;
+        }
+
+        constexpr Vector3& operator*=(float fl)
+        {
+            Vector2::operator*=(fl);
+            z *= fl;
+
+            return *this;
+        }
+
+        constexpr Vector3& operator*=(const Vector3& v)
+        {
+            Vector2::operator*=(v);
+            z *= v.z;
+
+            return *this;
+        }
+
+        constexpr Vector3& operator/=(const Vector3& v)
+        {
+            Vector2::operator/=(v);
+            z /= v.z;
+
+            return *this;
+        }
+
+        constexpr Vector3& operator+=(float fl)
+        {
+            Vector2::operator+=(fl);
+            z += fl;
+
+            return *this;
+        }
+
+        constexpr Vector3& operator/=(float fl)
+        {
+            Vector2::operator/=(fl);
+            z /= fl;
+
+            return *this;
+        }
+
+        constexpr Vector3& operator-=(float fl)
+        {
+            Vector2::operator-=(fl);
+            z -= fl;
+
+            return *this;
+        }
+
+        [[nodiscard]]
+        float DistTo(const Vector3& vOther) const;
+
+        constexpr Vector3& Abs()
+        {
+            Vector2::Abs();
+            z = z < 0.f ? -z : z;
+
+            return *this;
+        }
+
+        [[nodiscard]] constexpr float DistToSqr(const Vector3& vOther) const
+        {
+            return (*this - vOther).LengthSqr();
+        }
+
+        [[nodiscard]] constexpr float Dot(const Vector3& vOther) const
+        {
+            return Vector2::Dot(vOther) + z * vOther.z;
+        }
         [[nodiscard]] float Length() const;
-        [[nodiscard]] float LengthSqr() const;
+
+        [[nodiscard]] constexpr float LengthSqr() const
+        {
+            return Vector2::LengthSqr() + z * z;
+        }
+
         [[nodiscard]] float Length2D() const;
 
-        Vector3 operator-() const;
-        Vector3 operator+(const Vector3& v) const;
-        Vector3 operator-(const Vector3& v) const;
-        Vector3 operator*(float fl) const;
-        Vector3 operator*(const Vector3& v) const;
-        Vector3 operator/(float fl) const;
-        Vector3 operator/(const Vector3& v) const;
+        [[nodiscard]] constexpr Vector3 operator-() const
+        {
+            return {-x, -y, -z};
+        }
 
+        [[nodiscard]] constexpr Vector3 operator+(const Vector3& v) const
+        {
+            return {x + v.x, y + v.y, z + v.z};
+        }
 
-        [[nodiscard]] Vector3 Cross(const Vector3 &v) const;
-        [[nodiscard]] static Vector3 CreateVelocity(float pitch, float yaw, float speed);
-        [[nodiscard]] float  Sum() const;
-        [[nodiscard]] float  Sum2D() const;
+        [[nodiscard]] constexpr Vector3 operator-(const Vector3& v) const
+        {
+            return {x - v.x, y - v.y, z - v.z};
+        }
+
+        [[nodiscard]] constexpr Vector3 operator*(float fl) const
+        {
+            return {x * fl, y * fl, z * fl};
+        }
+
+        [[nodiscard]] constexpr Vector3 operator*(const Vector3& v) const
+        {
+            return {x * v.x, y * v.y, z * v.z};
+        }
+
+        [[nodiscard]] constexpr Vector3 operator/(float fl) const
+        {
+            return {x / fl, y / fl, z / fl};
+        }
+
+        [[nodiscard]] constexpr Vector3 operator/(const Vector3& v) const
+        {
+            return {x / v.x, y / v.y, z / v.z};
+        }
+
+        [[nodiscard]] constexpr Vector3 Cross(const Vector3 &v) const
+        {
+            return
+            {
+                y * v.z - z * v.y,
+                z * v.x - x * v.z,
+                x * v.y - y * v.x
+            };
+        }
+        [[nodiscard]] constexpr float Sum() const
+        {
+            return Vector3::Sum2D() + z;
+        }
+
+        [[nodiscard]] constexpr float Sum2D() const
+        {
+            return Vector2::Sum();
+        }
+
         [[nodiscard]] Vector3 ViewAngleTo(const Vector3& other) const;
 
         [[nodiscard]] static Vector3 ForwardVector(float pitch, float yaw);
@@ -61,7 +185,10 @@ namespace omath
         [[nodiscard]]
         Vector3 Normalized() const;
 
-        [[nodiscard]] std::tuple<float, float, float> AsTuple() const;
+        [[nodiscard]] std::tuple<float, float, float> AsTuple() const
+        {
+            return std::make_tuple(x, y, z);
+        }
     };
 }
 // ReSharper disable once CppRedundantNamespaceDefinition

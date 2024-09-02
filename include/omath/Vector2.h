@@ -21,32 +21,36 @@ namespace omath
         constexpr Vector2(float x, float y) : x(x), y(y) {}
 
         // Equality operators
+        [[nodiscard]]
         constexpr bool operator==(const Vector2& src) const
         {
             return x == src.x && y == src.y;
         }
 
+        [[nodiscard]]
         constexpr bool operator!=(const Vector2& src) const
         {
             return !(*this == src);
         }
 
         // Compound assignment operators
-        Vector2& operator+=(const Vector2& v)
+        constexpr Vector2& operator+=(const Vector2& v)
         {
             x += v.x;
             y += v.y;
+
             return *this;
         }
 
-        Vector2& operator-=(const Vector2& v)
+        constexpr Vector2& operator-=(const Vector2& v)
         {
             x -= v.x;
             y -= v.y;
+
             return *this;
         }
 
-        Vector2& operator*=(const Vector2& v)
+        constexpr Vector2& operator*=(const Vector2& v)
         {
             x *= v.x;
             y *= v.y;
@@ -54,7 +58,7 @@ namespace omath
             return *this;
         }
 
-        Vector2& operator/=(const Vector2& v)
+        constexpr Vector2& operator/=(const Vector2& v)
         {
             x /= v.x;
             y /= v.y;
@@ -62,30 +66,35 @@ namespace omath
             return *this;
         }
 
-        Vector2& operator*=(float fl)
+        constexpr Vector2& operator*=(float fl)
         {
             x *= fl;
             y *= fl;
+
             return *this;
         }
 
-        Vector2& operator/=(float fl)
+        constexpr Vector2& operator/=(float fl)
         {
             x /= fl;
             y /= fl;
-            return *this;
-        }
-        Vector2& operator+=(float fl)
-        {
-            x += fl;
-            y += fl;
+
             return *this;
         }
 
-        Vector2& operator-=(float fl)
+        constexpr Vector2& operator+=(float fl)
+        {
+            x += fl;
+            y += fl;
+
+            return *this;
+        }
+
+        constexpr Vector2& operator-=(float fl)
         {
             x -= fl;
             y -= fl;
+
             return *this;
         }
 
@@ -111,45 +120,48 @@ namespace omath
         {
             return x * x + y * y;
         }
+
         constexpr Vector2& Abs()
         {
+            //FIXME: Replace with std::abs, if it will become constexprable
             x = x < 0 ? -x : x;
             y = y < 0 ? -y : y;
             return *this;
         }
 
         template<class type>
-        constexpr const type& As() const
+        [[nodiscard]] constexpr const type& As() const
         {
             return *reinterpret_cast<const type*>(this);
         }
         template<class type>
-        constexpr type& As()
+        [[nodiscard]] constexpr type& As()
         {
             return *reinterpret_cast<type*>(this);
         }
 
-        // Unary negation operator
-        constexpr Vector2 operator-() const
+        [[nodiscard]] constexpr Vector2 operator-() const
         {
             return {-x, -y};
         }
 
         // Binary arithmetic operators
-        constexpr Vector2 operator+(const Vector2& v) const
+        [[nodiscard]] constexpr Vector2 operator+(const Vector2& v) const
         {
             return {x + v.x, y + v.y};
         }
 
-        constexpr Vector2 operator-(const Vector2& v) const
+        [[nodiscard]] constexpr Vector2 operator-(const Vector2& v) const
         {
             return {x - v.x, y - v.y};
         }
-        constexpr Vector2 operator*(float fl) const
+
+        [[nodiscard]] constexpr Vector2 operator*(float fl) const
         {
             return {x * fl, y * fl};
         }
-        constexpr Vector2 operator/(float fl) const
+
+        [[nodiscard]] constexpr Vector2 operator/(float fl) const
         {
             return {x / fl, y / fl};
         }
@@ -158,7 +170,7 @@ namespace omath
         // Normalize the vector
         [[nodiscard]] Vector2 Normalized() const;
 
-        // Sum of elements
+         // Sum of elements
         [[nodiscard]] constexpr float Sum() const
         {
             return x + y;
