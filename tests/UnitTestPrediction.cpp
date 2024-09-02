@@ -7,7 +7,7 @@ TEST(UnitTestPrediction, PredictionTest)
     const omath::prediction::Projectile proj = {.m_origin = {3,2,1}, .m_launchSpeed = 5000, .m_gravityScale= 0.4};
     const auto viewPoint = omath::prediction::Engine(400, 1.f / 1000.f, 50, 5.f).MaybeCalculateAimPoint(proj, target);
 
-    const auto [pitch, yaw, _] = proj.m_origin.ViewAngleTo(viewPoint.value());
+    const auto [pitch, yaw, _] = proj.m_origin.ViewAngleTo(viewPoint.value()).AsTuple();
 
     EXPECT_NEAR(42.547142, pitch, 0.0001f);
     EXPECT_NEAR(-1.181189, yaw, 0.0001f);
