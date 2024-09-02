@@ -45,6 +45,10 @@ namespace omath::projection
 
         projected /= projected.At(0, 3);
 
+        if (projected.At(0, 0) < -1.f || projected.At(0, 0) > 1.f ||
+            projected.At(0, 1) < -1.f || projected.At(0, 1) > 1.f)
+            return std::unexpected("Projection point is out screen bounds");
+
         projected *= Matrix::ToScreenMatrix(m_viewPort.m_width, m_viewPort.m_height);
 
         return Vector3{projected.At(0, 0), projected.At(0, 1), projected.At(0, 2)};
