@@ -13,7 +13,7 @@ namespace omath
         float w = 0.f;
 
         Vector4(const float x = 0.f, const float y = 0.f, const float z = 0.f, const float w = 0.f) : Vector3(x, y, z), w(w) {}
-        Vector4() = default;
+        Vector4();
 
         [[nodiscard]]
         bool operator==(const Vector4& src) const;
