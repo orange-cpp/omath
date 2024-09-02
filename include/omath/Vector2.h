@@ -166,7 +166,6 @@ namespace omath
             return {x / fl, y / fl};
         }
 
-
         // Normalize the vector
         [[nodiscard]] Vector2 Normalized() const;
 

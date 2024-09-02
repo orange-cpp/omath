@@ -45,7 +45,7 @@ namespace omath::prediction
         const Vector3 &targetPosition) const
     {
         const auto bulletGravity = m_gravityConstant * projectile.m_gravityScale;
-        const auto delta = targetPosition - projectile.m_origin;;
+        const auto delta = targetPosition - projectile.m_origin;
 
         const auto distance2d = delta.Length2D();
 
