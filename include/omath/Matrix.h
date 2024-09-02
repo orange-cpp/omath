@@ -11,6 +11,7 @@ namespace omath
     class Matrix final
     {
     public:
+        Matrix();
         Matrix(size_t rows, size_t columns);
 
         Matrix(const std::initializer_list<std::initializer_list<float>>& rows);
@@ -99,8 +100,8 @@ namespace omath
         ~Matrix();
 
     private:
-        size_t m_rows = 0;
-        size_t m_columns = 0;
-        std::unique_ptr<float[]> m_data = nullptr;
+        size_t m_rows;
+        size_t m_columns;
+        std::unique_ptr<float[]> m_data;
     };
 }

@@ -95,4 +95,9 @@ namespace omath::color
 
         return hsvData;
     }
+
+    Color::Color() : Vector4(0.f, 0.f, 0.f, 0.f)
+    {
+
+    }
 }

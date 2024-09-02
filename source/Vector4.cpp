@@ -131,4 +131,11 @@ namespace omath
     {
         return x + y + z + w;
     }
+
+    Vector4::Vector4()
+    {
+        x = 0.f;
+        y = 0.f;
+        z = 0.f;
+    }
 }
