@@ -4,6 +4,7 @@
 
 #pragma once
 #include <tuple>
+#include <cmath>
 
 
 namespace omath
@@ -15,60 +16,158 @@ namespace omath
         float y = 0.f;
 
         // Constructors
-        Vector2() = default;
-        Vector2(float x, float y);
+        constexpr Vector2() : x(0.f), y(0.f) {}
+
+        constexpr Vector2(float x, float y) : x(x), y(y) {}
 
         // Equality operators
-        bool operator==(const Vector2& src) const;
-        bool operator!=(const Vector2& src) const;
+        constexpr bool operator==(const Vector2& src) const
+        {
+            return x == src.x && y == src.y;
+        }
+
+        constexpr bool operator!=(const Vector2& src) const
+        {
+            return !(*this == src);
+        }
 
         // Compound assignment operators
-        Vector2& operator+=(const Vector2& v);
-        Vector2& operator-=(const Vector2& v);
-        Vector2& operator*=(const Vector2& v);
-        Vector2& operator/=(const Vector2& v);
+        Vector2& operator+=(const Vector2& v)
+        {
+            x += v.x;
+            y += v.y;
+            return *this;
+        }
 
-        Vector2& operator*=(float fl);
-        Vector2& operator/=(float fl);
-        Vector2& operator+=(float fl);
-        Vector2& operator-=(float fl);
+        Vector2& operator-=(const Vector2& v)
+        {
+            x -= v.x;
+            y -= v.y;
+            return *this;
+        }
+
+        Vector2& operator*=(const Vector2& v)
+        {
+            x *= v.x;
+            y *= v.y;
+
+            return *this;
+        }
+
+        Vector2& operator/=(const Vector2& v)
+        {
+            x /= v.x;
+            y /= v.y;
+
+            return *this;
+        }
+
+        Vector2& operator*=(float fl)
+        {
+            x *= fl;
+            y *= fl;
+            return *this;
+        }
+
+        Vector2& operator/=(float fl)
+        {
+            x /= fl;
+            y /= fl;
+            return *this;
+        }
+        Vector2& operator+=(float fl)
+        {
+            x += fl;
+            y += fl;
+            return *this;
+        }
+
+        Vector2& operator-=(float fl)
+        {
+            x -= fl;
+            y -= fl;
+            return *this;
+        }
 
         // Basic vector operations
-        [[nodiscard]] float DistTo(const Vector2& vOther) const;
-        [[nodiscard]] float DistToSqr(const Vector2& vOther) const;
-        [[nodiscard]] float Dot(const Vector2& vOther) const;
+        [[nodiscard]] float DistTo(const Vector2& vOther) const
+        {
+            return std::sqrt(DistToSqr(vOther));
+        }
+
+        [[nodiscard]] constexpr float DistToSqr(const Vector2& vOther) const
+        {
+            return (x - vOther.x) * (x - vOther.x) + (y - vOther.y) * (y - vOther.y);
+        }
+
+        [[nodiscard]] constexpr float Dot(const Vector2& vOther) const
+        {
+            return x * vOther.x + y * vOther.y;
+        }
+
         [[nodiscard]] float Length() const;
-        [[nodiscard]] float LengthSqr() const;
-        Vector2& Abs();
+
+        [[nodiscard]] constexpr float LengthSqr() const
+        {
+            return x * x + y * y;
+        }
+        constexpr Vector2& Abs()
+        {
+            x = x < 0 ? -x : x;
+            y = y < 0 ? -y : y;
+            return *this;
+        }
 
         template<class type>
-        const type& As() const
+        constexpr const type& As() const
         {
             return *reinterpret_cast<const type*>(this);
         }
         template<class type>
-        type& As()
+        constexpr type& As()
         {
             return *reinterpret_cast<type*>(this);
         }
 
         // Unary negation operator
-        Vector2 operator-() const;
+        constexpr Vector2 operator-() const
+        {
+            return {-x, -y};
+        }
 
         // Binary arithmetic operators
-        Vector2 operator+(const Vector2& v) const;
-        Vector2 operator-(const Vector2& v) const;
-        Vector2 operator*(float fl) const;
-        Vector2 operator/(float fl) const;
+        constexpr Vector2 operator+(const Vector2& v) const
+        {
+            return {x + v.x, y + v.y};
+        }
+
+        constexpr Vector2 operator-(const Vector2& v) const
+        {
+            return {x - v.x, y - v.y};
+        }
+        constexpr Vector2 operator*(float fl) const
+        {
+            return {x * fl, y * fl};
+        }
+        constexpr Vector2 operator/(float fl) const
+        {
+            return {x / fl, y / fl};
+        }
 
 
         // Normalize the vector
         [[nodiscard]] Vector2 Normalized() const;
 
         // Sum of elements
-        [[nodiscard]] float Sum() const;
+        [[nodiscard]] constexpr float Sum() const
+        {
+            return x + y;
+        }
 
         [[nodiscard]]
-        std::tuple<float, float> AsTuple() const;
+        constexpr std::tuple<float, float> AsTuple() const
+        {
+            return std::make_tuple(x, y);
+        }
     };
 }
