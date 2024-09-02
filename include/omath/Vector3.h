@@ -6,20 +6,16 @@
 
 #include <cstdint>
 #include <functional>
+#include "omath/Vector2.h"
+
 
 namespace omath
 {
-    class Vector3 {
+    class Vector3 : public Vector2
+    {
     public:
-        float x = 0.f;
-        float y = 0.f;
         float z = 0.f;
-        Vector3(const float x, const float y, const float z)
-        {
-            this->x = x;
-            this->y = y;
-            this->z = z;
-        }
+        Vector3(float x, float y, float z);
         Vector3() = default;
 
         bool operator==(const Vector3& src) const;
@@ -50,16 +46,6 @@ namespace omath
         Vector3 operator/(float fl) const;
         Vector3 operator/(const Vector3& v) const;
 
-        template<class type>
-        const type& As() const
-        {
-            return *reinterpret_cast<const type*>(this);
-        }
-        template<class type>
-        type& As()
-        {
-            return *reinterpret_cast<type*>(this);
-        }
 
         [[nodiscard]] Vector3 Cross(const Vector3 &v) const;
         [[nodiscard]] static Vector3 CreateVelocity(float pitch, float yaw, float speed);
@@ -74,6 +60,8 @@ namespace omath
 
         [[nodiscard]]
         Vector3 Normalized() const;
+
+        [[nodiscard]] std::tuple<float, float, float> AsTuple() const;
     };
 }
 // ReSharper disable once CppRedundantNamespaceDefinition
