@@ -8,20 +8,25 @@
 
 namespace omath
 {
+
+    Vector3::Vector3(const float x, const float y, const float z) : Vector2(x, y), z(z)
+    {
+
+    }
+
     bool Vector3::operator==(const Vector3 &src) const
     {
-        return (src.x == x) and (src.y == y) and (src.z == z);
+        return Vector2::operator==(src) && (src.z == z);
     }
 
     bool Vector3::operator!=(const Vector3 &src) const
     {
-        return (src.x != x) or (src.y != y) or (src.z != z);
+        return !(*this == src);
     }
 
     Vector3 &Vector3::operator+=(const Vector3 &v)
     {
-        x += v.x;
-        y += v.y;
+        Vector2::operator+=(v);
         z += v.z;
 
         return *this;
@@ -29,8 +34,7 @@ namespace omath
 
     Vector3 &Vector3::operator-=(const Vector3 &v)
     {
-        x -= v.x;
-        y -= v.y;
+        Vector2::operator-=(v);
         z -= v.z;
 
         return *this;
@@ -38,8 +42,7 @@ namespace omath
 
     Vector3 &Vector3::operator*=(const float fl)
     {
-        x *= fl;
-        y *= fl;
+        Vector2::operator*=(fl);
         z *= fl;
 
         return *this;
@@ -47,8 +50,7 @@ namespace omath
 
     Vector3 &Vector3::operator*=(const Vector3 &v)
     {
-        x *= v.x;
-        y *= v.y;
+        Vector2::operator*=(v);
         z *= v.z;
 
         return *this;
@@ -56,8 +58,7 @@ namespace omath
 
     Vector3 &Vector3::operator/=(const Vector3 &v)
     {
-        x /= v.x;
-        y /= v.y;
+        Vector2::operator/=(v);
         z /= v.z;
 
         return *this;
@@ -65,8 +66,7 @@ namespace omath
 
     Vector3 &Vector3::operator+=(const float fl)
     {
-        x += fl;
-        y += fl;
+        Vector2::operator+=(fl);
         z += fl;
 
         return *this;
@@ -74,8 +74,7 @@ namespace omath
 
     Vector3 &Vector3::operator/=(const float fl)
     {
-        x /= fl;
-        y /= fl;
+        Vector2::operator/=(fl);
         z /= fl;
 
         return *this;
@@ -83,8 +82,7 @@ namespace omath
 
     Vector3 &Vector3::operator-=(const float fl)
     {
-        x -= fl;
-        y -= fl;
+        Vector2::operator-=(fl);
         z -= fl;
 
         return *this;
@@ -92,19 +90,12 @@ namespace omath
 
     float Vector3::DistTo(const Vector3 &vOther) const
     {
-        Vector3 delta;
-
-        delta.x = x - vOther.x;
-        delta.y = y - vOther.y;
-        delta.z = z - vOther.z;
-
-        return delta.Length();
+        return (*this - vOther).Length();
     }
 
     Vector3 &Vector3::Abs()
     {
-        x = std::abs(x);
-        y = std::abs(y);
+        Vector2::Abs();
         z = std::abs(z);
 
         return *this;
@@ -112,34 +103,27 @@ namespace omath
 
     float Vector3::DistToSqr(const Vector3 &vOther) const
     {
-        Vector3 delta;
-
-        delta.x = x - vOther.x;
-        delta.y = y - vOther.y;
-        delta.z = z - vOther.z;
-
-        return delta.LengthSqr();
+        return (*this - vOther).LengthSqr();
     }
 
     float Vector3::Dot(const Vector3 &vOther) const
     {
-        return (x * vOther.x + y * vOther.y + z * vOther.z);
+        return Vector2::Dot(vOther) + z * vOther.z;
     }
 
     float Vector3::Length() const
     {
-        return std::sqrt(x * x + y * y + z * z);
+        return std::sqrt(Vector2::LengthSqr() + z * z);
     }
 
     float Vector3::LengthSqr() const
     {
-        return (x * x + y * y + z * z);
+        return Vector2::LengthSqr() + z * z;
     }
 
     float Vector3::Length2D() const
     {
-        return std::sqrt(x * x + y * y);
-
+        return Vector2::Length();
     }
 
     Vector3 Vector3::operator-() const
@@ -189,12 +173,12 @@ namespace omath
 
     float Vector3::Sum() const
     {
-        return x + y + z;
+        return Vector3::Sum2D() + z;
     }
 
     float Vector3::Sum2D() const
     {
-        return x + y;
+        return Vector2::Sum();
     }
 
     Vector3 Vector3::ViewAngleTo(const Vector3 &other) const
@@ -264,5 +248,10 @@ namespace omath
         const float length = this->Length();
 
         return length != 0 ? *this / length : *this;
+    }
+
+    std::tuple<float, float, float> Vector3::AsTuple() const
+    {
+        return std::make_tuple(x, y, z);
     }
 }
