@@ -7,7 +7,7 @@
 
 using namespace omath::color;
 
-class ColorTest : public ::testing::Test
+class UnitTestColor : public ::testing::Test
 {
 protected:
     Color color1;
@@ -21,7 +21,7 @@ protected:
 };
 
 // Test constructors
-TEST_F(ColorTest, Constructor_Float)
+TEST_F(UnitTestColor, Constructor_Float)
 {
     Color color(0.5f, 0.5f, 0.5f, 1.0f);
     EXPECT_FLOAT_EQ(color.x, 0.5f);
@@ -30,7 +30,7 @@ TEST_F(ColorTest, Constructor_Float)
     EXPECT_FLOAT_EQ(color.w, 1.0f);
 }
 
-TEST_F(ColorTest, Constructor_Vector4)
+TEST_F(UnitTestColor, Constructor_Vector4)
 {
     omath::Vector4 vec(0.2f, 0.4f, 0.6f, 0.8f);
     Color color(vec);
@@ -41,7 +41,7 @@ TEST_F(ColorTest, Constructor_Vector4)
 }
 
 // Test static methods for color creation
-TEST_F(ColorTest, FromRGBA)
+TEST_F(UnitTestColor, FromRGBA)
 {
     Color color = Color::FromRGBA(128, 64, 32, 255);
     EXPECT_FLOAT_EQ(color.x, 128.0f / 255.0f);
@@ -50,7 +50,7 @@ TEST_F(ColorTest, FromRGBA)
     EXPECT_FLOAT_EQ(color.w, 1.0f);
 }
 
-TEST_F(ColorTest, FromHSV)
+TEST_F(UnitTestColor, FromHSV)
 {
     Color color = Color::FromHSV(0.0f, 1.0f, 1.0f); // Red in HSV
     EXPECT_FLOAT_EQ(color.x, 1.0f);
@@ -60,7 +60,7 @@ TEST_F(ColorTest, FromHSV)
 }
 
 // Test HSV conversion
-TEST_F(ColorTest, ToHSV)
+TEST_F(UnitTestColor, ToHSV)
 {
     HSV hsv = color1.ToHSV(); // Red color
     EXPECT_FLOAT_EQ(hsv.m_hue, 0.0f);
@@ -69,7 +69,7 @@ TEST_F(ColorTest, ToHSV)
 }
 
 // Test color blending
-TEST_F(ColorTest, Blend)
+TEST_F(UnitTestColor, Blend)
 {
     Color blended = color1.Blend(color2, 0.5f);
     EXPECT_FLOAT_EQ(blended.x, 0.5f);
@@ -79,7 +79,7 @@ TEST_F(ColorTest, Blend)
 }
 
 // Test predefined colors
-TEST_F(ColorTest, PredefinedColors)
+TEST_F(UnitTestColor, PredefinedColors)
 {
     Color red = Color::Red();
     Color green = Color::Green();
@@ -102,7 +102,7 @@ TEST_F(ColorTest, PredefinedColors)
 }
 
 // Test non-member function: Blend for Vector3
-TEST_F(ColorTest, BlendVector3)
+TEST_F(UnitTestColor, BlendVector3)
 {
     omath::Vector3 v1(1.0f, 0.0f, 0.0f); // Red
     omath::Vector3 v2(0.0f, 1.0f, 0.0f); // Green
