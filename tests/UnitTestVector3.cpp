@@ -7,7 +7,7 @@
 
 using namespace omath;
 
-class UnitTestVector3 final : public ::testing::Test
+class UnitTestVector3 : public ::testing::Test
 {
 protected:
     Vector3 v1;
