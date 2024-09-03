@@ -13,7 +13,7 @@ protected:
     Vector3 v1;
     Vector3 v2;
 
-    void SetUp() override
+    constexpr void SetUp() override
     {
         v1 = Vector3(1.0f, 2.0f, 3.0f);
         v2 = Vector3(4.0f, 5.0f, 6.0f);
