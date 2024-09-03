@@ -14,7 +14,8 @@ protected:
     Matrix m1;
     Matrix m2;
 
-    void SetUp() override {
+    void SetUp() override
+    {
         m1 = Matrix(2, 2);
         m2 = Matrix{{1.0f, 2.0f}, {3.0f, 4.0f}};
     }

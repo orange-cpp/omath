@@ -1,6 +1,6 @@
 #include "omath/Matrix.h"
 #include "omath/Vector3.h"
-#include "omath/angles.h"
+#include "omath/Angles.h"
 
 
 #include <format>
@@ -200,8 +200,8 @@ namespace omath
         m_columns = other.m_columns;
         m_data = std::move(other.m_data);
 
-        other.m_rows = 0.f;
-        other.m_columns = 0.f;
+        other.m_rows = 0;
+        other.m_columns = 0;
 
         return *this;
 
@@ -350,10 +350,10 @@ namespace omath
         };
     }
 
-    Matrix Matrix::ProjectionMatrix(const float fielOfView, const float aspectRatio, const float near,
+    Matrix Matrix::ProjectionMatrix(const float fieldOfView, const float aspectRatio, const float near,
                                     const float far)
     {
-        const float fovHalfTan = std::tan(angles::DegreesToRadians(fielOfView) / 2.f);
+        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
 
         return
         {

@@ -4,59 +4,152 @@
 #pragma once
 
 #include <omath/Vector3.h>
+#include <algorithm>
+
 
 namespace omath
 {
     class Vector4 : public Vector3
     {
     public:
-        float w = 0.f;
+        float w;
 
-        Vector4(const float x = 0.f, const float y = 0.f, const float z = 0.f, const float w = 0.f) : Vector3(x, y, z), w(w) {}
-        Vector4();
-
-        [[nodiscard]]
-        bool operator==(const Vector4& src) const;
+        constexpr Vector4(float x, float y, float z, float w) : Vector3(x, y, z), w(w) {}
+        constexpr Vector4() : Vector3(), w(0.f) {};
 
         [[nodiscard]]
-        bool operator!=(const Vector4& src) const;
+        constexpr bool operator==(const Vector4& src) const
+        {
+            return Vector3::operator==(src) && w == src.w;
+        }
 
-        Vector4& operator+=(const Vector4& v);
-        Vector4& operator-=(const Vector4& v);
-        Vector4& operator*=(float scalar);
-        Vector4& operator*=(const Vector4& v);
-        Vector4& operator/=(float scalar);
-        Vector4& operator/=(const Vector4& v);
+        [[nodiscard]]
+        constexpr bool operator!=(const Vector4& src) const
+        {
+            return !(*this == src);
+        }
+
+        constexpr Vector4& operator+=(const Vector4& v)
+        {
+            Vector3::operator+=(v);
+            w += v.w;
+
+            return *this;
+        }
+
+        constexpr Vector4& operator-=(const Vector4& v)
+        {
+            Vector3::operator-=(v);
+            w -= v.w;
+
+            return *this;
+        }
+
+        constexpr Vector4& operator*=(float scalar)
+        {
+            Vector3::operator*=(scalar);
+            w *= scalar;
+
+            return *this;
+        }
+
+        constexpr Vector4& operator*=(const Vector4& v)
+        {
+            Vector3::operator*=(v);
+            w *= v.w;
+
+            return *this;
+        }
+
+        constexpr Vector4& operator/=(float scalar)
+        {
+            Vector3::operator/=(scalar);
+            w /= scalar;
+
+            return *this;
+        }
+
+        constexpr Vector4& operator/=(const Vector4& v)
+        {
+            Vector3::operator/=(v);
+            w /= v.w;
+            return *this;
+        }
+
+        [[nodiscard]] constexpr float LengthSqr() const
+        {
+            return Vector3::LengthSqr() + w * w;
+        }
+
+        [[nodiscard]] constexpr float Dot(const Vector4& vOther) const
+        {
+            return Vector3::Dot(vOther) + w * vOther.w;
+        }
 
         [[nodiscard]] float Length() const;
-        [[nodiscard]] float LengthSqr() const;
-        [[nodiscard]] float Dot(const Vector4& vOther) const;
 
-        Vector4& Abs();
-        Vector4& Clamp(float min, float max);
+        constexpr Vector4& Abs()
+        {
+            Vector3::Abs();
+            w = w < 0.f ? -w : w;
 
-        [[nodiscard]]
-        Vector4 operator-() const;
+            return *this;
+        }
+        constexpr Vector4& Clamp(float min, float max)
+        {
+            x = std::clamp(x, min, max);
+            y = std::clamp(y, min, max);
+            z = std::clamp(z, min, max);
 
-        [[nodiscard]]
-        Vector4 operator+(const Vector4& v) const;
-
-        [[nodiscard]]
-        Vector4 operator-(const Vector4& v) const;
-
-        [[nodiscard]]
-        Vector4 operator*(float scalar) const;
-
-        [[nodiscard]]
-        Vector4 operator*(const Vector4& v) const;
+            return *this;
+        }
 
         [[nodiscard]]
-        Vector4 operator/(float scalar) const;
+        constexpr Vector4 operator-() const
+        {
+            return {-x, -y, -z, -w};
+        }
 
         [[nodiscard]]
-        Vector4 operator/(const Vector4& v) const;
+        constexpr Vector4 operator+(const Vector4& v) const
+        {
+            return {x + v.x, y + v.y, z + v.z, w + v.w};
+        }
 
         [[nodiscard]]
-        float Sum() const;
+        constexpr Vector4 operator-(const Vector4& v) const
+        {
+            return {x - v.x, y - v.y, z - v.z, w - v.w};
+        }
+
+        [[nodiscard]]
+        constexpr Vector4 operator*(float scalar) const
+        {
+            return {x * scalar, y * scalar, z * scalar, w * scalar};
+        }
+
+        [[nodiscard]]
+        constexpr Vector4 operator*(const Vector4& v) const
+        {
+            return {x * v.x, y * v.y, z * v.z, w * v.w};
+        }
+
+        [[nodiscard]]
+        constexpr Vector4 operator/(float scalar) const
+        {
+            return {x / scalar, y / scalar, z / scalar, w / scalar};
+        }
+
+        [[nodiscard]]
+        constexpr Vector4 operator/(const Vector4& v) const
+        {
+            return {x / v.x, y / v.y, z / v.z, w / v.w};
+        }
+
+        [[nodiscard]]
+        constexpr float Sum() const
+        {
+            return Vector3::Sum() + w;
+        }
     };
 }

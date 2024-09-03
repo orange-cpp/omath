@@ -10,7 +10,7 @@
 
 namespace omath::pathfinding
 {
-    class Astar
+    class Astar final
     {
     public:
         [[nodiscard]]

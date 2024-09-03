@@ -23,8 +23,8 @@ namespace omath::pathfinding
         std::unordered_map<Vector3, PathNode> closedList;
         std::unordered_map<Vector3, PathNode> openList;
 
-        const auto startVertex = navMesh.GetClossestVertex(start).value();
-        const auto endVertex = navMesh.GetClossestVertex(end).value();
+        const auto startVertex = navMesh.GetClosestVertex(start).value();
+        const auto endVertex = navMesh.GetClosestVertex(end).value();
 
         openList.emplace(startVertex, PathNode{std::nullopt, 0.f});
 

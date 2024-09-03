@@ -1,6 +1,6 @@
 target_sources(omath PRIVATE
         Vector3.cpp
-        matrix.cpp
+        Matrix.cpp
         color.cpp
         Vector4.cpp
         Vector2.cpp)

@@ -13,9 +13,6 @@ namespace omath::prediction
     public:
 
         [[nodiscard]]
-        Vector3 CalculateVelocity(float pitch, float yaw) const;
-
-        [[nodiscard]]
         Vector3 PredictPosition(float pitch, float yaw, float time, float gravity) const;
 
         Vector3 m_origin;
