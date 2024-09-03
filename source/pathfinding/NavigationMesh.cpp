@@ -43,7 +43,7 @@ namespace omath::pathfinding
 
         for (const auto& [vertex, neighbors] : m_verTextMap)
         {
-            const uint16_t neighborsCount = neighbors.size();
+            const auto neighborsCount = neighbors.size();
 
             dumpToVector(vertex, raw);
             dumpToVector(neighborsCount, raw);

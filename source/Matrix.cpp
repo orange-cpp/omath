@@ -200,8 +200,8 @@ namespace omath
         m_columns = other.m_columns;
         m_data = std::move(other.m_data);
 
-        other.m_rows = 0.f;
-        other.m_columns = 0.f;
+        other.m_rows = 0;
+        other.m_columns = 0;
 
         return *this;
 
