@@ -5,7 +5,7 @@
 
 #include "omath/prediction/Engine.h"
 #include <cmath>
-#include <omath/angles.h>
+#include <omath/Angles.h>
 
 
 namespace omath::prediction

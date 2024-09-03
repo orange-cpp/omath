@@ -5,7 +5,7 @@
 
 #include <complex>
 
-#include "omath/angles.h"
+#include "omath/Angles.h"
 
 
 namespace omath::projection
