@@ -30,7 +30,7 @@ namespace omath::projection
         return Matrix::TranslationMatrix(-m_origin) * Matrix::OrientationMatrix(forward, right, up);
     }
 
-    std::expected<Vector3, std::string_view> Camera::WorldToScreen(const Vector3 &worldPosition) const
+    std::expected<Vector3, Error> Camera::WorldToScreen(const Vector3 &worldPosition) const
     {
         const auto posVecAsMatrix = Matrix({{worldPosition.x, worldPosition.y, worldPosition.z, 1.f}});
 
@@ -41,13 +41,13 @@ namespace omath::projection
         auto projected = posVecAsMatrix * (GetViewMatrix() * projectionMatrix);
 
         if (projected.At(0, 3) <= 0.f)
-            return std::unexpected("Projection point is out of camera field of view");
+            return std::unexpected(Error::WORLD_POSITION_IS_BEHIND_CAMERA);
 
         projected /= projected.At(0, 3);
 
         if (projected.At(0, 0) < -1.f || projected.At(0, 0) > 1.f ||
             projected.At(0, 1) < -1.f || projected.At(0, 1) > 1.f)
-            return std::unexpected("Projection point is out screen bounds");
+            return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
         projected *= Matrix::ToScreenMatrix(m_viewPort.m_width, m_viewPort.m_height);
 

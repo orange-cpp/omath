@@ -8,6 +8,7 @@
 #include <omath/Vector3.h>
 #include <omath/Matrix.h>
 #include <string_view>
+#include "ErrorCodes.h"
 
 
 namespace omath::projection
@@ -18,7 +19,7 @@ namespace omath::projection
         float m_width;
         float m_height;
 
-        [[nodiscard]] float AspectRatio() const {return  m_width / m_height;}
+        [[nodiscard]] constexpr float AspectRatio() const {return  m_width / m_height;}
     };
 
     class Camera
@@ -29,7 +30,7 @@ namespace omath::projection
 
         [[nodiscard]] Matrix GetViewMatrix() const;
 
-        [[nodiscard]] std::expected<Vector3, std::string_view> WorldToScreen(const Vector3& worldPosition) const;
+        [[nodiscard]] std::expected<Vector3, Error> WorldToScreen(const Vector3& worldPosition) const;
 
         ViewPort m_viewPort{};
         float m_fieldOfView;
