@@ -26,7 +26,7 @@ namespace omath
         static Matrix OrientationMatrix(const Vector3& forward, const Vector3& right, const Vector3& up);
 
         [[nodiscard]]
-        static Matrix ProjectionMatrix(float fielOfView, float aspectRatio,float near, float far);
+        static Matrix ProjectionMatrix(float fieldOfView, float aspectRatio, float near, float far);
 
         Matrix(const Matrix &other);
 

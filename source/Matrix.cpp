@@ -350,10 +350,10 @@ namespace omath
         };
     }
 
-    Matrix Matrix::ProjectionMatrix(const float fielOfView, const float aspectRatio, const float near,
+    Matrix Matrix::ProjectionMatrix(const float fieldOfView, const float aspectRatio, const float near,
                                     const float far)
     {
-        const float fovHalfTan = std::tan(angles::DegreesToRadians(fielOfView) / 2.f);
+        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
 
         return
         {
