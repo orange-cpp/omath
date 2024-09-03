@@ -2,16 +2,12 @@
 // Created by vlad on 2/4/24.
 //
 
-#include "omath/color.h"
+#include "omath/Color.h"
 #include <algorithm>
 #include <cmath>
 
 
-namespace omath::color
+namespace omath
 {
 
-    Color::Color() : Vector4(0.f, 0.f, 0.f, 0.f)
-    {
-
-    }
 }

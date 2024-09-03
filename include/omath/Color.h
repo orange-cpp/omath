@@ -9,7 +9,7 @@
 #include "omath/Vector4.h"
 
 
-namespace omath::color
+namespace omath
 {
     struct HSV
     {
@@ -27,8 +27,10 @@ namespace omath::color
                 Clamp(0.f, 1.f);
             }
 
-            explicit Color()
-            ;
+            constexpr explicit Color() : Vector4()
+            {
+
+            }
             [[nodiscard]]
             constexpr static Color FromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
             {
