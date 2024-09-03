@@ -9,7 +9,7 @@
 
 using namespace omath;
 
-class UnitTestVector2 : public ::testing::Test
+class UnitTestVector2 final : public ::testing::Test
 {
 protected:
     Vector2 v1;
