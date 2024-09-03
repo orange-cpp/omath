@@ -10,6 +10,11 @@ option(OMATH_BUILD_TESTS "Build unit tests" ON)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 
+# 0 - QUAKE
+# 1 - UE
+# 2 - UNITY
+set(COORDINATE_SYSTEM 0)
+
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/Vector3.cpp)
 else()
@@ -28,6 +33,15 @@ if (WIN32 AND OMATH_THREAT_WARNING_AS_ERROR)
 elseif(UNIX AND OMATH_THREAT_WARNING_AS_ERROR)
     target_compile_options(omath PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+target_include_directories(omath PUBLIC include)
+
+target_compile_definitions(omath PRIVATE
+        OMATH_COORDINATE_SYSTEM=${COORDINATE_SYSTEM}
+        OMATH_QUAKE_SUPPORT=0
+        OMATH_UE_SUPPORT=1
+        OMATH_UNITY_SUPPORT=2
+)
 
 target_include_directories(omath
         PUBLIC

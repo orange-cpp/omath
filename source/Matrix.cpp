@@ -164,7 +164,7 @@ namespace omath
     {
         Set(0.f);
     }
-    
+
     Matrix &Matrix::operator=(const Matrix &other)
     {
         if (this == &other)
