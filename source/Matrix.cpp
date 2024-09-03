@@ -164,20 +164,7 @@ namespace omath
     {
         Set(0.f);
     }
-
-    Matrix Matrix::operator*(const Vector3 &vec3) const
-    {
-        auto vecmatrix = Matrix(m_rows, 1);
-        vecmatrix.Set(1.f);
-        vecmatrix.At(0, 0) = vec3.x;
-        vecmatrix.At(1, 0) = vec3.y;
-        vecmatrix.At(2, 0) = vec3.z;
-
-        return *this * vecmatrix;
-
-    }
-
-
+    
     Matrix &Matrix::operator=(const Matrix &other)
     {
         if (this == &other)

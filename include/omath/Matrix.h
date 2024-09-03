@@ -65,8 +65,6 @@ namespace omath
 
         Matrix operator*(float f) const;
 
-        Matrix operator*(const Vector3 &vec3) const;
-
         Matrix &operator*=(float f);
 
         Matrix &operator/=(float f);

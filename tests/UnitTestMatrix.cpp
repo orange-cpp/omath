@@ -66,17 +66,6 @@ TEST_F(UnitTestMatrix, Operator_Multiplication_Matrix)
     EXPECT_FLOAT_EQ(m3.At(1, 1), 22.0f);
 }
 
-TEST_F(UnitTestMatrix, Operator_Multiplication_Vector3)
-{
-    Vector3 v(1.0f, 2.0f, 3.0f);
-    Matrix m3(3, 3, new float[9]{1, 0, 0, 0, 1, 0, 0, 0, 1});
-    Matrix result = m3 * v;
-
-    EXPECT_FLOAT_EQ(result.At(0, 0), 1.0f);
-    EXPECT_FLOAT_EQ(result.At(1, 0), 2.0f);
-    EXPECT_FLOAT_EQ(result.At(2, 0), 3.0f);
-}
-
 TEST_F(UnitTestMatrix, Operator_Multiplication_Scalar)
 {
     Matrix m3 = m2 * 2.0f;
