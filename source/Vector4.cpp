@@ -3,9 +3,8 @@
 //
 
 #include "omath/Vector4.h"
-
-#include <algorithm>
 #include <cmath>
+
 
 namespace omath
 {
