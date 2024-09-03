@@ -4,7 +4,7 @@
 
 #include <omath/Vector3.h>
 #include <cmath>
-#include <omath/angles.h>
+#include <omath/Angles.h>
 
 namespace omath
 {
