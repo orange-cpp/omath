@@ -57,19 +57,26 @@ namespace omath
 
     Vector3 Vector3::RightVector(const float pitch, const float yaw, const float roll)
     {
-        const auto cosPitch = std::cos(angles::DegreesToRadians(pitch));
-        const auto sinPitch = std::sin(angles::DegreesToRadians(pitch));
+        const auto radPitch = angles::DegreesToRadians(pitch);
+        const auto radYaw = angles::DegreesToRadians(yaw);
+        const auto radRoll = angles::DegreesToRadians(roll);
 
-        const auto cosYaw = std::cos(angles::DegreesToRadians(yaw));
-        const auto sinYaw = std::sin(angles::DegreesToRadians(yaw));
+        const auto cosPitch = std::cos(radPitch);
+        const auto sinPitch = std::sin(radPitch);
 
-        const auto cosRoll = std::cos(angles::DegreesToRadians(roll));
-        const auto sinRoll = std::sin(angles::DegreesToRadians(roll));
+        const auto cosYaw = std::cos(radYaw);
+        const auto sinYaw = std::sin(radYaw);
+
+        const auto cosRoll = std::cos(radRoll);
+        const auto sinRoll = std::sin(radRoll);
 
 
-        return {sinRoll*sinPitch*cosYaw + cosRoll*sinYaw,
-                sinRoll*sinPitch*sinYaw + -cosRoll*cosYaw,
-                -sinRoll*cosPitch};
+        return
+        {
+            sinRoll*sinPitch*cosYaw + cosRoll*sinYaw,
+            sinRoll*sinPitch*sinYaw - cosRoll*cosYaw,
+            -sinRoll*cosPitch
+        };
     }
 
     Vector3 Vector3::UpVector(float pitch, float yaw, float roll)
