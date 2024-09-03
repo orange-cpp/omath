@@ -30,7 +30,7 @@ namespace omath::projection
         return Matrix::TranslationMatrix(-m_origin) * Matrix::OrientationMatrix(forward, right, up);
     }
 
-    std::expected<Vector3, Error> Camera::WorldToScreen(const Vector3 &worldPosition) const
+    std::expected<Vector2, Error> Camera::WorldToScreen(const Vector3 &worldPosition) const
     {
         const auto posVecAsMatrix = Matrix({{worldPosition.x, worldPosition.y, worldPosition.z, 1.f}});
 
@@ -51,6 +51,6 @@ namespace omath::projection
 
         projected *= Matrix::ToScreenMatrix(m_viewPort.m_width, m_viewPort.m_height);
 
-        return Vector3{projected.At(0, 0), projected.At(0, 1), projected.At(0, 2)};
+        return Vector2{projected.At(0, 0), projected.At(0, 1)};
     }
 }
