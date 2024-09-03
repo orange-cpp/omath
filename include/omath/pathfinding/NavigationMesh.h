@@ -12,19 +12,12 @@
 
 namespace omath::pathfinding
 {
-    struct NavigationVertex
-    {
-        Vector3 origin;
-        std::vector<NavigationVertex*> connections;
-    };
-
-
     class NavigationMesh final
     {
     public:
 
         [[nodiscard]]
-        std::expected<Vector3, std::string> GetClossestVertex(const Vector3& point) const;
+        std::expected<Vector3, std::string> GetClosestVertex(const Vector3& point) const;
 
 
         [[nodiscard]]
