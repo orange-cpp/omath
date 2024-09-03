@@ -67,9 +67,9 @@ namespace omath
         const auto sinRoll = std::sin(angles::DegreesToRadians(roll));
 
 
-        return {-sinRoll*sinPitch*cosYaw + -cosRoll*-sinYaw,
-                -sinRoll*sinPitch*sinYaw + -cosRoll*cosYaw,
-                sinRoll*cosPitch};
+        return {sinRoll*sinPitch*cosYaw + cosRoll*sinYaw,
+                sinRoll*sinPitch*sinYaw + -cosRoll*cosYaw,
+                -sinRoll*cosPitch};
     }
 
     Vector3 Vector3::UpVector(float pitch, float yaw, float roll)
