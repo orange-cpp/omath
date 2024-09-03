@@ -6,6 +6,7 @@
 #include <cmath>
 #include <omath/Angles.h>
 
+
 namespace omath
 {
 
@@ -37,7 +38,7 @@ namespace omath
             0.f
         };
     }
-
+#if OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
     Vector3 Vector3::ForwardVector(const float pitch, const float yaw)
     {
         const auto cosPitch = std::cos(angles::DegreesToRadians(pitch));
@@ -91,4 +92,9 @@ namespace omath
 
         return length != 0 ? *this / length : *this;
     }
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
+#   error "Unreal Engine is not suppoted"
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORTf
+#   error "Unity is not suppoted"
+#endif
 }
