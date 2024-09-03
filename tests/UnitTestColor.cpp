@@ -5,7 +5,7 @@
 #include <omath/Color.h>
 
 
-using namespace omath::color;
+using namespace omath;
 
 class UnitTestColor : public ::testing::Test
 {
@@ -23,7 +23,7 @@ protected:
 // Test constructors
 TEST_F(UnitTestColor, Constructor_Float)
 {
-    Color color(0.5f, 0.5f, 0.5f, 1.0f);
+    constexpr Color color(0.5f, 0.5f, 0.5f, 1.0f);
     EXPECT_FLOAT_EQ(color.x, 0.5f);
     EXPECT_FLOAT_EQ(color.y, 0.5f);
     EXPECT_FLOAT_EQ(color.z, 0.5f);
@@ -32,7 +32,7 @@ TEST_F(UnitTestColor, Constructor_Float)
 
 TEST_F(UnitTestColor, Constructor_Vector4)
 {
-    omath::Vector4 vec(0.2f, 0.4f, 0.6f, 0.8f);
+    constexpr omath::Vector4 vec(0.2f, 0.4f, 0.6f, 0.8f);
     Color color(vec);
     EXPECT_FLOAT_EQ(color.x, 0.2f);
     EXPECT_FLOAT_EQ(color.y, 0.4f);
@@ -43,7 +43,7 @@ TEST_F(UnitTestColor, Constructor_Vector4)
 // Test static methods for color creation
 TEST_F(UnitTestColor, FromRGBA)
 {
-    Color color = Color::FromRGBA(128, 64, 32, 255);
+    constexpr Color color = Color::FromRGBA(128, 64, 32, 255);
     EXPECT_FLOAT_EQ(color.x, 128.0f / 255.0f);
     EXPECT_FLOAT_EQ(color.y, 64.0f / 255.0f);
     EXPECT_FLOAT_EQ(color.z, 32.0f / 255.0f);
@@ -52,7 +52,7 @@ TEST_F(UnitTestColor, FromRGBA)
 
 TEST_F(UnitTestColor, FromHSV)
 {
-    Color color = Color::FromHSV(0.0f, 1.0f, 1.0f); // Red in HSV
+    constexpr Color color = Color::FromHSV(0.0f, 1.0f, 1.0f); // Red in HSV
     EXPECT_FLOAT_EQ(color.x, 1.0f);
     EXPECT_FLOAT_EQ(color.y, 0.0f);
     EXPECT_FLOAT_EQ(color.z, 0.0f);
@@ -81,9 +81,9 @@ TEST_F(UnitTestColor, Blend)
 // Test predefined colors
 TEST_F(UnitTestColor, PredefinedColors)
 {
-    Color red = Color::Red();
-    Color green = Color::Green();
-    Color blue = Color::Blue();
+    constexpr Color red = Color::Red();
+    constexpr Color green = Color::Green();
+    constexpr Color blue = Color::Blue();
 
     EXPECT_FLOAT_EQ(red.x, 1.0f);
     EXPECT_FLOAT_EQ(red.y, 0.0f);
@@ -104,9 +104,9 @@ TEST_F(UnitTestColor, PredefinedColors)
 // Test non-member function: Blend for Vector3
 TEST_F(UnitTestColor, BlendVector3)
 {
-    omath::Vector3 v1(1.0f, 0.0f, 0.0f); // Red
-    omath::Vector3 v2(0.0f, 1.0f, 0.0f); // Green
-    omath::Vector3 blended = Blend(v1, v2, 0.5f);
+    constexpr Color v1(1.0f, 0.0f, 0.0f, 1.f); // Red
+    constexpr Color v2(0.0f, 1.0f, 0.0f, 1.f); // Green
+    constexpr Color blended = Blend(v1, v2, 0.5f);
     EXPECT_FLOAT_EQ(blended.x, 0.5f);
     EXPECT_FLOAT_EQ(blended.y, 0.5f);
     EXPECT_FLOAT_EQ(blended.z, 0.0f);
