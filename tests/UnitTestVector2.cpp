@@ -15,7 +15,7 @@ protected:
     Vector2 v1;
     Vector2 v2;
 
-    void SetUp() override
+    constexpr void SetUp() override
     {
         v1 = Vector2(1.0f, 2.0f);
         v2 = Vector2(4.0f, 5.0f);
