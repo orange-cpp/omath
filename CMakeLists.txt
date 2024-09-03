@@ -17,9 +17,9 @@ if(BUILD_TESTS)
 endif ()
 
 if (WIN32 AND THREAT_WARNING_AS_ERROR)
-    target_compile_definitions(omath PRIVATE /W4 /WX)
+    target_compile_options(omath PRIVATE /W4 /WX)
 elseif(UNIX AND THREAT_WARNING_AS_ERROR)
-    target_compile_definitions(omath PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(omath PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
 target_include_directories(omath PUBLIC include)
