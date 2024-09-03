@@ -5,7 +5,7 @@
 #include <omath/Color.h>
 
 
-using namespace omath::color;
+using namespace omath;
 
 class UnitTestColor : public ::testing::Test
 {
@@ -104,9 +104,9 @@ TEST_F(UnitTestColor, PredefinedColors)
 // Test non-member function: Blend for Vector3
 TEST_F(UnitTestColor, BlendVector3)
 {
-    constexpr omath::color::Color v1(1.0f, 0.0f, 0.0f, 1.f); // Red
-    constexpr omath::color::Color v2(0.0f, 1.0f, 0.0f, 1.f); // Green
-    constexpr omath::color::Color blended = Blend(v1, v2, 0.5f);
+    constexpr Color v1(1.0f, 0.0f, 0.0f, 1.f); // Red
+    constexpr Color v2(0.0f, 1.0f, 0.0f, 1.f); // Green
+    constexpr Color blended = Blend(v1, v2, 0.5f);
     EXPECT_FLOAT_EQ(blended.x, 0.5f);
     EXPECT_FLOAT_EQ(blended.y, 0.5f);
     EXPECT_FLOAT_EQ(blended.z, 0.0f);

@@ -14,7 +14,7 @@ namespace omath
     public:
         float w;
 
-        constexpr Vector4(float x = 0.f, float y = 0.f, float z = 0.f, float w = 0.f) : Vector3(x, y, z), w(w) {}
+        constexpr Vector4(float x, float y, float z, float w) : Vector3(x, y, z), w(w) {}
         constexpr Vector4() : Vector3(), w(0.f) {};
 
         [[nodiscard]]
