@@ -7,7 +7,7 @@
 
 using namespace omath;
 
-class UnitTestColor : public ::testing::Test
+class UnitTestColor final : public ::testing::Test
 {
 protected:
     Color color1;

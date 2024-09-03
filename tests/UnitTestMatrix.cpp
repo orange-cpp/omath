@@ -8,7 +8,7 @@
 using namespace omath;
 
 
-class UnitTestMatrix : public ::testing::Test
+class UnitTestMatrix final : public ::testing::Test
 {
 protected:
     Matrix m1;
