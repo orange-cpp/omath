@@ -12,7 +12,7 @@
 
 namespace omath::prediction
 {
-    class Engine
+    class Engine final
     {
     public:
         explicit Engine(float gravityConstant, float simulationTimeStep,
