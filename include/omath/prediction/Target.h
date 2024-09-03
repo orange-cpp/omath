@@ -13,7 +13,15 @@ namespace omath::prediction
     public:
 
         [[nodiscard]]
-        Vector3 PredictPosition(float time, float gravity) const;
+        constexpr Vector3 PredictPosition(float time, float gravity) const
+        {
+            auto predicted = m_origin + m_velocity * time;
+
+            if (m_isAirborne)
+                predicted.z -= gravity * std::pow(time, 2.f) * 0.5f;
+
+            return predicted;
+        }
 
         Vector3 m_origin;
         Vector3 m_velocity;
