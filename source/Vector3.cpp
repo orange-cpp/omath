@@ -79,12 +79,96 @@ namespace omath
             -sinRoll*cosPitch
         };
     }
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
+    Vector3 Vector3::ForwardVector(const float pitch, const float yaw)
+    {
+        const auto radPitch = angles::DegreesToRadians(pitch);
+        const auto radYaw = angles::DegreesToRadians(yaw);
+
+        const auto cosPitch = std::cos(radPitch);
+        const auto sinPitch = std::sin(radPitch);
+
+        const auto cosYaw = std::cos(radYaw);
+        const auto sinYaw = std::sin(radYaw);
+
+        return
+        {
+            cosPitch * cosYaw,   // X component
+            cosPitch * sinYaw,   // Y component
+            sinPitch             // Z component
+        };
+    }
+
+    Vector3 Vector3::RightVector(const float pitch, const float yaw, const float roll)
+    {
+        const auto radPitch = angles::DegreesToRadians(pitch);
+        const auto radYaw = angles::DegreesToRadians(yaw);
+        const auto radRoll = angles::DegreesToRadians(roll);
+
+        const auto cosPitch = std::cos(radPitch);
+        const auto sinPitch = std::sin(radPitch);
+
+        const auto cosYaw = std::cos(radYaw);
+        const auto sinYaw = std::sin(radYaw);
+
+        const auto cosRoll = std::cos(radRoll);
+        const auto sinRoll = std::sin(radRoll);
+
+        return
+        {
+            sinRoll * sinPitch * cosYaw + cosRoll * sinYaw,
+            sinRoll * sinPitch * sinYaw - cosRoll * cosYaw,
+            -sinRoll * cosPitch
+        };
+    }
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORTf
+    Vector3 Vector3::ForwardVector(const float pitch, const float yaw)
+    {
+        const auto radPitch = angles::DegreesToRadians(pitch);
+        const auto radYaw = angles::DegreesToRadians(yaw);
+
+        const auto cosPitch = std::cos(radPitch);
+        const auto sinPitch = std::sin(radPitch);
+
+        const auto cosYaw = std::cos(radYaw);
+        const auto sinYaw = std::sin(radYaw);
+
+        return
+        {
+            cosPitch * sinYaw,
+            sinPitch,
+            cosPitch * cosYaw
+        };
+    }
+
+    Vector3 Vector3::RightVector(const float pitch, const float yaw, const float roll)
+    {
+        const auto radPitch = angles::DegreesToRadians(pitch);
+        const auto radYaw = angles::DegreesToRadians(yaw);
+        const auto radRoll = angles::DegreesToRadians(roll);
+
+        const auto cosPitch = std::cos(radPitch);
+        const auto sinPitch = std::sin(radPitch);
+
+        const auto cosYaw = std::cos(radYaw);
+        const auto sinYaw = std::sin(radYaw);
+
+        const auto cosRoll = std::cos(radRoll);
+        const auto sinRoll = std::sin(radRoll);
+
+        return
+        {
+            cosRoll * cosYaw + sinRoll * sinPitch * sinYaw,
+            sinRoll * cosPitch,
+            cosRoll * -sinYaw + sinRoll * sinPitch * cosYaw
+        };
+    }
+#endif
 
     Vector3 Vector3::UpVector(float pitch, float yaw, float roll)
     {
         return RightVector(pitch, yaw, roll).Cross(ForwardVector(pitch, yaw));
     }
-
 
     Vector3 Vector3::Normalized() const
     {
@@ -92,9 +176,4 @@ namespace omath
 
         return length != 0 ? *this / length : *this;
     }
-#elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
-#   error "Unreal Engine is not suppoted"
-#elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORTf
-#   error "Unity is not suppoted"
-#endif
 }
