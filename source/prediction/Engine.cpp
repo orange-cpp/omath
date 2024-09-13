@@ -33,10 +33,24 @@ namespace omath::prediction
             if (!IsProjectileReachedTarget(predictedTargetPosition, projectile, projectilePitch.value(), time))
                 continue;
 
-            const auto delta2d = (predictedTargetPosition - projectile.m_origin).Length2D();
-            const auto height = delta2d * std::tan(angles::DegreesToRadians(projectilePitch.value()));
+            const auto delta = (predictedTargetPosition - projectile.m_origin);
 
+#if OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
+            const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
+            const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UOMATH_UNITY_SUPPORT
+            const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.z * delta.z);
+#endif
+            const auto height = horizontalDistance * std::tan(angles::DegreesToRadians(projectilePitch.value()));
+
+#if OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
             return Vector3(predictedTargetPosition.x, predictedTargetPosition.y, projectile.m_origin.z + height);
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
+            return Vector3(predictedTargetPosition.x, predictedTargetPosition.y, projectile.m_origin.z + height);
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UOMATH_UNITY_SUPPORT
+            return Vector3(predictedTargetPosition.x, predictedTargetPosition.y + height, projectile.m_origin.z);
+#endif
         }
         return std::nullopt;
     }

@@ -15,6 +15,14 @@ option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 # 2 - UNITY
 set(COORDINATE_SYSTEM 0)
 
+if (COORDINATE_SYSTEM EQUAL 0)
+    message(STATUS "OMATH: Using coordinate system from Quake Engine")
+elseif (COORDINATE_SYSTEM EQUAL 1)
+    message(STATUS "OMATH: Using coordinate system from Unreal Engine")
+elseif (COORDINATE_SYSTEM EQUAL 2)
+    message(STATUS "OMATH: Using coordinate system from Unity Engine")
+endif ()
+
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/Vector3.cpp)
 else()
@@ -25,6 +33,7 @@ add_subdirectory(source)
 add_subdirectory(extlibs)
 
 if(OMATH_BUILD_TESTS)
+    message(STATUS "OMATH: Unit-tests enabled")
     add_subdirectory(tests)
 endif()
 
