@@ -33,8 +33,16 @@ namespace omath
 
         return
         {
+#if OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
             angles::RadiansToDegrees(std::asin(delta.z / distance)),
             angles::RadiansToDegrees(std::atan2(delta.y, delta.x)),
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
+            angles::RadiansToDegrees(std::asin(delta.z / distance)),
+            angles::RadiansToDegrees(std::atan2(delta.y, delta.x)),
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UOMATH_UNITY_SUPPORT
+            angles::RadiansToDegrees(std::asin(delta.y / distance)),
+            angles::RadiansToDegrees(std::atan2(delta.z, delta.x)),
+#endif
             0.f
         };
     }
