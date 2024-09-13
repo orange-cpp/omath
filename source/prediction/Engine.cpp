@@ -47,17 +47,26 @@ namespace omath::prediction
         const auto bulletGravity = m_gravityConstant * projectile.m_gravityScale;
         const auto delta = targetPosition - projectile.m_origin;
 
-        const auto distance2d = delta.Length2D();
+#if OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
+        const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+        const auto verticalDistance = delta.z;
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
+        const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+        const auto verticalDistance = delta.z;
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UOMATH_UNITY_SUPPORT
+        const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.z * delta.z);
+        const auto verticalDistance = delta.y;
+#endif
+        const auto projSpeedSqr = projectile.m_launchSpeed * projectile.m_launchSpeed;
 
+        const float underRoot = projSpeedSqr*projSpeedSqr - bulletGravity * (bulletGravity *
+        (horizontalDistance*horizontalDistance) + 2.0f * verticalDistance * projSpeedSqr);
 
-        float root = std::pow(projectile.m_launchSpeed, 4.f) - bulletGravity * (bulletGravity *
-            std::pow(distance2d, 2.f) + 2.0f * delta.z * std::pow(projectile.m_launchSpeed, 2.f));
-
-        if (root < 0.0f) [[unlikely]]
+        if (underRoot < 0.0f) [[unlikely]]
             return std::nullopt;
 
-        root = std::sqrt(root);
-        const float angle = std::atan((std::pow(projectile.m_launchSpeed, 2.f) - root) / (bulletGravity * distance2d));
+        const float root = std::sqrt(underRoot);
+        const float angle = std::atan((projSpeedSqr - root) / (bulletGravity * horizontalDistance));
 
         return angles::RadiansToDegrees(angle);
     }

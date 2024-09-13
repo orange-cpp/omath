@@ -18,8 +18,13 @@ namespace omath::prediction
             auto predicted = m_origin + m_velocity * time;
 
             if (m_isAirborne)
-                predicted.z -= gravity * std::pow(time, 2.f) * 0.5f;
-
+#if OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
+                predicted.z -= gravity * (time*time) * 0.5f;
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
+                predicted.z -= gravity * (time*time) * 0.5f;
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UOMATH_UNITY_SUPPORT
+                predicted.y -= gravity * (time*time) * 0.5f;
+#endif
             return predicted;
         }
 
