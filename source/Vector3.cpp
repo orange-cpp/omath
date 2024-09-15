@@ -39,7 +39,7 @@ namespace omath
 #elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
             angles::RadiansToDegrees(std::asin(delta.z / distance)),
             angles::RadiansToDegrees(std::atan2(delta.y, delta.x)),
-#elif OMATH_COORDINATE_SYSTEM == OMATH_UOMATH_UNITY_SUPPORT
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
             angles::RadiansToDegrees(std::asin(delta.y / distance)),
             angles::RadiansToDegrees(std::atan2(delta.z, delta.x)),
 #endif
@@ -129,7 +129,7 @@ namespace omath
             -sinRoll * cosPitch
         };
     }
-#elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORTf
+#elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
     Vector3 Vector3::ForwardVector(const float pitch, const float yaw)
     {
         const auto radPitch = angles::DegreesToRadians(pitch);
