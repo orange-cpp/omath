@@ -58,6 +58,9 @@ namespace omath::prediction
     std::optional<float> Engine::MaybeCalculateProjectileLaunchPitchAngle(const Projectile &projectile,
         const Vector3 &targetPosition) const
     {
+        if (projectile.m_gravityScale == 0.f)
+            return projectile.m_origin.ViewAngleTo(targetPosition).x;
+
         const auto bulletGravity = m_gravityConstant * projectile.m_gravityScale;
         const auto delta = targetPosition - projectile.m_origin;
 
@@ -71,6 +74,8 @@ namespace omath::prediction
         const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.z * delta.z);
         const auto verticalDistance = delta.y;
 #endif
+        // For more info please visit:
+        // https://stackoverflow.com/questions/54917375/how-to-calculate-the-angle-to-shoot-a-bullet-in-order-to-hit-a-moving-target
         const auto projSpeedSqr = projectile.m_launchSpeed * projectile.m_launchSpeed;
 
         const float underRoot = projSpeedSqr*projSpeedSqr - bulletGravity * (bulletGravity *
