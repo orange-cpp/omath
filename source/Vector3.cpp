@@ -175,7 +175,11 @@ namespace omath
 
     Vector3 Vector3::UpVector(float pitch, float yaw, float roll)
     {
-        return RightVector(pitch, yaw, roll).Cross(ForwardVector(pitch, yaw));
+#if OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
+        return ForwardVector(pitch, yaw).Cross(RightVector(pitch, yaw, roll));
+#elif OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
+        return RightVector(pitch, yaw,roll).Cross(ForwardVector(pitch, yaw));
+#endif
     }
 
     Vector3 Vector3::Normalized() const
