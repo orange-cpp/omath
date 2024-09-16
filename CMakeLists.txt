@@ -45,7 +45,7 @@ endif()
 
 target_include_directories(omath PUBLIC include)
 
-target_compile_definitions(omath PRIVATE
+target_compile_definitions(omath PUBLIC
         OMATH_COORDINATE_SYSTEM=${COORDINATE_SYSTEM}
         OMATH_QUAKE_SUPPORT=0
         OMATH_UE_SUPPORT=1

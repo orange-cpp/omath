@@ -387,6 +387,47 @@ TEST_F(UnitTestVector3, AsTuple)
     EXPECT_FLOAT_EQ(std::get<2>(tuple), v1.z);
 }
 
+TEST_F(UnitTestVector3, ForwardVector)
+{
+    auto right = Vector3::ForwardVector(0, 0);
+#if OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
+    EXPECT_EQ(right.x, 0.f);
+    EXPECT_EQ(right.y, 0.f);
+    EXPECT_EQ(right.z, 1.f);
+#elif OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
+    EXPECT_EQ(right.x, 1.f);
+    EXPECT_EQ(right.y, 0.f);
+    EXPECT_EQ(right.z, 0.f);
+#endif
+}
+
+TEST_F(UnitTestVector3, RightVector)
+{
+    auto right = Vector3::RightVector(0, 0, 0);
+#if OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
+    EXPECT_EQ(right.x, 1.f);
+    EXPECT_EQ(right.y, 0.f);
+    EXPECT_EQ(right.z, 0.f);
+#elif OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
+    EXPECT_EQ(right.x, 0.f);
+    EXPECT_EQ(right.y, -1.f);
+    EXPECT_EQ(right.z, 0.f);
+#endif
+}
+
+TEST_F(UnitTestVector3, UpVector)
+{
+    auto up = Vector3::UpVector(0, 0, 0);
+#if OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
+    EXPECT_EQ(up.x, 0.f);
+    EXPECT_EQ(up.y, 1.f);
+    EXPECT_EQ(up.z, 0.f);
+#elif OMATH_COORDINATE_SYSTEM == OMATH_QUAKE_SUPPORT
+    EXPECT_EQ(up.x, 0.f);
+    EXPECT_EQ(up.y, 0.f);
+    EXPECT_EQ(up.z, 1.f);
+#endif
+}
 // Static assertions (compile-time checks)
 static_assert(Vector3(1.0f, 2.0f, 3.0f).LengthSqr() == 14.0f, "LengthSqr should be 14");
 static_assert(Vector3(1.0f, 2.0f, 3.0f).Dot(Vector3(4.0f, 5.0f, 6.0f)) == 32.0f, "Dot product should be 32");
