@@ -23,3 +23,4 @@ elseif(UNIX AND THREAT_WARNING_AS_ERROR)
 endif()
 
 target_include_directories(omath PUBLIC include)
+target_link_libraries(omath PUBLIC Zydis)

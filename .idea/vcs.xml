@@ -3,5 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/extlibs/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extlibs/zydis" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/extlibs/zydis/dependencies/zycore" vcs="Git" />
   </component>
 </project>

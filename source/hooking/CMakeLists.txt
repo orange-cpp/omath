@@ -1,0 +1,1 @@
+target_sources(omath PRIVATE subhook.cpp subhook_windows.cpp subhook_x86.cpp)
