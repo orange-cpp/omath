@@ -41,6 +41,8 @@ namespace omath::prediction
             const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
 #elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
             const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.z * delta.z);
+#elif OMATH_COORDINATE_SYSTEM == OMATH_OPENGL_SUPPORT
+            const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.z * delta.z);
 #endif
             const auto height = horizontalDistance * std::tan(angles::DegreesToRadians(projectilePitch.value()));
 
@@ -49,6 +51,8 @@ namespace omath::prediction
 #elif OMATH_COORDINATE_SYSTEM == OMATH_UE_SUPPORT
             return Vector3(predictedTargetPosition.x, predictedTargetPosition.y, projectile.m_origin.z + height);
 #elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
+            return Vector3(predictedTargetPosition.x, predictedTargetPosition.y + height, projectile.m_origin.z);
+#elif OMATH_COORDINATE_SYSTEM == OMATH_OPENGL_SUPPORT
             return Vector3(predictedTargetPosition.x, predictedTargetPosition.y + height, projectile.m_origin.z);
 #endif
         }
@@ -71,6 +75,9 @@ namespace omath::prediction
         const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
         const auto verticalDistance = delta.z;
 #elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
+        const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.z * delta.z);
+        const auto verticalDistance = delta.y;
+#elif OMATH_COORDINATE_SYSTEM == OMATH_OPENGL_SUPPORT
         const auto horizontalDistance = std::sqrt(delta.x * delta.x + delta.z * delta.z);
         const auto verticalDistance = delta.y;
 #endif
