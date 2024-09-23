@@ -146,7 +146,7 @@ namespace omath
             return {x * v.x, y * v.y, z * v.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator/(float fl) const
+        [[nodiscard]] constexpr Vector3 operator/(const float fl) const
         {
             return {x / fl, y / fl, z / fl};
         }
