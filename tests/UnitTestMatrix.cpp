@@ -24,7 +24,7 @@ protected:
 // Test constructors
 TEST_F(UnitTestMatrix, Constructor_Size)
 {
-    Matrix m(3, 3);
+    const Matrix m(3, 3);
     EXPECT_EQ(m.RowCount(), 3);
     EXPECT_EQ(m.ColumnsCount(), 3);
 }
@@ -90,19 +90,19 @@ TEST_F(UnitTestMatrix, Transpose)
 
 TEST_F(UnitTestMatrix, Determinant)
 {
-    float det = m2.Determinant();
+    const float det = m2.Determinant();
     EXPECT_FLOAT_EQ(det, -2.0f);
 }
 
 TEST_F(UnitTestMatrix, Minor)
 {
-    float minor = m2.Minor(0, 0);
+    const float minor = m2.Minor(0, 0);
     EXPECT_FLOAT_EQ(minor, 4.0f);
 }
 
 TEST_F(UnitTestMatrix, AlgComplement)
 {
-    float algComp = m2.AlgComplement(0, 0);
+    const float algComp = m2.AlgComplement(0, 0);
     EXPECT_FLOAT_EQ(algComp, 4.0f);
 }
 
@@ -116,7 +116,7 @@ TEST_F(UnitTestMatrix, Strip)
 
 TEST_F(UnitTestMatrix, ProjectionMatrix)
 {
-    Matrix proj = Matrix::ProjectionMatrix(45.0f, 1.33f, 0.1f, 100.0f);
+    const Matrix proj = Matrix::ProjectionMatrix(45.0f, 1.33f, 0.1f, 100.0f);
     EXPECT_EQ(proj.RowCount(), 4);
     EXPECT_EQ(proj.ColumnsCount(), 4);
     // Further checks on projection matrix elements could be added
@@ -132,7 +132,7 @@ TEST_F(UnitTestMatrix, Set)
 
 TEST_F(UnitTestMatrix, Sum)
 {
-    float sum = m2.Sum();
+    const float sum = m2.Sum();
     EXPECT_FLOAT_EQ(sum, 10.0f);
 }
 
@@ -145,7 +145,7 @@ TEST_F(UnitTestMatrix, Clear)
 
 TEST_F(UnitTestMatrix, ToString)
 {
-    std::string str = m2.ToSrtring();
+    const std::string str = m2.ToSrtring();
     EXPECT_FALSE(str.empty());
 }
 

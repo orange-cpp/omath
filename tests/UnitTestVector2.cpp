@@ -198,14 +198,14 @@ TEST_F(UnitTestVector2, Length)
 
 TEST_F(UnitTestVector2, Length_ZeroVector)
 {
-    Vector2 v_zero(0.0f, 0.0f);
+    constexpr Vector2 v_zero(0.0f, 0.0f);
     const float length = v_zero.Length();
     EXPECT_FLOAT_EQ(length, 0.0f);
 }
 
 TEST_F(UnitTestVector2, Length_LargeValues)
 {
-    Vector2 v_large(FLT_MAX, FLT_MAX);
+    constexpr Vector2 v_large(FLT_MAX, FLT_MAX);
     const float length = v_large.Length();
     EXPECT_TRUE(std::isinf(length));
 }
@@ -261,8 +261,8 @@ TEST_F(UnitTestVector2, Normalized)
 
 TEST_F(UnitTestVector2, Normalized_ZeroVector)
 {
-    Vector2 v_zero(0.0f, 0.0f);
-    Vector2 v_norm = v_zero.Normalized();
+    constexpr Vector2 v_zero(0.0f, 0.0f);
+    const Vector2 v_norm = v_zero.Normalized();
     EXPECT_FLOAT_EQ(v_norm.x, 0.0f);
     EXPECT_FLOAT_EQ(v_norm.y, 0.0f);
 }
@@ -270,7 +270,7 @@ TEST_F(UnitTestVector2, Normalized_ZeroVector)
 // Test AsTuple method
 TEST_F(UnitTestVector2, AsTuple)
 {
-    auto tuple = v1.AsTuple();
+    const auto tuple = v1.AsTuple();
     EXPECT_FLOAT_EQ(std::get<0>(tuple), v1.x);
     EXPECT_FLOAT_EQ(std::get<1>(tuple), v1.y);
 }
@@ -278,9 +278,9 @@ TEST_F(UnitTestVector2, AsTuple)
 // Test division by zero
 TEST_F(UnitTestVector2, DivisionOperator_DivideByZero)
 {
-    Vector2 v(1.0f, 2.0f);
-    float zero = 0.0f;
-    Vector2 result = v / zero;
+    constexpr Vector2 v(1.0f, 2.0f);
+    constexpr float zero = 0.0f;
+    const Vector2 result = v / zero;
     EXPECT_TRUE(std::isinf(result.x) || std::isnan(result.x));
     EXPECT_TRUE(std::isinf(result.y) || std::isnan(result.y));
 }
@@ -288,7 +288,7 @@ TEST_F(UnitTestVector2, DivisionOperator_DivideByZero)
 TEST_F(UnitTestVector2, DivisionAssignmentOperator_DivideByZero)
 {
     Vector2 v(1.0f, 2.0f);
-    float zero = 0.0f;
+    constexpr float zero = 0.0f;
     v /= zero;
     EXPECT_TRUE(std::isinf(v.x) || std::isnan(v.x));
     EXPECT_TRUE(std::isinf(v.y) || std::isnan(v.y));
@@ -297,7 +297,7 @@ TEST_F(UnitTestVector2, DivisionAssignmentOperator_DivideByZero)
 TEST_F(UnitTestVector2, DivisionAssignmentOperator_VectorWithZero)
 {
     Vector2 v(1.0f, 2.0f);
-    Vector2 v_zero(0.0f, 1.0f);
+    constexpr Vector2 v_zero(0.0f, 1.0f);
     v /= v_zero;
     EXPECT_TRUE(std::isinf(v.x) || std::isnan(v.x));
     EXPECT_FLOAT_EQ(v.y, 2.0f / 1.0f);
@@ -306,16 +306,16 @@ TEST_F(UnitTestVector2, DivisionAssignmentOperator_VectorWithZero)
 // Test operations with infinity and NaN
 TEST_F(UnitTestVector2, Operator_WithInfinity)
 {
-    Vector2 v_inf(INFINITY, INFINITY);
-    Vector2 result = v1 + v_inf;
+    constexpr Vector2 v_inf(INFINITY, INFINITY);
+    const Vector2 result = v1 + v_inf;
     EXPECT_TRUE(std::isinf(result.x));
     EXPECT_TRUE(std::isinf(result.y));
 }
 
 TEST_F(UnitTestVector2, Operator_WithNaN)
 {
-    Vector2 v_nan(NAN, NAN);
-    Vector2 result = v1 + v_nan;
+    constexpr Vector2 v_nan(NAN, NAN);
+    const Vector2 result = v1 + v_nan;
     EXPECT_TRUE(std::isnan(result.x));
     EXPECT_TRUE(std::isnan(result.y));
 }
@@ -323,16 +323,16 @@ TEST_F(UnitTestVector2, Operator_WithNaN)
 // Test negative values in arithmetic operations
 TEST_F(UnitTestVector2, AdditionOperator_NegativeValues)
 {
-    Vector2 v_neg(-1.0f, -2.0f);
-    Vector2 result = v1 + v_neg;
+    constexpr Vector2 v_neg(-1.0f, -2.0f);
+    const Vector2 result = v1 + v_neg;
     EXPECT_FLOAT_EQ(result.x, 0.0f);
     EXPECT_FLOAT_EQ(result.y, 0.0f);
 }
 
 TEST_F(UnitTestVector2, SubtractionOperator_NegativeValues)
 {
-    Vector2 v_neg(-1.0f, -2.0f);
-    Vector2 result = v1 - v_neg;
+    constexpr Vector2 v_neg(-1.0f, -2.0f);
+    const Vector2 result = v1 - v_neg;
     EXPECT_FLOAT_EQ(result.x, 2.0f);
     EXPECT_FLOAT_EQ(result.y, 4.0f);
 }
@@ -340,8 +340,8 @@ TEST_F(UnitTestVector2, SubtractionOperator_NegativeValues)
 // Test negation of zero vector
 TEST_F(UnitTestVector2, NegationOperator_ZeroVector)
 {
-    Vector2 v_zero(0.0f, 0.0f);
-    Vector2 result = -v_zero;
+    constexpr Vector2 v_zero(0.0f, 0.0f);
+    constexpr Vector2 result = -v_zero;
     EXPECT_FLOAT_EQ(result.x, -0.0f);
     EXPECT_FLOAT_EQ(result.y, -0.0f);
 }
