@@ -15,6 +15,8 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 - **Efficiency**: Optimized for performance, ensuring quick computations.
 - **Versatility**: Includes a wide array of mathematical functions and algorithms.
 - **Ease of Use**: Simplified interface for convenient integration into various projects.
+- **Projectile Prediction**: Projectile prediction engine with O(N) algo complexity, that can power you projectile aim-bot.
+- **3D Projection**: No need to find view-projection matrix anymore you can make your own projection pipeline.
 
 ## Getting Started
 ### Prerequisites
@@ -39,22 +41,13 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 ## Usage
 Simple world to screen function
 ```c++
-std::optional<omath::Vector3> WorldToScreen(omath::Vector3 worldPosition, float width, float height)
-    {
-        auto projected = (GetViewProjectionMatrix() * worldPosition).transpose();
+TEST(UnitTestProjection, IsPointOnScreen)
+{
+    const omath::projection::Camera camera({0.f, 0.f, 0.f}, {0, 0.f, 0.f} , {1920.f, 1080.f}, 110.f, 0.1f, 500.f);
 
-        projected /= projected.at(0, 3);
-
-        const auto out = projected * omath::matrix::to_screen_matrix(width,
-                                                                     height);
-
-        if (out.at(0, 2) <= 0.f)
-            return std::nullopt;
-        auto final = omath::Vector3(out.at(0, 0),
-                                    out.at(0, 1),
-                                    out.at(0, 3));
-        return {final};
-    }
+    const auto proj = camera.WorldToScreen({100, 0, 15});
+    EXPECT_TRUE(proj.has_value());
+}
 ```
 ## Contributing
 Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
