@@ -17,6 +17,8 @@ namespace omath::prediction
         currentPos.z -= (gravity * m_gravityScale) * (time*time) * 0.5f;
 #elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
         currentPos.y -= (gravity * m_gravityScale) * (time*time) * 0.5f;
+#elif OMATH_COORDINATE_SYSTEM == OMATH_OPENGL_SUPPORT
+            currentPos.y -= (gravity * m_gravityScale) * (time*time) * 0.5f;
 #endif
         return currentPos;
     }

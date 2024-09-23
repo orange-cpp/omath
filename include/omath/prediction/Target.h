@@ -24,6 +24,8 @@ namespace omath::prediction
                 predicted.z -= gravity * (time*time) * 0.5f;
 #elif OMATH_COORDINATE_SYSTEM == OMATH_UNITY_SUPPORT
                 predicted.y -= gravity * (time*time) * 0.5f;
+#elif OMATH_COORDINATE_SYSTEM == OMATH_OPENGL_SUPPORT
+                predicted.y -= gravity * (time*time) * 0.5f;
 #endif
             return predicted;
         }

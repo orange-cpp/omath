@@ -13,7 +13,8 @@ option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 # 0 - QUAKE
 # 1 - UE
 # 2 - UNITY
-set(COORDINATE_SYSTEM 0)
+# 3 - OPENGL
+set(COORDINATE_SYSTEM 3)
 
 if (COORDINATE_SYSTEM EQUAL 0)
     message(STATUS "OMATH: Using coordinate system from Quake Engine")
@@ -50,6 +51,7 @@ target_compile_definitions(omath PUBLIC
         OMATH_QUAKE_SUPPORT=0
         OMATH_UE_SUPPORT=1
         OMATH_UNITY_SUPPORT=2
+        OMATH_OPENGL_SUPPORT=3
 )
 
 target_include_directories(omath
