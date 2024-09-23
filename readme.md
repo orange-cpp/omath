@@ -49,6 +49,17 @@ TEST(UnitTestProjection, IsPointOnScreen)
     EXPECT_TRUE(proj.has_value());
 }
 ```
+
+<details>
+  <summary>OMATH for making cheats</summary>
+
+With `omath/projection` module you can achieve simple ESP hack for powered by Source/Unreal/Unity engine games, like [Apex Legends](https://store.steampowered.com/app/1172470/Apex_Legends/).
+
+![banner](https://i.imgur.com/lcJrfcZ.png)
+
+
+</details>
+
 ## Contributing
 Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
 
