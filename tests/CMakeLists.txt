@@ -7,6 +7,7 @@ include(GoogleTest)
 add_executable(unit-tests
         UnitTestPrediction.cpp
         UnitTestMatrix.cpp
+        UnitTestMat.cpp
         UnitTestAstar.cpp
         UnitTestProjection.cpp
         UnitTestVector3.cpp
