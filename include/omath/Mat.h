@@ -121,6 +121,12 @@ namespace omath
                     At(i, j) *= f;
             return *this;
         }
+        
+        template <size_t OtherColumns>
+        constexpr Mat<Rows, OtherColumns> operator*=(const Mat<Columns, OtherColumns>& other)
+        {
+            return *this = *this * other;
+        }
 
         constexpr Mat operator*(float f) const
         {
