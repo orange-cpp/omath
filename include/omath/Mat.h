@@ -65,7 +65,7 @@ namespace omath
         static constexpr size_t ColumnsCount() noexcept { return Columns; }
 
         [[nodiscard]]
-        constexpr std::pair<size_t, size_t> Size() const noexcept { return { Rows, Columns }; }
+        static constexpr std::pair<size_t, size_t> Size() noexcept { return { Rows, Columns }; }
 
 
         [[nodiscard]] constexpr const float& At(const size_t rowIndex, const size_t columnIndex) const
@@ -206,7 +206,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat<Rows - 1, Columns - 1> Minor(size_t row, size_t column) const
+        constexpr Mat<Rows - 1, Columns - 1> Minor(const size_t row, const size_t column) const
         {
             Mat<Rows - 1, Columns - 1> result;
             for (size_t i = 0, m = 0; i < Rows; ++i)
@@ -244,30 +244,27 @@ namespace omath
 
         // Static methods that return fixed-size matrices
         [[nodiscard]]
-        constexpr static Mat<4, 4> ToScreenMat(float screenWidth, float screenHeight)
+        constexpr static Mat<4, 4> ToScreenMat(const float screenWidth, const float screenHeight)
         {
-            Mat<4, 4> mat;
-            mat.At(0, 0) = screenWidth / 2.f;
-            mat.At(1, 1) = -screenHeight / 2.f;
-            mat.At(2, 2) = 1.f;
-            mat.At(3, 0) = screenWidth / 2.f;
-            mat.At(3, 1) = screenHeight / 2.f;
-            mat.At(3, 3) = 1.f;
-            return mat;
+            return
+            {
+                {screenWidth / 2.f, 0.f,                 0.f, 0.f},
+                {0.f,               -screenHeight / 2.f, 0.f, 0.f},
+                {0.f,               0.f,                 1.f, 0.f},
+                {screenWidth / 2.f, screenHeight / 2.f,  0.f, 1.f},
+           };
         }
 
         [[nodiscard]]
         constexpr static Mat<4, 4> TranslationMat(const Vector3& diff)
         {
-            Mat<4, 4> mat;
-            mat.At(0, 0) = 1.f;
-            mat.At(1, 1) = 1.f;
-            mat.At(2, 2) = 1.f;
-            mat.At(3, 3) = 1.f;
-            mat.At(3, 0) = diff.x;
-            mat.At(3, 1) = diff.y;
-            mat.At(3, 2) = diff.z;
-            return mat;
+            return
+            {
+                {1.f,    0.f,    0.f,    0.f},
+                {0.f,    1.f,    0.f,    0.f},
+                {0.f,    0.f,    1.f,    0.f},
+                {diff.x, diff.y, diff.z, 1.f},
+            };
         }
 
         [[nodiscard]]
@@ -275,16 +272,13 @@ namespace omath
         {
             Mat<4, 4> mat;
 
-            mat.At(0, 0) = right.x;
-            mat.At(0, 1) = up.x;
-            mat.At(0, 2) = forward.x;
-            mat.At(1, 0) = right.y;
-            mat.At(1, 1) = up.y;
-            mat.At(1, 2) = forward.y;
-            mat.At(2, 0) = right.z;
-            mat.At(2, 1) = up.z;
-            mat.At(2, 2) = forward.z;
-            mat.At(3, 3) = 1.f;
+            return
+            {
+                {right.x, up.x, forward.x, 0.f},
+                {right.y, up.y, forward.y, 0.f},
+                {right.z, up.z, forward.z, 0.f},
+                {0.f,     0.f,  0.f,       1.f},
+            };
 
             return mat;
         }
@@ -292,16 +286,15 @@ namespace omath
         [[nodiscard]]
         constexpr static Mat<4, 4> ProjectionMat(const float fieldOfView, const float aspectRatio, const float near, const float far)
         {
-            Mat<4, 4> mat;
             const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
 
-            mat.At(0, 0) = 1.f / (aspectRatio * fovHalfTan);
-            mat.At(1, 1) = 1.f / fovHalfTan;
-            mat.At(2, 2) = (far + near) / (far - near);
-            mat.At(2, 3) = (2.f * near * far) / (far - near);
-            mat.At(3, 2) = -1.f;
-
-            return mat;
+            return
+            {
+                {1.f / (aspectRatio * fovHalfTan), 0.f, 0.f, 0.f},
+                {0.f, 1.f / fovHalfTan, 0.f, 0.f},
+                {0.f, 0.f, (far + near) / (far - near), 2.f * near * far / (far - near)},
+                {0.f, 0.f, -1.f, 0.f}
+            };
         }
 
     private:
