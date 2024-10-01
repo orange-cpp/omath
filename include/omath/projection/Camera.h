@@ -6,7 +6,7 @@
 
 #include <expected>
 #include <omath/Vector3.h>
-#include <omath/Matrix.h>
+#include <omath/Mat.h>
 #include <string_view>
 #include "ErrorCodes.h"
 
@@ -28,7 +28,7 @@ namespace omath::projection
         Camera(const Vector3& position, const Vector3& viewAngles, const ViewPort& viewPort, float fov, float near, float far);
         void SetViewAngles(const Vector3& viewAngles);
 
-        [[nodiscard]] Matrix GetViewMatrix() const;
+        [[nodiscard]] Mat<4, 4> GetViewMatrix() const;
 
         [[nodiscard]] std::expected<Vector2, Error> WorldToScreen(const Vector3& worldPosition) const;
 
