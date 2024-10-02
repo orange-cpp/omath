@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 26)
 
 option(OMATH_BUILD_TESTS "Build unit tests" ON)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
-option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so\\.dll." OFF)
+option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/Vector3.cpp)
