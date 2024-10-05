@@ -270,8 +270,6 @@ namespace omath
         [[nodiscard]]
         constexpr static Mat<4, 4> OrientationMat(const Vector3& forward, const Vector3& right, const Vector3& up)
         {
-            Mat<4, 4> mat;
-
             return
             {
                 {right.x, up.x, forward.x, 0.f},
@@ -279,8 +277,6 @@ namespace omath
                 {right.z, up.z, forward.z, 0.f},
                 {0.f,     0.f,  0.f,       1.f},
             };
-
-            return mat;
         }
 
         [[nodiscard]]
