@@ -46,7 +46,6 @@ elseif(UNIX AND OMATH_THREAT_WARNING_AS_ERROR)
     target_compile_options(omath PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-target_include_directories(omath PUBLIC include)
 
 target_compile_definitions(omath PUBLIC
         OMATH_COORDINATE_SYSTEM=${COORDINATE_SYSTEM}
