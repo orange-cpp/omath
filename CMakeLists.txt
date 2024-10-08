@@ -41,19 +41,19 @@ target_include_directories(omath
 # Install the library
 install(TARGETS omath
         EXPORT omathTargets
-        ARCHIVE DESTINATION lib COMPONENT omath_component   # For static libraries
-        LIBRARY DESTINATION lib COMPONENT omath_component   # For shared libraries
-        RUNTIME DESTINATION bin COMPONENT omath_component   # For executables (on Windows)
+        ARCHIVE DESTINATION lib COMPONENT omath   # For static libraries
+        LIBRARY DESTINATION lib COMPONENT omath   # For shared libraries
+        RUNTIME DESTINATION bin COMPONENT omath   # For executables (on Windows)
 )
 
 # Install headers as part of omath_component
-install(DIRECTORY include/ DESTINATION include COMPONENT omath_component)
+install(DIRECTORY include/ DESTINATION include COMPONENT omath)
 
 # Export omath target for CMake find_package support, also under omath_component
 install(EXPORT omathTargets
         FILE omathTargets.cmake
         NAMESPACE omath::
-        DESTINATION lib/cmake/omath COMPONENT omath_component
+        DESTINATION lib/cmake/omath COMPONENT omath
 )
 
 
