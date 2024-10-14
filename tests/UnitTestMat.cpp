@@ -229,6 +229,15 @@ TEST(UnitTestMatStandalone, Minor_3x3)
     EXPECT_FLOAT_EQ(minor.At(1, 1), 1.0f);
 }
 
+
+TEST(UnitTestMatStandalone, Multiply)
+{
+    constexpr Mat<4,1> mat1;
+    constexpr Mat<4,4> mat2;
+
+    constexpr auto mat3 = mat2 * mat1;
+
+}
 // Test Transpose for non-square matrix
 TEST(UnitTestMatStandalone, Transpose_NonSquare)
 {

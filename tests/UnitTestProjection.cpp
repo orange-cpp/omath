@@ -11,6 +11,8 @@ TEST(UnitTestProjection, IsPointOnScreen)
 {
     const omath::projection::Camera camera({0.f, 0.f, 0.f}, {0, 0.f, 0.f} , {1920.f, 1080.f}, 110.f, 0.1f, 500.f);
 
-    const auto proj = camera.WorldToScreen({100, 0, 15});
+    const auto proj = camera.WorldToScreen({500, 0, 0});
+
+    std::print("{} {} {}", proj->x, proj->y, proj->z);
     EXPECT_TRUE(proj.has_value());
 }
