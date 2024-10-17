@@ -284,12 +284,13 @@ namespace omath
         {
             const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
 
+
             return
             {
-                {1.f / (aspectRatio * fovHalfTan), 0.f, 0.f, 0.f},
+                {-1.f / (aspectRatio * fovHalfTan), 0.f, 0.f, 0.f},
                 {0.f, 1.f / fovHalfTan, 0.f, 0.f},
-                {0.f, 0.f, (far + near) / (far - near), 2.f * near * far / (far - near)},
-                {0.f, 0.f, -1.f, 0.f}
+                {0.f, 0.f, far / (far - near), 1.f},
+                {0.f, 0.f, near * far / (near - far), 0.f}
             };
         }
 
