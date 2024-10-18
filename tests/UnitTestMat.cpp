@@ -191,7 +191,7 @@ TEST_F(UnitTestMat, StaticMethod_ProjectionMat)
     constexpr float aspectRatio = 1.33f;
     constexpr float near = 0.1f;
     constexpr float far = 100.0f;
-    const Mat<4, 4> projMat = Mat<4, 4>::ProjectionMat(fieldOfView, aspectRatio, near, far);
+    const Mat<4, 4> projMat = Mat<4, 4>::ProjectionMat(fieldOfView, aspectRatio, near, far, 1.335f);
 
     const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
 

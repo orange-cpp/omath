@@ -11,7 +11,7 @@
 namespace omath::projection
 {
     Camera::Camera(const Vector3 &position, const Vector3 &viewAngles, const ViewPort &viewPort,
-                   const float fov, const float near, const float far)
+                   const float fov, const float near, const float far, const float lensZoom)
     {
         m_origin = position;
         m_viewAngles = viewAngles;
@@ -19,6 +19,8 @@ namespace omath::projection
         m_fieldOfView = fov;
         m_nearPlaneDistance = near;
         m_farPlaneDistance = far;
+        m_lensZoom = lensZoom;
+
     }
 
     Mat<4, 4> Camera::GetViewMatrix() const
@@ -30,23 +32,24 @@ namespace omath::projection
         return Mat<4, 4>::TranslationMat(-m_origin) * Mat<4, 4>::OrientationMat(forward, right, up);
     }
 
-    std::expected<Vector2, Error> Camera::WorldToScreen(const Vector3 &worldPosition) const
+    std::expected<Vector2, Error> Camera::WorldToScreen(Vector3 worldPosition) const
     {
         const auto posVecAsMatrix = Mat<1, 4>({{worldPosition.x, worldPosition.y, worldPosition.z, 1.f}});
 
 
         const auto projectionMatrix = Mat<4, 4>::ProjectionMat(m_fieldOfView, m_viewPort.AspectRatio(),
-                                                               m_nearPlaneDistance, m_farPlaneDistance);
+                                                               m_nearPlaneDistance, m_farPlaneDistance, 1.335f);
 
         Mat<1, 4> projected = posVecAsMatrix * (GetViewMatrix() * projectionMatrix);
 
-        if (projected.At(0, 3) <= 0.f)
-            return std::unexpected(Error::WORLD_POSITION_IS_BEHIND_CAMERA);
+        if (projected.At(0, 3) == 0.f)
+            return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
         projected /= projected.At(0, 3);
 
         if (projected.At(0, 0) < -1.f || projected.At(0, 0) > 1.f ||
-            projected.At(0, 1) < -1.f || projected.At(0, 1) > 1.f)
+            projected.At(0, 1) < -1.f || projected.At(0, 1) > 1.f ||
+            projected.At(0, 2) < -1.f || projected.At(0, 2) > 1.f)
             return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
         projected *= Mat<4, 4>::ToScreenMat(m_viewPort.m_width, m_viewPort.m_height);
