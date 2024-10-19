@@ -3,9 +3,9 @@
 //
 #include <complex>
 #include <gtest/gtest.h>
-#include <omath/Matrix.h>
+#include <omath/Matrix.hpp>
 #include <print>
-#include <omath/projection/Camera.h>
+#include <omath/projection/Camera.hpp>
 
 TEST(UnitTestProjection, Projection)
 {

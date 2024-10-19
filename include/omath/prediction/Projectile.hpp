@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "omath/Vector3.h"
+#include "omath/Vector3.hpp"
 
 
 namespace omath::prediction

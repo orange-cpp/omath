@@ -6,9 +6,9 @@
 #include <array>
 #include <sstream>
 #include <utility>
-#include "Vector3.h"
+#include "Vector3.hpp"
 #include <stdexcept>
-#include "Angles.h"
+#include "Angles.hpp"
 
 
 namespace omath

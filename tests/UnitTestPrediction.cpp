@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <omath/prediction/Engine.h>
+#include <omath/prediction/Engine.hpp>
 
 TEST(UnitTestPrediction, PredictionTest)
 {
