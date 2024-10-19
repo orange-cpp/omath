@@ -6,7 +6,7 @@
 
 #include <cstdint>
 #include <functional>
-#include "omath/Vector2.h"
+#include "omath/Vector2.hpp"
 
 
 namespace omath

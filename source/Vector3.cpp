@@ -2,9 +2,9 @@
 // Created by vlad on 10/28/23.
 //
 
-#include <omath/Vector3.h>
+#include <omath/Vector3.hpp>
 #include <cmath>
-#include <omath/Angles.h>
+#include <omath/Angles.hpp>
 
 namespace omath
 {

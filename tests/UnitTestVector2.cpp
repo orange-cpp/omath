@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include <omath/Vector2.h>
+#include <omath/Vector2.hpp>
 #include <cmath> // For std::isinf and std::isnan
 #include <cfloat> // For FLT_MAX and FLT_MIN
 

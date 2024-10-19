@@ -2,7 +2,7 @@
 // Created by Vlad on 01.09.2024.
 //
 #include <gtest/gtest.h>
-#include <omath/Color.h>
+#include <omath/Color.hpp>
 
 
 using namespace omath;

@@ -5,9 +5,9 @@
 #pragma once
 
 #include <optional>
-#include "omath/Vector3.h"
-#include "omath/prediction/Projectile.h"
-#include "omath/prediction/Target.h"
+#include "omath/Vector3.hpp"
+#include "omath/prediction/Projectile.hpp"
+#include "omath/prediction/Target.hpp"
 
 
 namespace omath::prediction

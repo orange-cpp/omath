@@ -3,9 +3,9 @@
 //
 
 
-#include "omath/prediction/Engine.h"
+#include "omath/prediction/Engine.hpp"
 #include <cmath>
-#include <omath/Angles.h>
+#include <omath/Angles.hpp>
 
 
 namespace omath::prediction

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "omath/Vector3.h"
+#include "omath/Vector3.hpp"
 #include <expected>
 #include <vector>
 #include <string>

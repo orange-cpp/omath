@@ -1,7 +1,7 @@
 //
 // Created by Vlad on 28.07.2024.
 //
-#include "omath/pathfinding/Astar.h"
+#include "omath/pathfinding/Astar.hpp"
 
 #include <optional>
 #include <unordered_map>
