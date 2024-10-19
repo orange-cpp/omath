@@ -8,18 +8,4 @@
 namespace omath
 {
 
-    Vector2 Vector2::Normalized() const
-    {
-        const float len = Length();
-
-        if (len > 0.f)
-            return {x / len, y / len};
-
-        return {0.f, 0.f};
-    }
-
-    float Vector2::Length() const
-    {
-        return std::sqrt(x * x + y * y);
-    }
 }
