@@ -8,23 +8,6 @@
 
 namespace omath
 {
-
-    float Vector3::DistTo(const Vector3 &vOther) const
-    {
-        return (*this - vOther).Length();
-    }
-
-    float Vector3::Length() const
-    {
-        return std::sqrt(Vector2::LengthSqr() + z * z);
-    }
-
-
-    float Vector3::Length2D() const
-    {
-        return Vector2::Length();
-    }
-
     Vector3 Vector3::ViewAngleTo(const Vector3 &other) const
     {
         const float distance = DistTo(other);
@@ -82,13 +65,5 @@ namespace omath
     Vector3 Vector3::UpVector(float pitch, float yaw, float roll)
     {
         return RightVector(pitch, yaw, roll).Cross(ForwardVector(pitch, yaw));
-    }
-
-
-    Vector3 Vector3::Normalized() const
-    {
-        const float length = this->Length();
-
-        return length != 0 ? *this / length : *this;
     }
 }

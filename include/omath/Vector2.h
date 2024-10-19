@@ -114,7 +114,10 @@ namespace omath
             return x * vOther.x + y * vOther.y;
         }
 
-        [[nodiscard]] float Length() const;
+        [[nodiscard]] constexpr float Length() const
+        {
+            return std::hypot(x, y);
+        }
 
         [[nodiscard]] constexpr float LengthSqr() const
         {
@@ -167,7 +170,11 @@ namespace omath
         }
 
         // Normalize the vector
-        [[nodiscard]] Vector2 Normalized() const;
+        [[nodiscard]] constexpr Vector2 Normalized() const
+        {
+            const float len = Length();
+            return len > 0.f ? *this / len : *this;
+        }
 
          // Sum of elements
         [[nodiscard]] constexpr float Sum() const

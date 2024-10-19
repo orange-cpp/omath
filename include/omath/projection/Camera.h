@@ -31,7 +31,7 @@ namespace omath::projection
 
         [[nodiscard]] Mat<4, 4> GetViewMatrix() const;
 
-        [[nodiscard]] std::expected<Vector2, Error> WorldToScreen(Vector3 worldPosition) const;
+        [[nodiscard]] std::expected<Vector3, Error> WorldToScreen(const Vector3& worldPosition) const;
 
         ViewPort m_viewPort{};
         float m_fieldOfView;
