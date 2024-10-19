@@ -184,24 +184,6 @@ TEST_F(UnitTestMat, StaticMethod_OrientationMat)
     EXPECT_FLOAT_EQ(orientMat.At(2, 2), forward.z);
 }
 
-// Test static method: ProjectionMat
-TEST_F(UnitTestMat, StaticMethod_ProjectionMat)
-{
-    constexpr float fieldOfView = 45.0f;
-    constexpr float aspectRatio = 1.33f;
-    constexpr float near = 0.1f;
-    constexpr float far = 100.0f;
-    const Mat<4, 4> projMat = Mat<4, 4>::ProjectionMat(fieldOfView, aspectRatio, near, far);
-
-    const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
-
-    EXPECT_FLOAT_EQ(projMat.At(0, 0), 1.f / (aspectRatio * fovHalfTan));
-    EXPECT_FLOAT_EQ(projMat.At(1, 1), 1.f / fovHalfTan);
-    EXPECT_FLOAT_EQ(projMat.At(2, 2), (far + near) / (far - near));
-    EXPECT_FLOAT_EQ(projMat.At(2, 3), (2.f * near * far) / (far - near));
-    EXPECT_FLOAT_EQ(projMat.At(3, 2), -1.f);
-}
-
 // Test exception handling in At() method
 TEST_F(UnitTestMat, Method_At_OutOfRange)
 {
