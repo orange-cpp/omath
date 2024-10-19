@@ -2,6 +2,7 @@
 // Created by vlad on 9/29/2024.
 //
 #pragma once
+#include <algorithm>
 #include <array>
 #include <sstream>
 #include <utility>
@@ -59,13 +60,13 @@ namespace omath
         }
 
         [[nodiscard]]
-        static constexpr size_t RowCount() noexcept { return Rows; }
+        static consteval size_t RowCount() noexcept { return Rows; }
 
         [[nodiscard]]
-        static constexpr size_t ColumnsCount() noexcept { return Columns; }
+        static consteval size_t ColumnsCount() noexcept { return Columns; }
 
         [[nodiscard]]
-        static constexpr std::pair<size_t, size_t> Size() noexcept { return { Rows, Columns }; }
+        static consteval std::pair<size_t, size_t> Size() noexcept { return { Rows, Columns }; }
 
 
         [[nodiscard]] constexpr const float& At(const size_t rowIndex, const size_t columnIndex) const
@@ -92,11 +93,13 @@ namespace omath
 
         constexpr void Clear()
         {
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) = 0.f;
+            Set(0.f);
         }
 
+        constexpr void Set(const float value)
+        {
+            std::ranges::fill(m_data, value);
+        }
         // Operator overloading for multiplication with another Mat
         template <size_t OtherColumns>
         constexpr Mat<Rows, OtherColumns> operator*(const Mat<Columns, OtherColumns>& other) const
