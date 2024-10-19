@@ -20,7 +20,6 @@ namespace omath::projection
         m_nearPlaneDistance = near;
         m_farPlaneDistance = far;
         m_lensZoom = lensZoom;
-
     }
 
     Mat<4, 4> Camera::GetViewMatrix() const
