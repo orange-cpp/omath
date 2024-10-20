@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include <omath/Vector3.h>
+#include <omath/Vector3.hpp>
 #include <cmath>
 #include <cfloat> // For FLT_MAX, FLT_MIN
 #include <limits> // For std::numeric_limits

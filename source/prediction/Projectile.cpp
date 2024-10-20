@@ -2,7 +2,7 @@
 // Created by Vlad on 6/9/2024.
 //
 
-#include "omath/prediction/Projectile.h"
+#include "omath/prediction/Projectile.hpp"
 #include <cmath>
 
 

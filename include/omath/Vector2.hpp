@@ -18,7 +18,7 @@ namespace omath
         // Constructors
         constexpr Vector2() : x(0.f), y(0.f) {}
 
-        constexpr Vector2(float x, float y) : x(x), y(y) {}
+        constexpr Vector2(const float x, const float y) : x(x), y(y) {}
 
         // Equality operators
         [[nodiscard]]

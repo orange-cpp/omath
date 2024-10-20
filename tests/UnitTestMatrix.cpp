@@ -2,8 +2,8 @@
 // Created by vlad on 5/18/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/Matrix.h>
-#include "omath/Vector3.h"
+#include <omath/Matrix.hpp>
+#include "omath/Vector3.hpp"
 
 using namespace omath;
 
