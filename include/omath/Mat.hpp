@@ -13,18 +13,17 @@
 
 namespace omath
 {
-    template <size_t Rows, size_t Columns>
+    template<size_t Rows, size_t Columns, class Type = float>
     class Mat final
     {
     public:
-
         constexpr Mat()
         {
             Clear();
         }
 
 
-        constexpr Mat(const std::initializer_list<std::initializer_list<float>>& rows)
+        constexpr Mat(const std::initializer_list<std::initializer_list<Type> > &rows)
         {
             if (rows.size() != Rows)
                 throw std::invalid_argument("Initializer list rows size does not match template parameter Rows");
@@ -33,7 +32,8 @@ namespace omath
             for (size_t i = 0; i < Rows; ++i, ++rowIt)
             {
                 if (rowIt->size() != Columns)
-                    throw std::invalid_argument("All rows must have the same number of columns as template parameter Columns");
+                    throw std::invalid_argument(
+                        "All rows must have the same number of columns as template parameter Columns");
 
                 auto colIt = rowIt->begin();
                 for (size_t j = 0; j < Columns; ++j, ++colIt)
@@ -44,13 +44,13 @@ namespace omath
         }
 
 
-        constexpr Mat(const Mat& other)
+        constexpr Mat(const Mat &other) noexcept
         {
             m_data = other.m_data;
         }
 
 
-        constexpr Mat(Mat&& other) noexcept
+        constexpr Mat(Mat &&other) noexcept
         {
             m_data = std::move(other.m_data);
         }
@@ -62,24 +62,26 @@ namespace omath
         static consteval size_t ColumnsCount() noexcept { return Columns; }
 
         [[nodiscard]]
-        static consteval std::pair<size_t, size_t> Size() noexcept { return { Rows, Columns }; }
+        static consteval std::pair<size_t, size_t> Size() noexcept { return {Rows, Columns}; }
 
 
-        [[nodiscard]] constexpr const float& At(const size_t rowIndex, const size_t columnIndex) const
+        [[nodiscard]] constexpr const Type &At(const size_t rowIndex, const size_t columnIndex) const
         {
             if (rowIndex >= Rows || columnIndex >= Columns)
                 throw std::out_of_range("Index out of range");
 
             return m_data[rowIndex * Columns + columnIndex];
         }
-        [[nodiscard]] constexpr float& At(const size_t rowIndex, const size_t columnIndex)
+
+        [[nodiscard]] constexpr Type &At(const size_t rowIndex, const size_t columnIndex)
         {
-            return const_cast<float&>(std::as_const(*this).At(rowIndex, columnIndex));
+            return const_cast<Type &>(std::as_const(*this).At(rowIndex, columnIndex));
         }
+
         [[nodiscard]]
-        constexpr float Sum() const
+        constexpr Type Sum() const noexcept
         {
-            float sum = 0.f;
+            Type sum = 0;
             for (size_t i = 0; i < Rows; ++i)
                 for (size_t j = 0; j < Columns; ++j)
                     sum += At(i, j);
@@ -87,25 +89,26 @@ namespace omath
             return sum;
         }
 
-        constexpr void Clear()
+        constexpr void Clear() noexcept
         {
-            Set(0.f);
+            Set(0);
         }
 
-        constexpr void Set(const float value)
+        constexpr void Set(const Type &value) noexcept
         {
             std::ranges::fill(m_data, value);
         }
+
         // Operator overloading for multiplication with another Mat
-        template <size_t OtherColumns>
-        constexpr Mat<Rows, OtherColumns> operator*(const Mat<Columns, OtherColumns>& other) const
+        template<size_t OtherColumns>
+        constexpr Mat<Rows, OtherColumns> operator*(const Mat<Columns, OtherColumns> &other) const
         {
             Mat<Rows, OtherColumns> result;
 
             for (size_t i = 0; i < Rows; ++i)
                 for (size_t j = 0; j < OtherColumns; ++j)
                 {
-                    float sum = 0.f;
+                    Type sum = 0;
                     for (size_t k = 0; k < Columns; ++k)
                         sum += At(i, k) * other.At(k, j);
                     result.At(i, j) = sum;
@@ -113,7 +116,7 @@ namespace omath
             return result;
         }
 
-        constexpr Mat& operator*=(float f)
+        constexpr Mat &operator*=(Type f) noexcept
         {
             for (size_t i = 0; i < Rows; ++i)
                 for (size_t j = 0; j < Columns; ++j)
@@ -121,20 +124,20 @@ namespace omath
             return *this;
         }
 
-        template <size_t OtherColumns>
-        constexpr Mat<Rows, OtherColumns> operator*=(const Mat<Columns, OtherColumns>& other)
+        template<size_t OtherColumns>
+        constexpr Mat<Rows, OtherColumns> operator*=(const Mat<Columns, OtherColumns> &other)
         {
             return *this = *this * other;
         }
 
-        constexpr Mat operator*(float f) const
+        constexpr Mat operator*(const Type &f) const noexcept
         {
             Mat result(*this);
             result *= f;
             return result;
         }
 
-        constexpr Mat& operator/=(float f)
+        constexpr Mat &operator/=(const Type &f) noexcept
         {
             for (size_t i = 0; i < Rows; ++i)
                 for (size_t j = 0; j < Columns; ++j)
@@ -142,14 +145,14 @@ namespace omath
             return *this;
         }
 
-        constexpr Mat operator/(float f) const
+        constexpr Mat operator/(const Type &f) const noexcept
         {
             Mat result(*this);
             result /= f;
             return result;
         }
 
-        constexpr Mat& operator=(const Mat& other)
+        constexpr Mat &operator=(const Mat &other) noexcept
         {
             if (this == &other)
                 return *this;
@@ -159,7 +162,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Mat& operator=(Mat&& other) noexcept
+        constexpr Mat &operator=(Mat &&other) noexcept
         {
             if (this == &other)
                 return *this;
@@ -172,7 +175,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat<Columns, Rows> Transpose() const
+        constexpr Mat<Columns, Rows> Transpose() const noexcept
         {
             Mat<Columns, Rows> transposed;
             for (size_t i = 0; i < Rows; ++i)
@@ -183,7 +186,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr float Determinant() const
+        constexpr Type Determinant() const
         {
             static_assert(Rows == Columns, "Determinant is only defined for square matrices.");
 
@@ -194,10 +197,10 @@ namespace omath
                 return At(0, 0) * At(1, 1) - At(0, 1) * At(1, 0);
             else
             {
-                float det = 0.f;
+                Type det = 0;
                 for (size_t i = 0; i < Columns; ++i)
                 {
-                    const float cofactor = (i % 2 == 0 ? 1.f : -1.f) * At(0, i) * Minor(0, i).Determinant();
+                    const Type cofactor = (i % 2 == 0 ? 1 : -1) * At(0, i) * Minor(0, i).Determinant();
                     det += cofactor;
                 }
                 return det;
@@ -225,7 +228,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        std::string ToString() const
+        std::string ToString() const noexcept
         {
             std::ostringstream oss;
             for (size_t i = 0; i < Rows; ++i)
@@ -243,58 +246,59 @@ namespace omath
 
         // Static methods that return fixed-size matrices
         [[nodiscard]]
-        constexpr static Mat<4, 4> ToScreenMat(const float screenWidth, const float screenHeight)
+        constexpr static Mat<4, 4> ToScreenMat(const Type &screenWidth, const Type &screenHeight) noexcept
         {
             return
             {
-                {screenWidth / 2.f, 0.f,                 0.f, 0.f},
-                {0.f,               -screenHeight / 2.f, 0.f, 0.f},
-                {0.f,               0.f,                 1.f, 0.f},
-                {screenWidth / 2.f, screenHeight / 2.f,  0.f, 1.f},
-           };
-        }
-
-        [[nodiscard]]
-        constexpr static Mat<4, 4> TranslationMat(const Vector3& diff)
-        {
-            return
-            {
-                {1.f,    0.f,    0.f,    0.f},
-                {0.f,    1.f,    0.f,    0.f},
-                {0.f,    0.f,    1.f,    0.f},
-                {diff.x, diff.y, diff.z, 1.f},
+                {screenWidth / 2, 0, 0, 0},
+                {0, -screenHeight / 2, 0, 0},
+                {0, 0, 1, 0},
+                {screenWidth / 2, screenHeight / 2, 0, 1},
             };
         }
 
         [[nodiscard]]
-        constexpr static Mat<4, 4> OrientationMat(const Vector3& forward, const Vector3& right, const Vector3& up)
+        constexpr static Mat<4, 4> TranslationMat(const Vector3 &diff) noexcept
         {
             return
             {
-                {right.x, up.x, forward.x, 0.f},
-                {right.y, up.y, forward.y, 0.f},
-                {right.z, up.z, forward.z, 0.f},
-                {0.f,     0.f,  0.f,       1.f},
+                {1, 0, 0, 0},
+                {0, 1, 0, 0},
+                {0, 0, 1, 0},
+                {diff.x, diff.y, diff.z, 1},
             };
         }
 
         [[nodiscard]]
-        constexpr static Mat<4, 4> ProjectionMat(const float fieldOfView, const float aspectRatio,
-                                                 const float near, const float far, const float lensZoom)
+        constexpr static Mat<4, 4> OrientationMat(const Vector3 &forward, const Vector3 &right,
+                                                  const Vector3 &up) noexcept
         {
-            const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
-            const float frustumHeight = far - near;
+            return
+            {
+                {right.x, up.x, forward.x, 0},
+                {right.y, up.y, forward.y, 0},
+                {right.z, up.z, forward.z, 0},
+                {0, 0, 0, 1},
+            };
+        }
+
+        [[nodiscard]]
+        constexpr static Mat<4, 4> ProjectionMat(const Type &fieldOfView, const Type &aspectRatio,
+                                                 const Type &near, const Type &far, const Type &lensZoom) noexcept
+        {
+            const Type &fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2);
+            const Type &frustumHeight = far - near;
 
             return
             {
-                {-1.f / (aspectRatio * fovHalfTan) * lensZoom, 0.f, 0.f, 0.f},
-                {0.f, -1.f / fovHalfTan * lensZoom, 0.f, 0.f},
-                {0.f, 0.f, -far / frustumHeight, -1},
-                {0.f, 0.f, near * far / frustumHeight, 0.f}
+                {-1 / (aspectRatio * fovHalfTan) * lensZoom, 0, 0, 0},
+                {0, -1 / fovHalfTan * lensZoom, 0, 0},
+                {0, 0, -far / frustumHeight, -1},
+                {0, 0, near * far / frustumHeight, 0}
             };
         }
 
     private:
-        std::array<float, Rows*Columns> m_data;
+        std::array<Type, Rows * Columns> m_data;
     };
 }
