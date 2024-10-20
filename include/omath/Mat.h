@@ -46,17 +46,13 @@ namespace omath
 
         constexpr Mat(const Mat& other)
         {
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) = other.At(i, j);
+            m_data = other.m_data;
         }
 
 
         constexpr Mat(Mat&& other) noexcept
         {
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j)  = other.At(i, j) ;
+            m_data = std::move(other.m_data);
         }
 
         [[nodiscard]]
