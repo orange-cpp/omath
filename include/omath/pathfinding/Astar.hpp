@@ -4,8 +4,8 @@
 
 #pragma once
 #include <vector>
-#include "NavigationMesh.h"
-#include "omath/Vector3.h"
+#include "NavigationMesh.hpp"
+#include "omath/Vector3.hpp"
 
 
 namespace omath::pathfinding

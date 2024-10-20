@@ -1,6 +1,6 @@
-#include "omath/Matrix.h"
-#include "omath/Vector3.h"
-#include "omath/Angles.h"
+#include "omath/Matrix.hpp"
+#include "omath/Vector3.hpp"
+#include "omath/Angles.hpp"
 
 
 #include <format>

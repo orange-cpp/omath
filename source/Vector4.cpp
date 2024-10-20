@@ -2,7 +2,7 @@
 // Vector4.cpp
 //
 
-#include "omath/Vector4.h"
+#include "omath/Vector4.hpp"
 #include <cmath>
 
 

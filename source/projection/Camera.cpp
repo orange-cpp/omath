@@ -1,11 +1,11 @@
 //
 // Created by Vlad on 27.08.2024.
 //
-#include "omath/projection/Camera.h"
+#include "omath/projection/Camera.hpp"
 
 #include <complex>
 
-#include "omath/Angles.h"
+#include "omath/Angles.hpp"
 
 
 namespace omath::projection

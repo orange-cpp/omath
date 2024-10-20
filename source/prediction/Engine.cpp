@@ -3,19 +3,19 @@
 //
 
 
-#include "omath/prediction/Engine.h"
+#include "omath/prediction/Engine.hpp"
 #include <cmath>
-#include <omath/Angles.h>
+#include <omath/Angles.hpp>
 
 
 namespace omath::prediction
 {
     Engine::Engine(const float gravityConstant, const float simulationTimeStep,
-        const float maximumSimulationTime, const float distanceTolerance)
-    : m_gravityConstant(gravityConstant),
-    m_simulationTimeStep(simulationTimeStep),
-    m_maximumSimulationTime(maximumSimulationTime),
-    m_distanceTolerance(distanceTolerance)
+                   const float maximumSimulationTime, const float distanceTolerance)
+        : m_gravityConstant(gravityConstant),
+          m_simulationTimeStep(simulationTimeStep),
+          m_maximumSimulationTime(maximumSimulationTime),
+          m_distanceTolerance(distanceTolerance)
     {
     }
 
@@ -28,7 +28,7 @@ namespace omath::prediction
             const auto projectilePitch = MaybeCalculateProjectileLaunchPitchAngle(projectile, predictedTargetPosition);
 
             if (!projectilePitch.has_value()) [[unlikely]]
-                continue;
+                    continue;
 
             if (!IsProjectileReachedTarget(predictedTargetPosition, projectile, projectilePitch.value(), time))
                 continue;
@@ -42,19 +42,20 @@ namespace omath::prediction
     }
 
     std::optional<float> Engine::MaybeCalculateProjectileLaunchPitchAngle(const Projectile &projectile,
-        const Vector3 &targetPosition) const
+                                                                          const Vector3 &targetPosition) const
     {
         const auto bulletGravity = m_gravityConstant * projectile.m_gravityScale;
         const auto delta = targetPosition - projectile.m_origin;
 
         const auto distance2d = delta.Length2D();
+        const auto distance2dSqr = distance2d * distance2d;
+        const auto launchSpeedSqr = projectile.m_launchSpeed * projectile.m_launchSpeed;
 
-
-        float root = std::pow(projectile.m_launchSpeed, 4.f) - bulletGravity * (bulletGravity *
-            std::pow(distance2d, 2.f) + 2.0f * delta.z * std::pow(projectile.m_launchSpeed, 2.f));
+        float root = launchSpeedSqr * launchSpeedSqr - bulletGravity * (bulletGravity *
+                         distance2dSqr + 2.0f * delta.z * launchSpeedSqr);
 
         if (root < 0.0f) [[unlikely]]
-            return std::nullopt;
+                return std::nullopt;
 
         root = std::sqrt(root);
         const float angle = std::atan((std::pow(projectile.m_launchSpeed, 2.f) - root) / (bulletGravity * distance2d));
@@ -63,7 +64,7 @@ namespace omath::prediction
     }
 
     bool Engine::IsProjectileReachedTarget(const Vector3 &targetPosition, const Projectile &projectile,
-        const float pitch, const float time) const
+                                           const float pitch, const float time) const
     {
         const auto yaw = projectile.m_origin.ViewAngleTo(targetPosition).y;
         const auto projectilePosition = projectile.PredictPosition(pitch, yaw, time, m_gravityConstant);
