@@ -92,11 +92,6 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]] constexpr float DistTo(const Vector3& vOther) const
-        {
-            return (*this - vOther).Length();
-        }
-
         constexpr Vector3& Abs()
         {
             Vector2::Abs();
@@ -115,19 +110,54 @@ namespace omath
             return Vector2::Dot(vOther) + z * vOther.z;
         }
 
+#ifndef _MSC_VER
         [[nodiscard]] constexpr float Length() const
         {
             return std::hypot(x, y, z);
         }
 
-        [[nodiscard]] constexpr float LengthSqr() const
-        {
-            return Vector2::LengthSqr() + z * z;
-        }
-
         [[nodiscard]] constexpr float Length2D() const
         {
             return Vector2::Length();
+        }
+        [[nodiscard]] float DistTo(const Vector3& vOther) const
+        {
+            return (*this - vOther).Length();
+        }
+        [[nodiscard]] constexpr Vector3 Normalized() const
+        {
+            const float length = this->Length();
+
+            return length != 0 ? *this / length : *this;
+        }
+#else
+        [[nodiscard]] float Length() const
+        {
+            return std::hypot(x, y, z);
+        }
+
+        [[nodiscard]] Vector3 Normalized() const
+        {
+            const float length = this->Length();
+
+            return length != 0 ? *this / length : *this;
+        }
+
+        [[nodiscard]] float Length2D() const
+        {
+            return Vector2::Length();
+        }
+
+        [[nodiscard]] float DistTo(const Vector3& vOther) const
+        {
+            return (*this - vOther).Length();
+        }
+#endif
+
+
+        [[nodiscard]] constexpr float LengthSqr() const
+        {
+            return Vector2::LengthSqr() + z * z;
         }
 
         [[nodiscard]] constexpr Vector3 operator-() const
@@ -189,14 +219,6 @@ namespace omath
         [[nodiscard]] static Vector3 ForwardVector(float pitch, float yaw);
         [[nodiscard]] static Vector3 RightVector(float pitch, float yaw, float roll);
         [[nodiscard]] static Vector3 UpVector(float pitch, float yaw, float roll);
-
-
-        [[nodiscard]] constexpr Vector3 Normalized() const
-        {
-            const float length = this->Length();
-
-            return length != 0 ? *this / length : *this;
-        }
 
         [[nodiscard]] std::tuple<float, float, float> AsTuple() const
         {
