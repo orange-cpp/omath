@@ -93,7 +93,7 @@ namespace omath
         Matrix operator/(float f) const;
 
         [[nodiscard]]
-        std::string ToSrtring() const;
+        std::string ToString() const;
 
         ~Matrix();
 

@@ -213,7 +213,7 @@ namespace omath
         return out;
     }
 
-    std::string Matrix::ToSrtring() const
+    std::string Matrix::ToString() const
     {
         std::string str;
 

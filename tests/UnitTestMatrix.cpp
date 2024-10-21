@@ -145,7 +145,7 @@ TEST_F(UnitTestMatrix, Clear)
 
 TEST_F(UnitTestMatrix, ToString)
 {
-    const std::string str = m2.ToSrtring();
+    const std::string str = m2.ToString();
     EXPECT_FALSE(str.empty());
 }
 
