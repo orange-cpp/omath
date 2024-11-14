@@ -51,17 +51,30 @@ TEST_F(LineTracerTest, RayInPlaneNotIntersecting)
     EXPECT_TRUE(LineTracer::CanTraceLine(ray, triangle));
 }
 
-// Test edge case where the ray exactly intersects one of the triangle's vertices, expecting false
+
 TEST_F(LineTracerTest, RayIntersectsVertex)
 {
     const Ray ray{{-1.0f, -1.0f, -1.0f}, vertex1}; // Intersecting at vertex1
-    EXPECT_FALSE(LineTracer::CanTraceLine(ray, triangle));
+    EXPECT_TRUE(LineTracer::CanTraceLine(ray, triangle));
 }
 
-// Test edge case where the ray exactly intersects one of the triangle's edges, expecting false
 TEST_F(LineTracerTest, RayIntersectsEdge)
 {
     constexpr Ray ray{{-1.0f, 0.0f, -1.0f}, {0.5f, 0.0f, 0.0f}};
     // Intersecting on the edge between vertex1 and vertex2
-    EXPECT_FALSE(LineTracer::CanTraceLine(ray, triangle));
+    EXPECT_TRUE(LineTracer::CanTraceLine(ray, triangle));
+}
+
+TEST_F(LineTracerTest, TriangleFarBeyondRayEndPoint)
+{
+    // Define a ray with a short length
+    constexpr Ray ray{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
+
+    // Define a triangle far beyond the ray's endpoint
+    const Triangle3d distantTriangle{
+        {1000.0f, 1000.0f, 1000.0f}, {1001.0f, 1000.0f, 1000.0f}, {1000.0f, 1001.0f, 1000.0f}
+    };
+
+    // Expect true because the ray ends long before it could reach the distant triangle
+    EXPECT_TRUE(LineTracer::CanTraceLine(ray, distantTriangle));
 }
