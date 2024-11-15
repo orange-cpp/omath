@@ -1,1 +1,4 @@
-target_sources(omath PRIVATE LineTracer.cpp)
+target_sources(omath PRIVATE
+        LineTracer.cpp
+        Cube.cpp
+)
