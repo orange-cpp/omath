@@ -17,6 +17,8 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 - **Ease of Use**: Simplified interface for convenient integration into various projects.
 - **Projectile Prediction**: Projectile prediction engine with O(N) algo complexity, that can power you projectile aim-bot.
 - **3D Projection**: No need to find view-projection matrix anymore you can make your own projection pipeline.
+- **Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
+- **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
 
 ## Getting Started
 ### Prerequisites
@@ -34,10 +36,10 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
    ```
 3. Build the project using CMake:
    ```
-   cmake --preset x64-release -S .
-   cmake --build cmake-build/build/x64-release --target server -j 6
+   cmake --preset windows-release -S .
+   cmake --build cmake-build/build/windows-release --target server -j 6
    ```
-
+   Use **\<platform\>-\<build configuration\>** preset to build siutable version for yourself. Like **windows-release** or **linux-release**.
 ## Usage
 Simple world to screen function
 ```c++
@@ -64,7 +66,7 @@ With `omath/projection` module you can achieve simple ESP hack for powered by So
 Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
 
 ## License
-This project is licensed under the GPL V3 - see the `LICENSE` file for details.
+This project is licensed under the MIT - see the `LICENSE` file for details.
 
 ## Acknowledgments
 - Orange | [Telegram](https://t.me/orange_cpp)
