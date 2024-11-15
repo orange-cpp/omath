@@ -42,7 +42,7 @@ with such incidents in multiple ways:
 
 ***E-Mail***
 - `orange-cpp@yandex.ru`
-- 
+
 ***Discord***
 - `@orange_cpp`
 
