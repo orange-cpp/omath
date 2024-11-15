@@ -20,7 +20,7 @@ namespace omath::collision
         return DirectionVector().Normalized();
     }
 
-    std::optional<Vector3> LineTracer::GetRayHitPoint(const Ray &ray, const Triangle3d &triangle)
+    Vector3 LineTracer::GetRayHitPoint(const Ray &ray, const Triangle3d &triangle)
     {
         constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
 

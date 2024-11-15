@@ -2,7 +2,6 @@
 // Created by Orange on 11/13/2024.
 //
 #pragma once
-#include <optional>
 
 #include "omath/Vector3.hpp"
 #include "omath/Triangle3d.hpp"
@@ -34,6 +33,6 @@ namespace omath::collision
         // Realization of Möller–Trumbore intersection algorithm
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
         [[nodiscard]]
-        static std::optional<Vector3> GetRayHitPoint(const Ray& ray, const Triangle3d& triangle);
+        static Vector3 GetRayHitPoint(const Ray& ray, const Triangle3d& triangle);
     };
 }
