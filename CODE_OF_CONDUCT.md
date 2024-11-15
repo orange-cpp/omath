@@ -56,8 +56,8 @@ Depending on the severity of the infraction, any action from the list below may 
 Please keep in mind cases are reviewed on a per-case basis and members are the ultimate
 deciding factor in the type of punishment.
 
-If the matter would benefit from an outside opinion, a member might reach for more opinions
-from people unrelated to the organization, however, the final decision regarding the action
+If the matter benefited from an outside opinion, a member might reach for more opinions
+from people unrelated, however, the final decision regarding the action
 to be taken is still up to the member.
 
 For example, if the matter at hand regards a representative of a marginalized group or minority,
