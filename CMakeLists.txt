@@ -13,10 +13,7 @@ option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/Vector3.cpp)
 else()
-    add_library(omath STATIC source/Vector3.cpp
-            include/omath/collision/ICollidable.h
-            include/omath/collision/Cube.h
-            source/collision/Cube.cpp)
+    add_library(omath STATIC source/Vector3.cpp)
 endif()
 
 add_subdirectory(source)
