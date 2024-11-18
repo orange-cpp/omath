@@ -6,7 +6,7 @@
 
 namespace omath
 {
-    class Triangle3d
+    class Triangle3d final
     {
     public:
         Triangle3d(const Vector3& vertex1, const Vector3& vertex2, const Vector3& vertex3);
