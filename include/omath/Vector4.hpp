@@ -14,7 +14,7 @@ namespace omath
     public:
         float w;
 
-        constexpr Vector4(float x, float y, float z, float w) : Vector3(x, y, z), w(w) {}
+        constexpr Vector4(const float x, const float y, const float z, const float w) : Vector3(x, y, z), w(w) {}
         constexpr Vector4() : Vector3(), w(0.f) {};
 
         [[nodiscard]]
@@ -45,7 +45,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector4& operator*=(float scalar)
+        constexpr Vector4& operator*=(const float scalar)
         {
             Vector3::operator*=(scalar);
             w *= scalar;
@@ -61,7 +61,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector4& operator/=(float scalar)
+        constexpr Vector4& operator/=(const float scalar)
         {
             Vector3::operator/=(scalar);
             w /= scalar;
@@ -95,7 +95,7 @@ namespace omath
 
             return *this;
         }
-        constexpr Vector4& Clamp(float min, float max)
+        constexpr Vector4& Clamp(const float min, const float max)
         {
             x = std::clamp(x, min, max);
             y = std::clamp(y, min, max);
@@ -123,7 +123,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator*(float scalar) const
+        constexpr Vector4 operator*(const float scalar) const
         {
             return {x * scalar, y * scalar, z * scalar, w * scalar};
         }
@@ -135,7 +135,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator/(float scalar) const
+        constexpr Vector4 operator/(const float scalar) const
         {
             return {x / scalar, y / scalar, z / scalar, w / scalar};
         }

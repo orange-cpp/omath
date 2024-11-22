@@ -13,7 +13,11 @@
 
 namespace omath
 {
-    template<size_t Rows, size_t Columns, class Type = float>
+    struct MatSize
+    {
+        size_t rows, columns;
+    };
+    template<size_t Rows = 0, size_t Columns = 0, class Type = float>
     class Mat final
     {
     public:
@@ -56,13 +60,22 @@ namespace omath
         }
 
         [[nodiscard]]
-        static consteval size_t RowCount() noexcept { return Rows; }
+        static consteval size_t RowCount() noexcept
+        {
+            return Rows;
+        }
 
         [[nodiscard]]
-        static consteval size_t ColumnsCount() noexcept { return Columns; }
+        static consteval size_t ColumnsCount() noexcept
+        {
+            return Columns;
+        }
 
         [[nodiscard]]
-        static consteval std::pair<size_t, size_t> Size() noexcept { return {Rows, Columns}; }
+        static consteval MatSize Size() noexcept
+        {
+            return {Rows, Columns};
+        }
 
 
         [[nodiscard]] constexpr const Type &At(const size_t rowIndex, const size_t columnIndex) const
@@ -116,7 +129,7 @@ namespace omath
             return result;
         }
 
-        constexpr Mat &operator*=(const Type& f) noexcept
+        constexpr Mat &operator*=(const Type &f) noexcept
         {
             for (size_t i = 0; i < Rows; ++i)
                 for (size_t j = 0; j < Columns; ++j)
@@ -175,7 +188,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat<Columns, Rows> Transpose() const noexcept
+        constexpr Mat<Columns, Rows> Transposed() const noexcept
         {
             Mat<Columns, Rows> transposed;
             for (size_t i = 0; i < Rows; ++i)
@@ -295,6 +308,26 @@ namespace omath
                 {0, -1 / fovHalfTan * lensZoom, 0, 0},
                 {0, 0, -far / frustumHeight, -1},
                 {0, 0, near * far / frustumHeight, 0}
+            };
+        }
+
+        [[nodiscard]]
+        constexpr static Mat<4, 1> MatRowFromVector(const Vector3 &vector) noexcept
+        {
+            return {{vector.x, vector.y, vector.z, 1}};
+        }
+
+        [[nodiscard]]
+        constexpr static Mat<1, 4> MatColumnFromVector(const Vector3 &vector) noexcept
+        {
+            return
+            {
+                {
+                    {vector.x},
+                    {vector.y},
+                    {vector.z},
+                    {1}
+                }
             };
         }
 

@@ -28,16 +28,16 @@ namespace omath::projection
         const auto right = Vector3::RightVector(m_viewAngles.x, m_viewAngles.y, m_viewAngles.z);
         const auto up = Vector3::UpVector(m_viewAngles.x, m_viewAngles.y, m_viewAngles.z);
 
-        return Mat<4, 4>::TranslationMat(-m_origin) * Mat<4, 4>::OrientationMat(forward, right, up);
+        return Mat<>::TranslationMat(-m_origin) * Mat<>::OrientationMat(forward, right, up);
     }
 
     std::expected<Vector3, Error> Camera::WorldToScreen(const Vector3& worldPosition) const
     {
-        const auto posVecAsMatrix = Mat<1, 4>({{worldPosition.x, worldPosition.y, worldPosition.z, 1.f}});
+        const auto posVecAsMatrix = Mat<>::MatColumnFromVector(worldPosition);
 
 
-        const auto projectionMatrix = Mat<4, 4>::ProjectionMat(m_fieldOfView, m_viewPort.AspectRatio(),
-                                                               m_nearPlaneDistance, m_farPlaneDistance, 1.335f);
+        const auto projectionMatrix = Mat<>::ProjectionMat(m_fieldOfView, m_viewPort.AspectRatio(),
+                                                               m_nearPlaneDistance, m_farPlaneDistance, m_lensZoom);
 
         Mat<1, 4> projected = posVecAsMatrix * (GetViewMatrix() * projectionMatrix);
 
