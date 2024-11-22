@@ -16,7 +16,7 @@ namespace omath
         float y = 0.f;
 
         // Constructors
-        constexpr Vector2() : x(0.f), y(0.f) {}
+        constexpr Vector2() = default;
 
         constexpr Vector2(const float x, const float y) : x(x), y(y) {}
 
@@ -66,7 +66,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator*=(float fl)
+        constexpr Vector2& operator*=(const float fl)
         {
             x *= fl;
             y *= fl;
@@ -74,7 +74,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator/=(float fl)
+        constexpr Vector2& operator/=(const float fl)
         {
             x /= fl;
             y /= fl;
@@ -82,7 +82,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator+=(float fl)
+        constexpr Vector2& operator+=(const float fl)
         {
             x += fl;
             y += fl;
@@ -90,7 +90,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator-=(float fl)
+        constexpr Vector2& operator-=(const float fl)
         {
             x -= fl;
             y -= fl;
@@ -177,12 +177,12 @@ namespace omath
             return {x - v.x, y - v.y};
         }
 
-        [[nodiscard]] constexpr Vector2 operator*(float fl) const
+        [[nodiscard]] constexpr Vector2 operator*(const float fl) const
         {
             return {x * fl, y * fl};
         }
 
-        [[nodiscard]] constexpr Vector2 operator/(float fl) const
+        [[nodiscard]] constexpr Vector2 operator/(const float fl) const
         {
             return {x / fl, y / fl};
         }

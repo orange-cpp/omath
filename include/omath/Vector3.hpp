@@ -15,8 +15,8 @@ namespace omath
     {
     public:
         float z = 0.f;
-        constexpr Vector3(float x, float y, float z) : Vector2(x, y), z(z) { }
-        constexpr Vector3() : Vector2(), z(0.f) {};
+        constexpr Vector3(const float x, const float y, const float z) : Vector2(x, y), z(z) { }
+        constexpr Vector3() : Vector2() {};
 
         [[nodiscard]] constexpr bool operator==(const Vector3& src) const
         {
@@ -44,7 +44,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator*=(float fl)
+        constexpr Vector3& operator*=(const float fl)
         {
             Vector2::operator*=(fl);
             z *= fl;
@@ -68,7 +68,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator+=(float fl)
+        constexpr Vector3& operator+=(const float fl)
         {
             Vector2::operator+=(fl);
             z += fl;
@@ -76,7 +76,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator/=(float fl)
+        constexpr Vector3& operator/=(const float fl)
         {
             Vector2::operator/=(fl);
             z /= fl;
@@ -84,7 +84,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator-=(float fl)
+        constexpr Vector3& operator-=(const float fl)
         {
             Vector2::operator-=(fl);
             z -= fl;
@@ -175,7 +175,7 @@ namespace omath
             return {x - v.x, y - v.y, z - v.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator*(float fl) const
+        [[nodiscard]] constexpr Vector3 operator*(const float fl) const
         {
             return {x * fl, y * fl, z * fl};
         }
@@ -206,7 +206,7 @@ namespace omath
         }
         [[nodiscard]] constexpr float Sum() const
         {
-            return Vector3::Sum2D() + z;
+            return Sum2D() + z;
         }
 
         [[nodiscard]] constexpr float Sum2D() const

@@ -88,7 +88,7 @@ TEST_F(UnitTestMat, Operator_Division_Scalar)
 // Test matrix functions
 TEST_F(UnitTestMat, Transpose)
 {
-    Mat<2, 2> m3 = m2.Transpose();
+    Mat<2, 2> m3 = m2.Transposed();
     EXPECT_FLOAT_EQ(m3.At(0, 0), m2.At(0, 0));
     EXPECT_FLOAT_EQ(m3.At(0, 1), m2.At(1, 0));
     EXPECT_FLOAT_EQ(m3.At(1, 0), m2.At(0, 1));
@@ -215,7 +215,7 @@ TEST(UnitTestMatStandalone, Minor_3x3)
 TEST(UnitTestMatStandalone, Transpose_NonSquare)
 {
     constexpr Mat<2, 3> m{{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
-    auto transposed = m.Transpose();
+    auto transposed = m.Transposed();
     EXPECT_EQ(transposed.RowCount(), 3);
     EXPECT_EQ(transposed.ColumnsCount(), 2);
     EXPECT_FLOAT_EQ(transposed.At(0, 0), 1.0f);
