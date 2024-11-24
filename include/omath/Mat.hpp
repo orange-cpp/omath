@@ -70,13 +70,13 @@ namespace omath
         }
 
         [[nodiscard]]
-        static consteval size_t RowCount() noexcept
+        static constexpr size_t RowCount() noexcept
         {
             return Rows;
         }
 
         [[nodiscard]]
-        static consteval size_t ColumnsCount() noexcept
+        static constexpr size_t ColumnsCount() noexcept
         {
             return Columns;
         }
@@ -133,9 +133,9 @@ namespace omath
 
         // Operator overloading for multiplication with another Mat
         template<size_t OtherColumns>
-        constexpr Mat<Rows, OtherColumns> operator*(const Mat<Columns, OtherColumns> &other) const
+        constexpr Mat<Rows, OtherColumns, Type, StoreType> operator*(const Mat<Columns, OtherColumns, Type, StoreType> &other) const
         {
-            Mat<Rows, OtherColumns> result;
+            Mat<Rows, OtherColumns, Type, StoreType> result;
 
             for (size_t i = 0; i < Rows; ++i)
                 for (size_t j = 0; j < OtherColumns; ++j)
@@ -157,7 +157,7 @@ namespace omath
         }
 
         template<size_t OtherColumns>
-        constexpr Mat<Rows, OtherColumns> operator*=(const Mat<Columns, OtherColumns> &other)
+        constexpr Mat<Rows, OtherColumns, Type, StoreType> operator*=(const Mat<Columns, OtherColumns, Type, StoreType> &other)
         {
             return *this = *this * other;
         }
@@ -207,9 +207,9 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat<Columns, Rows> Transposed() const noexcept
+        constexpr Mat<Columns, Rows, Type, StoreType> Transposed() const noexcept
         {
-            Mat<Columns, Rows> transposed;
+            Mat<Columns, Rows, Type, StoreType> transposed;
             for (size_t i = 0; i < Rows; ++i)
                 for (size_t j = 0; j < Columns; ++j)
                     transposed.At(j, i) = At(i, j);
@@ -240,9 +240,9 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat<Rows - 1, Columns - 1> Minor(const size_t row, const size_t column) const
+        constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> Minor(const size_t row, const size_t column) const
         {
-            Mat<Rows - 1, Columns - 1> result;
+            Mat<Rows - 1, Columns - 1, Type, StoreType> result;
             for (size_t i = 0, m = 0; i < Rows; ++i)
             {
                 if (i == row)
@@ -288,6 +288,18 @@ namespace omath
             return oss.str();
         }
 
+        [[nodiscard]]
+        bool operator==(const Mat & mat) const
+        {
+            return m_data == mat.m_data;
+        }
+
+        [[nodiscard]]
+        bool operator!=(const Mat & mat) const
+        {
+            return !operator==(mat);
+        }
+
         // Static methods that return fixed-size matrices
         [[nodiscard]]
         constexpr static Mat<4, 4> ToScreenMat(const Type &screenWidth, const Type &screenHeight) noexcept
@@ -322,7 +334,7 @@ namespace omath
                 {right.x, up.x, forward.x, 0},
                 {right.y, up.y, forward.y, 0},
                 {right.z, up.z, forward.z, 0},
-                {0, 0, 0, 1},
+                {0,       0,    0,         1},
             };
         }
 
@@ -354,10 +366,10 @@ namespace omath
             return
             {
                 {
-                    {vector.x},
-                    {vector.y},
-                    {vector.z},
-                    {1}
+                    vector.x,
+                    vector.y,
+                    vector.z,
+                    1
                 }
             };
         }
