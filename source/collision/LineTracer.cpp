@@ -1,7 +1,6 @@
 //
 // Created by Orange on 11/13/2024.
 //
-#pragma once
 #include "omath/collision/LineTracer.hpp"
 
 namespace omath::collision
