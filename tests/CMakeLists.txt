@@ -15,8 +15,9 @@ add_executable(unit-tests
         UnitTestColor.cpp
         UnitTestVector4.cpp
         UnitTestLineTrace.cpp
+        UnitTestOpenGL.cpp
 )
 
-target_link_libraries(unit-tests PRIVATE gtest gtest_main omath)
+target_link_libraries(unit-tests PRIVATE gtest gtest_main omath glm)
 
 gtest_discover_tests(unit-tests)
