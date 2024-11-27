@@ -2,7 +2,8 @@
 // Created by Orange on 11/24/2024.
 //
 #pragma once
-
+#include "omath/Vector3.hpp"
+#include "omath/Mat.hpp"
 
 namespace omath::source
 {

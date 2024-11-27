@@ -38,11 +38,11 @@ TEST(UnitTestOpenGL, Projection)
 }
 TEST(UnitTestOpenGL, Projection2)
 {
-    const auto orient = omath::Mat<>::OrientationMat(omath::opengl::kAbsForward, omath::opengl::kAbsRight, omath::opengl::kAbsUp);
+    const auto orient = omath::opengl::ViewMatrix(omath::opengl::kAbsForward, -omath::opengl::kAbsRight, omath::opengl::kAbsUp, {});
 
-    const omath::Mat<4, 1> cords_omath =
+    const omath::Mat<4, 1,float, omath::MatStoreType::COLUMN_MAJOR> cords_omath =
     {
-        {0}, {0}, {10}, {1}
+        {0}, {0}, {-10}, {1}
     };
-    std::cout << (orient.Transposed() * cords_omath).ToString();
+    std::cout << (orient * cords_omath).ToString();
 }
