@@ -3,10 +3,6 @@
 //
 #include "omath/projection/Camera.hpp"
 
-#include <complex>
-
-#include "omath/Angles.hpp"
-
 
 namespace omath::projection
 {
