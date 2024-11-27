@@ -23,10 +23,10 @@ if(OMATH_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-if (WIN32 AND OMATH_THREAT_WARNING_AS_ERROR)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND OMATH_THREAT_WARNING_AS_ERROR)
     target_compile_options(omath PRIVATE /W4 /WX)
-elseif(UNIX AND OMATH_THREAT_WARNING_AS_ERROR)
-    target_compile_options(omath PRIVATE -Wall -Wextra -Wpedantic)
+elseif(OMATH_THREAT_WARNING_AS_ERROR)
+    target_compile_options(omath PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 target_include_directories(omath
