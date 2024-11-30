@@ -22,10 +22,10 @@ namespace omath::opengl
     {
         return
         {
-            {right.x,       up.x,                 -forward.x,                    0},
-            {right.y,       up.y,                 -forward.y,                    0},
-            {right.z,       up.z,                 -forward.z,                    0},
-            {-cam_origin.x, -cam_origin.y,        -cam_origin.z,                 1},
+            {right.x,       up.x,                 -forward.x,    0},
+            {right.y,       up.y,                 -forward.y,    0},
+            {right.z,       up.z,                 -forward.z,    0},
+            {-cam_origin.x, -cam_origin.y,        -cam_origin.z, 1},
         };
     }
 

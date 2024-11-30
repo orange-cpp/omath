@@ -26,6 +26,7 @@ namespace omath::collision
     public:
         LineTracer() = delete;
 
+
         [[nodiscard]]
         static bool CanTraceLine(const Ray& ray, const Triangle3d& triangle);
 

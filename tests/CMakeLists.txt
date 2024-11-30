@@ -15,10 +15,12 @@ add_executable(unit-tests
         general/UnitTestColor.cpp
         general/UnitTestVector4.cpp
         general/UnitTestLineTrace.cpp
+        general/UnitTestAngles.cpp
 
         engines/UnitTestOpenGL.cpp
         engines/UnitTestUnityEngine.cpp
         engines/UnitTestSourceEngine.cpp
+
 )
 
 target_link_libraries(unit-tests PRIVATE gtest gtest_main omath glm)

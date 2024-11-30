@@ -5,8 +5,8 @@
 #include <gtest/gtest.h>
 #include <omath/Matrix.hpp>
 #include <print>
-#include <omath/engines/opengl.hpp>
-#include <omath/engines/source.hpp>
+#include <omath/engines/OpenGL.hpp>
+#include <omath/engines/Source.hpp>
 #include <glm/glm.hpp>
 
 #include "glm/ext/matrix_clip_space.hpp"

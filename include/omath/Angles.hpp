@@ -7,12 +7,39 @@
 
 namespace omath::angles
 {
-    [[nodiscard]] constexpr float RadiansToDegrees(const float radiands)
+    template<class type>
+    requires std::is_floating_point_v<type>
+    [[nodiscard]] constexpr float RadiansToDegrees(const type& radians)
     {
-        return radiands * (180.f / std::numbers::pi_v<float>);
+        return radians * (type(180) / std::numbers::pi_v<type>);
     }
-    [[nodiscard]] constexpr float DegreesToRadians(const float degrees)
+
+    template<class type>
+    requires std::is_floating_point_v<type>
+    [[nodiscard]] constexpr float DegreesToRadians(const type& degrees)
     {
-        return degrees * (std::numbers::pi_v<float> / 180.f);
+        return degrees * (std::numbers::pi_v<type> / type(180));
+    }
+
+    template<class type>
+    requires std::is_floating_point_v<type>
+    [[nodiscard]] type HorizontalFovToVertical(const type& horFov, const type& aspect)
+    {
+        const auto fovRad = DegreesToRadians(horFov);
+
+        const auto vertFov = type(2) * std::atan(std::tan(fovRad / type(2)) / aspect);
+
+        return RadiansToDegrees(vertFov);
+    }
+
+    template<class type>
+    requires std::is_floating_point_v<type>
+    [[nodiscard]] type VerticalFovToHorizontal(const type& vertFov, const type& aspect)
+    {
+        const auto fovRad = DegreesToRadians(vertFov);
+
+        const auto horFov = type(2) * std::atan(std::tan(fovRad / type(2)) * aspect);
+
+        return RadiansToDegrees(horFov);
     }
 }
