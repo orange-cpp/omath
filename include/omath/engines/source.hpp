@@ -12,6 +12,7 @@ namespace omath::source
     constexpr Vector3 kAbsForward = {1, 0, 0};
 
 
+
     template<class Type> requires std::is_floating_point_v<Type> || std::is_integral_v<Type>
     [[nodiscard]] Mat<4, 4, Type, MatStoreType::COLUMN_MAJOR> PerspectiveProjectionMatrix(
         const float fieldOfView, const Type &aspectRatio, const Type &near, const Type &far)
@@ -26,4 +27,6 @@ namespace omath::source
             {0, 0, 1, 0},
         };
     }
+
+
 }
