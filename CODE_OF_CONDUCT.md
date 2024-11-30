@@ -48,6 +48,7 @@ with such incidents in multiple ways:
 
 ***Telegram***
 - `@orange_cpp`
+
 I guarantee your privacy and will not share those reports with anyone.
 
 ## ⚖️ Enforcement Strategy
