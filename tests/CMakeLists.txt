@@ -16,6 +16,7 @@ add_executable(unit-tests
         general/UnitTestVector4.cpp
         general/UnitTestLineTrace.cpp
         general/UnitTestAngles.cpp
+        general/UnitTestViewAngles.cpp
 
         engines/UnitTestOpenGL.cpp
         engines/UnitTestUnityEngine.cpp

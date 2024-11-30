@@ -4,21 +4,23 @@
 
 #pragma once
 #include <numbers>
+#include <cmath>
+
 
 namespace omath::angles
 {
-    template<class type>
-    requires std::is_floating_point_v<type>
-    [[nodiscard]] constexpr float RadiansToDegrees(const type& radians)
+    template<class Type>
+    requires std::is_floating_point_v<Type>
+    [[nodiscard]] constexpr float RadiansToDegrees(const Type& radians)
     {
-        return radians * (type(180) / std::numbers::pi_v<type>);
+        return radians * (Type(180) / std::numbers::pi_v<Type>);
     }
 
-    template<class type>
-    requires std::is_floating_point_v<type>
-    [[nodiscard]] constexpr float DegreesToRadians(const type& degrees)
+    template<class Type>
+    requires std::is_floating_point_v<Type>
+    [[nodiscard]] constexpr float DegreesToRadians(const Type& degrees)
     {
-        return degrees * (std::numbers::pi_v<type> / type(180));
+        return degrees * (std::numbers::pi_v<Type> / Type(180));
     }
 
     template<class type>
@@ -32,14 +34,31 @@ namespace omath::angles
         return RadiansToDegrees(vertFov);
     }
 
-    template<class type>
-    requires std::is_floating_point_v<type>
-    [[nodiscard]] type VerticalFovToHorizontal(const type& vertFov, const type& aspect)
+    template<class Type>
+    requires std::is_floating_point_v<Type>
+    [[nodiscard]] Type VerticalFovToHorizontal(const Type& vertFov, const Type& aspect)
     {
         const auto fovRad = DegreesToRadians(vertFov);
 
-        const auto horFov = type(2) * std::atan(std::tan(fovRad / type(2)) * aspect);
+        const auto horFov = Type(2) * std::atan(std::tan(fovRad / Type(2)) * aspect);
 
         return RadiansToDegrees(horFov);
+    }
+
+    template<class Type>
+    requires std::is_arithmetic_v<Type>
+    [[nodiscard]] Type WrapAngle(const Type& angle, const Type& min, const Type& max)
+    {
+        if (angle <= max && angle >= min)
+            return angle;
+
+        const Type range = max - min;
+
+        Type wrappedAngle = std::fmod(angle - min, range);
+
+        if (wrappedAngle < 0)
+            wrappedAngle += range;
+
+        return wrappedAngle + min;
     }
 }
