@@ -5,6 +5,8 @@
 #pragma once
 #include "omath/Angles.hpp"
 
+#include <algorithm>
+
 
 namespace omath
 {
@@ -14,14 +16,12 @@ namespace omath
         Clamped = 1,
     };
 
-    template<class Type, Type min = 0, Type max = 360, AngleFlags flags = AngleFlags::Normalized>
+    template<class Type, Type min = Type(0), Type max = Type(360), AngleFlags flags = AngleFlags::Normalized>
     requires std::is_arithmetic_v<Type>
     class Angle
     {
         Type m_angle;
-    public:
-
-        constexpr explicit Angle(const Type& degrees)
+        constexpr Angle(const Type& degrees)
         {
             if constexpr (flags == AngleFlags::Normalized)
                 m_angle = angles::WrapAngle(degrees, min, max);
@@ -34,17 +34,20 @@ namespace omath
                 std::unreachable();
             }
         }
-
+    public:
         [[nodiscard]]
         constexpr static Angle FromDegrees(const Type& degrees)
         {
             return {degrees};
         }
+        constexpr Angle() : m_angle(0)
+        {
 
+        }
         [[nodiscard]]
         constexpr static Angle FromRadians(const Type& degrees)
         {
-            return {angles::RadiansToDegrees(degrees)};
+            return {angles::RadiansToDegrees<Type>(degrees)};
         }
 
         [[nodiscard]]
@@ -54,21 +57,9 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Type& operator*()
+        constexpr Type AsDegrees() const
         {
             return m_angle;
-        }
-
-        [[nodiscard]]
-        constexpr const Type& Value() const
-        {
-            return **std::as_const(this);
-        }
-
-        [[nodiscard]]
-        constexpr Type& Value()
-        {
-            return **this;
         }
 
         [[nodiscard]]
@@ -86,7 +77,7 @@ namespace omath
         [[nodiscard]]
         Type Cos() const
         {
-            return std::sin(AsRadians());
+            return std::cos(AsRadians());
         }
 
         [[nodiscard]]
@@ -108,13 +99,13 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Angle& operator+=(const Type& other)
+        constexpr Angle& operator+=(const Angle& other)
         {
             if constexpr (flags == AngleFlags::Normalized)
-                m_angle = angles::WrapAngle(m_angle + other, min, max);
+                m_angle = angles::WrapAngle(m_angle + other.m_angle, min, max);
 
             else if constexpr (flags == AngleFlags::Clamped)
-                m_angle = std::clamp(m_angle + other, min, max);
+                m_angle = std::clamp(m_angle + other.m_angle, min, max);
             else
             {
                 static_assert(false);
@@ -125,19 +116,22 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Angle& operator-=(const Type& other)
+        constexpr std::partial_ordering operator<=>(const Angle& other) const = default;
+
+        [[nodiscard]]
+        constexpr Angle& operator-=(const Angle& other)
         {
             return operator+=(-other);
         }
 
         [[nodiscard]]
-        constexpr Angle& operator+(const Type& other)
+        constexpr Angle& operator+(const Angle& other)
         {
             if constexpr (flags == AngleFlags::Normalized)
-                return {angles::WrapAngle(m_angle + other, min, max)};
+                return {angles::WrapAngle(m_angle + other.m_angle, min, max)};
 
             else if constexpr (flags == AngleFlags::Clamped)
-                return {std::clamp(m_angle + other, min, max)};
+                return {std::clamp(m_angle + other.m_angle, min, max)};
 
             else
                 static_assert(false);
@@ -146,11 +140,9 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Angle& operator-(const Type& other)
+        constexpr Angle& operator-(const Angle& other)
         {
             return operator+(-other);
         }
-
-
     };
 }

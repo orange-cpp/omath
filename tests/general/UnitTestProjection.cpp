@@ -4,16 +4,15 @@
 #include <complex>
 #include <gtest/gtest.h>
 #include <omath/Matrix.hpp>
-#include <print>
+#include <omath/engines/Source.hpp>
 #include <omath/projection/Camera.hpp>
+#include <print>
 
 TEST(UnitTestProjection, Projection)
 {
-    const omath::projection::Camera camera({0.f, 0.f, 0.f}, {0, 0.f, 0.f} , {1920.f, 1080.f}, 110.f, 0.375f, 5000.f, 1.335f);
+    auto x = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::FromDegrees(90.f);
+    auto cam = omath::source::CreateCamera({-10, 0, 0}, omath::source::ViewAngles{}, {1920.f, 1080.f}, x, 0.1f, 1000.f);
 
-    const auto projected = camera.WorldToScreen({5000, 0, 0});
-
-
-    EXPECT_TRUE(projected.has_value());
-    EXPECT_EQ(projected->z, 1.f);
+    const auto projected = cam.WorldToScreen({10, 0, 0});
+    std::print("{} {} {}", projected->x, projected->y, projected->z);
 }

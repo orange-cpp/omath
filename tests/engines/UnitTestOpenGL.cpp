@@ -7,17 +7,17 @@
 #include <print>
 #include <omath/engines/OpenGL.hpp>
 #include <omath/engines/Source.hpp>
-#include <glm/glm.hpp>
+// #include <glm/glm.hpp>
 
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_transform.hpp"
+// #include "glm/ext/matrix_clip_space.hpp"
+// #include "glm/ext/matrix_transform.hpp"
 
 
 TEST(UnitTestOpenGL, Projection)
 {
 
-    const auto proj_glm = glm::perspective(glm::radians(90.f), 16.f / 9.f, 0.1f, 1000.f);
-    const auto proj_glm2 = glm::perspectiveLH_NO(glm::radians(90.f), 16.f / 9.f, 0.1f, 1000.f);
+    /*const auto proj_glm = glm::perspective(glm::radians(90.f), 16.f / 9.f, 0.1f, 1000.f);
+    // const auto proj_glm2 = glm::perspectiveLH_NO(glm::radians(90.f), 16.f / 9.f, 0.1f, 1000.f);
     // const auto proj_omath = omath::Mat<4, 4, float, omath::MatStoreType::COLUMN_MAJOR>((const float*)&proj_glm);
     // EXPECT_EQ(omath::opengl::PerspectiveProjectionMatrix(90, 16.f / 9.f, 0.1f, 1000.f), proj_omath);
 
@@ -34,7 +34,7 @@ TEST(UnitTestOpenGL, Projection)
 
     //auto ndc_omath = proj_omath * cords_omath;
    // ndc_omath /= ndc_omath.At(3, 0);
-
+    */
 }
 TEST(UnitTestOpenGL, Projection2)
 {
