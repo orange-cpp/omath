@@ -32,12 +32,12 @@ namespace omath::source
     [[nodiscard]] constexpr Mat<4, 4, Type, MatStoreType::ROW_MAJOR> ViewMatrixFromVecs(const Vector3& forward, const Vector3& right,
                                                                          const Vector3& up, const Vector3& camera_pos)
     {
-        return MatTranslation<float, MatStoreType::ROW_MAJOR>(-camera_pos) * Mat<4, 4, Type, MatStoreType::ROW_MAJOR>{
-                {right.x, up.x, forward.x, 0},
-                {right.y, up.y, forward.y, 0},
-                {right.z, up.z, forward.z, 0},
+        return Mat<4, 4, Type, MatStoreType::ROW_MAJOR>{
+                {right.x, right.y, right.z, 0},
+                {up.x, up.y, up.z, 0},
+                {forward.x, forward.y, forward.z, 0},
                 {0, 0, 0, 1},
-        };
+        } * MatTranslation<float, MatStoreType::ROW_MAJOR>(-camera_pos) ;
     }
 
 

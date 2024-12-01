@@ -321,10 +321,10 @@ namespace omath
         constexpr static Mat<4, 4> TranslationMat(const Vector3& diff) noexcept
         {
             return {
-                    {1, 0, 0, 0},
-                    {0, 1, 0, 0},
-                    {0, 0, 1, 0},
-                    {diff.x, diff.y, diff.z, 1},
+                    {1, 0, 0, diff.x},
+                    {0, 1, 0, diff.y},
+                    {0, 0, 1, diff.z},
+                    {0, 0, 0, 1},
             };
         }
 
@@ -376,11 +376,11 @@ namespace omath
     [[nodiscard]]
     constexpr Mat<4, 4, T, St> MatTranslation(const Vector3& diff) noexcept
     {
-        return {
+        return Mat<4, 4, T, St>{
                         {1, 0, 0, 0},
                         {0, 1, 0, 0},
                         {0, 0, 1, 0},
                         {diff.x, diff.y, diff.z, 1},
-                };
+                }.Transposed();
     }
 } // namespace omath

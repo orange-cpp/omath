@@ -54,7 +54,7 @@ namespace omath::projection
 
         [[nodiscard]] auto GetViewProjectionMatrix() const
         {
-            return GetProjectionMatrix() * GetViewMatrix().Transposed();
+            return GetProjectionMatrix() * GetViewMatrix();
         }
         [[nodiscard]] std::expected<Vector3, Error> WorldToScreen([[maybe_unused]] const Vector3& worldPosition) const
         {
@@ -65,7 +65,7 @@ namespace omath::projection
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
             projected /= projected.At(3, 0);
 
-            return Vector3{projected.At(0,0), projected.At(1,0), projected.At(2,0)};
+            return Vector3{++projected.At(0,0) / 2 * m_viewPort.m_width , ++projected.At(1,0) / 2 * m_viewPort.m_height, projected.At(2,0)};
         }
 
         ViewPort m_viewPort{};

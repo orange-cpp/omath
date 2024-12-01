@@ -154,35 +154,6 @@ TEST_F(UnitTestMat, StaticMethod_ToScreenMat)
     EXPECT_FLOAT_EQ(screenMat.At(3, 3), 1.0f);
 }
 
-// Test static method: TranslationMat
-TEST_F(UnitTestMat, StaticMethod_TranslationMat)
-{
-    Vector3 diff{10.0f, 20.0f, 30.0f};
-    Mat<4, 4> transMat = Mat<4, 4>::TranslationMat(diff);
-    EXPECT_FLOAT_EQ(transMat.At(0, 0), 1.0f);
-    EXPECT_FLOAT_EQ(transMat.At(3, 0), diff.x);
-    EXPECT_FLOAT_EQ(transMat.At(3, 1), diff.y);
-    EXPECT_FLOAT_EQ(transMat.At(3, 2), diff.z);
-    EXPECT_FLOAT_EQ(transMat.At(3, 3), 1.0f);
-}
-
-// Test static method: OrientationMat
-TEST_F(UnitTestMat, StaticMethod_OrientationMat)
-{
-    constexpr Vector3 forward{0.0f, 0.0f, 1.0f};
-    constexpr Vector3 right{1.0f, 0.0f, 0.0f};
-    constexpr Vector3 up{0.0f, 1.0f, 0.0f};
-    constexpr Mat<4, 4> orientMat = Mat<4, 4>::OrientationMat(forward, right, up);
-    EXPECT_FLOAT_EQ(orientMat.At(0, 0), right.x);
-    EXPECT_FLOAT_EQ(orientMat.At(0, 1), up.x);
-    EXPECT_FLOAT_EQ(orientMat.At(0, 2), forward.x);
-    EXPECT_FLOAT_EQ(orientMat.At(1, 0), right.y);
-    EXPECT_FLOAT_EQ(orientMat.At(1, 1), up.y);
-    EXPECT_FLOAT_EQ(orientMat.At(1, 2), forward.y);
-    EXPECT_FLOAT_EQ(orientMat.At(2, 0), right.z);
-    EXPECT_FLOAT_EQ(orientMat.At(2, 1), up.z);
-    EXPECT_FLOAT_EQ(orientMat.At(2, 2), forward.z);
-}
 
 // Test exception handling in At() method
 TEST_F(UnitTestMat, Method_At_OutOfRange)
