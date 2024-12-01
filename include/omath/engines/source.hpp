@@ -49,15 +49,17 @@ namespace omath::source
     }
 
     template<class Type>
-    requires std::is_floating_point_v<Type> || std::is_integral_v<Type>
+    requires std::is_arithmetic_v<Type> && std::is_signed_v<Type>
     [[nodiscard]] Mat<4, 4, Type, MatStoreType::ROW_MAJOR>
     PerspectiveProjectionMatrix(const Type& fieldOfView, const Type& aspectRatio, const Type& near, const Type& far)
     {
-        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2);
+        constexpr auto kMultiplyFactor = Type(0.75);
+
+        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2) * kMultiplyFactor;
 
         return {
-                {static_cast<Type>(1) / (aspectRatio * fovHalfTan), 0, 0, 0},
-                {0, static_cast<Type>(1) / (fovHalfTan), 0, 0},
+                {-static_cast<Type>(1) / (aspectRatio * fovHalfTan), 0, 0, 0},
+                {0, -static_cast<Type>(1) / (fovHalfTan), 0, 0},
                 {0, 0, (far + near) / (far - near), -(static_cast<Type>(2) * far * near) / (far - near)},
                 {0, 0, 1, 0},
         };
