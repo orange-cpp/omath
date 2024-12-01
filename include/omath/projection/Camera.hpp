@@ -52,13 +52,18 @@ namespace omath::projection
             return CreateProjectionMatrix(m_fieldOfView.AsDegrees(), m_viewPort.AspectRatio(), m_nearPlaneDistance, m_farPlaneDistance);
         }
 
+        [[nodiscard]] auto GetViewProjectionMatrix() const
+        {
+            return GetProjectionMatrix() * GetViewMatrix().Transposed();
+        }
         [[nodiscard]] std::expected<Vector3, Error> WorldToScreen([[maybe_unused]] const Vector3& worldPosition) const
         {
             using mat = std::invoke_result_t<ViewMatFunc, const ViewAnglesType&, const Vector3&>;
-            const auto vecAsMatrix = MatColumnFromVector<float, mat::GetStoreOrdering()>(worldPosition);
+            Mat<4, 1> projected = GetViewProjectionMatrix() * MatColumnFromVector<float, mat::GetStoreOrdering()>(worldPosition);
 
-            const auto projected = GetViewMatrix().Transposed() * vecAsMatrix;
-
+            if (projected.At(3, 0) == 0.0f)
+                return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
+            projected /= projected.At(3, 0);
 
             return Vector3{projected.At(0,0), projected.At(1,0), projected.At(2,0)};
         }
