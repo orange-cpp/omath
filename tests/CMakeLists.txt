@@ -17,6 +17,7 @@ add_executable(unit-tests
         general/UnitTestLineTrace.cpp
         general/UnitTestAngles.cpp
         general/UnitTestViewAngles.cpp
+        general/UnitTestAngle.cpp
 
         engines/UnitTestOpenGL.cpp
         engines/UnitTestUnityEngine.cpp
@@ -24,6 +25,6 @@ add_executable(unit-tests
 
 )
 
-target_link_libraries(unit-tests PRIVATE gtest gtest_main omath glm)
+target_link_libraries(unit-tests PRIVATE gtest gtest_main omath)
 
 gtest_discover_tests(unit-tests)

@@ -5,10 +5,10 @@
 #include <algorithm>
 #include <array>
 #include <sstream>
-#include <utility>
-#include "Vector3.hpp"
 #include <stdexcept>
+#include <utility>
 #include "Angles.hpp"
+#include "Vector3.hpp"
 
 
 namespace omath
@@ -33,8 +33,11 @@ namespace omath
         {
             Clear();
         }
-
-        constexpr Mat(const std::initializer_list<std::initializer_list<Type> >& rows)
+        constexpr static MatStoreType GetStoreOrdering()
+        {
+            return StoreType;
+        }
+        constexpr Mat(const std::initializer_list<std::initializer_list<Type>>& rows)
         {
             if (rows.size() != Rows)
                 throw std::invalid_argument("Initializer list rows size does not match template parameter Rows");
@@ -44,7 +47,7 @@ namespace omath
             {
                 if (rowIt->size() != Columns)
                     throw std::invalid_argument(
-                        "All rows must have the same number of columns as template parameter Columns");
+                            "All rows must have the same number of columns as template parameter Columns");
 
                 auto colIt = rowIt->begin();
                 for (size_t j = 0; j < Columns; ++j, ++colIt)
@@ -133,8 +136,8 @@ namespace omath
 
         // Operator overloading for multiplication with another Mat
         template<size_t OtherColumns>
-        constexpr Mat<Rows, OtherColumns, Type, StoreType> operator*(
-            const Mat<Columns, OtherColumns, Type, StoreType>& other) const
+        constexpr Mat<Rows, OtherColumns, Type, StoreType>
+        operator*(const Mat<Columns, OtherColumns, Type, StoreType>& other) const
         {
             Mat<Rows, OtherColumns, Type, StoreType> result;
 
@@ -158,8 +161,8 @@ namespace omath
         }
 
         template<size_t OtherColumns>
-        constexpr Mat<Rows, OtherColumns, Type, StoreType> operator*=(
-            const Mat<Columns, OtherColumns, Type, StoreType>& other)
+        constexpr Mat<Rows, OtherColumns, Type, StoreType>
+        operator*=(const Mat<Columns, OtherColumns, Type, StoreType>& other)
         {
             return *this = *this * other;
         }
@@ -306,24 +309,22 @@ namespace omath
         [[nodiscard]]
         constexpr static Mat<4, 4> ToScreenMat(const Type& screenWidth, const Type& screenHeight) noexcept
         {
-            return
-            {
-                {screenWidth / 2, 0, 0, 0},
-                {0, -screenHeight / 2, 0, 0},
-                {0, 0, 1, 0},
-                {screenWidth / 2, screenHeight / 2, 0, 1},
+            return {
+                    {screenWidth / 2, 0, 0, 0},
+                    {0, -screenHeight / 2, 0, 0},
+                    {0, 0, 1, 0},
+                    {screenWidth / 2, screenHeight / 2, 0, 1},
             };
         }
 
         [[nodiscard]]
         constexpr static Mat<4, 4> TranslationMat(const Vector3& diff) noexcept
         {
-            return
-            {
-                {1, 0, 0, 0},
-                {0, 1, 0, 0},
-                {0, 0, 1, 0},
-                {diff.x, diff.y, diff.z, 1},
+            return {
+                    {1, 0, 0, 0},
+                    {0, 1, 0, 0},
+                    {0, 0, 1, 0},
+                    {diff.x, diff.y, diff.z, 1},
             };
         }
 
@@ -331,52 +332,55 @@ namespace omath
         constexpr static Mat<4, 4> OrientationMat(const Vector3& forward, const Vector3& right,
                                                   const Vector3& up) noexcept
         {
-            return
-            {
-                {right.x, up.x, forward.x, 0},
-                {right.y, up.y, forward.y, 0},
-                {right.z, up.z, forward.z, 0},
-                {0, 0, 0, 1},
+            return {
+                    {right.x, up.x, forward.x, 0},
+                    {right.y, up.y, forward.y, 0},
+                    {right.z, up.z, forward.z, 0},
+                    {0, 0, 0, 1},
             };
         }
 
         [[nodiscard]]
-        constexpr static Mat<4, 4> ProjectionMat(const Type& fieldOfView, const Type& aspectRatio,
-                                                 const Type& near, const Type& far, const Type& lensZoom) noexcept
+        constexpr static Mat<4, 4> ProjectionMat(const Type& fieldOfView, const Type& aspectRatio, const Type& near,
+                                                 const Type& far, const Type& lensZoom) noexcept
         {
             const Type& fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2);
             const Type& frustumHeight = far - near;
 
-            return
-            {
-                {-1 / (aspectRatio * fovHalfTan) * lensZoom, 0, 0, 0},
-                {0, -1 / fovHalfTan * lensZoom, 0, 0},
-                {0, 0, -far / frustumHeight, -1},
-                {0, 0, near * far / frustumHeight, 0}
-            };
-        }
-
-        [[nodiscard]]
-        constexpr static Mat<4, 1> MatRowFromVector(const Vector3& vector) noexcept
-        {
-            return {{vector.x, vector.y, vector.z, 1}};
-        }
-
-        [[nodiscard]]
-        constexpr static Mat<1, 4> MatColumnFromVector(const Vector3& vector) noexcept
-        {
-            return
-            {
-                {
-                    vector.x,
-                    vector.y,
-                    vector.z,
-                    1
-                }
-            };
+            return {{-1 / (aspectRatio * fovHalfTan) * lensZoom, 0, 0, 0},
+                    {0, -1 / fovHalfTan * lensZoom, 0, 0},
+                    {0, 0, -far / frustumHeight, -1},
+                    {0, 0, near * far / frustumHeight, 0}};
         }
 
     private:
         std::array<Type, Rows * Columns> m_data;
     };
-}
+
+    template<class T = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    constexpr static Mat<1, 4, T, St> MatRowFromVector(const Vector3& vector) noexcept
+    {
+        return {{vector.x, vector.y, vector.z, 1}};
+    }
+
+    template<class T = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    constexpr static Mat<4, 1, T, St> MatColumnFromVector(const Vector3& vector) noexcept
+    {
+        return {
+            {vector.x}, {vector.y}, {vector.z}, {1}};
+    }
+
+    template<class T = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    constexpr Mat<4, 4, T, St> MatTranslation(const Vector3& diff) noexcept
+    {
+        return {
+                        {1, 0, 0, 0},
+                        {0, 1, 0, 0},
+                        {0, 0, 1, 0},
+                        {diff.x, diff.y, diff.z, 1},
+                };
+    }
+} // namespace omath

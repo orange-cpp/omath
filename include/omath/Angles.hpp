@@ -11,14 +11,14 @@ namespace omath::angles
 {
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] constexpr float RadiansToDegrees(const Type& radians)
+    [[nodiscard]] constexpr Type RadiansToDegrees(const Type& radians)
     {
         return radians * (Type(180) / std::numbers::pi_v<Type>);
     }
 
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] constexpr float DegreesToRadians(const Type& degrees)
+    [[nodiscard]] constexpr Type DegreesToRadians(const Type& degrees)
     {
         return degrees * (std::numbers::pi_v<Type> / Type(180));
     }
