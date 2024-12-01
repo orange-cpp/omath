@@ -29,10 +29,10 @@ namespace omath::source
 
     template<class Type = float>
     requires std::is_floating_point_v<Type> || std::is_integral_v<Type>
-    [[nodiscard]] constexpr Mat<4, 4, Type, MatStoreType::COLUMN_MAJOR> ViewMatrixFromVecs(const Vector3& forward, const Vector3& right,
+    [[nodiscard]] constexpr Mat<4, 4, Type, MatStoreType::ROW_MAJOR> ViewMatrixFromVecs(const Vector3& forward, const Vector3& right,
                                                                          const Vector3& up, const Vector3& camera_pos)
     {
-        return MatTranslation<float, MatStoreType::COLUMN_MAJOR>(-camera_pos) * Mat<4, 4, Type, MatStoreType::COLUMN_MAJOR>{
+        return MatTranslation<float, MatStoreType::ROW_MAJOR>(-camera_pos) * Mat<4, 4, Type, MatStoreType::ROW_MAJOR>{
                 {right.x, up.x, forward.x, 0},
                 {right.y, up.y, forward.y, 0},
                 {right.z, up.z, forward.z, 0},
@@ -43,14 +43,14 @@ namespace omath::source
 
     template<class Type = float>
     requires std::is_floating_point_v<Type> || std::is_integral_v<Type>
-    [[nodiscard]] Mat<4, 4, Type, MatStoreType::COLUMN_MAJOR> ViewMatrix(const ViewAngles& angles, const Vector3& cam_origin)
+    [[nodiscard]] Mat<4, 4, Type, MatStoreType::ROW_MAJOR> ViewMatrix(const ViewAngles& angles, const Vector3& cam_origin)
     {
         return ViewMatrixFromVecs(ForwardVector(angles), RightVector(angles), UpVector(angles), cam_origin);
     }
 
     template<class Type>
     requires std::is_floating_point_v<Type> || std::is_integral_v<Type>
-    [[nodiscard]] Mat<4, 4, Type, MatStoreType::COLUMN_MAJOR>
+    [[nodiscard]] Mat<4, 4, Type, MatStoreType::ROW_MAJOR>
     PerspectiveProjectionMatrix(const Type& fieldOfView, const Type& aspectRatio, const Type& near, const Type& far)
     {
         const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2);
