@@ -31,6 +31,7 @@ namespace omath::projection
         std::invoke_result_t<ProjectionFunc, const float&, const float&, const float&, const float&>>
     class Camera
     {
+
     public:
         Camera(const Vector3& position, const ViewAnglesType& viewAngles, const ViewPort& viewPort,
                const Angle<float, 0.f, 180.f, AngleFlags::Clamped>& fov, const float near, const float far,
@@ -56,14 +57,19 @@ namespace omath::projection
         {
             return GetProjectionMatrix() * GetViewMatrix();
         }
-        [[nodiscard]] std::expected<Vector3, Error> WorldToScreen([[maybe_unused]] const Vector3& worldPosition) const
+
+        [[nodiscard]] std::expected<Vector3, Error> WorldToScreen(const Vector3& worldPosition) const
         {
             using mat = std::invoke_result_t<ViewMatFunc, const ViewAnglesType&, const Vector3&>;
-            Mat<4, 1> projected = GetViewProjectionMatrix() * MatColumnFromVector<float, mat::GetStoreOrdering()>(worldPosition);
+            auto projected = GetViewProjectionMatrix() * MatColumnFromVector<float, mat::GetStoreOrdering()>(worldPosition);
 
             if (projected.At(3, 0) == 0.0f)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
+
             projected /= projected.At(3, 0);
+
+            if (IsNdcOutOfBounds(projected))
+                return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
             return Vector3{++projected.At(0,0) / 2 * m_viewPort.m_width , ++projected.At(1,0) / 2 * m_viewPort.m_height, projected.At(2,0)};
         }
@@ -75,10 +81,19 @@ namespace omath::projection
         float m_nearPlaneDistance;
 
     private:
+
         ViewAnglesType m_viewAngles;
         Vector3 m_origin;
 
         std::function<ViewMatFunc> CreateViewMatrix;
         std::function<ProjectionFunc> CreateProjectionMatrix;
+
+
+        template<class Type>
+        [[nodiscard]]
+        constexpr static bool IsNdcOutOfBounds(const Type& ndc)
+        {
+            return std::ranges::any_of( ndc.RawArray(), [](const auto& val) { return val < -1 || val > 1; });
+        }
     };
 } // namespace omath::projection
