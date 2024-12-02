@@ -55,7 +55,7 @@ namespace omath::source
     {
         constexpr auto kMultiplyFactor = Type(0.75);
 
-        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2) * kMultiplyFactor;
+        const Type fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2) * kMultiplyFactor;
 
         return {
                 {-static_cast<Type>(1) / (aspectRatio * fovHalfTan), 0, 0, 0},

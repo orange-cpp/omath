@@ -4,7 +4,7 @@
 #pragma once
 #include "omath/Vector3.hpp"
 #include "omath/Mat.hpp"
-
+#include "omath/Angle.hpp"
 
 namespace omath::opengl
 {

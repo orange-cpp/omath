@@ -7,7 +7,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <utility>
-#include "Angles.hpp"
 #include "Vector3.hpp"
 
 
@@ -317,42 +316,6 @@ namespace omath
             };
         }
 
-        [[nodiscard]]
-        constexpr static Mat<4, 4> TranslationMat(const Vector3& diff) noexcept
-        {
-            return {
-                    {1, 0, 0, diff.x},
-                    {0, 1, 0, diff.y},
-                    {0, 0, 1, diff.z},
-                    {0, 0, 0, 1},
-            };
-        }
-
-        [[nodiscard]]
-        constexpr static Mat<4, 4> OrientationMat(const Vector3& forward, const Vector3& right,
-                                                  const Vector3& up) noexcept
-        {
-            return {
-                    {right.x, up.x, forward.x, 0},
-                    {right.y, up.y, forward.y, 0},
-                    {right.z, up.z, forward.z, 0},
-                    {0, 0, 0, 1},
-            };
-        }
-
-        [[nodiscard]]
-        constexpr static Mat<4, 4> ProjectionMat(const Type& fieldOfView, const Type& aspectRatio, const Type& near,
-                                                 const Type& far, const Type& lensZoom) noexcept
-        {
-            const Type& fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2);
-            const Type& frustumHeight = far - near;
-
-            return {{-1 / (aspectRatio * fovHalfTan) * lensZoom, 0, 0, 0},
-                    {0, -1 / fovHalfTan * lensZoom, 0, 0},
-                    {0, 0, -far / frustumHeight, -1},
-                    {0, 0, near * far / frustumHeight, 0}};
-        }
-
     private:
         std::array<Type, Rows * Columns> m_data;
     };
@@ -368,19 +331,19 @@ namespace omath
     [[nodiscard]]
     constexpr static Mat<4, 1, T, St> MatColumnFromVector(const Vector3& vector) noexcept
     {
-        return {
-            {vector.x}, {vector.y}, {vector.z}, {1}};
+        return {{vector.x}, {vector.y}, {vector.z}, {1}};
     }
 
     template<class T = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
     constexpr Mat<4, 4, T, St> MatTranslation(const Vector3& diff) noexcept
     {
-        return Mat<4, 4, T, St>{
-                        {1, 0, 0, 0},
-                        {0, 1, 0, 0},
-                        {0, 0, 1, 0},
-                        {diff.x, diff.y, diff.z, 1},
-                }.Transposed();
+        return
+        {
+                {1, 0, 0, diff.x},
+                {0, 1, 0, diff.y},
+                {0, 0, 1, diff.z},
+                {0, 0, 0, 1},
+        };
     }
 } // namespace omath
