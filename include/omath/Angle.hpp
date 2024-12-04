@@ -16,7 +16,7 @@ namespace omath
         Clamped = 1,
     };
 
-    template<class Type, Type min = Type(0), Type max = Type(360), AngleFlags flags = AngleFlags::Normalized>
+    template<class Type = float, Type min = Type(0), Type max = Type(360), AngleFlags flags = AngleFlags::Normalized>
     requires std::is_arithmetic_v<Type>
     class Angle
     {

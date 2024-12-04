@@ -320,23 +320,23 @@ namespace omath
         std::array<Type, Rows * Columns> m_data;
     };
 
-    template<class T = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    constexpr static Mat<1, 4, T, St> MatRowFromVector(const Vector3& vector) noexcept
+    constexpr static Mat<1, 4, Type, St> MatRowFromVector(const Vector3& vector) noexcept
     {
         return {{vector.x, vector.y, vector.z, 1}};
     }
 
-    template<class T = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    constexpr static Mat<4, 1, T, St> MatColumnFromVector(const Vector3& vector) noexcept
+    constexpr static Mat<4, 1, Type, St> MatColumnFromVector(const Vector3& vector) noexcept
     {
         return {{vector.x}, {vector.y}, {vector.z}, {1}};
     }
 
-    template<class T = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    constexpr Mat<4, 4, T, St> MatTranslation(const Vector3& diff) noexcept
+    constexpr Mat<4, 4, Type, St> MatTranslation(const Vector3& diff) noexcept
     {
         return
         {
@@ -346,4 +346,42 @@ namespace omath
                 {0, 0, 0, 1},
         };
     }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
+    [[nodiscard]]
+    constexpr Mat<3, 3, Type, St> RotationMatrixAxisX(const Angle& roll) noexcept
+    {
+        return
+        {
+            {1,    0,          0},
+            {0, 0, roll.Cos(), -roll.Sin()},
+            {0, 0, roll.Sin(), roll.Cos()},
+        };
+    }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
+    [[nodiscard]]
+    constexpr Mat<3, 3, Type, St> RotationMatrixAxisY(const Angle& pitch) noexcept
+    {
+        return
+        {
+            {pitch.Cos(),  0, pitch.Sin()},
+            {0           , 1, 0},
+            {-pitch.Sin(), 0, pitch.Cos()},
+        };
+    }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
+    [[nodiscard]]
+    constexpr Mat<3, 3, Type, St> RotationMatrixAxisZ(const Angle& Yaw) noexcept
+    {
+        return
+        {
+            {Yaw.Cos(), -Yaw.Sin(), 0},
+            {Yaw.Sin(), Yaw.Cos(),  0},
+            {0,         0,          1},
+        };
+    }
+
+
 } // namespace omath

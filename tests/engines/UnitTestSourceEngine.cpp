@@ -2,7 +2,8 @@
 // Created by Orange on 11/23/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/engines/Source.hpp>
+#include <omath/engines/Source/Constants.h>
+#include <omath/engines/Source/Formulas.hpp>
 
 
 
