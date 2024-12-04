@@ -65,7 +65,7 @@ namespace omath
         [[nodiscard]]
         constexpr Type AsRadians() const
         {
-            return angles::RadiansToDegrees(m_angle);
+            return angles::DegreesToRadians(m_angle);
         }
 
         [[nodiscard]]
