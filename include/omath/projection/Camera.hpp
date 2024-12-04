@@ -26,42 +26,33 @@ namespace omath::projection
         }
     };
 
-    template<class ViewAnglesType, class ViewMatFunc, class ProjectionFunc>
-    requires std::is_same_v<std::invoke_result_t<ViewMatFunc, const ViewAnglesType&, const Vector3&>,
-        std::invoke_result_t<ProjectionFunc, const float&, const float&, const float&, const float&>>
+    template<class Mat4x4Type, class ViewAnglesType>
     class Camera
     {
 
     public:
+        virtual ~Camera() = default;
         Camera(const Vector3& position, const ViewAnglesType& viewAngles, const ViewPort& viewPort,
-               const Angle<float, 0.f, 180.f, AngleFlags::Clamped>& fov, const float near, const float far,
-               const std::function<ViewMatFunc>& viewMatFunc, const std::function<ProjectionFunc>& projFunc) :
+               const Angle<float, 0.f, 180.f, AngleFlags::Clamped>& fov, const float near, const float far) :
             m_viewPort(viewPort), m_fieldOfView(fov), m_farPlaneDistance(far), m_nearPlaneDistance(near),
-            m_viewAngles(viewAngles), m_origin(position), CreateViewMatrix(viewMatFunc), CreateProjectionMatrix(projFunc)
+            m_viewAngles(viewAngles), m_origin(position)
         {
         }
 
-        void LookAt(const Vector3& target);
+        virtual void LookAt(const Vector3& target) = 0;
 
-        [[nodiscard]] auto GetViewMatrix() const
-        {
-            return CreateViewMatrix(m_viewAngles, m_origin);
-        }
+        [[nodiscard]] virtual Mat4x4Type GetViewMatrix() const = 0;
 
-        [[nodiscard]] auto GetProjectionMatrix() const
-        {
-            return CreateProjectionMatrix(m_fieldOfView.AsDegrees(), m_viewPort.AspectRatio(), m_nearPlaneDistance, m_farPlaneDistance);
-        }
+        [[nodiscard]] virtual Mat4x4Type GetProjectionMatrix() const = 0;
 
-        [[nodiscard]] auto GetViewProjectionMatrix() const
+        [[nodiscard]] Mat4x4Type GetViewProjectionMatrix() const
         {
             return GetProjectionMatrix() * GetViewMatrix();
         }
 
         [[nodiscard]] std::expected<Vector3, Error> WorldToScreen(const Vector3& worldPosition) const
         {
-            using mat = std::invoke_result_t<ViewMatFunc, const ViewAnglesType&, const Vector3&>;
-            auto projected = GetViewProjectionMatrix() * MatColumnFromVector<float, mat::GetStoreOrdering()>(worldPosition);
+            auto projected = GetViewProjectionMatrix() * MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);
 
             if (projected.At(3, 0) == 0.0f)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
@@ -74,20 +65,18 @@ namespace omath::projection
             return Vector3{++projected.At(0,0) / 2 * m_viewPort.m_width , ++projected.At(1,0) / 2 * m_viewPort.m_height, projected.At(2,0)};
         }
 
+    protected:
         ViewPort m_viewPort{};
         Angle<float, 0.f, 180.f, AngleFlags::Clamped> m_fieldOfView;
 
         float m_farPlaneDistance;
         float m_nearPlaneDistance;
 
-    private:
 
         ViewAnglesType m_viewAngles;
         Vector3 m_origin;
 
-        std::function<ViewMatFunc> CreateViewMatrix;
-        std::function<ProjectionFunc> CreateProjectionMatrix;
-
+    private:
 
         template<class Type>
         [[nodiscard]]
