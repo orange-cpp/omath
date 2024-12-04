@@ -37,7 +37,7 @@ namespace omath::source
     {
         return Mat4x4{
                            {right.x, right.y, right.z, 0},
-                           {up.x, up.y, up.z, 0},
+                           {-up.x, -up.y, -up.z, 0},
                            {forward.x, forward.y, forward.z, 0},
                            {0, 0, 0, 1},
                    } *
@@ -59,7 +59,7 @@ namespace omath::source
 
         return {
                         {1.f / (aspectRatio * fovHalfTan), 0, 0, 0},
-                        {0, -1.f / (fovHalfTan), 0, 0},
+                        {0, 1.f / (fovHalfTan), 0, 0},
                         {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
                         {0, 0, 1, 0},
                 };
