@@ -10,7 +10,7 @@ namespace omath::source
     [[nodiscard]]
     inline Vector3 ForwardVector(const ViewAngles& angles)
     {
-        const auto vec = RotationMat(angles) * Mat<3, 1>({{kAbsForward.x}, {kAbsForward.y}, {kAbsForward.z}});
+        const auto vec = RotationMat(angles) * MatColumnFromVector(kAbsForward);
 
         return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
@@ -18,7 +18,7 @@ namespace omath::source
     [[nodiscard]]
     inline Vector3 RightVector(const ViewAngles& angles)
     {
-        const auto vec = RotationMat(angles) * Mat<3, 1>({{kAbsRight.x}, {kAbsRight.y}, {kAbsRight.z}});
+        const auto vec = RotationMat(angles) * MatColumnFromVector(kAbsRight);
 
         return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
@@ -26,7 +26,7 @@ namespace omath::source
     [[nodiscard]]
     inline Vector3 UpVector(const ViewAngles& angles)
     {
-        const auto vec = RotationMat(angles) * Mat<3, 1>({{kAbsUp.x}, {kAbsUp.y}, {kAbsUp.z}});
+        const auto vec = RotationMat(angles) * MatColumnFromVector(kAbsUp);
 
         return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
@@ -58,7 +58,7 @@ namespace omath::source
         const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f) * kMultiplyFactor;
 
         return {
-                        {-1.f / (aspectRatio * fovHalfTan), 0, 0, 0},
+                        {1.f / (aspectRatio * fovHalfTan), 0, 0, 0},
                         {0, -1.f / (fovHalfTan), 0, 0},
                         {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
                         {0, 0, 1, 0},
