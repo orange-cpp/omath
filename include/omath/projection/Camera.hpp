@@ -37,6 +37,7 @@ namespace omath::projection
             m_viewPort(viewPort), m_fieldOfView(fov), m_farPlaneDistance(far), m_nearPlaneDistance(near),
             m_viewAngles(viewAngles), m_origin(position)
         {
+
         }
 
         virtual void LookAt(const Vector3& target) = 0;
@@ -45,12 +46,15 @@ namespace omath::projection
 
         [[nodiscard]] virtual Mat4x4Type GetProjectionMatrix() const = 0;
 
-        [[nodiscard]] Mat4x4Type GetViewProjectionMatrix() const
+        [[nodiscard]] Mat4x4Type GetViewProjectionMatrix()
         {
-            return GetProjectionMatrix() * GetViewMatrix();
+            if (!m_viewProjectionMatrix)
+                m_viewProjectionMatrix = GetProjectionMatrix() * GetViewMatrix();
+
+            return m_viewProjectionMatrix.value();
         }
 
-        [[nodiscard]] std::expected<Vector3, Error> WorldToScreen(const Vector3& worldPosition) const
+        [[nodiscard]] std::expected<Vector3, Error> WorldToScreen(const Vector3& worldPosition)
         {
             auto projected = GetViewProjectionMatrix() * MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);
 
@@ -77,7 +81,7 @@ namespace omath::projection
         Vector3 m_origin;
 
     private:
-
+        std::optional<Mat4x4Type> m_viewProjectionMatrix = std::nullopt;
         template<class Type>
         [[nodiscard]]
         constexpr static bool IsNdcOutOfBounds(const Type& ndc)
