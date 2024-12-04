@@ -349,19 +349,19 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
-    constexpr Mat<3, 3, Type, St> RotationMatrixAxisX(const Angle& roll) noexcept
+    Mat<3, 3, Type, St> RotationMatAxisX(const Angle& roll) noexcept
     {
         return
         {
-            {1,    0,          0},
-            {0, 0, roll.Cos(), -roll.Sin()},
-            {0, 0, roll.Sin(), roll.Cos()},
+            {1, 0,          0},
+            {0, roll.Cos(), -roll.Sin()},
+            {0, roll.Sin(), roll.Cos()},
         };
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
-    constexpr Mat<3, 3, Type, St> RotationMatrixAxisY(const Angle& pitch) noexcept
+    Mat<3, 3, Type, St> RotationMatAxisY(const Angle& pitch) noexcept
     {
         return
         {
@@ -373,7 +373,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
-    constexpr Mat<3, 3, Type, St> RotationMatrixAxisZ(const Angle& Yaw) noexcept
+    Mat<3, 3, Type, St> RotationMatAxisZ(const Angle& Yaw) noexcept
     {
         return
         {
@@ -383,5 +383,10 @@ namespace omath
         };
     }
 
-
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class ViewAngles>
+    [[nodiscard]]
+    Mat<3, 3, Type, St> RotationMat(const ViewAngles& angles) noexcept
+    {
+        return RotationMatAxisY(angles.pitch) * RotationMatAxisZ(angles.yaw) * RotationMatAxisX(angles.roll);
+    }
 } // namespace omath

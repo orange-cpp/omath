@@ -10,56 +10,25 @@ namespace omath::source
     [[nodiscard]]
     inline Vector3 ForwardVector(const ViewAngles& angles)
     {
-        const auto cosPitch = angles.pitch.Cos();
-        const auto sinPitch = angles.pitch.Sin();
+        const auto vec = RotationMat(angles) * Mat<3, 1>({{kAbsForward.x}, {kAbsForward.y}, {kAbsForward.z}});
 
-        const auto cosYaw = angles.yaw.Cos();
-        const auto sinYaw = angles.yaw.Sin();
-
-
-        return {cosPitch * cosYaw, cosPitch * sinYaw, -sinPitch};
+        return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
 
     [[nodiscard]]
     inline Vector3 RightVector(const ViewAngles& angles)
     {
-        const auto cosPitch = angles.pitch.Cos();
-        const auto sinPitch = angles.pitch.Sin();
+        const auto vec = RotationMat(angles) * Mat<3, 1>({{kAbsRight.x}, {kAbsRight.y}, {kAbsRight.z}});
 
-        const auto cosYaw = angles.yaw.Cos();
-        const auto sinYaw = angles.yaw.Sin();
-
-        const auto cosRoll = angles.roll.Cos();
-        const auto sinRoll = angles.roll.Sin();
-
-
-        return
-        {
-            -1 * sinRoll * sinPitch * cosYaw + -1 * cosRoll * -sinYaw,
-            -1 * sinRoll * sinPitch * sinYaw + -1 * cosRoll * cosYaw,
-            -1 * sinRoll * cosPitch
-        };
+        return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
 
     [[nodiscard]]
     inline Vector3 UpVector(const ViewAngles& angles)
     {
-        const auto cosPitch = angles.pitch.Cos();
-        const auto sinPitch = angles.pitch.Sin();
+        const auto vec = RotationMat(angles) * Mat<3, 1>({{kAbsUp.x}, {kAbsUp.y}, {kAbsUp.z}});
 
-        const auto cosYaw = angles.yaw.Cos();
-        const auto sinYaw = angles.yaw.Sin();
-
-        const auto cosRoll = angles.roll.Cos();
-        const auto sinRoll = angles.roll.Sin();
-
-
-        return
-        {
-            cosRoll * sinPitch * cosYaw + - sinRoll * -sinYaw,
-            cosRoll * sinPitch * sinYaw + - sinRoll * cosYaw,
-            cosRoll * cosPitch,
-        };
+        return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
 
     [[nodiscard]]
