@@ -8,6 +8,11 @@
 namespace omath::source
 {
 
+    Camera::Camera(const Vector3& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
+                   const projection::FieldOfView& fov, const float near, const float far) :
+        projection::Camera<Mat4x4, ViewAngles>(position, viewAngles, viewPort, fov, near, far)
+    {
+    }
     void Camera::LookAt(const Vector3& target)
     {
         const float distance = m_origin.DistTo(target);
@@ -15,17 +20,17 @@ namespace omath::source
 
 
         m_viewAngles.pitch = PitchAngle::FromRadians(std::asin(delta.z / distance));
-        m_viewAngles.yaw = YawAngle::FromRadians(std::atan2(delta.y, delta.x));
+        m_viewAngles.yaw = -YawAngle::FromRadians(std::atan2(delta.y, delta.x));
         m_viewAngles.roll = RollAngle::FromRadians(0.f);
     }
 
     Mat4x4 Camera::GetViewMatrix() const
     {
-        return ViewMatrix(m_viewAngles, m_origin);
+        return CalcViewMatrix(m_viewAngles, m_origin);
     }
 
     Mat4x4 Camera::GetProjectionMatrix() const
     {
-        return PerspectiveProjectionMatrix(m_fieldOfView.AsDegrees(), m_viewPort.AspectRatio(), m_nearPlaneDistance, m_farPlaneDistance);
+        return CalcPerspectiveProjectionMatrix(m_fieldOfView.AsDegrees(), m_viewPort.AspectRatio(), m_nearPlaneDistance, m_farPlaneDistance);
     }
 } // namespace omath::source

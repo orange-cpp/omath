@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <omath/Matrix.hpp>
 #include <print>
-#include <omath/engines/OpenGL.hpp>
+
 // #include <glm/glm.hpp>
 
 // #include "glm/ext/matrix_clip_space.hpp"
@@ -34,14 +34,4 @@ TEST(UnitTestOpenGL, Projection)
     //auto ndc_omath = proj_omath * cords_omath;
    // ndc_omath /= ndc_omath.At(3, 0);
     */
-}
-TEST(UnitTestOpenGL, Projection2)
-{
-    const auto orient = omath::opengl::ViewMatrix(omath::opengl::kAbsForward, -omath::opengl::kAbsRight, omath::opengl::kAbsUp, {});
-
-    const omath::Mat<4, 1,float, omath::MatStoreType::COLUMN_MAJOR> cords_omath =
-    {
-        {0}, {0}, {-10}, {1}
-    };
-    std::cout << (orient * cords_omath).ToString();
 }

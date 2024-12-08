@@ -349,7 +349,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
-    Mat<4, 4, Type, St> RotationMatAxisX(const Angle& angle) noexcept
+    Mat<4, 4, Type, St> MatRotationAxisX(const Angle& angle) noexcept
     {
         return
         {
@@ -362,7 +362,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
-    Mat<4, 4, Type, St> RotationMatAxisY(const Angle& angle) noexcept
+    Mat<4, 4, Type, St> MatRotationAxisY(const Angle& angle) noexcept
     {
         return
         {
@@ -375,21 +375,36 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
-    Mat<4, 4, Type, St> RotationMatAxisZ(const Angle& angle) noexcept
+    Mat<4, 4, Type, St> MatRotationAxisZ(const Angle& angle) noexcept
     {
         return
         {
             {angle.Cos(), -angle.Sin(), 0, 0},
-            {angle.Sin(), angle.Cos(),  0, 0},
-            {0,         0,          1, 0},
-            {0,         0,          0, 1},
+            {angle.Sin(),  angle.Cos(), 0, 0},
+            {          0,        0,     1, 0},
+            {          0,        0,     0, 1},
         };
+    }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    static Mat<4, 4, Type, St> MatCameraView(const Vector3& forward, const Vector3& right, const Vector3& up,
+                                             const Vector3& cameraOrigin) noexcept
+    {
+        return  Mat<4, 4, Type, St>
+        {
+            {right.x,   right.y,   right.z,   0},
+            {up.x,      up.y,      up.z,      0},
+            {forward.x, forward.y, forward.z, 0},
+            {0,         0,         0,         1},
+
+        } * MatTranslation<Type, St>(-cameraOrigin);
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class ViewAngles>
     [[nodiscard]]
-    Mat<4, 4, Type, St> RotationMat(const ViewAngles& angles) noexcept
+    Mat<4, 4, Type, St> MatRotation(const ViewAngles& angles) noexcept
     {
-        return RotationMatAxisZ(angles.yaw) * RotationMatAxisY(angles.pitch) * RotationMatAxisX(angles.roll);
+        return MatRotationAxisZ(angles.yaw) * MatRotationAxisY(angles.pitch) * MatRotationAxisX(angles.roll);
     }
 } // namespace omath

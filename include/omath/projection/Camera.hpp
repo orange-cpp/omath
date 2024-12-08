@@ -25,6 +25,7 @@ namespace omath::projection
             return m_width / m_height;
         }
     };
+    using FieldOfView = const Angle<float, 0.f, 180.f, AngleFlags::Clamped>;
 
     template<class Mat4x4Type, class ViewAnglesType>
     class Camera
@@ -33,7 +34,7 @@ namespace omath::projection
     public:
         virtual ~Camera() = default;
         Camera(const Vector3& position, const ViewAnglesType& viewAngles, const ViewPort& viewPort,
-               const Angle<float, 0.f, 180.f, AngleFlags::Clamped>& fov, const float near, const float far) :
+               const FieldOfView& fov, const float near, const float far) :
             m_viewPort(viewPort), m_fieldOfView(fov), m_farPlaneDistance(far), m_nearPlaneDistance(near),
             m_viewAngles(viewAngles), m_origin(position)
         {
@@ -48,15 +49,12 @@ namespace omath::projection
 
         [[nodiscard]] Mat4x4Type GetViewProjectionMatrix()
         {
-            if (!m_viewProjectionMatrix)
-                m_viewProjectionMatrix = GetProjectionMatrix() * GetViewMatrix();
-
-            return m_viewProjectionMatrix.value();
+            return GetProjectionMatrix() * GetViewMatrix();
         }
 
-        [[nodiscard]] std::expected<Vector3, Error> WorldToScreen(const Vector3& worldPosition)
+        [[nodiscard]] std::expected<Vector3, Error> WorldToScreen(const Mat4x4Type& viewProj, const Vector3& worldPosition) const
         {
-            auto projected = GetViewProjectionMatrix() * MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);
+            auto projected = viewProj * MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);
 
             if (projected.At(3, 0) == 0.0f)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
@@ -66,7 +64,7 @@ namespace omath::projection
             if (IsNdcOutOfBounds(projected))
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
-            return Vector3{++projected.At(0,0) / 2 * m_viewPort.m_width , ++projected.At(1,0) / 2 * m_viewPort.m_height, projected.At(2,0)};
+            return Vector3{(projected.At(0,0)+1) / 2 * m_viewPort.m_width , (-projected.At(1,0)+1) / 2 * m_viewPort.m_height, projected.At(2,0)};
         }
 
     protected:
@@ -81,7 +79,6 @@ namespace omath::projection
         Vector3 m_origin;
 
     private:
-        std::optional<Mat4x4Type> m_viewProjectionMatrix = std::nullopt;
         template<class Type>
         [[nodiscard]]
         constexpr static bool IsNdcOutOfBounds(const Type& ndc)
