@@ -353,10 +353,10 @@ namespace omath
     {
         return
         {
-            {1, 0,          0, 0},
+            {1, 0,           0,            0},
             {0, angle.Cos(), -angle.Sin(), 0},
-            {0, angle.Sin(), angle.Cos(), 0},
-            {0, 0, 0, 1}
+            {0, angle.Sin(), angle.Cos(),  0},
+            {0, 0,           0,            1}
         };
     }
 
