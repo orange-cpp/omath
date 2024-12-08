@@ -144,5 +144,11 @@ namespace omath
         {
             return operator+(-other);
         }
+
+        [[nodiscard]]
+        constexpr Angle operator-() const
+        {
+            return {-m_angle};
+        }
     };
 }
