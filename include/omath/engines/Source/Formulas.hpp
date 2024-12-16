@@ -4,7 +4,6 @@
 #pragma once
 #include "Constants.h"
 
-
 namespace omath::source
 {
     [[nodiscard]]
