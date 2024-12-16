@@ -9,7 +9,7 @@
 
 TEST(UnitTestSourceEngine, ForwardVector)
 {
-    const auto forward = omath::source::ForwardVector({{}, {}, {}});
+    const auto forward = omath::source::ForwardVector({});
 
     EXPECT_EQ(forward, omath::source::kAbsForward);
 }
