@@ -13,7 +13,7 @@ namespace omath::prediction
     public:
 
         [[nodiscard]]
-        constexpr Vector3 PredictPosition(float time, float gravity) const
+        constexpr Vector3 PredictPosition(const float time, const float gravity) const
         {
             auto predicted = m_origin + m_velocity * time;
 

@@ -216,10 +216,6 @@ namespace omath
 
         [[nodiscard]] Vector3 ViewAngleTo(const Vector3& other) const;
 
-        [[nodiscard]] static Vector3 ForwardVector(float pitch, float yaw);
-        [[nodiscard]] static Vector3 RightVector(float pitch, float yaw, float roll);
-        [[nodiscard]] static Vector3 UpVector(float pitch, float yaw, float roll);
-
         [[nodiscard]] std::tuple<float, float, float> AsTuple() const
         {
             return std::make_tuple(x, y, z);

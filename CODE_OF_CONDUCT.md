@@ -1,4 +1,4 @@
-## Goal
+## 🎯 Goal
 
 My goal is to provide a space where it is safe for everyone to contribute to,
 and get support for, open-source software in a respectful and cooperative
@@ -10,7 +10,7 @@ surrounding community a place for everyone.
 As members, contributors, and everyone else who may participate in the
 development, I strive to keep the entire experience civil.
 
-## Standards
+## 📜 Standards
 
 Our community standards exist in order to make sure everyone feels comfortable
 contributing to the project(s) together.
@@ -27,14 +27,14 @@ Examples of breaking each rule respectively include:
 - Posting distasteful imagery, trolling, or posting things unrelated to the topic at hand.
 - Treating someone as worse because of their lack of understanding of an issue.
 
-## Enforcement
+## ⚡ Enforcement
 
 Enforcement of this CoC is done by Orange++ and/or other core contributors.
 
 I, as the core developer, will strive my best to keep this community civil and
 following the standards outlined above.
 
-### Reporting incidents
+### 🚩 Reporting incidents
 
 If you believe an incident of breaking these standards has occurred, but nobody has
 taken appropriate action, you can privately contact the people responsible for dealing
@@ -47,10 +47,11 @@ with such incidents in multiple ways:
 - `@orange_cpp`
 
 ***Telegram***
-- `@orange-cpp`
+- `@orange_cpp`
+
 I guarantee your privacy and will not share those reports with anyone.
 
-## Enforcement Strategy
+## ⚖️ Enforcement Strategy
 
 Depending on the severity of the infraction, any action from the list below may be applied.
 Please keep in mind cases are reviewed on a per-case basis and members are the ultimate
@@ -63,27 +64,27 @@ to be taken is still up to the member.
 For example, if the matter at hand regards a representative of a marginalized group or minority,
 the member might ask for a first-hand opinion from another representative of such group.
 
-### Correction/Edit
+### ✏️ Correction/Edit
 
 If your message is found to be misleading or poorly worded, a member might
 edit your message.
 
-### Warning/Deletion
+### ⚠️ Warning/Deletion
 
 If your message is found inappropriate, a member might give you a public or private warning,
 and/or delete your message.
 
-### Mute
+### 🔇 Mute
 
 If your message is disruptive, or you have been repeatedly violating the standards,
 a member might mute (or temporarily ban) you.
 
-### Ban
+### ⛔ Ban
 
 If your message is hateful, very disruptive, or other, less serious infractions are repeated
 ignoring previous punishments, a member might ban you permanently.
 
-## Scope
+## 🔎 Scope
 
 This CoC shall apply to all projects ran under the Orange++ lead and all _official_ communities
 outside of GitHub.

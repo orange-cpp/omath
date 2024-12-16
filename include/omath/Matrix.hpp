@@ -1,7 +1,7 @@
 #pragma once
+#include <initializer_list>
 #include <memory>
 #include <string>
-#include <initializer_list>
 
 namespace omath
 {
@@ -27,11 +27,11 @@ namespace omath
         [[nodiscard]]
         static Matrix ProjectionMatrix(float fieldOfView, float aspectRatio, float near, float far);
 
-        Matrix(const Matrix &other);
+        Matrix(const Matrix& other);
 
-        Matrix(size_t rows, size_t columns, const float *pRaw);
+        Matrix(size_t rows, size_t columns, const float* pRaw);
 
-        Matrix(Matrix &&other) noexcept;
+        Matrix(Matrix&& other) noexcept;
 
         [[nodiscard]]
         size_t RowCount() const noexcept;
@@ -43,7 +43,7 @@ namespace omath
         std::pair<size_t, size_t> Size() const noexcept;
 
         [[nodiscard]]
-        float &At(size_t iRow, size_t iCol);
+        float& At(size_t iRow, size_t iCol);
 
         [[nodiscard]]
         float Sum();
@@ -56,17 +56,17 @@ namespace omath
         void Set(float val);
 
         [[nodiscard]]
-        const float &At(size_t iRow, size_t iCol) const;
+        const float& At(size_t iRow, size_t iCol) const;
 
-        Matrix operator*(const Matrix &other) const;
+        Matrix operator*(const Matrix& other) const;
 
-        Matrix& operator*=(const Matrix &other);
+        Matrix& operator*=(const Matrix& other);
 
         Matrix operator*(float f) const;
 
-        Matrix &operator*=(float f);
+        Matrix& operator*=(float f);
 
-        Matrix &operator/=(float f);
+        Matrix& operator/=(float f);
 
         void Clear();
 
@@ -85,9 +85,9 @@ namespace omath
         [[nodiscard]]
         const float* Raw() const;
 
-        Matrix &operator=(const Matrix &other);
+        Matrix& operator=(const Matrix& other);
 
-        Matrix &operator=(Matrix &&other) noexcept;
+        Matrix& operator=(Matrix&& other) noexcept;
 
         Matrix operator/(float f) const;
 
@@ -101,4 +101,4 @@ namespace omath
         size_t m_columns;
         std::unique_ptr<float[]> m_data;
     };
-}
+} // namespace omath
