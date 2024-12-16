@@ -10,6 +10,7 @@ namespace omath
     {
     public:
         Triangle3d(const Vector3& vertex1, const Vector3& vertex2, const Vector3& vertex3);
+
         Vector3 m_vertex1;
         Vector3 m_vertex2;
         Vector3 m_vertex3;

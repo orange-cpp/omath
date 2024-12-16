@@ -58,7 +58,7 @@ namespace omath::prediction
                 return std::nullopt;
 
         root = std::sqrt(root);
-        const float angle = std::atan((std::pow(projectile.m_launchSpeed, 2.f) - root) / (bulletGravity * distance2d));
+        const float angle = std::atan((launchSpeedSqr - root) / (bulletGravity * distance2d));
 
         return angles::RadiansToDegrees(angle);
     }
