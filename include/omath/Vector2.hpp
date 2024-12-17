@@ -5,7 +5,7 @@
 #pragma once
 #include <tuple>
 #include <cmath>
-#include "omath_export.h"
+#include "omath/omath_export.hpp"
 
 namespace omath
 {
