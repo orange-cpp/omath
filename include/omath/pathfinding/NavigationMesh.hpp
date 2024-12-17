@@ -18,21 +18,21 @@ namespace omath::pathfinding
         
     };
 
-    class OMATH_API NavigationMesh final
+    class NavigationMesh final
     {
     public:
 
         [[nodiscard]]
-        std::expected<Vector3, std::string> GetClosestVertex(const Vector3& point) const;
+        OMATH_API std::expected<Vector3, std::string> GetClosestVertex(const Vector3& point) const;
 
 
         [[nodiscard]]
-        const std::vector<Vector3>& GetNeighbors(const Vector3& vertex) const;
+        OMATH_API const std::vector<Vector3>& GetNeighbors(const Vector3& vertex) const;
 
         [[nodiscard]]
-        bool Empty() const;
+        OMATH_API bool Empty() const;
         [[nodiscard]] std::vector<uint8_t> Serialize() const;
-        void Deserialize(const std::vector<uint8_t>& raw);
+        OMATH_API void Deserialize(const std::vector<uint8_t>& raw);
 
         std::unordered_map<Vector3, std::vector<Vector3>> m_verTextMap;
     };
