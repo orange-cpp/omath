@@ -10,7 +10,7 @@
 #include "ErrorCodes.hpp"
 #include <omath/Angle.hpp>
 #include <type_traits>
-#include <omath/omath_export.hpp>
+#include "omath/omath_export.hpp"
 
 namespace omath::projection
 {
