@@ -3,10 +3,12 @@
 //
 #pragma once
 
+#include "omath/omath_export.hpp"
+
 namespace omath
 {
     template<class PitchType, class YawType, class RollType>
-    struct ViewAngles
+    struct OMATH_API ViewAngles
     {
         PitchType pitch;
         YawType yaw;

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.26)
 
 project(omath VERSION 1.0.0)
 
-
+include(CMakePackageConfigHelpers)
 
 set(CMAKE_CXX_STANDARD 26)
 
@@ -19,10 +19,16 @@ else()
     add_library(omath STATIC source/Vector3.cpp)
 endif()
 
+target_compile_definitions(omath PUBLIC OMATH_EXPORT)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(omath PRIVATE /Zc:static_assert-)
+endif()
+
 add_subdirectory(source)
-add_subdirectory(extlibs)
 
 if(OMATH_BUILD_TESTS)
+    add_subdirectory(extlibs)
     add_subdirectory(tests)
 endif()
 

@@ -8,11 +8,11 @@
 #include "omath/Vector3.hpp"
 #include "omath/prediction/Projectile.hpp"
 #include "omath/prediction/Target.hpp"
-
+#include "omath/omath_export.hpp"
 
 namespace omath::prediction
 {
-    class Engine final
+    class OMATH_API Engine final
     {
     public:
         explicit Engine(float gravityConstant, float simulationTimeStep,
