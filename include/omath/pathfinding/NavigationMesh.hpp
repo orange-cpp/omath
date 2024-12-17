@@ -8,7 +8,7 @@
 #include <expected>
 #include <vector>
 #include <string>
-#include "../omath_export.h"
+#include "omath/omath_export.hpp"
 
 namespace omath::pathfinding
 {

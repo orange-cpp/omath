@@ -2,7 +2,7 @@
 #include <initializer_list>
 #include <memory>
 #include <string>
-#include "omath_export.h"
+#include "omath/omath_export.hpp"
 
 namespace omath
 {

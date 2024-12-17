@@ -4,7 +4,7 @@
 #pragma once
 #include "Constants.h"
 #include "omath/projection/Camera.hpp"
-#include "../../omath_export.h"
+#include "omath/omath_export.hpp"
 
 namespace omath::source
 {

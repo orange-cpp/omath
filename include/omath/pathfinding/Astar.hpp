@@ -6,7 +6,7 @@
 #include <vector>
 #include "NavigationMesh.hpp"
 #include "omath/Vector3.hpp"
-#include "../omath_export.h"
+#include "omath/omath_export.hpp"
 
 namespace omath::pathfinding
 {
