@@ -4,11 +4,11 @@
 
 #pragma once
 #include "omath/Vector3.hpp"
-
+#include "../omath_export.h"
 
 namespace omath::prediction
 {
-    class Projectile final
+    class OMATH_API Projectile final
     {
     public:
 

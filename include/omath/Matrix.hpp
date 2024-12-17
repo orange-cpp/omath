@@ -2,12 +2,13 @@
 #include <initializer_list>
 #include <memory>
 #include <string>
+#include "omath_export.h"
 
 namespace omath
 {
     class Vector3;
 
-    class Matrix final
+    class OMATH_API Matrix final
     {
     public:
         Matrix();

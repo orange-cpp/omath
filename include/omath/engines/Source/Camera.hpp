@@ -4,10 +4,11 @@
 #pragma once
 #include "Constants.h"
 #include "omath/projection/Camera.hpp"
+#include "../../omath_export.h"
 
 namespace omath::source
 {
-    class Camera final : public projection::Camera<Mat4x4, ViewAngles>
+    class OMATH_API Camera final : public projection::Camera<Mat4x4, ViewAngles>
     {
     public:
         Camera(const Vector3& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
