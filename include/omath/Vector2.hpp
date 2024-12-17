@@ -5,11 +5,11 @@
 #pragma once
 #include <tuple>
 #include <cmath>
-
+#include "omath_export.h"
 
 namespace omath
 {
-    class Vector2
+    class OMATH_API Vector2
     {
     public:
         float x = 0.f;

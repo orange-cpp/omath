@@ -7,11 +7,11 @@
 #include <cstdint>
 #include <functional>
 #include "omath/Vector2.hpp"
-
+#include "omath_export.h"
 
 namespace omath
 {
-    class Vector3 : public Vector2
+    class OMATH_API Vector3 : public Vector2
     {
     public:
         float z = 0.f;

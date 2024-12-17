@@ -8,7 +8,7 @@
 #include <expected>
 #include <vector>
 #include <string>
-
+#include "../omath_export.h"
 
 namespace omath::pathfinding
 {
@@ -18,7 +18,7 @@ namespace omath::pathfinding
         
     };
 
-    class NavigationMesh final
+    class OMATH_API NavigationMesh final
     {
     public:
 

@@ -8,11 +8,11 @@
 #include <stdexcept>
 #include <utility>
 #include "Vector3.hpp"
-
+#include "omath_export.h"
 
 namespace omath
 {
-    struct MatSize
+    struct OMATH_API MatSize
     {
         size_t rows, columns;
     };
@@ -25,7 +25,7 @@ namespace omath
 
     template<size_t Rows = 0, size_t Columns = 0, class Type = float, MatStoreType StoreType = MatStoreType::ROW_MAJOR>
         requires std::is_arithmetic_v<Type>
-    class Mat final
+    class OMATH_API Mat final
     {
     public:
         constexpr Mat()
