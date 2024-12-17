@@ -6,7 +6,6 @@
 #include <numbers>
 #include <cmath>
 
-
 namespace omath::angles
 {
     template<class Type>

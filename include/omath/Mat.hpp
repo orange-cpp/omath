@@ -8,11 +8,11 @@
 #include <stdexcept>
 #include <utility>
 #include "Vector3.hpp"
-
+#include "omath/omath_export.hpp"
 
 namespace omath
 {
-    struct MatSize
+    struct OMATH_API MatSize
     {
         size_t rows, columns;
     };
@@ -28,15 +28,15 @@ namespace omath
     class Mat final
     {
     public:
-        constexpr Mat()
+        OMATH_API constexpr Mat()
         {
             Clear();
         }
-        constexpr static MatStoreType GetStoreOrdering()
+        OMATH_API constexpr static MatStoreType GetStoreOrdering()
         {
             return StoreType;
         }
-        constexpr Mat(const std::initializer_list<std::initializer_list<Type>>& rows)
+        OMATH_API constexpr Mat(const std::initializer_list<std::initializer_list<Type>>& rows)
         {
             if (rows.size() != Rows)
                 throw std::invalid_argument("Initializer list rows size does not match template parameter Rows");
@@ -56,40 +56,40 @@ namespace omath
             }
         }
 
-        constexpr explicit Mat(const Type* rawData)
+        OMATH_API constexpr explicit Mat(const Type* rawData)
         {
             std::copy_n(rawData, Rows * Columns, m_data.begin());
         }
 
-        constexpr Mat(const Mat& other) noexcept
+        OMATH_API constexpr Mat(const Mat& other) noexcept
         {
             m_data = other.m_data;
         }
 
-        constexpr Mat(Mat&& other) noexcept
+        OMATH_API constexpr Mat(Mat&& other) noexcept
         {
             m_data = std::move(other.m_data);
         }
 
         [[nodiscard]]
-        static constexpr size_t RowCount() noexcept
+        OMATH_API static constexpr size_t RowCount() noexcept
         {
             return Rows;
         }
 
         [[nodiscard]]
-        static constexpr size_t ColumnsCount() noexcept
+        OMATH_API static constexpr size_t ColumnsCount() noexcept
         {
             return Columns;
         }
 
         [[nodiscard]]
-        static consteval MatSize Size() noexcept
+        OMATH_API static consteval MatSize Size() noexcept
         {
             return {Rows, Columns};
         }
 
-        [[nodiscard]] constexpr const Type& At(const size_t rowIndex, const size_t columnIndex) const
+        [[nodiscard]] OMATH_API constexpr const Type& At(const size_t rowIndex, const size_t columnIndex) const
         {
             if (rowIndex >= Rows || columnIndex >= Columns)
                 throw std::out_of_range("Index out of range");
@@ -107,13 +107,13 @@ namespace omath
             }
         }
 
-        [[nodiscard]] constexpr Type& At(const size_t rowIndex, const size_t columnIndex)
+        [[nodiscard]] OMATH_API constexpr Type& At(const size_t rowIndex, const size_t columnIndex)
         {
             return const_cast<Type&>(std::as_const(*this).At(rowIndex, columnIndex));
         }
 
         [[nodiscard]]
-        constexpr Type Sum() const noexcept
+        OMATH_API constexpr Type Sum() const noexcept
         {
             Type sum = 0;
             for (size_t i = 0; i < Rows; ++i)
@@ -123,12 +123,12 @@ namespace omath
             return sum;
         }
 
-        constexpr void Clear() noexcept
+        OMATH_API constexpr void Clear() noexcept
         {
             Set(0);
         }
 
-        constexpr void Set(const Type& value) noexcept
+        OMATH_API constexpr void Set(const Type& value) noexcept
         {
             std::ranges::fill(m_data, value);
         }
@@ -136,7 +136,7 @@ namespace omath
         // Operator overloading for multiplication with another Mat
         template<size_t OtherColumns>
         constexpr Mat<Rows, OtherColumns, Type, StoreType>
-        operator*(const Mat<Columns, OtherColumns, Type, StoreType>& other) const
+        OMATH_API operator*(const Mat<Columns, OtherColumns, Type, StoreType>& other) const
         {
             Mat<Rows, OtherColumns, Type, StoreType> result;
 
@@ -151,7 +151,7 @@ namespace omath
             return result;
         }
 
-        constexpr Mat& operator*=(const Type& f) noexcept
+        OMATH_API constexpr Mat& operator*=(const Type& f) noexcept
         {
             for (size_t i = 0; i < Rows; ++i)
                 for (size_t j = 0; j < Columns; ++j)
@@ -161,19 +161,19 @@ namespace omath
 
         template<size_t OtherColumns>
         constexpr Mat<Rows, OtherColumns, Type, StoreType>
-        operator*=(const Mat<Columns, OtherColumns, Type, StoreType>& other)
+        OMATH_API operator*=(const Mat<Columns, OtherColumns, Type, StoreType>& other)
         {
             return *this = *this * other;
         }
 
-        constexpr Mat operator*(const Type& f) const noexcept
+        OMATH_API constexpr Mat operator*(const Type& f) const noexcept
         {
             Mat result(*this);
             result *= f;
             return result;
         }
 
-        constexpr Mat& operator/=(const Type& f) noexcept
+        OMATH_API constexpr Mat& operator/=(const Type& f) noexcept
         {
             for (size_t i = 0; i < Rows; ++i)
                 for (size_t j = 0; j < Columns; ++j)
@@ -181,14 +181,14 @@ namespace omath
             return *this;
         }
 
-        constexpr Mat operator/(const Type& f) const noexcept
+        OMATH_API constexpr Mat operator/(const Type& f) const noexcept
         {
             Mat result(*this);
             result /= f;
             return result;
         }
 
-        constexpr Mat& operator=(const Mat& other) noexcept
+        OMATH_API constexpr Mat& operator=(const Mat& other) noexcept
         {
             if (this == &other)
                 return *this;
@@ -198,7 +198,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Mat& operator=(Mat&& other) noexcept
+        OMATH_API constexpr Mat& operator=(Mat&& other) noexcept
         {
             if (this == &other)
                 return *this;
@@ -211,7 +211,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat<Columns, Rows, Type, StoreType> Transposed() const noexcept
+        OMATH_API constexpr Mat<Columns, Rows, Type, StoreType> Transposed() const noexcept
         {
             Mat<Columns, Rows, Type, StoreType> transposed;
             for (size_t i = 0; i < Rows; ++i)
@@ -222,7 +222,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Type Determinant() const
+        OMATH_API constexpr Type Determinant() const
         {
             static_assert(Rows == Columns, "Determinant is only defined for square matrices.");
 
@@ -244,7 +244,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> Minor(const size_t row, const size_t column) const
+        OMATH_API constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> Minor(const size_t row, const size_t column) const
         {
             Mat<Rows - 1, Columns - 1, Type, StoreType> result;
             for (size_t i = 0, m = 0; i < Rows; ++i)
@@ -264,19 +264,19 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr const std::array<Type, Rows * Columns>& RawArray() const
+        OMATH_API constexpr const std::array<Type, Rows * Columns>& RawArray() const
         {
             return m_data;
         }
 
         [[nodiscard]]
-        constexpr std::array<Type, Rows * Columns>& RawArray()
+        OMATH_API constexpr std::array<Type, Rows * Columns>& RawArray()
         {
             return const_cast<std::array<Type, Rows * Columns>>(std::as_const(*this).RawArray());
         }
 
         [[nodiscard]]
-        std::string ToString() const noexcept
+        OMATH_API std::string ToString() const noexcept
         {
             std::ostringstream oss;
             for (size_t i = 0; i < Rows; ++i)
@@ -293,20 +293,20 @@ namespace omath
         }
 
         [[nodiscard]]
-        bool operator==(const Mat& mat) const
+        OMATH_API bool operator==(const Mat& mat) const
         {
             return m_data == mat.m_data;
         }
 
         [[nodiscard]]
-        bool operator!=(const Mat& mat) const
+        OMATH_API bool operator!=(const Mat& mat) const
         {
             return !operator==(mat);
         }
 
         // Static methods that return fixed-size matrices
         [[nodiscard]]
-        constexpr static Mat<4, 4> ToScreenMat(const Type& screenWidth, const Type& screenHeight) noexcept
+        OMATH_API constexpr static Mat<4, 4> ToScreenMat(const Type& screenWidth, const Type& screenHeight) noexcept
         {
             return {
                     {screenWidth / 2, 0, 0, 0},
@@ -336,7 +336,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    constexpr Mat<4, 4, Type, St> MatTranslation(const Vector3& diff) noexcept
+    OMATH_API constexpr Mat<4, 4, Type, St> MatTranslation(const Vector3& diff) noexcept
     {
         return
         {
@@ -349,7 +349,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
-    Mat<4, 4, Type, St> MatRotationAxisX(const Angle& angle) noexcept
+    OMATH_API Mat<4, 4, Type, St> MatRotationAxisX(const Angle& angle) noexcept
     {
         return
         {
@@ -362,7 +362,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
-    Mat<4, 4, Type, St> MatRotationAxisY(const Angle& angle) noexcept
+    OMATH_API Mat<4, 4, Type, St> MatRotationAxisY(const Angle& angle) noexcept
     {
         return
         {
@@ -375,7 +375,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
-    Mat<4, 4, Type, St> MatRotationAxisZ(const Angle& angle) noexcept
+    OMATH_API Mat<4, 4, Type, St> MatRotationAxisZ(const Angle& angle) noexcept
     {
         return
         {
@@ -403,7 +403,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class ViewAngles>
     [[nodiscard]]
-    Mat<4, 4, Type, St> MatRotation(const ViewAngles& angles) noexcept
+    OMATH_API Mat<4, 4, Type, St> MatRotation(const ViewAngles& angles) noexcept
     {
         return MatRotationAxisZ(angles.yaw) * MatRotationAxisY(angles.pitch) * MatRotationAxisX(angles.roll);
     }
