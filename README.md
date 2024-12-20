@@ -26,6 +26,20 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 - CMake (for building the project)
 
 ### Installation
+### vcpkg
+**Note**: Support vcpkg for package management
+1. Install vcpkg (https://github.com/microsoft/vcpkg)
+2. Run the following command to install the orange-math package:
+```
+vcpkg install orange-math
+```
+CMakeLists.txt
+```cmake
+find_package(omath CONFIG REQUIRED)
+target_link_libraries(main PRIVATE omath::omath)
+```
+For detailed commands on installing different versions and more information, please refer to Microsoft's official instructions (https://learn.microsoft.com/en-us/vcpkg/get_started/overview)
+### Build from source
 1. Clone the repository:
    ```
    git clone https://github.com/orange-cpp/omath.git
