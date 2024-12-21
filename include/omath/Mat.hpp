@@ -66,6 +66,11 @@ namespace omath
             m_data = other.m_data;
         }
 
+        OMATH_API constexpr Type& operator[](const size_t row, const size_t col)
+        {
+            return At(row, col);
+        }
+
         OMATH_API constexpr Mat(Mat&& other) noexcept
         {
             m_data = std::move(other.m_data);
