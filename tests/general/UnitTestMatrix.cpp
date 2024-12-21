@@ -29,6 +29,15 @@ TEST_F(UnitTestMatrix, Constructor_Size)
     EXPECT_EQ(m.ColumnsCount(), 3);
 }
 
+TEST_F(UnitTestMatrix, Operator_SquareBrackets)
+{
+    EXPECT_EQ((m2[0, 0]), 1.0f);
+    EXPECT_EQ((m2[0, 1]), 2.0f);
+    EXPECT_EQ((m2[1, 0]), 3.0f);
+    EXPECT_EQ((m2[1, 1]), 4.0f);
+}
+
+
 TEST_F(UnitTestMatrix, Constructor_InitializerList)
 {
     Matrix m{{1.0f, 2.0f}, {3.0f, 4.0f}};
