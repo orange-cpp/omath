@@ -83,4 +83,4 @@ Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details 
 This project is licensed under the MIT - see the `LICENSE` file for details.
 
 ## Acknowledgments
-- Orange | [Telegram](https://t.me/orange_cpp)
+-  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
