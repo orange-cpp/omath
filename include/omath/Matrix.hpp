@@ -37,6 +37,13 @@ namespace omath
         [[nodiscard]]
         OMATH_API size_t RowCount() const noexcept;
 
+
+        [[nodiscard]]
+        OMATH_API float& operator[](size_t row, size_t column)
+        {
+            return At(row, column);
+        }
+
         [[nodiscard]]
         OMATH_API size_t ColumnsCount() const noexcept;
 
