@@ -40,6 +40,14 @@ TEST_F(UnitTestMat, Constructor_InitializerList)
     EXPECT_FLOAT_EQ(m.At(1, 1), 4.0f);
 }
 
+TEST_F(UnitTestMat, Operator_SquareBrackets)
+{
+    EXPECT_EQ((m2[0, 0]), 1.0f);
+    EXPECT_EQ((m2[0, 1]), 2.0f);
+    EXPECT_EQ((m2[1, 0]), 3.0f);
+    EXPECT_EQ((m2[1, 1]), 4.0f);
+}
+
 TEST_F(UnitTestMat, Constructor_Copy)
 {
     Mat<2, 2> m3 = m2;
