@@ -4,3 +4,4 @@ include(CMakeFindDependencyMacro)
 
 # Load the targets for the omath library
 include("${CMAKE_CURRENT_LIST_DIR}/omathTargets.cmake")
+check_required_components(omath)
