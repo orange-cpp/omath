@@ -13,7 +13,7 @@ namespace omath::source
         Camera(const Vector3& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
                const Angle<float, 0.f, 180.f, AngleFlags::Clamped>& fov, float near, float far);
         void LookAt(const Vector3& target) override;
-        [[nodiscard]] Mat4x4 GetViewMatrix() const override;
-        [[nodiscard]] Mat4x4 GetProjectionMatrix() const override;
+        [[nodiscard]] Mat4x4 CalcViewMatrix() const override;
+        [[nodiscard]] Mat4x4 CalcProjectionMatrix() const override;
     };
 }
