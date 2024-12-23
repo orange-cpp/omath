@@ -21,10 +21,6 @@ endif()
 
 target_compile_definitions(omath PUBLIC OMATH_EXPORT)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(omath PRIVATE /Zc:static_assert-)
-endif()
-
 add_subdirectory(source)
 
 if(OMATH_BUILD_TESTS)
