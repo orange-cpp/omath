@@ -4,9 +4,7 @@
 
 #pragma once
 #include "omath/Angles.hpp"
-
 #include <algorithm>
-#include "omath/omath_export.hpp"
 
 namespace omath
 {
@@ -18,7 +16,7 @@ namespace omath
 
     template<class Type = float, Type min = Type(0), Type max = Type(360), AngleFlags flags = AngleFlags::Normalized>
     requires std::is_arithmetic_v<Type>
-    class OMATH_API Angle
+    class Angle
     {
         Type m_angle;
         constexpr Angle(const Type& degrees)

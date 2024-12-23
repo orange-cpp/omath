@@ -5,11 +5,10 @@
 
 #include <omath/Vector3.hpp>
 #include <algorithm>
-#include "omath/omath_export.hpp"
 
 namespace omath
 {
-    class OMATH_API Vector4 : public Vector3
+    class Vector4 : public Vector3
     {
     public:
         float w;
