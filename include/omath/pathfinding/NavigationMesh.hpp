@@ -8,7 +8,6 @@
 #include <expected>
 #include <vector>
 #include <string>
-#include "omath/omath_export.hpp"
 
 namespace omath::pathfinding
 {
@@ -23,16 +22,16 @@ namespace omath::pathfinding
     public:
 
         [[nodiscard]]
-        OMATH_API std::expected<Vector3, std::string> GetClosestVertex(const Vector3& point) const;
+        std::expected<Vector3, std::string> GetClosestVertex(const Vector3& point) const;
 
 
         [[nodiscard]]
-        OMATH_API const std::vector<Vector3>& GetNeighbors(const Vector3& vertex) const;
+        const std::vector<Vector3>& GetNeighbors(const Vector3& vertex) const;
 
         [[nodiscard]]
-        OMATH_API bool Empty() const;
+        bool Empty() const;
         [[nodiscard]] std::vector<uint8_t> Serialize() const;
-        OMATH_API void Deserialize(const std::vector<uint8_t>& raw);
+        void Deserialize(const std::vector<uint8_t>& raw);
 
         std::unordered_map<Vector3, std::vector<Vector3>> m_verTextMap;
     };

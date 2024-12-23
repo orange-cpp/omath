@@ -6,11 +6,10 @@
 #include <vector>
 #include "NavigationMesh.hpp"
 #include "omath/Vector3.hpp"
-#include "omath/omath_export.hpp"
 
 namespace omath::pathfinding
 {
-    class OMATH_API Astar final
+    class Astar final
     {
     public:
         [[nodiscard]]
