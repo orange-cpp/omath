@@ -3,7 +3,7 @@
 //
 #include <gtest/gtest.h>
 #include <omath/engines/Source/Camera.hpp>
-#include <omath/engines/Source/Constants.h>
+#include <omath/engines/Source/Constants.hpp>
 #include <omath/engines/Source/Formulas.hpp>
 
 

@@ -126,7 +126,10 @@ namespace omath::projection
             if (IsNdcOutOfBounds(projected))
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
-            return Vector3{(projected.At(0,0)+1) / 2 * m_viewPort.m_width , (-projected.At(1,0)+1) / 2 * m_viewPort.m_height, projected.At(2,0)};
+            const auto screenPositionX = (projected.At(0,0)+1.f) / 2.f * m_viewPort.m_width;
+            const auto screenPositionY = (-projected.At(1,0)+1) / 2.f * m_viewPort.m_height;
+
+            return Vector3{screenPositionX, screenPositionY, projected.At(2,0)};
         }
 
     protected:

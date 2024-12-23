@@ -1,11 +1,11 @@
 //
-// Created by Orange on 12/4/2024.
+// Created by Orange on 12/23/2024.
 //
 #pragma once
 #include "Constants.hpp"
 #include "omath/projection/Camera.hpp"
 
-namespace omath::source
+namespace omath::opengl
 {
     class Camera final : public projection::Camera<Mat4x4, ViewAngles>
     {
