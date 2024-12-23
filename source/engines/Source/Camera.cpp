@@ -24,12 +24,12 @@ namespace omath::source
         m_viewAngles.roll = RollAngle::FromRadians(0.f);
     }
 
-    Mat4x4 Camera::GetViewMatrix() const
+    Mat4x4 Camera::CalcViewMatrix() const
     {
-        return CalcViewMatrix(m_viewAngles, m_origin);
+        return  source::CalcViewMatrix(m_viewAngles, m_origin);
     }
 
-    Mat4x4 Camera::GetProjectionMatrix() const
+    Mat4x4 Camera::CalcProjectionMatrix() const
     {
         return CalcPerspectiveProjectionMatrix(m_fieldOfView.AsDegrees(), m_viewPort.AspectRatio(), m_nearPlaneDistance, m_farPlaneDistance);
     }
