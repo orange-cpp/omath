@@ -10,11 +10,10 @@
 #include "ErrorCodes.hpp"
 #include <omath/Angle.hpp>
 #include <type_traits>
-#include "omath/omath_export.hpp"
 
 namespace omath::projection
 {
-    class OMATH_API ViewPort final
+    class ViewPort final
     {
     public:
         float m_width;
@@ -28,7 +27,7 @@ namespace omath::projection
     using FieldOfView = const Angle<float, 0.f, 180.f, AngleFlags::Clamped>;
 
     template<class Mat4x4Type, class ViewAnglesType>
-    class OMATH_API Camera
+    class Camera
     {
 
     public:

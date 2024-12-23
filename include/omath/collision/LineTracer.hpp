@@ -5,11 +5,10 @@
 
 #include "omath/Vector3.hpp"
 #include "omath/Triangle3d.hpp"
-#include "omath/omath_export.hpp"
 
 namespace omath::collision
 {
-    class OMATH_API Ray
+    class Ray
     {
     public:
         Vector3 start;
@@ -21,7 +20,7 @@ namespace omath::collision
         [[nodiscard]]
         Vector3 DirectionVectorNormalized() const;
     };
-    class OMATH_API LineTracer
+    class LineTracer
     {
     public:
         LineTracer() = delete;

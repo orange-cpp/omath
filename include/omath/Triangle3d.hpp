@@ -3,11 +3,10 @@
 //
 #pragma once
 #include "omath/Vector3.hpp"
-#include "omath/omath_export.hpp"
 
 namespace omath
 {
-    class OMATH_API Triangle3d final
+    class Triangle3d final
     {
     public:
         Triangle3d(const Vector3& vertex1, const Vector3& vertex2, const Vector3& vertex3);

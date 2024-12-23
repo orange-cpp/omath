@@ -7,11 +7,10 @@
 #include "omath/Vector3.hpp"
 #include <cstdint>
 #include "omath/Vector4.hpp"
-#include "omath/omath_export.hpp"
 
 namespace omath
 {
-    struct OMATH_API HSV
+    struct HSV
     {
         float m_hue{};
         float m_saturation{};
@@ -19,7 +18,7 @@ namespace omath
     };
 
 
-    class OMATH_API Color final : public Vector4
+    class Color final : public Vector4
     {
         public:
             constexpr Color(float r, float g, float b, float a) : Vector4(r,g,b,a)
