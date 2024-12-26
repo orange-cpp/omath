@@ -11,7 +11,7 @@
 
 Oranges's Math Library (omath) is a comprehensive, open-source library aimed at providing efficient, reliable, and versatile mathematical functions and algorithms. Developed primarily in C++, this library is designed to cater to a wide range of mathematical operations essential in scientific computing, engineering, and academic research.
 
-## Features
+## 👁‍🗨 Features
 - **Efficiency**: Optimized for performance, ensuring quick computations.
 - **Versatility**: Includes a wide array of mathematical functions and algorithms.
 - **Ease of Use**: Simplified interface for convenient integration into various projects.
@@ -20,7 +20,7 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 - **Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
 - **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
 
-## Getting Started
+## ⏬ Getting Started
 ### Prerequisites
 - C++ Compiler
 - CMake (for building the project)
@@ -54,7 +54,7 @@ For detailed commands on installing different versions and more information, ple
    cmake --build cmake-build/build/windows-release --target server -j 6
    ```
    Use **\<platform\>-\<build configuration\>** preset to build siutable version for yourself. Like **windows-release** or **linux-release**.
-## Usage
+## ❔ Usage
 Simple world to screen function
 ```c++
 TEST(UnitTestProjection, IsPointOnScreen)
@@ -76,11 +76,11 @@ With `omath/projection` module you can achieve simple ESP hack for powered by So
 
 </details>
 
-## Contributing
+## 🫵🏻 Contributing
 Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
 
-## License
+## 📜 License
 This project is licensed under the MIT - see the `LICENSE` file for details.
 
-## Acknowledgments
+## 💘 Acknowledgments
 -  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
