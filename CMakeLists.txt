@@ -16,7 +16,10 @@ option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/Vector3.cpp)
 else()
-    add_library(omath STATIC source/Vector3.cpp)
+    add_library(omath STATIC source/Vector3.cpp
+            include/omath/engines/OpenGL/Constants.hpp
+            include/omath/engines/OpenGL/Formulas.hpp
+            include/omath/engines/OpenGL/Camera.hpp)
 endif()
 
 target_compile_definitions(omath PUBLIC OMATH_EXPORT)

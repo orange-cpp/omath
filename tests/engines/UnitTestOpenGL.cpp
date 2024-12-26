@@ -1,37 +1,69 @@
 //
 // Created by Orange on 11/23/2024.
 //
-#include <complex>
 #include <gtest/gtest.h>
-#include <omath/Matrix.hpp>
-#include <print>
-
-// #include <glm/glm.hpp>
-
-// #include "glm/ext/matrix_clip_space.hpp"
-// #include "glm/ext/matrix_transform.hpp"
+#include <omath/engines/OpenGL/Camera.hpp>
+#include <omath/engines/OpenGL/Constants.hpp>
+#include <omath/engines/OpenGL/Formulas.hpp>
 
 
-TEST(UnitTestOpenGL, Projection)
+TEST(UnitTestOpenGL, ForwardVector)
 {
+    const auto forward = omath::opengl::ForwardVector({});
 
-    /*const auto proj_glm = glm::perspective(glm::radians(90.f), 16.f / 9.f, 0.1f, 1000.f);
-    // const auto proj_glm2 = glm::perspectiveLH_NO(glm::radians(90.f), 16.f / 9.f, 0.1f, 1000.f);
-    // const auto proj_omath = omath::Mat<4, 4, float, omath::MatStoreType::COLUMN_MAJOR>((const float*)&proj_glm);
-    // EXPECT_EQ(omath::opengl::PerspectiveProjectionMatrix(90, 16.f / 9.f, 0.1f, 1000.f), proj_omath);
+    EXPECT_EQ(forward, omath::opengl::kAbsForward);
+}
+
+TEST(UnitTestOpenGL, RightVector)
+{
+    const auto right = omath::opengl::RightVector({});
+
+    EXPECT_EQ(right, omath::opengl::kAbsRight);
+}
+
+TEST(UnitTestOpenGL, UpVector)
+{
+    const auto up = omath::opengl::UpVector({});
+    EXPECT_EQ(up, omath::opengl::kAbsUp);
+}
+
+TEST(UnitTestOpenGL, ProjectTargetMovedFromCamera)
+{
+    constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
+    auto cam = omath::opengl::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
 
-    glm::vec4 ndc_glm2 = proj_glm * glm::vec4(300.f, 0.f, -1000.f, 1.f);
-    ndc_glm2 /= ndc_glm2.w;
-    const omath::Mat<4, 1, float, omath::MatStoreType::COLUMN_MAJOR> cords_omath =
+    for (float distance = -10.f; distance > -1000.f; distance -= 0.01f)
     {
-        {0},
-        {0},
-        {-0.2f},
-        {1}
-    };
+        const auto projected = cam.WorldToScreen({0, 0, distance});
 
-    //auto ndc_omath = proj_omath * cords_omath;
-   // ndc_omath /= ndc_omath.At(3, 0);
-    */
+        EXPECT_TRUE(projected.has_value());
+
+        if (!projected.has_value())
+            continue;
+
+        EXPECT_NEAR(projected->x, 960, 0.00001f);
+        EXPECT_NEAR(projected->y, 540, 0.00001f);
+    }
+}
+
+TEST(UnitTestOpenGL, CameraSetAndGetFov)
+{
+    constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
+    auto cam = omath::opengl::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    EXPECT_EQ(cam.GetFieldOfView().AsDegrees(), 90.f);
+    cam.SetFieldOfView(omath::projection::FieldOfView::FromDegrees(50.f));
+
+    EXPECT_EQ(cam.GetFieldOfView().AsDegrees(), 50.f);
+}
+
+TEST(UnitTestOpenGL, CameraSetAndGetOrigin)
+{
+    auto cam = omath::opengl::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
+
+    EXPECT_EQ(cam.GetOrigin(), omath::Vector3{});
+    cam.SetFieldOfView(omath::projection::FieldOfView::FromDegrees(50.f));
+
+    EXPECT_EQ(cam.GetFieldOfView().AsDegrees(), 50.f);
 }
