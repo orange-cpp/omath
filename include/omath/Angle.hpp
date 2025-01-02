@@ -19,7 +19,7 @@ namespace omath
     class Angle
     {
         Type m_angle;
-        constexpr Angle(const Type& degrees)
+        constexpr explicit Angle(const Type& degrees)
         {
             if constexpr (flags == AngleFlags::Normalized)
                 m_angle = angles::WrapAngle(degrees, min, max);

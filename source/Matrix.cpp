@@ -74,6 +74,11 @@ namespace omath
     {
         return m_rows;
     }
+    
+    float& Matrix::operator[](const size_t row, const size_t column)
+    {
+        return At(row, column);
+    }
 
     Matrix::Matrix(Matrix&& other) noexcept
     {
