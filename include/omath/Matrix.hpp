@@ -38,10 +38,7 @@ namespace omath
 
 
         [[nodiscard]]
-        float& operator[](size_t row, size_t column)
-        {
-            return At(row, column);
-        }
+        float& operator[](size_t row, size_t column);
 
         [[nodiscard]]
         size_t ColumnsCount() const noexcept;
