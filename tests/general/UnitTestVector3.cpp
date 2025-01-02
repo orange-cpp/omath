@@ -387,6 +387,15 @@ TEST_F(UnitTestVector3, AsTuple)
     EXPECT_FLOAT_EQ(std::get<2>(tuple), v1.z);
 }
 
+// Test AsTuple method
+TEST_F(UnitTestVector3, AngleBeatween)
+{
+    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).AngleBetween({1, 0 ,0}).value().AsDegrees(), 90.0f);
+    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).AngleBetween({0.0f, 0.0f, 1.0f}).value().AsDegrees(), 0.0f);
+    EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).AngleBetween({0.0f, 0.0f, 1.0f}).has_value());
+}
+
+
 // Static assertions (compile-time checks)
 static_assert(Vector3(1.0f, 2.0f, 3.0f).LengthSqr() == 14.0f, "LengthSqr should be 14");
 static_assert(Vector3(1.0f, 2.0f, 3.0f).Dot(Vector3(4.0f, 5.0f, 6.0f)) == 32.0f, "Dot product should be 32");
