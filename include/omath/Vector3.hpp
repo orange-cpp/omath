@@ -7,9 +7,18 @@
 #include <cstdint>
 #include <functional>
 #include "omath/Vector2.hpp"
+#include "omath/Angle.hpp"
+#include <expected>
+
 
 namespace omath
 {
+
+    enum class Vector3Error
+    {
+        IMPOSSIBLE_BETWEEN_ANGLE,
+    };
+
     class Vector3 : public Vector2
     {
     public:
@@ -206,6 +215,17 @@ namespace omath
         [[nodiscard]] constexpr float Sum() const
         {
             return Sum2D() + z;
+        }
+
+        [[nodiscard]] std::expected<Angle<float, 0.f, 180.f, AngleFlags::Clamped>, Vector3Error>
+        AngleBetween(const Vector3& other) const
+        {
+            const auto bottom = Length() * other.Length();
+
+            if (bottom == 0.f)
+                return std::unexpected(Vector3Error::IMPOSSIBLE_BETWEEN_ANGLE);
+
+            return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::FromRadians(std::acos(Dot(other) / bottom));
         }
 
         [[nodiscard]] constexpr float Sum2D() const
