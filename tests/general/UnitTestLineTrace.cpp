@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "omath/collision/LineTracer.hpp"
-#include "omath/Triangle3d.hpp"
+#include "omath/Triangle.hpp"
 #include "omath/Vector3.hpp"
 
 using namespace omath;
@@ -13,7 +13,7 @@ protected:
     Vector3 vertex1{0.0f, 0.0f, 0.0f};
     Vector3 vertex2{1.0f, 0.0f, 0.0f};
     Vector3 vertex3{0.0f, 1.0f, 0.0f};
-    Triangle3d triangle{vertex1, vertex2, vertex3};
+    Triangle<Vector3> triangle{vertex1, vertex2, vertex3};
 };
 
 // Test that a ray intersecting the triangle returns false for CanTraceLine
@@ -71,7 +71,7 @@ TEST_F(LineTracerTest, TriangleFarBeyondRayEndPoint)
     constexpr Ray ray{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
 
     // Define a triangle far beyond the ray's endpoint
-    const Triangle3d distantTriangle{
+    constexpr Triangle<Vector3> distantTriangle{
         {1000.0f, 1000.0f, 1000.0f}, {1001.0f, 1000.0f, 1000.0f}, {1000.0f, 1001.0f, 1000.0f}
     };
 

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "omath/Vector3.hpp"
-#include "omath/Triangle3d.hpp"
+#include "omath/Triangle.hpp"
 
 namespace omath::collision
 {
@@ -27,12 +27,12 @@ namespace omath::collision
 
 
         [[nodiscard]]
-        static bool CanTraceLine(const Ray& ray, const Triangle3d& triangle);
+        static bool CanTraceLine(const Ray& ray, const Triangle<Vector3>& triangle);
 
 
         // Realization of Möller–Trumbore intersection algorithm
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
         [[nodiscard]]
-        static Vector3 GetRayHitPoint(const Ray& ray, const Triangle3d& triangle);
+        static Vector3 GetRayHitPoint(const Ray& ray, const Triangle<Vector3>& triangle);
     };
 }
