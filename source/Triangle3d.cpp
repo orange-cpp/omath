@@ -33,4 +33,8 @@ namespace omath
     {
         return m_vertex3 - m_vertex2;
     }
-}
+    Vector3 Triangle3d::MidPoint() const
+    {
+        return (m_vertex1 + m_vertex2 + m_vertex3) / 3;
+    }
+} // namespace omath
