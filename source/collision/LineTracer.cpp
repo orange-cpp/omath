@@ -5,7 +5,7 @@
 
 namespace omath::collision
 {
-    bool LineTracer::CanTraceLine(const Ray &ray, const Triangle3d &triangle)
+    bool LineTracer::CanTraceLine(const Ray& ray, const Triangle<Vector3>& triangle)
     {
         return GetRayHitPoint(ray, triangle) == ray.end;
     }
@@ -19,7 +19,7 @@ namespace omath::collision
         return DirectionVector().Normalized();
     }
 
-    Vector3 LineTracer::GetRayHitPoint(const Ray &ray, const Triangle3d &triangle)
+    Vector3 LineTracer::GetRayHitPoint(const Ray& ray, const Triangle<Vector3>& triangle)
     {
         constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
 
@@ -41,7 +41,7 @@ namespace omath::collision
         const auto u = t.Dot(p) * invDet;
 
 
-        if ((u < 0 && std::abs(u) > kEpsilon) || (u > 1 && std::abs(u-1) > kEpsilon))
+        if ((u < 0 && std::abs(u) > kEpsilon) || (u > 1 && std::abs(u - 1) > kEpsilon))
             return ray.end;
 
         const auto q = t.Cross(sideA);
@@ -59,4 +59,4 @@ namespace omath::collision
 
         return ray.start + rayDir * tHit;
     }
-}
+} // namespace omath::collision
