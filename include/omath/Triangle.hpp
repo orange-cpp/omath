@@ -59,7 +59,7 @@ namespace omath
             const auto sideB = SideBLength();
             const auto hypot = Hypot();
 
-            return sideA*sideA + sideB*sideB == hypot*hypot;
+            return std::abs(sideA*sideA + sideB*sideB - hypot*hypot) <= 0.0001f;
         }
         [[nodiscard]]
         constexpr Vector3 SideBVector() const

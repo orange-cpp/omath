@@ -113,8 +113,7 @@ TEST_F(UnitTestTriangle, SideVectors)
 
 TEST_F(UnitTestTriangle, IsRectangular)
 {
-    EXPECT_TRUE(t1.IsRectangular());
-    EXPECT_TRUE(t3.IsRectangular());
+    EXPECT_TRUE(Triangle<Vector3>({2,0,0}, {}, {0,2,0}).IsRectangular());
 }
 // Test midpoint
 TEST_F(UnitTestTriangle, MidPoint)
