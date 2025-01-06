@@ -4,7 +4,6 @@ target_sources(omath PRIVATE
         color.cpp
         Vector4.cpp
         Vector2.cpp
-        Triangle3d.cpp
 )
 
 add_subdirectory(prediction)
