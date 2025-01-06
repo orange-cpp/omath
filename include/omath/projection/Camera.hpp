@@ -24,7 +24,7 @@ namespace omath::projection
             return m_width / m_height;
         }
     };
-    using FieldOfView = const Angle<float, 0.f, 180.f, AngleFlags::Clamped>;
+    using FieldOfView = Angle<float, 0.f, 180.f, AngleFlags::Clamped>;
 
     template<class Mat4x4Type, class ViewAnglesType>
     class Camera
