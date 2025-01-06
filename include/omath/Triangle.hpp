@@ -14,7 +14,6 @@ namespace omath
         constexpr Triangle(const Vector& vertex1, const Vector& vertex2, const Vector& vertex3)
             : m_vertex1(vertex1), m_vertex2(vertex2), m_vertex3(vertex3)
         {
-
         }
 
         Vector3 m_vertex1;
