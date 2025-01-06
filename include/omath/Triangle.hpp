@@ -10,6 +10,7 @@ namespace omath
     class Triangle final
     {
     public:
+        constexpr Triangle() = default;
         constexpr Triangle(const Vector& vertex1, const Vector& vertex2, const Vector& vertex3)
             : m_vertex1(vertex1), m_vertex2(vertex2), m_vertex3(vertex3)
         {
@@ -23,17 +24,19 @@ namespace omath
         [[nodiscard]]
         constexpr Vector3 CalculateNormal() const
         {
-            return (m_vertex1 - m_vertex2).Cross(m_vertex3 - m_vertex1).Normalized();
+            const auto b = SideBVector();
+            const auto a = SideAVector();
+            return b.Cross(a).Normalized();
         }
 
         [[nodiscard]]
-        constexpr float SideALength() const
+        float SideALength() const
         {
             return m_vertex1.DistTo(m_vertex2);
         }
 
         [[nodiscard]]
-        constexpr float SideBLength() const
+        float SideBLength() const
         {
             return m_vertex3.DistTo(m_vertex2);
         }
@@ -45,11 +48,24 @@ namespace omath
         }
 
         [[nodiscard]]
+        constexpr float Hypot() const
+        {
+            return m_vertex1.DistTo(m_vertex3);
+        }
+        [[nodiscard]]
+        constexpr bool IsRectangular() const
+        {
+            const auto sideA = SideALength();
+            const auto sideB = SideBLength();
+            const auto hypot = Hypot();
+
+            return sideA*sideA + sideB*sideB == hypot*hypot;
+        }
+        [[nodiscard]]
         constexpr Vector3 SideBVector() const
         {
             return m_vertex3 - m_vertex2;
         }
-
         [[nodiscard]]
         constexpr Vector3 MidPoint() const
         {
