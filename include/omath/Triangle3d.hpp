@@ -29,5 +29,8 @@ namespace omath
 
         [[nodiscard]]
         Vector3 SideBVector() const;
+
+        [[nodiscard]]
+        Vector3 MidPoint() const;
     };
 }
