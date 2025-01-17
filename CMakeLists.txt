@@ -4,14 +4,13 @@ project(omath VERSION 1.0.1)
 
 include(CMakePackageConfigHelpers)
 
-set(CMAKE_CXX_STANDARD 26)
-
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}")
 
 option(OMATH_BUILD_TESTS "Build unit tests" ON)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
+
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/Vector3.cpp)
@@ -21,6 +20,11 @@ else()
             include/omath/engines/OpenGL/Formulas.hpp
             include/omath/engines/OpenGL/Camera.hpp)
 endif()
+
+set_target_properties(omath PROPERTIES
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED ON)
+target_compile_features(omath PUBLIC cxx_std_23)
 
 target_compile_definitions(omath PUBLIC OMATH_EXPORT)
 

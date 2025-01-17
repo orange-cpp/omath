@@ -9,7 +9,7 @@ namespace omath::opengl
 {
 
     Camera::Camera(const Vector3& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
-                   const Angle<float, 0, 180, AngleFlags::Clamped>& fov, const float near, const float far) :
+                   const Angle<float, 0.f, 180.f, AngleFlags::Clamped>& fov, const float near, const float far) :
         projection::Camera<Mat4x4, ViewAngles>(position, viewAngles, viewPort, fov, near, far)
     {
     }
