@@ -395,6 +395,12 @@ TEST_F(UnitTestVector3, AngleBeatween)
     EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).AngleBetween({0.0f, 0.0f, 1.0f}).has_value());
 }
 
+TEST_F(UnitTestVector3, IsPerpendicular)
+{
+    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).IsPerpendicular({1, 0 ,0}), true);
+    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).IsPerpendicular({0.0f, 0.0f, 1.0f}), false);
+    EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).IsPerpendicular({0.0f, 0.0f, 1.0f}));
+}
 
 // Static assertions (compile-time checks)
 static_assert(Vector3(1.0f, 2.0f, 3.0f).LengthSqr() == 14.0f, "LengthSqr should be 14");

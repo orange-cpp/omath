@@ -22,6 +22,13 @@ namespace omath
         COLUMN_MAJOR
     };
 
+
+    template<typename M1, typename M2>
+    concept MatTemplateEqual =
+            (M1::rows == M2::rows) && (M1::columns == M2::columns) &&
+            std::is_same_v<typename M1::value_type, typename M2::value_type> &&
+            (M1::store_type == M2::store_type);
+
     template<size_t Rows = 0, size_t Columns = 0, class Type = float, MatStoreType StoreType = MatStoreType::ROW_MAJOR>
         requires std::is_arithmetic_v<Type>
     class Mat final
