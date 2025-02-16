@@ -9,6 +9,7 @@
 #include "omath/Vector2.hpp"
 #include "omath/Angle.hpp"
 #include <expected>
+#include <immintrin.h>
 
 
 namespace omath
@@ -228,6 +229,14 @@ namespace omath
             return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::FromRadians(std::acos(Dot(other) / bottom));
         }
 
+        [[nodiscard]] bool IsPerpendicular(const Vector3& other) const
+        {
+            if (const auto angle = AngleBetween(other))
+                return angle->AsDegrees() == 90.f;
+
+            return false;
+        }
+
         [[nodiscard]] constexpr float Sum2D() const
         {
             return Vector2::Sum();
@@ -235,7 +244,7 @@ namespace omath
 
         [[nodiscard]] Vector3 ViewAngleTo(const Vector3& other) const;
 
-        [[nodiscard]] std::tuple<float, float, float> AsTuple() const
+        [[nodiscard]] constexpr std::tuple<float, float, float> AsTuple() const
         {
             return std::make_tuple(x, y, z);
         }
