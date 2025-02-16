@@ -3,10 +3,10 @@
 //
 #include "omath/pathfinding/Astar.hpp"
 
+#include <algorithm>
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
-#include <algorithm>
 
 
 namespace omath::pathfinding
@@ -18,45 +18,83 @@ namespace omath::pathfinding
     };
 
 
-    std::vector<Vector3> Astar::FindPath(const Vector3 &start, const Vector3 &end, const NavigationMesh &navMesh)
+    std::vector<Vector3> Astar::ReconstructFinalPath(const std::unordered_map<Vector3, PathNode>& closedList,
+                                                     const Vector3& current)
+    {
+        std::vector<Vector3> path;
+        std::optional currentOpt = current;
+
+        while (currentOpt)
+        {
+            path.push_back(*currentOpt);
+
+            auto it = closedList.find(*currentOpt);
+
+            if (it == closedList.end())
+                break;
+
+            currentOpt = it->second.cameFrom;
+        }
+
+        std::ranges::reverse(path);
+        return path;
+    }
+    auto Astar::GetPerfectNode(const std::unordered_map<Vector3, PathNode>& openList, const Vector3& endVertex)
+    {
+        return std::ranges::min_element(openList,
+                                        [&endVertex](const auto& a, const auto& b)
+                                        {
+                                            const float fA = a.second.gCost + a.first.DistTo(endVertex);
+                                            const float fB = b.second.gCost + b.first.DistTo(endVertex);
+                                            return fA < fB;
+                                        });
+    }
+
+    std::vector<Vector3> Astar::FindPath(const Vector3& start, const Vector3& end, const NavigationMesh& navMesh)
     {
         std::unordered_map<Vector3, PathNode> closedList;
         std::unordered_map<Vector3, PathNode> openList;
 
-        const auto startVertex = navMesh.GetClosestVertex(start).value();
-        const auto endVertex = navMesh.GetClosestVertex(end).value();
+        auto maybeStartVertex = navMesh.GetClosestVertex(start);
+        auto maybeEndVertex = navMesh.GetClosestVertex(end);
+
+        if (!maybeStartVertex || !maybeEndVertex)
+            return {};
+
+        const auto startVertex = maybeStartVertex.value();
+        const auto endVertex = maybeEndVertex.value();
+
 
         openList.emplace(startVertex, PathNode{std::nullopt, 0.f});
 
         while (!openList.empty())
         {
-            const auto perfectVertex = *std::ranges::min_element(openList,
-                [&endVertex](const auto& a, const auto& b) -> bool
-                {
-                    const auto aCost = a.second.gCost + a.first.DistTo(endVertex);
-                    const auto bCost = b.second.gCost + b.first.DistTo(endVertex);
-                    return aCost < bCost;
-                });
+            auto currentIt = GetPerfectNode(openList, endVertex);
 
-            closedList.emplace(perfectVertex);
-            openList.erase(perfectVertex.first);
+            const auto current = currentIt->first;
+            const auto currentNode = currentIt->second;
 
-            for (const auto& neighbor : navMesh.GetNeighbors(perfectVertex.first))
-                if (!closedList.contains(neighbor))
-                    openList.emplace(neighbor, PathNode{perfectVertex.first, neighbor.DistTo(perfectVertex.first) + perfectVertex.second.gCost});
+            if (current == endVertex)
+                return ReconstructFinalPath(closedList, current);
 
 
-            if (perfectVertex.first != endVertex)
-                continue;
+            closedList.emplace(current, currentNode);
+            openList.erase(currentIt);
 
-            std::vector<Vector3> path = {};
+            for (const auto& neighbor: navMesh.GetNeighbors(current))
+            {
+                if (closedList.contains(neighbor))
+                    continue;
 
-            for (std::optional current = perfectVertex.first; current; current = closedList.at(*current).cameFrom )
-                path.push_back(current.value());
+                const float tentativeGCost = currentNode.gCost + neighbor.DistTo(current);
 
-            return path;
+                const auto openIt = openList.find(neighbor);
+
+                if (openIt == openList.end() || tentativeGCost < openIt->second.gCost)
+                    openList[neighbor] = PathNode{current, tentativeGCost};
+            }
         }
 
         return {};
     }
-}
+} // namespace omath::pathfinding
