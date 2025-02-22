@@ -1,7 +1,6 @@
 enable_testing()
 
 project(unit-tests)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}")
 
 include(GoogleTest)
 add_executable(unit-tests
@@ -25,6 +24,15 @@ add_executable(unit-tests
         engines/UnitTestSourceEngine.cpp
 
 )
+
+set_target_properties(unit-tests PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
+        UNITY_BUILD ON
+        UNITY_BUILD_BATCH_SIZE 20
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED ON)
+
 
 target_link_libraries(unit-tests PRIVATE gtest gtest_main omath)
 
