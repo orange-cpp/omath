@@ -31,6 +31,8 @@ namespace omath::prediction
                                                                       const Vector3& targetPosition) const;
 
 
+        [[nodiscard]] static std::optional<float> CalculatePitch(const Vector3 &projOrigin, const Vector3 &targetPos,
+                                            float bulletGravity, float v0, float time) ;
         [[nodiscard]]
         bool IsProjectileReachedTarget(const Vector3& targetPosition, const Projectile& projectile, float pitch, float time) const;
 

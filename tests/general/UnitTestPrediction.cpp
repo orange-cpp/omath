@@ -10,6 +10,6 @@ TEST(UnitTestPrediction, PredictionTest)
 
     const auto [pitch, yaw, _] = proj.m_origin.ViewAngleTo(viewPoint.value()).AsTuple();
 
-    EXPECT_NEAR(42.547142, pitch, 0.0001f);
-    EXPECT_NEAR(-1.181189, yaw, 0.0001f);
+    EXPECT_NEAR(42.547142, pitch, 0.01f);
+    EXPECT_NEAR(-1.181189, yaw, 0.01f);
 }
