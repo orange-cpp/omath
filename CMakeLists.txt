@@ -4,8 +4,6 @@ project(omath VERSION 1.0.1)
 
 include(CMakePackageConfigHelpers)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}")
 
 option(OMATH_BUILD_TESTS "Build unit tests" ON)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
@@ -22,8 +20,14 @@ else()
 endif()
 
 set_target_properties(omath PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
+        UNITY_BUILD ON
+        UNITY_BUILD_BATCH_SIZE 20
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON)
+
+
 target_compile_features(omath PUBLIC cxx_std_23)
 
 target_compile_definitions(omath PUBLIC OMATH_EXPORT)
