@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <omath/projectile_prediction/Engine.hpp>
+#include <omath/projectile_prediction/ProjPredEngineLegacy.hpp>
 
 TEST(UnitTestPrediction, PredictionTest)
 {
@@ -8,7 +8,7 @@ TEST(UnitTestPrediction, PredictionTest)
     constexpr omath::projectile_prediction::Projectile proj = {
             .m_origin = {3, 2, 1}, .m_launchSpeed = 5000, .m_gravityScale = 0.4};
     const auto viewPoint =
-            omath::projectile_prediction::Engine(400, 1.f / 1000.f, 50, 5.f).MaybeCalculateAimPoint(proj, target);
+            omath::projectile_prediction::ProjPredEngineLegacy(400, 1.f / 1000.f, 50, 5.f).MaybeCalculateAimPoint(proj, target);
 
     const auto [pitch, yaw, _] = proj.m_origin.ViewAngleTo(viewPoint.value()).AsTuple();
 
