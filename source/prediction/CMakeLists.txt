@@ -1,1 +1,0 @@
-target_sources(omath PRIVATE Engine.cpp Projectile.cpp Target.cpp)

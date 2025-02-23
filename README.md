@@ -51,7 +51,7 @@ For detailed commands on installing different versions and more information, ple
 3. Build the project using CMake:
    ```
    cmake --preset windows-release -S .
-   cmake --build cmake-build/build/windows-release --target server -j 6
+   cmake --build cmake-build/build/windows-release --target omath -j 6
    ```
    Use **\<platform\>-\<build configuration\>** preset to build siutable version for yourself. Like **windows-release** or **linux-release**.
 ## ❔ Usage
