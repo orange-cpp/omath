@@ -30,7 +30,6 @@ set_target_properties(omath PROPERTIES
 
 target_compile_features(omath PUBLIC cxx_std_23)
 
-target_compile_definitions(omath PUBLIC OMATH_EXPORT)
 
 add_subdirectory(source)
 
