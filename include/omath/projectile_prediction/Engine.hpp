@@ -6,10 +6,10 @@
 
 #include <optional>
 #include "omath/Vector3.hpp"
-#include "omath/prediction/Projectile.hpp"
-#include "omath/prediction/Target.hpp"
+#include "omath/projectile_prediction/Projectile.hpp"
+#include "omath/projectile_prediction/Target.hpp"
 
-namespace omath::prediction
+namespace omath::projectile_prediction
 {
     class Engine final
     {
@@ -26,15 +26,8 @@ namespace omath::prediction
         const float m_maximumSimulationTime;
         const float m_distanceTolerance;
 
-        [[nodiscard]]
-        std::optional<float> MaybeCalculateProjectileLaunchPitchAngle(const Projectile& projectile,
-                                                                      const Vector3& targetPosition) const;
-
 
         [[nodiscard]] static std::optional<float> CalculatePitch(const Vector3 &projOrigin, const Vector3 &targetPos,
-                                            float bulletGravity, float v0, float time) ;
-        [[nodiscard]]
-        bool IsProjectileReachedTarget(const Vector3& targetPosition, const Projectile& projectile, float pitch, float time) const;
-
+                                            float bulletGravity, float v0, float time);
     };
 }

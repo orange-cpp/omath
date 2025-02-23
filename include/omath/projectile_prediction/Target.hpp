@@ -5,7 +5,7 @@
 #pragma once
 #include "omath/Vector3.hpp"
 
-namespace omath::prediction
+namespace omath::projectile_prediction
 {
     class Target final
     {

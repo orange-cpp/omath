@@ -6,7 +6,7 @@ target_sources(omath PRIVATE
         Vector2.cpp
 )
 
-add_subdirectory(prediction)
+add_subdirectory(projectile_prediction)
 add_subdirectory(pathfinding)
 add_subdirectory(projection)
 add_subdirectory(collision)
