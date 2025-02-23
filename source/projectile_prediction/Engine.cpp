@@ -1,8 +1,8 @@
-#include "omath/prediction/Engine.hpp"
+#include "omath/projectile_prediction/Engine.hpp"
 #include <cmath>
 #include <omath/Angles.hpp>
 
-namespace omath::prediction
+namespace omath::projectile_prediction
 {
 
     Engine::Engine(const float gravityConstant, const float simulationTimeStep, const float maximumSimulationTime,

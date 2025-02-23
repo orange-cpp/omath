@@ -2,11 +2,11 @@
 // Created by Vlad on 6/9/2024.
 //
 
-#include "omath/prediction/Projectile.hpp"
-#include <cmath>
+#include "omath/projectile_prediction/Projectile.hpp"
+
 #include <omath/engines/Source/Formulas.hpp>
 
-namespace omath::prediction
+namespace omath::projectile_prediction
 {
     Vector3 Projectile::PredictPosition(const float pitch, const float yaw, const float time, const float gravity) const
     {
