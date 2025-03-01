@@ -9,7 +9,7 @@ option(OMATH_BUILD_TESTS "Build unit tests" ON)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
-
+option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" ON)
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/Vector3.cpp)
@@ -40,6 +40,10 @@ add_subdirectory(source)
 if(OMATH_BUILD_TESTS)
     add_subdirectory(extlibs)
     add_subdirectory(tests)
+endif()
+
+if (OMATH_BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND OMATH_THREAT_WARNING_AS_ERROR)

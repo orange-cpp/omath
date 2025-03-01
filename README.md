@@ -12,14 +12,14 @@
 Oranges's Math Library (omath) is a comprehensive, open-source library aimed at providing efficient, reliable, and versatile mathematical functions and algorithms. Developed primarily in C++, this library is designed to cater to a wide range of mathematical operations essential in scientific computing, engineering, and academic research.
 
 ## 👁‍🗨 Features
-- **Efficiency**: Optimized for performance, ensuring quick computations.
+- **Efficiency**: Optimized for performance, ensuring quick computations using AVX2.
 - **Versatility**: Includes a wide array of mathematical functions and algorithms.
 - **Ease of Use**: Simplified interface for convenient integration into various projects.
 - **Projectile Prediction**: Projectile prediction engine with O(N) algo complexity, that can power you projectile aim-bot.
 - **3D Projection**: No need to find view-projection matrix anymore you can make your own projection pipeline.
 - **Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
 - **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
-
+- **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
 ## ⏬ Getting Started
 ### Prerequisites
 - C++ Compiler
