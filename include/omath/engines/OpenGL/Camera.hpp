@@ -10,9 +10,9 @@ namespace omath::opengl
     class Camera final : public projection::Camera<Mat4x4, ViewAngles>
     {
     public:
-        Camera(const Vector3& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
+        Camera(const Vector3<float>& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
                const Angle<float, 0.f, 180.f, AngleFlags::Clamped>& fov, float near, float far);
-        void LookAt(const Vector3& target) override;
+        void LookAt(const Vector3<float>& target) override;
         [[nodiscard]] Mat4x4 CalcViewMatrix() const override;
         [[nodiscard]] Mat4x4 CalcProjectionMatrix() const override;
     };

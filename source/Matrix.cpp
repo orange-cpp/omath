@@ -315,7 +315,7 @@ namespace omath
         };
     }
 
-    Matrix Matrix::TranslationMatrix(const Vector3& diff)
+    Matrix Matrix::TranslationMatrix(const Vector3<float>& diff)
     {
         return {
                 {1.f, 0.f, 0.f, 0.f},
@@ -325,7 +325,7 @@ namespace omath
         };
     }
 
-    Matrix Matrix::OrientationMatrix(const Vector3& forward, const Vector3& right, const Vector3& up)
+    Matrix Matrix::OrientationMatrix(const Vector3<float>& forward, const Vector3<float>& right, const Vector3<float>& up)
     {
         return {
                 {right.x, up.x, forward.x, 0.f},

@@ -12,7 +12,7 @@ namespace omath::projectile_prediction
     public:
 
         [[nodiscard]]
-        constexpr Vector3 PredictPosition(const float time, const float gravity) const
+        constexpr Vector3<float> PredictPosition(const float time, const float gravity) const
         {
             auto predicted = m_origin + m_velocity * time;
 
@@ -22,8 +22,8 @@ namespace omath::projectile_prediction
             return predicted;
         }
 
-        Vector3 m_origin;
-        Vector3 m_velocity;
+        Vector3<float> m_origin;
+        Vector3<float> m_velocity;
         bool m_isAirborne{};
     };
 }

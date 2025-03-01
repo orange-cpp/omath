@@ -8,16 +8,18 @@
 
 namespace omath
 {
+
+    template<class Type> requires std::is_arithmetic_v<Type>
     class Vector2
     {
     public:
-        float x = 0.f;
-        float y = 0.f;
+        Type x = static_cast<Type>(0);
+        Type y = static_cast<Type>(0);
 
         // Constructors
         constexpr Vector2() = default;
 
-        constexpr Vector2(const float x, const float y) : x(x), y(y) {}
+        constexpr Vector2(const Type& x, const Type& y) : x(x), y(y) {}
 
         // Equality operators
         [[nodiscard]]
@@ -65,7 +67,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator*=(const float fl)
+        constexpr Vector2& operator*=(const Type& fl)
         {
             x *= fl;
             y *= fl;
@@ -73,7 +75,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator/=(const float fl)
+        constexpr Vector2& operator/=(const Type& fl)
         {
             x /= fl;
             y /= fl;
@@ -81,7 +83,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator+=(const float fl)
+        constexpr Vector2& operator+=(const Type& fl)
         {
             x += fl;
             y += fl;
@@ -89,7 +91,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator-=(const float fl)
+        constexpr Vector2& operator-=(const Type& fl)
         {
             x -= fl;
             y -= fl;
@@ -98,45 +100,45 @@ namespace omath
         }
 
         // Basic vector operations
-        [[nodiscard]] float DistTo(const Vector2& vOther) const
+        [[nodiscard]] Type DistTo(const Vector2& vOther) const
         {
             return std::sqrt(DistToSqr(vOther));
         }
 
-        [[nodiscard]] constexpr float DistToSqr(const Vector2& vOther) const
+        [[nodiscard]] constexpr Type DistToSqr(const Vector2& vOther) const
         {
             return (x - vOther.x) * (x - vOther.x) + (y - vOther.y) * (y - vOther.y);
         }
 
-        [[nodiscard]] constexpr float Dot(const Vector2& vOther) const
+        [[nodiscard]] constexpr Type Dot(const Vector2& vOther) const
         {
             return x * vOther.x + y * vOther.y;
         }
 
 #ifndef _MSC_VER
-        [[nodiscard]] constexpr float Length() const
+        [[nodiscard]] constexpr Type& Length() const
         {
             return std::hypot(x, y);
         }
 
         [[nodiscard]] constexpr Vector2 Normalized() const
         {
-            const float len = Length();
+            const Type len = Length();
             return len > 0.f ? *this / len : *this;
         }
 #else
-        [[nodiscard]] float Length() const
+        [[nodiscard]] Type Length() const
         {
             return std::hypot(x, y);
         }
 
         [[nodiscard]] Vector2 Normalized() const
         {
-            const float len = Length();
+            const Type len = Length();
             return len > 0.f ? *this / len : *this;
         }
 #endif
-        [[nodiscard]] constexpr float LengthSqr() const
+        [[nodiscard]] constexpr Type LengthSqr() const
         {
             return x * x + y * y;
         }
@@ -187,13 +189,13 @@ namespace omath
         }
 
          // Sum of elements
-        [[nodiscard]] constexpr float Sum() const
+        [[nodiscard]] constexpr Type Sum() const
         {
             return x + y;
         }
 
         [[nodiscard]]
-        constexpr std::tuple<float, float> AsTuple() const
+        constexpr std::tuple<Type, Type> AsTuple() const
         {
             return std::make_tuple(x, y);
         }

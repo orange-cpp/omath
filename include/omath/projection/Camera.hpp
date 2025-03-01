@@ -31,7 +31,7 @@ namespace omath::projection
     {
     public:
         virtual ~Camera() = default;
-        Camera(const Vector3& position, const ViewAnglesType& viewAngles, const ViewPort& viewPort,
+        Camera(const Vector3<float>& position, const ViewAnglesType& viewAngles, const ViewPort& viewPort,
                const FieldOfView& fov, const float near, const float far) :
             m_viewPort(viewPort), m_fieldOfView(fov), m_farPlaneDistance(far), m_nearPlaneDistance(near),
             m_viewAngles(viewAngles), m_origin(position)
@@ -39,7 +39,7 @@ namespace omath::projection
 
         }
 
-        virtual void LookAt(const Vector3& target) = 0;
+        virtual void LookAt(const Vector3<float>& target) = 0;
 
         [[nodiscard]] virtual Mat4x4Type CalcViewMatrix() const = 0;
 
@@ -74,7 +74,7 @@ namespace omath::projection
             m_viewProjectionMatrix = CalcViewProjectionMatrix();
         }
 
-        void SetOrigin(const Vector3& origin)
+        void SetOrigin(const Vector3<float>& origin)
         {
             m_origin = origin;
             m_viewProjectionMatrix = CalcViewProjectionMatrix();
@@ -106,12 +106,12 @@ namespace omath::projection
             return m_viewAngles;
         }
 
-        [[nodiscard]] const Vector3& GetOrigin() const
+        [[nodiscard]] const Vector3<float>& GetOrigin() const
         {
             return m_origin;
         }
 
-        [[nodiscard]] std::expected<Vector3, Error> WorldToScreen(const Vector3& worldPosition) const
+        [[nodiscard]] std::expected<Vector3<float>, Error> WorldToScreen(const Vector3<float>& worldPosition) const
         {
             if (!m_viewProjectionMatrix.has_value())
                 m_viewProjectionMatrix = CalcViewProjectionMatrix();
@@ -143,7 +143,7 @@ namespace omath::projection
 
 
         ViewAnglesType m_viewAngles;
-        Vector3 m_origin;
+        Vector3<float> m_origin;
 
     private:
         template<class Type>

@@ -11,14 +11,14 @@ namespace omath::collision
     class Ray
     {
     public:
-        Vector3 start;
-        Vector3 end;
+        Vector3<float> start;
+        Vector3<float> end;
 
         [[nodiscard]]
-        Vector3 DirectionVector() const;
+        Vector3<float> DirectionVector() const;
 
         [[nodiscard]]
-        Vector3 DirectionVectorNormalized() const;
+        Vector3<float> DirectionVectorNormalized() const;
     };
     class LineTracer
     {
@@ -27,12 +27,12 @@ namespace omath::collision
 
 
         [[nodiscard]]
-        static bool CanTraceLine(const Ray& ray, const Triangle<Vector3>& triangle);
+        static bool CanTraceLine(const Ray& ray, const Triangle<Vector3<float>>& triangle);
 
 
         // Realization of Möller–Trumbore intersection algorithm
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
         [[nodiscard]]
-        static Vector3 GetRayHitPoint(const Ray& ray, const Triangle<Vector3>& triangle);
+        static Vector3<float> GetRayHitPoint(const Ray& ray, const Triangle<Vector3<float>>& triangle);
     };
 }

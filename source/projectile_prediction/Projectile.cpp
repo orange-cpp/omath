@@ -8,7 +8,7 @@
 
 namespace omath::projectile_prediction
 {
-    Vector3 Projectile::PredictPosition(const float pitch, const float yaw, const float time, const float gravity) const
+    Vector3<float> Projectile::PredictPosition(const float pitch, const float yaw, const float time, const float gravity) const
     {
         auto currentPos = m_origin + source::ForwardVector({source::PitchAngle::FromDegrees(-pitch),
                                                             source::YawAngle::FromDegrees(yaw),

@@ -9,9 +9,9 @@
 #include <omath/ViewAngles.hpp>
 namespace omath::source
 {
-    constexpr Vector3 kAbsUp = {0, 0, 1};
-    constexpr Vector3 kAbsRight = {0, -1, 0};
-    constexpr Vector3 kAbsForward = {1, 0, 0};
+    constexpr Vector3<float> kAbsUp = {0, 0, 1};
+    constexpr Vector3<float> kAbsRight = {0, -1, 0};
+    constexpr Vector3<float> kAbsForward = {1, 0, 0};
 
     using Mat4x4 = Mat<4, 4, float, MatStoreType::ROW_MAJOR>;
     using Mat3x3 = Mat<4, 4, float, MatStoreType::ROW_MAJOR>;

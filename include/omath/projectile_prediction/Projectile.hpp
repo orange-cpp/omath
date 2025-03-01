@@ -12,9 +12,9 @@ namespace omath::projectile_prediction
     public:
 
         [[nodiscard]]
-        Vector3 PredictPosition(float pitch, float yaw, float time, float gravity) const;
+        Vector3<float> PredictPosition(float pitch, float yaw, float time, float gravity) const;
 
-        Vector3 m_origin;
+        Vector3<float> m_origin;
         float m_launchSpeed{};
         float m_gravityScale{};
     };

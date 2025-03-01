@@ -6,7 +6,7 @@
 
 namespace omath::projectile_prediction
 {
-    std::optional<Vector3> ProjPredEngineAVX2::MaybeCalculateAimPoint(const Projectile& projectile,
+    std::optional<Vector3<float>> ProjPredEngineAVX2::MaybeCalculateAimPoint(const Projectile& projectile,
                                                                       const Target& target) const
     {
         const float bulletGravity = m_gravityConstant * projectile.m_gravityScale;
@@ -110,7 +110,7 @@ namespace omath::projectile_prediction
         m_maximumSimulationTime(simulationTimeStep)
     {
     }
-    std::optional<float> ProjPredEngineAVX2::CalculatePitch(const Vector3& projOrigin, const Vector3& targetPos,
+    std::optional<float> ProjPredEngineAVX2::CalculatePitch(const Vector3<float>& projOrigin, const Vector3<float>& targetPos,
                                                             const float bulletGravity, const float v0, const float time)
     {
         if (time <= 0.0f)

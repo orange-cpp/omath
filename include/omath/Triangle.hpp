@@ -16,12 +16,12 @@ namespace omath
         {
         }
 
-        Vector3 m_vertex1;
-        Vector3 m_vertex2;
-        Vector3 m_vertex3;
+        Vector3<float> m_vertex1;
+        Vector3<float> m_vertex2;
+        Vector3<float> m_vertex3;
 
         [[nodiscard]]
-        constexpr Vector3 CalculateNormal() const
+        constexpr Vector3<float> CalculateNormal() const
         {
             const auto b = SideBVector();
             const auto a = SideAVector();
@@ -41,7 +41,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Vector3 SideAVector() const
+        constexpr Vector3<float> SideAVector() const
         {
             return m_vertex1 - m_vertex2;
         }
@@ -61,12 +61,12 @@ namespace omath
             return std::abs(sideA*sideA + sideB*sideB - hypot*hypot) <= 0.0001f;
         }
         [[nodiscard]]
-        constexpr Vector3 SideBVector() const
+        constexpr Vector3<float> SideBVector() const
         {
             return m_vertex3 - m_vertex2;
         }
         [[nodiscard]]
-        constexpr Vector3 MidPoint() const
+        constexpr Vector3<float> MidPoint() const
         {
             return (m_vertex1 + m_vertex2 + m_vertex3) / 3;
         }
