@@ -8,6 +8,7 @@ include(CMakePackageConfigHelpers)
 option(OMATH_BUILD_TESTS "Build unit tests" ON)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
+option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
 
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
@@ -30,6 +31,9 @@ endif()
 
 target_compile_features(omath PUBLIC cxx_std_23)
 
+if (OMATH_USE_AVX2)
+    target_compile_definitions(omath PUBLIC OMATH_USE_AVX2)
+endif()
 
 add_subdirectory(source)
 
