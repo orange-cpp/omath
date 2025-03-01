@@ -13,7 +13,7 @@ namespace omath::projectile_prediction
     {
     public:
         [[nodiscard]]
-        virtual std::optional<Vector3> MaybeCalculateAimPoint(const Projectile& projectile,
+        virtual std::optional<Vector3<float>> MaybeCalculateAimPoint(const Projectile& projectile,
                                                               const Target& target) const = 0;
         virtual ~ProjPredEngine() = default;
     };

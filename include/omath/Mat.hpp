@@ -333,21 +333,21 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    constexpr static Mat<1, 4, Type, St> MatRowFromVector(const Vector3& vector) noexcept
+    constexpr static Mat<1, 4, Type, St> MatRowFromVector(const Vector3<Type>& vector) noexcept
     {
         return {{vector.x, vector.y, vector.z, 1}};
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    constexpr static Mat<4, 1, Type, St> MatColumnFromVector(const Vector3& vector) noexcept
+    constexpr static Mat<4, 1, Type, St> MatColumnFromVector(const Vector3<Type>& vector) noexcept
     {
         return {{vector.x}, {vector.y}, {vector.z}, {1}};
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    constexpr Mat<4, 4, Type, St> MatTranslation(const Vector3& diff) noexcept
+    constexpr Mat<4, 4, Type, St> MatTranslation(const Vector3<Type>& diff) noexcept
     {
         return
         {
@@ -399,8 +399,8 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    static Mat<4, 4, Type, St> MatCameraView(const Vector3& forward, const Vector3& right, const Vector3& up,
-                                             const Vector3& cameraOrigin) noexcept
+    static Mat<4, 4, Type, St> MatCameraView(const Vector3<Type>& forward, const Vector3<Type>& right,
+                                             const Vector3<Type>& up, const Vector3<Type>& cameraOrigin) noexcept
     {
         return  Mat<4, 4, Type, St>
         {

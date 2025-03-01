@@ -5,21 +5,21 @@
 
 namespace omath::collision
 {
-    bool LineTracer::CanTraceLine(const Ray& ray, const Triangle<Vector3>& triangle)
+    bool LineTracer::CanTraceLine(const Ray& ray, const Triangle<Vector3<float>>& triangle)
     {
         return GetRayHitPoint(ray, triangle) == ray.end;
     }
-    Vector3 Ray::DirectionVector() const
+    Vector3<float> Ray::DirectionVector() const
     {
         return end - start;
     }
 
-    Vector3 Ray::DirectionVectorNormalized() const
+    Vector3<float> Ray::DirectionVectorNormalized() const
     {
         return DirectionVector().Normalized();
     }
 
-    Vector3 LineTracer::GetRayHitPoint(const Ray& ray, const Triangle<Vector3>& triangle)
+    Vector3<float> LineTracer::GetRayHitPoint(const Ray& ray, const Triangle<Vector3<float>>& triangle)
     {
         constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
 

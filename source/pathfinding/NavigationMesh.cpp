@@ -7,7 +7,7 @@
 #include <algorithm>
 namespace omath::pathfinding
 {
-    std::expected<Vector3, std::string> NavigationMesh::GetClosestVertex(const Vector3 &point) const
+    std::expected<Vector3<float>, std::string> NavigationMesh::GetClosestVertex(const Vector3<float> &point) const
     {
         const auto res = std::ranges::min_element(m_verTextMap,
             [&point](const auto& a, const auto& b)
@@ -21,7 +21,7 @@ namespace omath::pathfinding
         return res->first;
     }
 
-    const std::vector<Vector3>& NavigationMesh::GetNeighbors(const Vector3 &vertex) const
+    const std::vector<Vector3<float>>& NavigationMesh::GetNeighbors(const Vector3<float> &vertex) const
     {
         return m_verTextMap.at(vertex);
     }
@@ -73,18 +73,18 @@ namespace omath::pathfinding
 
         while (offset < raw.size())
         {
-            Vector3 vertex;
+            Vector3<float> vertex;
             loadFromVector(raw, offset, vertex);
 
             uint16_t neighborsCount;
             loadFromVector(raw, offset, neighborsCount);
 
-            std::vector<Vector3> neighbors;
+            std::vector<Vector3<float>> neighbors;
             neighbors.reserve(neighborsCount);
 
             for (size_t i = 0; i < neighborsCount; ++i)
             {
-                Vector3 neighbor;
+                Vector3<float> neighbor;
                 loadFromVector(raw, offset, neighbor);
                 neighbors.push_back(neighbor);
             }

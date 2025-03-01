@@ -62,7 +62,7 @@ TEST(UnitTestSourceEngine, CameraSetAndGetOrigin)
 {
     auto cam = omath::source::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
 
-    EXPECT_EQ(cam.GetOrigin(), omath::Vector3{});
+    EXPECT_EQ(cam.GetOrigin(), omath::Vector3<float>{});
     cam.SetFieldOfView(omath::projection::FieldOfView::FromDegrees(50.f));
 
     EXPECT_EQ(cam.GetFieldOfView().AsDegrees(), 50.f);

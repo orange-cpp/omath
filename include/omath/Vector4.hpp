@@ -8,18 +8,19 @@
 
 namespace omath
 {
-    class Vector4 : public Vector3
+    template <class Type>
+    class Vector4 : public Vector3<Type>
     {
     public:
-        float w;
+        Type w;
 
-        constexpr Vector4(const float x, const float y, const float z, const float w) : Vector3(x, y, z), w(w) {}
-        constexpr Vector4() : Vector3(), w(0.f) {};
+        constexpr Vector4(const Type& x, const Type& y, const Type& z, const Type& w) : Vector3<Type>(x, y, z), w(w) {}
+        constexpr Vector4() : Vector3<Type>(), w(0) {};
 
         [[nodiscard]]
         constexpr bool operator==(const Vector4& src) const
         {
-            return Vector3::operator==(src) && w == src.w;
+            return Vector3<Type>::operator==(src) && w == src.w;
         }
 
         [[nodiscard]]
@@ -30,7 +31,7 @@ namespace omath
 
         constexpr Vector4& operator+=(const Vector4& v)
         {
-            Vector3::operator+=(v);
+            Vector3<Type>::operator+=(v);
             w += v.w;
 
             return *this;
@@ -38,7 +39,7 @@ namespace omath
 
         constexpr Vector4& operator-=(const Vector4& v)
         {
-            Vector3::operator-=(v);
+            Vector3<Type>::operator-=(v);
             w -= v.w;
 
             return *this;
@@ -46,7 +47,7 @@ namespace omath
 
         constexpr Vector4& operator*=(const float scalar)
         {
-            Vector3::operator*=(scalar);
+            Vector3<Type>::operator*=(scalar);
             w *= scalar;
 
             return *this;
@@ -54,7 +55,7 @@ namespace omath
 
         constexpr Vector4& operator*=(const Vector4& v)
         {
-            Vector3::operator*=(v);
+            Vector3<Type>::operator*=(v);
             w *= v.w;
 
             return *this;
@@ -62,7 +63,7 @@ namespace omath
 
         constexpr Vector4& operator/=(const float scalar)
         {
-            Vector3::operator/=(scalar);
+            Vector3<Type>::operator/=(scalar);
             w /= scalar;
 
             return *this;
@@ -70,35 +71,38 @@ namespace omath
 
         constexpr Vector4& operator/=(const Vector4& v)
         {
-            Vector3::operator/=(v);
+            Vector3<Type>::operator/=(v);
             w /= v.w;
             return *this;
         }
 
-        [[nodiscard]] constexpr float LengthSqr() const
+        [[nodiscard]] constexpr Type LengthSqr() const
         {
-            return Vector3::LengthSqr() + w * w;
+            return Vector3<Type>::LengthSqr() + w * w;
         }
 
         [[nodiscard]] constexpr float Dot(const Vector4& vOther) const
         {
-            return Vector3::Dot(vOther) + w * vOther.w;
+            return Vector3<Type>::Dot(vOther) + w * vOther.w;
         }
 
-        [[nodiscard]] float Length() const;
+        [[nodiscard]] Vector3<Type> Length() const
+        {
+            return std::sqrt(LengthSqr());
+        }
 
         constexpr Vector4& Abs()
         {
-            Vector3::Abs();
+            Vector3<Type>::Abs();
             w = w < 0.f ? -w : w;
 
             return *this;
         }
         constexpr Vector4& Clamp(const float min, const float max)
         {
-            x = std::clamp(x, min, max);
-            y = std::clamp(y, min, max);
-            z = std::clamp(z, min, max);
+            this->x = std::clamp(this->x, min, max);
+            this->y = std::clamp(this->y, min, max);
+            this->z = std::clamp(this->z, min, max);
 
             return *this;
         }
@@ -106,49 +110,49 @@ namespace omath
         [[nodiscard]]
         constexpr Vector4 operator-() const
         {
-            return {-x, -y, -z, -w};
+            return {-this->x, -this->y, -this->z, -w};
         }
 
         [[nodiscard]]
         constexpr Vector4 operator+(const Vector4& v) const
         {
-            return {x + v.x, y + v.y, z + v.z, w + v.w};
+            return {this->x + v.x, this->y + v.y, this->z + v.z, w + v.w};
         }
 
         [[nodiscard]]
         constexpr Vector4 operator-(const Vector4& v) const
         {
-            return {x - v.x, y - v.y, z - v.z, w - v.w};
+            return {this->x - v.x, this->y - v.y, this->z - v.z, w - v.w};
         }
 
         [[nodiscard]]
         constexpr Vector4 operator*(const float scalar) const
         {
-            return {x * scalar, y * scalar, z * scalar, w * scalar};
+            return {this->x * scalar, this->y * scalar, this->z * scalar, w * scalar};
         }
 
         [[nodiscard]]
         constexpr Vector4 operator*(const Vector4& v) const
         {
-            return {x * v.x, y * v.y, z * v.z, w * v.w};
+            return {this->x * v.x, this->y * v.y, this->z * v.z, w * v.w};
         }
 
         [[nodiscard]]
         constexpr Vector4 operator/(const float scalar) const
         {
-            return {x / scalar, y / scalar, z / scalar, w / scalar};
+            return {this->x / scalar, this->y / scalar, this->z / scalar, w / scalar};
         }
 
         [[nodiscard]]
         constexpr Vector4 operator/(const Vector4& v) const
         {
-            return {x / v.x, y / v.y, z / v.z, w / v.w};
+            return {this->x / v.x, this->y / v.y, this->z / v.z, w / v.w};
         }
 
         [[nodiscard]]
-        constexpr float Sum() const
+        constexpr Type Sum() const
         {
-            return Vector3::Sum() + w;
+            return Vector3<Type>::Sum() + w;
         }
     };
 }

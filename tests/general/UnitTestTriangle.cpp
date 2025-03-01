@@ -13,28 +13,28 @@ class UnitTestTriangle : public ::testing::Test
 {
 protected:
     // Define some Triangles to use in tests
-    Triangle<Vector3> t1;
-    Triangle<Vector3> t2;
-    Triangle<Vector3> t3;
+    Triangle<Vector3<float>> t1;
+    Triangle<Vector3<float>> t2;
+    Triangle<Vector3<float>> t3;
 
     constexpr void SetUp() override
     {
         // Triangle with vertices (0, 0, 0), (1, 0, 0), (0, 1, 0)
-        t1 = Triangle<Vector3>(
+        t1 = Triangle<Vector3<float>>(
             Vector3(0.0f, 0.0f, 0.0f),
             Vector3(1.0f, 0.0f, 0.0f),
             Vector3(0.0f, 1.0f, 0.0f)
         );
 
         // Triangle with vertices (1, 2, 3), (4, 5, 6), (7, 8, 9)
-        t2 = Triangle<Vector3>(
+        t2 = Triangle<Vector3<float>>(
             Vector3(1.0f, 2.0f, 3.0f),
             Vector3(4.0f, 5.0f, 6.0f),
             Vector3(7.0f, 8.0f, 9.0f)
         );
 
         // An isosceles right triangle
-        t3 = Triangle<Vector3>(
+        t3 = Triangle<Vector3<float>>(
             Vector3(0.0f, 0.0f, 0.0f),
             Vector3(2.0f, 0.0f, 0.0f),
             Vector3(0.0f, 2.0f, 0.0f)
@@ -45,7 +45,7 @@ protected:
 // Test constructor and vertices
 TEST_F(UnitTestTriangle, Constructor)
 {
-    constexpr Triangle<Vector3> t(
+    constexpr Triangle<Vector3<float>> t(
         Vector3(1.0f, 2.0f, 3.0f),
         Vector3(4.0f, 5.0f, 6.0f),
         Vector3(7.0f, 8.0f, 9.0f)
@@ -113,7 +113,7 @@ TEST_F(UnitTestTriangle, SideVectors)
 
 TEST_F(UnitTestTriangle, IsRectangular)
 {
-    EXPECT_TRUE(Triangle<Vector3>({2,0,0}, {}, {0,2,0}).IsRectangular());
+    EXPECT_TRUE(Triangle<Vector3<float>>({2,0,0}, {}, {0,2,0}).IsRectangular());
 }
 // Test midpoint
 TEST_F(UnitTestTriangle, MidPoint)
