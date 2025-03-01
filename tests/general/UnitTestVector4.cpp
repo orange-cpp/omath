@@ -14,8 +14,8 @@ using namespace omath;
 class UnitTestVector4 : public ::testing::Test
 {
 protected:
-    Vector4 v1;
-    Vector4 v2;
+    Vector4<float> v1;
+    Vector4<float> v2;
 
     void SetUp() override
     {
@@ -27,7 +27,7 @@ protected:
 // Test constructor and default values
 TEST_F(UnitTestVector4, Constructor_Default)
 {
-    constexpr Vector4 v;
+    constexpr Vector4<float> v;
     EXPECT_FLOAT_EQ(v.x, 0.0f);
     EXPECT_FLOAT_EQ(v.y, 0.0f);
     EXPECT_FLOAT_EQ(v.z, 0.0f);

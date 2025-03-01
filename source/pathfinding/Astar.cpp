@@ -13,15 +13,15 @@ namespace omath::pathfinding
 {
     struct PathNode final
     {
-        std::optional<Vector3> cameFrom;
+        std::optional<Vector3<float>> cameFrom;
         float gCost = 0.f;
     };
 
 
-    std::vector<Vector3> Astar::ReconstructFinalPath(const std::unordered_map<Vector3, PathNode>& closedList,
-                                                     const Vector3& current)
+    std::vector<Vector3<float>> Astar::ReconstructFinalPath(const std::unordered_map<Vector3<float>, PathNode>& closedList,
+                                                     const Vector3<float>& current)
     {
-        std::vector<Vector3> path;
+        std::vector<Vector3<float>> path;
         std::optional currentOpt = current;
 
         while (currentOpt)
@@ -39,7 +39,7 @@ namespace omath::pathfinding
         std::ranges::reverse(path);
         return path;
     }
-    auto Astar::GetPerfectNode(const std::unordered_map<Vector3, PathNode>& openList, const Vector3& endVertex)
+    auto Astar::GetPerfectNode(const std::unordered_map<Vector3<float>, PathNode>& openList, const Vector3<float>& endVertex)
     {
         return std::ranges::min_element(openList,
                                         [&endVertex](const auto& a, const auto& b)
@@ -50,10 +50,10 @@ namespace omath::pathfinding
                                         });
     }
 
-    std::vector<Vector3> Astar::FindPath(const Vector3& start, const Vector3& end, const NavigationMesh& navMesh)
+    std::vector<Vector3<float>> Astar::FindPath(const Vector3<float>& start, const Vector3<float>& end, const NavigationMesh& navMesh)
     {
-        std::unordered_map<Vector3, PathNode> closedList;
-        std::unordered_map<Vector3, PathNode> openList;
+        std::unordered_map<Vector3<float>, PathNode> closedList;
+        std::unordered_map<Vector3<float>, PathNode> openList;
 
         auto maybeStartVertex = navMesh.GetClosestVertex(start);
         auto maybeEndVertex = navMesh.GetClosestVertex(end);

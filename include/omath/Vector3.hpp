@@ -20,16 +20,17 @@ namespace omath
         IMPOSSIBLE_BETWEEN_ANGLE,
     };
 
-    class Vector3 : public Vector2
+    template<class Type> requires std::is_arithmetic_v<Type>
+    class Vector3 : public Vector2<Type>
     {
     public:
-        float z = 0.f;
-        constexpr Vector3(const float x, const float y, const float z) : Vector2(x, y), z(z) { }
-        constexpr Vector3() : Vector2() {};
+        Type z = static_cast<Type>(0);
+        constexpr Vector3(const Type& x, const Type& y, const Type& z) : Vector2<Type>(x, y), z(z) { }
+        constexpr Vector3() : Vector2<Type>() {};
 
         [[nodiscard]] constexpr bool operator==(const Vector3& src) const
         {
-            return Vector2::operator==(src) && (src.z == z);
+            return Vector2<Type>::operator==(src) && (src.z == z);
         }
 
         [[nodiscard]] constexpr bool operator!=(const Vector3& src) const
@@ -39,7 +40,7 @@ namespace omath
 
         constexpr Vector3& operator+=(const Vector3& v)
         {
-            Vector2::operator+=(v);
+            Vector2<Type>::operator+=(v);
             z += v.z;
 
             return *this;
@@ -47,7 +48,7 @@ namespace omath
 
         constexpr Vector3& operator-=(const Vector3& v)
         {
-            Vector2::operator-=(v);
+            Vector2<Type>::operator-=(v);
             z -= v.z;
 
             return *this;
@@ -55,7 +56,7 @@ namespace omath
 
         constexpr Vector3& operator*=(const float fl)
         {
-            Vector2::operator*=(fl);
+            Vector2<Type>::operator*=(fl);
             z *= fl;
 
             return *this;
@@ -63,7 +64,7 @@ namespace omath
 
         constexpr Vector3& operator*=(const Vector3& v)
         {
-            Vector2::operator*=(v);
+            Vector2<Type>::operator*=(v);
             z *= v.z;
 
             return *this;
@@ -71,7 +72,7 @@ namespace omath
 
         constexpr Vector3& operator/=(const Vector3& v)
         {
-            Vector2::operator/=(v);
+            Vector2<Type>::operator/=(v);
             z /= v.z;
 
             return *this;
@@ -79,7 +80,7 @@ namespace omath
 
         constexpr Vector3& operator+=(const float fl)
         {
-            Vector2::operator+=(fl);
+            Vector2<Type>::operator+=(fl);
             z += fl;
 
             return *this;
@@ -87,7 +88,7 @@ namespace omath
 
         constexpr Vector3& operator/=(const float fl)
         {
-            Vector2::operator/=(fl);
+            Vector2<Type>::operator/=(fl);
             z /= fl;
 
             return *this;
@@ -95,7 +96,7 @@ namespace omath
 
         constexpr Vector3& operator-=(const float fl)
         {
-            Vector2::operator-=(fl);
+            Vector2<Type>::operator-=(fl);
             z -= fl;
 
             return *this;
@@ -103,7 +104,7 @@ namespace omath
 
         constexpr Vector3& Abs()
         {
-            Vector2::Abs();
+            Vector2<Type>::Abs();
             z = z < 0.f ? -z : z;
 
             return *this;
@@ -116,7 +117,7 @@ namespace omath
 
         [[nodiscard]] constexpr float Dot(const Vector3& vOther) const
         {
-            return Vector2::Dot(vOther) + z * vOther.z;
+            return Vector2<Type>::Dot(vOther) + z * vOther.z;
         }
 
 #ifndef _MSC_VER
@@ -142,7 +143,7 @@ namespace omath
 #else
         [[nodiscard]] float Length() const
         {
-            return std::hypot(x, y, z);
+            return std::hypot(this->x, this->y, z);
         }
 
         [[nodiscard]] Vector3 Normalized() const
@@ -152,9 +153,9 @@ namespace omath
             return length != 0 ? *this / length : *this;
         }
 
-        [[nodiscard]] float Length2D() const
+        [[nodiscard]] Type Length2D() const
         {
-            return Vector2::Length();
+            return Vector2<Type>::Length();
         }
 
         [[nodiscard]] float DistTo(const Vector3& vOther) const
@@ -166,51 +167,51 @@ namespace omath
 
         [[nodiscard]] constexpr float LengthSqr() const
         {
-            return Vector2::LengthSqr() + z * z;
+            return Vector2<Type>::LengthSqr() + z * z;
         }
 
         [[nodiscard]] constexpr Vector3 operator-() const
         {
-            return {-x, -y, -z};
+            return {-this->x, -this->y, -z};
         }
 
         [[nodiscard]] constexpr Vector3 operator+(const Vector3& v) const
         {
-            return {x + v.x, y + v.y, z + v.z};
+            return {this->x + v.x, this->y + v.y, z + v.z};
         }
 
         [[nodiscard]] constexpr Vector3 operator-(const Vector3& v) const
         {
-            return {x - v.x, y - v.y, z - v.z};
+            return {this->x - v.x, this->y - v.y, z - v.z};
         }
 
         [[nodiscard]] constexpr Vector3 operator*(const float fl) const
         {
-            return {x * fl, y * fl, z * fl};
+            return {this->x * fl, this->y * fl, z * fl};
         }
 
         [[nodiscard]] constexpr Vector3 operator*(const Vector3& v) const
         {
-            return {x * v.x, y * v.y, z * v.z};
+            return {this->x * v.x, this->y * v.y, z * v.z};
         }
 
         [[nodiscard]] constexpr Vector3 operator/(const float fl) const
         {
-            return {x / fl, y / fl, z / fl};
+            return {this->x / fl, this->y / fl, z / fl};
         }
 
         [[nodiscard]] constexpr Vector3 operator/(const Vector3& v) const
         {
-            return {x / v.x, y / v.y, z / v.z};
+            return {this->x / v.x, this->y / v.y, z / v.z};
         }
 
         [[nodiscard]] constexpr Vector3 Cross(const Vector3 &v) const
         {
             return
             {
-                y * v.z - z * v.y,
-                z * v.x - x * v.z,
-                x * v.y - y * v.x
+                this->y * v.z - z * v.y,
+                z * v.x - this->x * v.z,
+                this->x * v.y - this->y * v.x
             };
         }
         [[nodiscard]] constexpr float Sum() const
@@ -239,14 +240,25 @@ namespace omath
 
         [[nodiscard]] constexpr float Sum2D() const
         {
-            return Vector2::Sum();
+            return Vector2<Type>::Sum();
         }
-
-        [[nodiscard]] Vector3 ViewAngleTo(const Vector3& other) const;
 
         [[nodiscard]] constexpr std::tuple<float, float, float> AsTuple() const
         {
-            return std::make_tuple(x, y, z);
+            return std::make_tuple(this->x, this->y, z);
+        }
+
+        [[nodiscard]] Vector3 ViewAngleTo(const Vector3 &other) const
+        {
+            const float distance = DistTo(other);
+            const auto delta = other - *this;
+
+            return
+            {
+                angles::RadiansToDegrees(std::asin(delta.z / distance)),
+                angles::RadiansToDegrees(std::atan2(delta.y, delta.x)),
+                0
+            };
         }
     };
 }
@@ -254,9 +266,9 @@ namespace omath
 namespace std
 {
     template<>
-    struct hash<omath::Vector3>
+    struct hash<omath::Vector3<float>>
     {
-        std::size_t operator()(const omath::Vector3& vec) const noexcept
+        std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
         {
             std::size_t hash = 0;
             constexpr std::hash<float> hasher;

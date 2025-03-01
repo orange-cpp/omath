@@ -22,17 +22,17 @@ namespace omath::pathfinding
     public:
 
         [[nodiscard]]
-        std::expected<Vector3, std::string> GetClosestVertex(const Vector3& point) const;
+        std::expected<Vector3<float>, std::string> GetClosestVertex(const Vector3<float>& point) const;
 
 
         [[nodiscard]]
-        const std::vector<Vector3>& GetNeighbors(const Vector3& vertex) const;
+        const std::vector<Vector3<float>>& GetNeighbors(const Vector3<float>& vertex) const;
 
         [[nodiscard]]
         bool Empty() const;
         [[nodiscard]] std::vector<uint8_t> Serialize() const;
         void Deserialize(const std::vector<uint8_t>& raw);
 
-        std::unordered_map<Vector3, std::vector<Vector3>> m_verTextMap;
+        std::unordered_map<Vector3<float>, std::vector<Vector3<float>>> m_verTextMap;
     };
 }

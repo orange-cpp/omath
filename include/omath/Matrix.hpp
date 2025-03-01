@@ -2,10 +2,10 @@
 #include <initializer_list>
 #include <memory>
 #include <string>
+#include "Vector3.hpp"
 
 namespace omath
 {
-    class Vector3;
 
     class Matrix final
     {
@@ -19,10 +19,10 @@ namespace omath
         static Matrix ToScreenMatrix(float screenWidth, float screenHeight);
 
         [[nodiscard]]
-        static Matrix TranslationMatrix(const Vector3& diff);
+        static Matrix TranslationMatrix(const Vector3<float>& diff);
 
         [[nodiscard]]
-        static Matrix OrientationMatrix(const Vector3& forward, const Vector3& right, const Vector3& up);
+        static Matrix OrientationMatrix(const Vector3<float>& forward, const Vector3<float>& right, const Vector3<float>& up);
 
         [[nodiscard]]
         static Matrix ProjectionMatrix(float fieldOfView, float aspectRatio, float near, float far);

@@ -8,12 +8,12 @@
 namespace omath::opengl
 {
 
-    Camera::Camera(const Vector3& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
+    Camera::Camera(const Vector3<float>& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
                    const Angle<float, 0.f, 180.f, AngleFlags::Clamped>& fov, const float near, const float far) :
         projection::Camera<Mat4x4, ViewAngles>(position, viewAngles, viewPort, fov, near, far)
     {
     }
-    void Camera::LookAt([[maybe_unused]] const Vector3& target)
+    void Camera::LookAt([[maybe_unused]] const Vector3<float>& target)
     {
         const float distance = m_origin.DistTo(target);
         const auto delta = target - m_origin;
