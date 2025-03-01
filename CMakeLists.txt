@@ -24,6 +24,9 @@ set_target_properties(omath PROPERTIES
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON)
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(omath PRIVATE -mavx2 -mfma)
+endif()
 
 target_compile_features(omath PUBLIC cxx_std_23)
 
