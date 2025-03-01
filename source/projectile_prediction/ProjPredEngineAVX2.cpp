@@ -2,13 +2,14 @@
 // Created by Vlad on 2/23/2025.
 //
 #include "omath/projectile_prediction/ProjPredEngineAVX2.hpp"
-
+#include "source_location"
 
 namespace omath::projectile_prediction
 {
-    std::optional<Vector3<float>> ProjPredEngineAVX2::MaybeCalculateAimPoint(const Projectile& projectile,
-                                                                      const Target& target) const
+    std::optional<Vector3<float>> ProjPredEngineAVX2::MaybeCalculateAimPoint([[maybe_unused]] const Projectile& projectile,
+                                                                      [[maybe_unused]] const Target& target) const
     {
+#ifdef OMATH_USE_AVX2
         const float bulletGravity = m_gravityConstant * projectile.m_gravityScale;
         const float v0 = projectile.m_launchSpeed;
         const float v0Sqr = v0 * v0;
@@ -134,5 +135,7 @@ namespace omath::projectile_prediction
         const float d = std::sqrt(dSqr);
         const float tanTheta = term / d;
         return angles::RadiansToDegrees(std::atan(tanTheta));
+#endif
+    throw std::runtime_error(std::format("{} AVX2 feature is not enabled!", std::source_location::current().function_name()));
     }
 } // namespace omath::projectile_prediction
