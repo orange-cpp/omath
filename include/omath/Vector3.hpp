@@ -24,7 +24,7 @@ namespace omath
     class Vector3 : public Vector2<Type>
     {
     public:
-        Type z = 0.f;
+        Type z = static_cast<Type>(0);
         constexpr Vector3(const Type& x, const Type& y, const Type& z) : Vector2<Type>(x, y), z(z) { }
         constexpr Vector3() : Vector2<Type>() {};
 
@@ -172,7 +172,7 @@ namespace omath
 
         [[nodiscard]] constexpr Vector3 operator-() const
         {
-            return Vector3<Type>{-this->x, -this->y, -z};
+            return {-this->x, -this->y, -z};
         }
 
         [[nodiscard]] constexpr Vector3 operator+(const Vector3& v) const
