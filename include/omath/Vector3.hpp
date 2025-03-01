@@ -172,7 +172,6 @@ namespace omath
 
         [[nodiscard]] constexpr Vector3 operator-() const
         {
-
             return Vector3<Type>{-this->x, -this->y, -z};
         }
 
