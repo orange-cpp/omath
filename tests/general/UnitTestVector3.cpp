@@ -13,8 +13,8 @@ using namespace omath;
 class UnitTestVector3 : public ::testing::Test
 {
 protected:
-    Vector3 v1;
-    Vector3 v2;
+    Vector3<float> v1;
+    Vector3<float> v2;
 
     void SetUp() override
     {
@@ -26,7 +26,7 @@ protected:
 // Test constructor and default values
 TEST_F(UnitTestVector3, Constructor_Default)
 {
-    constexpr Vector3 v;
+    constexpr Vector3<float> v;
     EXPECT_FLOAT_EQ(v.x, 0.0f);
     EXPECT_FLOAT_EQ(v.y, 0.0f);
     EXPECT_FLOAT_EQ(v.z, 0.0f);
@@ -34,7 +34,7 @@ TEST_F(UnitTestVector3, Constructor_Default)
 
 TEST_F(UnitTestVector3, Constructor_Values)
 {
-    constexpr Vector3 v(1.0f, 2.0f, 3.0f);
+    constexpr Vector3<float> v(1.0f, 2.0f, 3.0f);
     EXPECT_FLOAT_EQ(v.x, 1.0f);
     EXPECT_FLOAT_EQ(v.y, 2.0f);
     EXPECT_FLOAT_EQ(v.z, 3.0f);

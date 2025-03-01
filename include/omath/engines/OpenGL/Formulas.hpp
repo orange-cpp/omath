@@ -8,7 +8,7 @@
 namespace omath::opengl
 {
     [[nodiscard]]
-    inline Vector3 ForwardVector(const ViewAngles& angles)
+    inline Vector3<float> ForwardVector(const ViewAngles& angles)
     {
         const auto vec = MatRotation(angles) * MatColumnFromVector(kAbsForward);
 
@@ -16,7 +16,7 @@ namespace omath::opengl
     }
 
     [[nodiscard]]
-    inline Vector3 RightVector(const ViewAngles& angles)
+    inline Vector3<float> RightVector(const ViewAngles& angles)
     {
         const auto vec = MatRotation(angles) * MatColumnFromVector(kAbsRight);
 
@@ -24,14 +24,14 @@ namespace omath::opengl
     }
 
     [[nodiscard]]
-    inline Vector3 UpVector(const ViewAngles& angles)
+    inline Vector3<float> UpVector(const ViewAngles& angles)
     {
         const auto vec = MatRotation(angles) * MatColumnFromVector(kAbsUp);
 
         return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
 
-    [[nodiscard]] inline Mat4x4 CalcViewMatrix(const ViewAngles& angles, const Vector3& cam_origin)
+    [[nodiscard]] inline Mat4x4 CalcViewMatrix(const ViewAngles& angles, const Vector3<float>& cam_origin)
     {
         return MatCameraView<float, MatStoreType::COLUMN_MAJOR>(-ForwardVector(angles), RightVector(angles), UpVector(angles), cam_origin);
     }

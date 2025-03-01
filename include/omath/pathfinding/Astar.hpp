@@ -14,12 +14,17 @@ namespace omath::pathfinding
     {
     public:
         [[nodiscard]]
-        static std::vector<Vector3> FindPath(const Vector3& start, const Vector3& end, const NavigationMesh& navMesh);
+        static std::vector<Vector3<float>> FindPath(const Vector3<float>& start, const Vector3<float>& end,
+                                                    const NavigationMesh& navMesh);
+
     private:
         [[nodiscard]]
-        static std::vector<Vector3> ReconstructFinalPath(const std::unordered_map<Vector3, PathNode>& closedList, const Vector3& current);
+        static std::vector<Vector3<float>>
+        ReconstructFinalPath(const std::unordered_map<Vector3<float>, PathNode>& closedList,
+                             const Vector3<float>& current);
 
         [[nodiscard]]
-        static auto GetPerfectNode(const std::unordered_map<Vector3, PathNode>& openList, const Vector3& endVertex);
+        static auto GetPerfectNode(const std::unordered_map<Vector3<float>, PathNode>& openList,
+                                   const Vector3<float>& endVertex);
     };
-}
+} // namespace omath::pathfinding

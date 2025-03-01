@@ -18,10 +18,10 @@ namespace omath
     };
 
 
-    class Color final : public Vector4
+    class Color final : public Vector4<float>
     {
         public:
-            constexpr Color(float r, float g, float b, float a) : Vector4(r,g,b,a)
+            constexpr Color(const float r, const float g, const float b, const float a) : Vector4(r,g,b,a)
             {
                 Clamp(0.f, 1.f);
             }

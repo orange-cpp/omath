@@ -8,12 +8,12 @@
 namespace omath::source
 {
 
-    Camera::Camera(const Vector3& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
+    Camera::Camera(const Vector3<float>& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
                    const projection::FieldOfView& fov, const float near, const float far) :
         projection::Camera<Mat4x4, ViewAngles>(position, viewAngles, viewPort, fov, near, far)
     {
     }
-    void Camera::LookAt(const Vector3& target)
+    void Camera::LookAt(const Vector3<float>& target)
     {
         const float distance = m_origin.DistTo(target);
         const auto delta = target - m_origin;

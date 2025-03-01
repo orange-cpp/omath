@@ -11,7 +11,7 @@ namespace omath::projectile_prediction
     {
     }
 
-    std::optional<Vector3> ProjPredEngineLegacy::MaybeCalculateAimPoint(const Projectile& projectile,
+    std::optional<Vector3<float>> ProjPredEngineLegacy::MaybeCalculateAimPoint(const Projectile& projectile,
                                                                         const Target& target) const
     {
         for (float time = 0.f; time < m_maximumSimulationTime; time += m_simulationTimeStep)
@@ -36,7 +36,7 @@ namespace omath::projectile_prediction
 
     std::optional<float>
     ProjPredEngineLegacy::MaybeCalculateProjectileLaunchPitchAngle(const Projectile& projectile,
-                                                                   const Vector3& targetPosition) const
+                                                                   const Vector3<float>& targetPosition) const
     {
         const auto bulletGravity = m_gravityConstant * projectile.m_gravityScale;
         const auto delta = targetPosition - projectile.m_origin;
@@ -57,7 +57,7 @@ namespace omath::projectile_prediction
         return angles::RadiansToDegrees(angle);
     }
 
-    bool ProjPredEngineLegacy::IsProjectileReachedTarget(const Vector3& targetPosition, const Projectile& projectile,
+    bool ProjPredEngineLegacy::IsProjectileReachedTarget(const Vector3<float>& targetPosition, const Projectile& projectile,
                                                          const float pitch, const float time) const
     {
         const auto yaw = projectile.m_origin.ViewAngleTo(targetPosition).y;

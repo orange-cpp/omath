@@ -10,9 +10,9 @@
 
 namespace omath::opengl
 {
-    constexpr Vector3 kAbsUp = {0, 1, 0};
-    constexpr Vector3 kAbsRight = {1, 0, 0};
-    constexpr Vector3 kAbsForward = {0, 0, -1};
+    constexpr Vector3<float> kAbsUp = {0, 1, 0};
+    constexpr Vector3<float> kAbsRight = {1, 0, 0};
+    constexpr Vector3<float> kAbsForward = {0, 0, -1};
 
     using Mat4x4 = Mat<4, 4, float, MatStoreType::COLUMN_MAJOR>;
     using Mat3x3 = Mat<4, 4, float, MatStoreType::COLUMN_MAJOR>;

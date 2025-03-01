@@ -10,10 +10,10 @@ class LineTracerTest : public ::testing::Test
 {
 protected:
     // Set up common variables for use in each test
-    Vector3 vertex1{0.0f, 0.0f, 0.0f};
-    Vector3 vertex2{1.0f, 0.0f, 0.0f};
-    Vector3 vertex3{0.0f, 1.0f, 0.0f};
-    Triangle<Vector3> triangle{vertex1, vertex2, vertex3};
+    Vector3<float> vertex1{0.0f, 0.0f, 0.0f};
+    Vector3<float> vertex2{1.0f, 0.0f, 0.0f};
+    Vector3<float> vertex3{0.0f, 1.0f, 0.0f};
+    Triangle<Vector3<float>> triangle{vertex1, vertex2, vertex3};
 };
 
 // Test that a ray intersecting the triangle returns false for CanTraceLine
@@ -71,7 +71,7 @@ TEST_F(LineTracerTest, TriangleFarBeyondRayEndPoint)
     constexpr Ray ray{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
 
     // Define a triangle far beyond the ray's endpoint
-    constexpr Triangle<Vector3> distantTriangle{
+    constexpr Triangle<Vector3<float>> distantTriangle{
         {1000.0f, 1000.0f, 1000.0f}, {1001.0f, 1000.0f, 1000.0f}, {1000.0f, 1001.0f, 1000.0f}
     };
 

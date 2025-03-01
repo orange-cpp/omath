@@ -20,7 +20,7 @@ namespace omath::projectile_prediction
                                       float distanceTolerance);
 
         [[nodiscard]]
-        std::optional<Vector3> MaybeCalculateAimPoint(const Projectile& projectile,
+        std::optional<Vector3<float>> MaybeCalculateAimPoint(const Projectile& projectile,
                                                       const Target& target) const override;
 
     private:
@@ -31,11 +31,11 @@ namespace omath::projectile_prediction
 
         [[nodiscard]]
         std::optional<float> MaybeCalculateProjectileLaunchPitchAngle(const Projectile& projectile,
-                                                                      const Vector3& targetPosition) const;
+                                                                      const Vector3<float>& targetPosition) const;
 
 
         [[nodiscard]]
-        bool IsProjectileReachedTarget(const Vector3& targetPosition, const Projectile& projectile, float pitch,
+        bool IsProjectileReachedTarget(const Vector3<float>& targetPosition, const Projectile& projectile, float pitch,
                                        float time) const;
     };
 } // namespace omath::projectile_prediction
