@@ -108,8 +108,8 @@ namespace omath::projectile_prediction
     }
     ProjPredEngineAVX2::ProjPredEngineAVX2(const float gravityConstant, const float simulationTimeStep,
                                            const float maximumSimulationTime) :
-        m_gravityConstant(gravityConstant), m_simulationTimeStep(maximumSimulationTime),
-        m_maximumSimulationTime(simulationTimeStep)
+        m_gravityConstant(gravityConstant), m_simulationTimeStep(simulationTimeStep),
+        m_maximumSimulationTime(maximumSimulationTime)
     {
     }
     std::optional<float> ProjPredEngineAVX2::CalculatePitch(const Vector3<float>& projOrigin,
