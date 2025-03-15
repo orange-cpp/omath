@@ -34,11 +34,13 @@ namespace omath
     class Mat final
     {
     public:
-        constexpr Mat()
+        constexpr Mat() noexcept
         {
             Clear();
         }
-        constexpr static MatStoreType GetStoreOrdering()
+
+        [[nodiscard]]
+        constexpr static MatStoreType GetStoreOrdering() noexcept
         {
             return StoreType;
         }
@@ -72,6 +74,7 @@ namespace omath
             m_data = other.m_data;
         }
 
+        [[nodiscard]]
         constexpr Type& operator[](const size_t row, const size_t col)
         {
             return At(row, col);
@@ -100,7 +103,8 @@ namespace omath
             return {Rows, Columns};
         }
 
-        [[nodiscard]] constexpr const Type& At(const size_t rowIndex, const size_t columnIndex) const
+        [[nodiscard]]
+        constexpr const Type& At(const size_t rowIndex, const size_t columnIndex) const
         {
             if (rowIndex >= Rows || columnIndex >= Columns)
                 throw std::out_of_range("Index out of range");
@@ -177,6 +181,7 @@ namespace omath
             return *this = *this * other;
         }
 
+        [[nodiscard]]
         constexpr Mat operator*(const Type& f) const noexcept
         {
             Mat result(*this);
@@ -192,6 +197,7 @@ namespace omath
             return *this;
         }
 
+        [[nodiscard]]
         constexpr Mat operator/(const Type& f) const noexcept
         {
             Mat result(*this);
