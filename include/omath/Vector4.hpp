@@ -81,7 +81,7 @@ namespace omath
             return Vector3<Type>::LengthSqr() + w * w;
         }
 
-        [[nodiscard]] constexpr float Dot(const Vector4& vOther) const
+        [[nodiscard]] constexpr Type Dot(const Vector4& vOther) const
         {
             return Vector3<Type>::Dot(vOther) + w * vOther.w;
         }
@@ -98,7 +98,7 @@ namespace omath
 
             return *this;
         }
-        constexpr Vector4& Clamp(const float min, const float max)
+        constexpr Vector4& Clamp(const Type& min, const Type& max)
         {
             this->x = std::clamp(this->x, min, max);
             this->y = std::clamp(this->y, min, max);
@@ -126,7 +126,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator*(const float scalar) const
+        constexpr Vector4 operator*(const Type& scalar) const
         {
             return {this->x * scalar, this->y * scalar, this->z * scalar, w * scalar};
         }
@@ -138,7 +138,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator/(const float scalar) const
+        constexpr Vector4 operator/(const Type& scalar) const
         {
             return {this->x / scalar, this->y / scalar, this->z / scalar, w / scalar};
         }
