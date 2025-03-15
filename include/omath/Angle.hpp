@@ -19,7 +19,7 @@ namespace omath
     class Angle
     {
         Type m_angle;
-        constexpr Angle(const Type& degrees)
+        constexpr explicit Angle(const Type& degrees)
         {
             if constexpr (flags == AngleFlags::Normalized)
                 m_angle = angles::WrapAngle(degrees, min, max);
@@ -36,7 +36,7 @@ namespace omath
         [[nodiscard]]
         constexpr static Angle FromDegrees(const Type& degrees)
         {
-            return {degrees};
+            return Angle{degrees};
         }
         constexpr Angle() : m_angle(0)
         {
@@ -45,7 +45,7 @@ namespace omath
         [[nodiscard]]
         constexpr static Angle FromRadians(const Type& degrees)
         {
-            return {angles::RadiansToDegrees<Type>(degrees)};
+            return Angle{angles::RadiansToDegrees<Type>(degrees)};
         }
 
         [[nodiscard]]
@@ -146,7 +146,7 @@ namespace omath
         [[nodiscard]]
         constexpr Angle operator-() const
         {
-            return {-m_angle};
+            return Angle{-m_angle};
         }
     };
 }
