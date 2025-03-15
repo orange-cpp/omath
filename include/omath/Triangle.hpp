@@ -6,6 +6,16 @@
 
 namespace omath
 {
+        /*
+        |\
+        | \
+      a |  \ hypot
+        |   \
+        -----
+          b
+        */
+
+
     template<class Vector>
     class Triangle final
     {
