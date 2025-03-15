@@ -38,7 +38,7 @@ namespace omath::projection
         {
 
         }
-
+    protected:
         virtual void LookAt(const Vector3<float>& target) = 0;
 
         [[nodiscard]] virtual Mat4x4Type CalcViewMatrix() const = 0;
@@ -49,41 +49,44 @@ namespace omath::projection
         {
             return CalcProjectionMatrix() * CalcViewMatrix();
         }
+    public:
+
+        [[nodiscard]] const Mat4x4Type& GetViewProjectionMatrix() const
+        {
+            if (!m_viewProjectionMatrix.has_value())
+                m_viewProjectionMatrix = CalcViewProjectionMatrix();
+
+            return m_viewProjectionMatrix.value();
+        }
 
         void SetFieldOfView(const FieldOfView& fov)
         {
             m_fieldOfView = fov;
-            m_viewProjectionMatrix = CalcViewProjectionMatrix();
         }
 
         void SetNearPlane(const float near)
         {
             m_nearPlaneDistance = near;
-            m_viewProjectionMatrix = CalcViewProjectionMatrix();
         }
 
         void SetFarPlane(const float far)
         {
             m_farPlaneDistance = far;
-            m_viewProjectionMatrix = CalcViewProjectionMatrix();
         }
 
         void SetViewAngles(const ViewAnglesType& viewAngles)
         {
             m_viewAngles = viewAngles;
-            m_viewProjectionMatrix = CalcViewProjectionMatrix();
         }
 
         void SetOrigin(const Vector3<float>& origin)
         {
             m_origin = origin;
-            m_viewProjectionMatrix = CalcViewProjectionMatrix();
         }
 
         void SetViewPort(const ViewPort& viewPort)
         {
             m_viewPort = viewPort;
-            m_viewProjectionMatrix = CalcViewProjectionMatrix();
         }
 
         [[nodiscard]] const FieldOfView& GetFieldOfView() const
@@ -113,10 +116,9 @@ namespace omath::projection
 
         [[nodiscard]] std::expected<Vector3<float>, Error> WorldToScreen(const Vector3<float>& worldPosition) const
         {
-            if (!m_viewProjectionMatrix.has_value())
-                m_viewProjectionMatrix = CalcViewProjectionMatrix();
+            const auto& viewProjMatrix = GetViewProjectionMatrix();
 
-            auto projected = m_viewProjectionMatrix.value() * MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);
+            auto projected = viewProjMatrix * MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);
 
             if (projected.At(3, 0) == 0.0f)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
