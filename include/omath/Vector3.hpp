@@ -110,45 +110,45 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]] constexpr float DistToSqr(const Vector3& vOther) const
+        [[nodiscard]] constexpr Type DistToSqr(const Vector3& vOther) const
         {
             return (*this - vOther).LengthSqr();
         }
 
-        [[nodiscard]] constexpr float Dot(const Vector3& vOther) const
+        [[nodiscard]] constexpr Type Dot(const Vector3& vOther) const
         {
             return Vector2<Type>::Dot(vOther) + z * vOther.z;
         }
 
 #ifndef _MSC_VER
-        [[nodiscard]] constexpr float Length() const
+        [[nodiscard]] constexpr Type Length() const
         {
             return std::hypot(x, y, z);
         }
 
-        [[nodiscard]] constexpr float Length2D() const
+        [[nodiscard]] constexpr Type Length2D() const
         {
             return Vector2::Length();
         }
-        [[nodiscard]] float DistTo(const Vector3& vOther) const
+        [[nodiscard]] Type DistTo(const Vector3& vOther) const
         {
             return (*this - vOther).Length();
         }
         [[nodiscard]] constexpr Vector3 Normalized() const
         {
-            const float length = this->Length();
+            const Type length = this->Length();
 
             return length != 0 ? *this / length : *this;
         }
 #else
-        [[nodiscard]] float Length() const
+        [[nodiscard]] Type Length() const
         {
             return std::hypot(this->x, this->y, z);
         }
 
         [[nodiscard]] Vector3 Normalized() const
         {
-            const float length = this->Length();
+            const Type length = this->Length();
 
             return length != 0 ? *this / length : *this;
         }
@@ -158,14 +158,14 @@ namespace omath
             return Vector2<Type>::Length();
         }
 
-        [[nodiscard]] float DistTo(const Vector3& vOther) const
+        [[nodiscard]] Type DistTo(const Vector3& vOther) const
         {
             return (*this - vOther).Length();
         }
 #endif
 
 
-        [[nodiscard]] constexpr float LengthSqr() const
+        [[nodiscard]] constexpr Type LengthSqr() const
         {
             return Vector2<Type>::LengthSqr() + z * z;
         }
@@ -214,7 +214,7 @@ namespace omath
                 this->x * v.y - this->y * v.x
             };
         }
-        [[nodiscard]] constexpr float Sum() const
+        [[nodiscard]] constexpr Type Sum() const
         {
             return Sum2D() + z;
         }
@@ -238,12 +238,12 @@ namespace omath
             return false;
         }
 
-        [[nodiscard]] constexpr float Sum2D() const
+        [[nodiscard]] constexpr Type Sum2D() const
         {
             return Vector2<Type>::Sum();
         }
 
-        [[nodiscard]] constexpr std::tuple<float, float, float> AsTuple() const
+        [[nodiscard]] constexpr std::tuple<Type, Type, Type> AsTuple() const
         {
             return std::make_tuple(this->x, this->y, z);
         }
