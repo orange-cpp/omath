@@ -96,7 +96,6 @@ namespace omath
             return Cos() / Sin();
         }
 
-        [[nodiscard]]
         constexpr Angle& operator+=(const Angle& other)
         {
             if constexpr (flags == AngleFlags::Normalized)
@@ -116,7 +115,6 @@ namespace omath
         [[nodiscard]]
         constexpr std::partial_ordering operator<=>(const Angle& other) const = default;
 
-        [[nodiscard]]
         constexpr Angle& operator-=(const Angle& other)
         {
             return operator+=(-other);
