@@ -7,7 +7,7 @@
 #include <tuple>
 
 #ifdef OMATH_IMGUI_INTEGRATION
-    class ImVec2;
+#include <imgui.h>
 #endif
 
 
@@ -159,17 +159,6 @@ namespace omath
             return *this;
         }
 
-        template<class type>
-        [[nodiscard]] constexpr const type& As() const
-        {
-            return *reinterpret_cast<const type*>(this);
-        }
-        template<class type>
-        [[nodiscard]] constexpr type& As()
-        {
-            return *reinterpret_cast<type*>(this);
-        }
-
         [[nodiscard]] constexpr Vector2 operator-() const
         {
             return {-x, -y};
@@ -210,15 +199,9 @@ namespace omath
 
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
-        const ImVec2& ToImVec2() const
+        ImVec2 ToImVec2() const
         {
-            return *reinterpret_cast<const ImVec2*>(this);
-        }
-
-        [[nodiscard]]
-        ImVec2& ToImVec2()
-        {
-            return *reinterpret_cast<ImVec2*>(this);
+            return {static_cast<float>(this->x), static_cast<float>(this->y)};
         }
 #endif
     };
