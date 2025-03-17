@@ -41,7 +41,9 @@ namespace omath::iw_engine
     inline Mat4x4 CalcPerspectiveProjectionMatrix(const float fieldOfView, const float aspectRatio, const float near,
                                                   const float far)
     {
-        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f) * 0.75f;
+        // NOTE: Need magic number to fix fov calculation, since source inherit Quake proj matrix calculation
+        constexpr auto kMultiplyFactor = 0.75f;
+        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f) * kMultiplyFactor;
 
         return
         {
