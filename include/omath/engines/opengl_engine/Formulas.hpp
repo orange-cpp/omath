@@ -5,7 +5,7 @@
 #include "Constants.hpp"
 
 
-namespace omath::opengl
+namespace omath::opengl_engine
 {
     [[nodiscard]]
     inline Vector3<float> ForwardVector(const ViewAngles& angles)

@@ -1,2 +1,2 @@
-add_subdirectory(Source)
-add_subdirectory(OpenGL)
+add_subdirectory(source_engine)
+add_subdirectory(opengl_engine)

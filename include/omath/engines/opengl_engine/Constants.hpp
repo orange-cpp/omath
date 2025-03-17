@@ -8,7 +8,7 @@
 #include <omath/Angle.hpp>
 #include <omath/ViewAngles.hpp>
 
-namespace omath::opengl
+namespace omath::opengl_engine
 {
     constexpr Vector3<float> kAbsUp = {0, 1, 0};
     constexpr Vector3<float> kAbsRight = {1, 0, 0};

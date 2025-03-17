@@ -4,7 +4,7 @@
 #pragma once
 #include "Constants.hpp"
 
-namespace omath::source
+namespace omath::source_engine
 {
     [[nodiscard]]
     inline Vector3<float> ForwardVector(const ViewAngles& angles)
