@@ -22,6 +22,7 @@ add_executable(unit-tests
         engines/UnitTestOpenGL.cpp
         engines/UnitTestUnityEngine.cpp
         engines/UnitTestSourceEngine.cpp
+        engines/UnitTestIwEngine.cpp
 
 )
 
