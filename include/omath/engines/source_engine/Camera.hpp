@@ -5,7 +5,7 @@
 #include "Constants.hpp"
 #include "omath/projection/Camera.hpp"
 
-namespace omath::source
+namespace omath::source_engine
 {
     class Camera final : public projection::Camera<Mat4x4, ViewAngles>
     {

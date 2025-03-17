@@ -2,35 +2,35 @@
 // Created by Orange on 11/23/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/engines/Source/Camera.hpp>
-#include <omath/engines/Source/Constants.hpp>
-#include <omath/engines/Source/Formulas.hpp>
+#include <omath/engines/source_engine/Camera.hpp>
+#include <omath/engines/source_engine/Constants.hpp>
+#include <omath/engines/source_engine/Formulas.hpp>
 
 
 TEST(UnitTestSourceEngine, ForwardVector)
 {
-    const auto forward = omath::source::ForwardVector({});
+    const auto forward = omath::source_engine::ForwardVector({});
 
-    EXPECT_EQ(forward, omath::source::kAbsForward);
+    EXPECT_EQ(forward, omath::source_engine::kAbsForward);
 }
 
 TEST(UnitTestSourceEngine, RightVector)
 {
-    const auto right = omath::source::RightVector({});
+    const auto right = omath::source_engine::RightVector({});
 
-    EXPECT_EQ(right, omath::source::kAbsRight);
+    EXPECT_EQ(right, omath::source_engine::kAbsRight);
 }
 
 TEST(UnitTestSourceEngine, UpVector)
 {
-    const auto up = omath::source::UpVector({});
-    EXPECT_EQ(up, omath::source::kAbsUp);
+    const auto up = omath::source_engine::UpVector({});
+    EXPECT_EQ(up, omath::source_engine::kAbsUp);
 }
 
 TEST(UnitTestSourceEngine, ProjectTargetMovedFromCamera)
 {
     constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
-    auto cam = omath::source::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
 
     for (float distance = 0.02f; distance < 1000.f; distance += 0.01f)
@@ -50,7 +50,7 @@ TEST(UnitTestSourceEngine, ProjectTargetMovedFromCamera)
 TEST(UnitTestSourceEngine, CameraSetAndGetFov)
 {
     constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
-    auto cam = omath::source::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+    auto cam = omath::source_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
     EXPECT_EQ(cam.GetFieldOfView().AsDegrees(), 90.f);
     cam.SetFieldOfView(omath::projection::FieldOfView::FromDegrees(50.f));
@@ -60,7 +60,7 @@ TEST(UnitTestSourceEngine, CameraSetAndGetFov)
 
 TEST(UnitTestSourceEngine, CameraSetAndGetOrigin)
 {
-    auto cam = omath::source::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
+    auto cam = omath::source_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
 
     EXPECT_EQ(cam.GetOrigin(), omath::Vector3<float>{});
     cam.SetFieldOfView(omath::projection::FieldOfView::FromDegrees(50.f));

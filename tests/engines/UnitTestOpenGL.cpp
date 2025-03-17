@@ -2,35 +2,35 @@
 // Created by Orange on 11/23/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/engines/OpenGL/Camera.hpp>
-#include <omath/engines/OpenGL/Constants.hpp>
-#include <omath/engines/OpenGL/Formulas.hpp>
+#include <omath/engines/opengl_engine//Camera.hpp>
+#include <omath/engines/opengl_engine/Constants.hpp>
+#include <omath/engines/opengl_engine/Formulas.hpp>
 
 
 TEST(UnitTestOpenGL, ForwardVector)
 {
-    const auto forward = omath::opengl::ForwardVector({});
+    const auto forward = omath::opengl_engine::ForwardVector({});
 
-    EXPECT_EQ(forward, omath::opengl::kAbsForward);
+    EXPECT_EQ(forward, omath::opengl_engine::kAbsForward);
 }
 
 TEST(UnitTestOpenGL, RightVector)
 {
-    const auto right = omath::opengl::RightVector({});
+    const auto right = omath::opengl_engine::RightVector({});
 
-    EXPECT_EQ(right, omath::opengl::kAbsRight);
+    EXPECT_EQ(right, omath::opengl_engine::kAbsRight);
 }
 
 TEST(UnitTestOpenGL, UpVector)
 {
-    const auto up = omath::opengl::UpVector({});
-    EXPECT_EQ(up, omath::opengl::kAbsUp);
+    const auto up = omath::opengl_engine::UpVector({});
+    EXPECT_EQ(up, omath::opengl_engine::kAbsUp);
 }
 
 TEST(UnitTestOpenGL, ProjectTargetMovedFromCamera)
 {
     constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
-    auto cam = omath::opengl::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+    const auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
 
     for (float distance = -10.f; distance > -1000.f; distance -= 0.01f)
@@ -50,7 +50,7 @@ TEST(UnitTestOpenGL, ProjectTargetMovedFromCamera)
 TEST(UnitTestOpenGL, CameraSetAndGetFov)
 {
     constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
-    auto cam = omath::opengl::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+    auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
     EXPECT_EQ(cam.GetFieldOfView().AsDegrees(), 90.f);
     cam.SetFieldOfView(omath::projection::FieldOfView::FromDegrees(50.f));
@@ -60,7 +60,7 @@ TEST(UnitTestOpenGL, CameraSetAndGetFov)
 
 TEST(UnitTestOpenGL, CameraSetAndGetOrigin)
 {
-    auto cam = omath::opengl::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
+    auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
 
     EXPECT_EQ(cam.GetOrigin(), omath::Vector3<float>{});
     cam.SetFieldOfView(omath::projection::FieldOfView::FromDegrees(50.f));

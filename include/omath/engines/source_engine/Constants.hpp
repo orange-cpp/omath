@@ -7,7 +7,8 @@
 #include <omath/Mat.hpp>
 #include <omath/Angle.hpp>
 #include <omath/ViewAngles.hpp>
-namespace omath::source
+
+namespace omath::source_engine
 {
     constexpr Vector3<float> kAbsUp = {0, 0, 1};
     constexpr Vector3<float> kAbsRight = {0, -1, 0};
