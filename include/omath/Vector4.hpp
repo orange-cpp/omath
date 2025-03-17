@@ -6,6 +6,7 @@
 #include <omath/Vector3.hpp>
 #include <algorithm>
 
+
 namespace omath
 {
     template <class Type>
@@ -154,5 +155,19 @@ namespace omath
         {
             return Vector3<Type>::Sum() + w;
         }
+
+#ifdef OMATH_IMGUI_INTEGRATION
+        [[nodiscard]]
+        ImVec4 ToImVec4() const
+        {
+            return
+            {
+                static_cast<float>(this->x),
+                static_cast<float>(this->y),
+                static_cast<float>(this->z),
+                static_cast<float>(w),
+            };
+        }
+#endif
     };
 }
