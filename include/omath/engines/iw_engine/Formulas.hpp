@@ -41,7 +41,7 @@ namespace omath::iw_engine
     inline Mat4x4 CalcPerspectiveProjectionMatrix(const float fieldOfView, const float aspectRatio, const float near,
                                                   const float far)
     {
-        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
+        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f) * 0.75f;
 
         return
         {
