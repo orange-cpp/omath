@@ -9,12 +9,20 @@ option(OMATH_BUILD_TESTS "Build unit tests" OFF)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
-
+option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types to imgui types" ON)
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/Vector3.cpp)
 else()
     add_library(omath STATIC source/Matrix.cpp)
+endif()
+
+if (OMATH_IMGUI_INTEGRATION)
+    target_compile_definitions(omath PUBLIC OMATH_IMGUI_INTEGRATION)
+endif()
+
+if (OMATH_USE_AVX2)
+    target_compile_definitions(omath PUBLIC OMATH_USE_AVX2)
 endif()
 
 set_target_properties(omath PROPERTIES
@@ -31,9 +39,6 @@ endif()
 
 target_compile_features(omath PUBLIC cxx_std_23)
 
-if (OMATH_USE_AVX2)
-    target_compile_definitions(omath PUBLIC OMATH_USE_AVX2)
-endif()
 
 add_subdirectory(source)
 

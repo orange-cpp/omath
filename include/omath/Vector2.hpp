@@ -3,13 +3,19 @@
 //
 
 #pragma once
-#include <tuple>
 #include <cmath>
+#include <tuple>
+
+#ifdef OMATH_IMGUI_INTEGRATION
+    class ImVec2;
+#endif
+
 
 namespace omath
 {
 
-    template<class Type> requires std::is_arithmetic_v<Type>
+    template<class Type>
+        requires std::is_arithmetic_v<Type>
     class Vector2
     {
     public:
@@ -19,7 +25,9 @@ namespace omath
         // Constructors
         constexpr Vector2() = default;
 
-        constexpr Vector2(const Type& x, const Type& y) : x(x), y(y) {}
+        constexpr Vector2(const Type& x, const Type& y) : x(x), y(y)
+        {
+        }
 
         // Equality operators
         [[nodiscard]]
@@ -145,7 +153,7 @@ namespace omath
 
         constexpr Vector2& Abs()
         {
-            //FIXME: Replace with std::abs, if it will become constexprable
+            // FIXME: Replace with std::abs, if it will become constexprable
             x = x < 0 ? -x : x;
             y = y < 0 ? -y : y;
             return *this;
@@ -188,7 +196,7 @@ namespace omath
             return {x / fl, y / fl};
         }
 
-         // Sum of elements
+        // Sum of elements
         [[nodiscard]] constexpr Type Sum() const
         {
             return x + y;
@@ -199,5 +207,19 @@ namespace omath
         {
             return std::make_tuple(x, y);
         }
+
+#ifdef OMATH_IMGUI_INTEGRATION
+        [[nodiscard]]
+        const ImVec2& ToImVec2() const
+        {
+            return *reinterpret_cast<const ImVec2*>(this);
+        }
+
+        [[nodiscard]]
+        ImVec2& ToImVec2()
+        {
+            return *reinterpret_cast<ImVec2*>(this);
+        }
+#endif
     };
-}
+} // namespace omath
