@@ -72,8 +72,11 @@ TEST(UnitTestProjection, IsPointOnScreen)
 With `omath/projection` module you can achieve simple ESP hack for powered by Source/Unreal/Unity engine games, like [Apex Legends](https://store.steampowered.com/app/1172470/Apex_Legends/).
 
 ![banner](https://i.imgur.com/lcJrfcZ.png)
-![Watch Video](https://youtu.be/lM_NJ1yCunw?si=5E87OrQMeypxSJ3E)
+Or for InfinityWard Engine based games. Like Call of Duty Black Ops 2!
+![banner](https://i.imgur.com/F8dmdoo.png)
 
+Or even advanced projectile aimbot
+[Watch Video](https://youtu.be/lM_NJ1yCunw?si=5E87OrQMeypxSJ3E)
 </details>
 
 ## 🫵🏻 Contributing
