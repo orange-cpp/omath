@@ -6,9 +6,6 @@
 #include <omath/Vector3.hpp>
 #include <algorithm>
 
-#ifdef OMATH_IMGUI_INTEGRATION
-    class ImVec4;
-#endif
 
 namespace omath
 {
@@ -161,15 +158,15 @@ namespace omath
 
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
-        constexpr ImVec4& ToImVec4() const
+        ImVec4 ToImVec4() const
         {
-            return *reinterpret_cast<const ImVec4*>(this);
-        }
-
-        [[nodiscard]]
-        constexpr ImVec2& ToImVec2()
-        {
-            return *reinterpret_cast<ImVec4*>(this);
+            return
+            {
+                static_cast<float>(this->x),
+                static_cast<float>(this->y),
+                static_cast<float>(this->z),
+                static_cast<float>(w),
+            };
         }
 #endif
     };
