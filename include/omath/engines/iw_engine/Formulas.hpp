@@ -1,10 +1,11 @@
 //
-// Created by Orange on 12/4/2024.
+// Created by Vlad on 3/17/2025.
 //
+
 #pragma once
 #include "Constants.hpp"
 
-namespace omath::source_engine
+namespace omath::iw_engine
 {
     [[nodiscard]]
     inline Vector3<float> ForwardVector(const ViewAngles& angles)
@@ -42,15 +43,14 @@ namespace omath::source_engine
     {
         // NOTE: Need magic number to fix fov calculation, since source inherit Quake proj matrix calculation
         constexpr auto kMultiplyFactor = 0.75f;
-
         const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f) * kMultiplyFactor;
 
-        return {
-                {1.f / (aspectRatio * fovHalfTan), 0, 0, 0},
-                {0, 1.f / (fovHalfTan), 0, 0},
-                {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
-                {0, 0, 1, 0},
-
+        return
+        {
+            {1.f / (aspectRatio * fovHalfTan), 0, 0, 0},
+            {0, 1.f / fovHalfTan, 0, 0},
+            {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
+            {0, 0, 1, 0},
         };
     }
 } // namespace omath::source
