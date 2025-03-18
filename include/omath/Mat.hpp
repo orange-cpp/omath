@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <utility>
 #include "Vector3.hpp"
+#include <iomanip>
 
 namespace omath
 {
@@ -296,15 +297,20 @@ namespace omath
         std::string ToString() const noexcept
         {
             std::ostringstream oss;
+            oss << "[[";
+
             for (size_t i = 0; i < Rows; ++i)
             {
+                if (i > 0)
+                    oss << " [";
+
                 for (size_t j = 0; j < Columns; ++j)
                 {
-                    oss << At(i, j);
+                    oss << std::setw(9) << std::fixed << std::setprecision(3) << At(i, j);
                     if (j != Columns - 1)
-                        oss << ' ';
+                        oss << ", ";
                 }
-                oss << '\n';
+                oss << (i == Rows - 1 ? "]]" : "]\n");
             }
             return oss.str();
         }

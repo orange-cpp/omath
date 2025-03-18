@@ -127,7 +127,7 @@ TEST_F(UnitTestMat, ToString)
 {
     const std::string str = m2.ToString();
     EXPECT_FALSE(str.empty());
-    EXPECT_EQ(str, "1 2\n3 4\n");
+    EXPECT_EQ(str, "[[    1.000,     2.000]\n [    3.000,     4.000]]");
 }
 
 // Test assignment operators
