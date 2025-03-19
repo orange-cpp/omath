@@ -13,7 +13,7 @@ option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types 
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" ON)
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
-    add_library(omath SHARED source/Vector3.cpp)
+    add_library(omath SHARED source/Matrix.cpp)
 else()
     add_library(omath STATIC source/Matrix.cpp)
 endif()
