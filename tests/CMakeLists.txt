@@ -35,6 +35,6 @@ set_target_properties(unit-tests PROPERTIES
         CXX_STANDARD_REQUIRED ON)
 
 
-target_link_libraries(unit-tests PRIVATE gtest gtest_main omath)
+target_link_libraries(unit-tests PRIVATE gtest gtest_main omath::omath)
 
 gtest_discover_tests(unit-tests)
