@@ -17,6 +17,8 @@ else()
     add_library(omath STATIC source/Matrix.cpp)
 endif()
 
+add_library(omath::omath ALIAS omath)
+
 if (OMATH_IMGUI_INTEGRATION)
     target_compile_definitions(omath PUBLIC OMATH_IMGUI_INTEGRATION)
 endif()
