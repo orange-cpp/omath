@@ -10,9 +10,10 @@ option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force co
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
 option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types to imgui types" OFF)
+option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
-    add_library(omath SHARED source/Vector3.cpp)
+    add_library(omath SHARED source/Matrix.cpp)
 else()
     add_library(omath STATIC source/Matrix.cpp)
 endif()
@@ -47,6 +48,10 @@ add_subdirectory(source)
 if(OMATH_BUILD_TESTS)
     add_subdirectory(extlibs)
     add_subdirectory(tests)
+endif()
+
+if (OMATH_BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND OMATH_THREAT_WARNING_AS_ERROR)

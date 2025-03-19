@@ -1,0 +1,4 @@
+project(examples)
+
+add_executable(ExampleProjectionMatrixBuilder ExampleProjMatBuilder.cpp)
+target_link_libraries(ExampleProjectionMatrixBuilder PRIVATE omath::omath)
