@@ -2,7 +2,7 @@
 // Created by Orange on 11/13/2024.
 //
 #pragma once
-#include "omath/Vector3.hpp"
+#include "omath/vector3.hpp"
 
 namespace omath
 {

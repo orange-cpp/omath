@@ -2,7 +2,7 @@
 // Created by Orange on 12/4/2024.
 //
 #pragma once
-#include "Constants.hpp"
+#include "omath/engines/source_engine/constants.hpp"
 
 namespace omath::source_engine
 {

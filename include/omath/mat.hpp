@@ -4,11 +4,11 @@
 #pragma once
 #include <algorithm>
 #include <array>
+#include <iomanip>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
-#include "Vector3.hpp"
-#include <iomanip>
+#include "omath/vector3.hpp"
 
 namespace omath
 {

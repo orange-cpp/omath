@@ -1,8 +1,8 @@
 //
 // Created by Orange on 12/4/2024.
 //
-#include "omath/engines/source_engine/Camera.hpp"
-#include "omath/engines/source_engine/Formulas.hpp"
+#include "omath/engines/source_engine/camera.hpp"
+#include "omath/engines/source_engine/formulas.hpp"
 
 
 namespace omath::source_engine

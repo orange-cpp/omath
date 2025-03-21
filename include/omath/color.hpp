@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "omath/Vector3.hpp"
 #include <cstdint>
-#include "omath/Vector4.hpp"
+#include "omath/vector3.hpp"
+#include "omath/vector4.hpp"
 
 namespace omath
 {

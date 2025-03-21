@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include <omath/Vector3.hpp>
 #include <algorithm>
+#include <omath/vector3.hpp>
 
 
 namespace omath

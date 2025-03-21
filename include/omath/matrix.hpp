@@ -2,7 +2,7 @@
 #include <initializer_list>
 #include <memory>
 #include <string>
-#include "Vector3.hpp"
+#include "omath/vector3.hpp"
 
 namespace omath
 {
