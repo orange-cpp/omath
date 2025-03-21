@@ -3,8 +3,8 @@
 //
 #include <complex>
 #include <gtest/gtest.h>
-#include <omath/engines/source_engine/Camera.hpp>
-#include <omath/projection/Camera.hpp>
+#include <omath/engines/source_engine/camera.hpp>
+#include <omath/projection/camera.hpp>
 #include <print>
 
 TEST(UnitTestProjection, Projection)

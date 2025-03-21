@@ -1,7 +1,7 @@
 // UnitTestMat.cpp
 #include <gtest/gtest.h>
-#include "omath/Mat.hpp"
-#include "omath/Vector3.hpp"
+#include "omath/mat.hpp"
+#include "omath/vector3.hpp"
 
 using namespace omath;
 

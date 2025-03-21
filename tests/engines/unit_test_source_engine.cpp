@@ -2,9 +2,9 @@
 // Created by Orange on 11/23/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/engines/source_engine/Camera.hpp>
-#include <omath/engines/source_engine/Constants.hpp>
-#include <omath/engines/source_engine/Formulas.hpp>
+#include <omath/engines/source_engine/camera.hpp>
+#include <omath/engines/source_engine/constants.hpp>
+#include <omath/engines/source_engine/formulas.hpp>
 
 
 TEST(UnitTestSourceEngine, ForwardVector)

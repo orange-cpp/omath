@@ -2,9 +2,9 @@
 // Created by Orange on 11/23/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/engines/opengl_engine//Camera.hpp>
-#include <omath/engines/opengl_engine/Constants.hpp>
-#include <omath/engines/opengl_engine/Formulas.hpp>
+#include <omath/engines/opengl_engine/camera.hpp>
+#include <omath/engines/opengl_engine/constants.hpp>
+#include <omath/engines/opengl_engine/formulas.hpp>
 
 
 TEST(UnitTestOpenGL, ForwardVector)
