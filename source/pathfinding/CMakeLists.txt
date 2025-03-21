@@ -1,1 +1,1 @@
-target_sources(omath PRIVATE NavigationMesh.cpp Astar.cpp)
+target_sources(omath PRIVATE navigation_mesh.cpp a_star.cpp)
