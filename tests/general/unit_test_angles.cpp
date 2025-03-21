@@ -2,8 +2,7 @@
 // Created by Orange on 11/30/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/Angles.hpp>
-#include <omath/Angle.hpp>
+#include <omath/angles.hpp>
 
 TEST(UnitTestAngles, RadiansToDeg)
 {

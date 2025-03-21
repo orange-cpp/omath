@@ -6,8 +6,8 @@
 //
 
 #include <gtest/gtest.h>
-#include <omath/Vector4.hpp>
 #include <limits> // For std::numeric_limits
+#include <omath/vector4.hpp>
 
 using namespace omath;
 

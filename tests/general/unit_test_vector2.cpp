@@ -2,10 +2,10 @@
 // Created by Vlad on 02.09.2024.
 //
 
-#include <gtest/gtest.h>
-#include <omath/Vector2.hpp>
-#include <cmath> // For std::isinf and std::isnan
 #include <cfloat> // For FLT_MAX and FLT_MIN
+#include <cmath> // For std::isinf and std::isnan
+#include <gtest/gtest.h>
+#include <omath/vector2.hpp>
 
 using namespace omath;
 
