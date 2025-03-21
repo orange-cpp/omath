@@ -2,9 +2,9 @@
 // Created by Vlad on 2/23/2025.
 //
 #pragma once
+#include "omath/projectile_prediction/projectile.hpp"
 #include "omath/projectile_prediction/target.hpp"
 #include "omath/vector3.hpp"
-#include "projectile.hpp"
 
 
 namespace omath::projectile_prediction
