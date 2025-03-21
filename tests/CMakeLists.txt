@@ -4,25 +4,25 @@ project(unit-tests)
 
 include(GoogleTest)
 add_executable(unit-tests
-        general/UnitTestPrediction.cpp
-        general/UnitTestMatrix.cpp
-        general/UnitTestMat.cpp
-        general/UnitTestAstar.cpp
-        general/UnitTestProjection.cpp
-        general/UnitTestVector3.cpp
-        general/UnitTestVector2.cpp
-        general/UnitTestColor.cpp
-        general/UnitTestVector4.cpp
-        general/UnitTestLineTrace.cpp
-        general/UnitTestAngles.cpp
-        general/UnitTestViewAngles.cpp
-        general/UnitTestAngle.cpp
-        general/UnitTestTriangle.cpp
+        general/unit_test_prediction.cpp
+        general/unit_test_matrix.cpp
+        general/unit_test_mat.cpp
+        general/unit_test_a_star.cpp
+        general/unit_test_projection.cpp
+        general/unit_test_vector3.cpp
+        general/unit_test_vector2.cpp
+        general/unit_test_color.cpp
+        general/unit_test_vector4.cpp
+        general/unit_test_line_trace.cpp
+        general/unit_test_angles.cpp
+        general/unit_test_view_angles.cpp
+        general/unit_test_angle.cpp
+        general/unit_test_triangle.cpp
 
-        engines/UnitTestOpenGL.cpp
-        engines/UnitTestUnityEngine.cpp
-        engines/UnitTestSourceEngine.cpp
-        engines/UnitTestIwEngine.cpp
+        engines/unit_test_open_gl.cpp
+        engines/unit_test_unity_engine.cpp
+        engines/unit_test_source_engine.cpp
+        engines/unit_test_iw_engine.cpp
 
 )
 
