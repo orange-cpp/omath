@@ -1,5 +1,5 @@
 target_sources(omath PRIVATE
-        Matrix.cpp
+        matrix.cpp
         color.cpp
 )
 
