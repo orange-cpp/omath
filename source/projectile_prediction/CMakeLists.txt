@@ -1,1 +1,1 @@
-target_sources(omath PRIVATE ProjPredEngineLegacy.cpp Projectile.cpp Target.cpp ProjPredEngineAVX2.cpp ProjPredEngine.cpp)
+target_sources(omath PRIVATE proj_pred_engine_legacy.cpp projectile.cpp target.cpp proj_pred_engine_avx2.cpp proj_pred_engine.cpp)

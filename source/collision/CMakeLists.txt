@@ -1,3 +1,3 @@
 target_sources(omath PRIVATE
-        LineTracer.cpp
+        line_tracer.cpp
 )
