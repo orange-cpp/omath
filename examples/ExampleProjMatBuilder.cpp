@@ -1,11 +1,11 @@
 //
 // Created by Vlad on 3/19/2025.
 //
+
+
 #include <iostream>
-#include <omath/engines/opengl_engine/Camera.hpp>
-#include <omath/engines/opengl_engine/Formulas.hpp>
-#include <omath/projection/Camera.hpp>
 #include <print>
+#include <omath/engines/opengl_engine/formulas.hpp>
 
 
 int main()
