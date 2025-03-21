@@ -6,7 +6,7 @@
 #include <omath/Vector3.hpp>
 #include <omath/Mat.hpp>
 #include <omath/Angle.hpp>
-#include <omath/ViewAngles.hpp>
+#include <omath/view_angles.hpp>
 
 namespace omath::source_engine
 {

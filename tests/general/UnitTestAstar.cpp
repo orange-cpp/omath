@@ -2,7 +2,7 @@
 // Created by Vlad on 18.08.2024.
 //
 #include <gtest/gtest.h>
-#include <omath/pathfinding/Astar.hpp>
+#include <omath/pathfinding/a_star.hpp>
 
 
 TEST(UnitTestAstar, FindingRightPath)
