@@ -7,7 +7,7 @@
 #include <expected>
 #include <omath/Mat.hpp>
 #include <omath/Vector3.hpp>
-#include "ErrorCodes.hpp"
+#include "error_codes.hpp"
 #include <omath/Angle.hpp>
 #include <type_traits>
 

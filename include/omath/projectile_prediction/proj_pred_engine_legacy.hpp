@@ -6,7 +6,7 @@
 
 #include <optional>
 #include "omath/Vector3.hpp"
-#include "omath/projectile_prediction/ProjPredEngine.hpp"
+#include "omath/projectile_prediction/proj_pred_engine.hpp"
 #include "omath/projectile_prediction/Projectile.hpp"
 #include "omath/projectile_prediction/Target.hpp"
 

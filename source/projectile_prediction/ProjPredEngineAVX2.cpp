@@ -1,7 +1,7 @@
 //
 // Created by Vlad on 2/23/2025.
 //
-#include "omath/projectile_prediction/ProjPredEngineAVX2.hpp"
+#include "omath/projectile_prediction/proj_pred_engine_avx2.hpp"
 #include "source_location"
 
 namespace omath::projectile_prediction

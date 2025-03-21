@@ -1,7 +1,7 @@
 //
 // Created by Vlad on 28.07.2024.
 //
-#include "omath/pathfinding/NavigationMesh.hpp"
+#include "omath/pathfinding/navigation_mesh.hpp"
 
 #include <stdexcept>
 #include <algorithm>

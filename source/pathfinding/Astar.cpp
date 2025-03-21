@@ -1,7 +1,7 @@
 //
 // Created by Vlad on 28.07.2024.
 //
-#include "omath/pathfinding/Astar.hpp"
+#include "omath/pathfinding/a_star.hpp"
 
 #include <algorithm>
 #include <optional>

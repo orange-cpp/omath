@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "omath/collision/LineTracer.hpp"
+#include "omath/collision/line_tracer.hpp"
 #include "omath/Triangle.hpp"
 #include "omath/Vector3.hpp"
 

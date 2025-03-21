@@ -1,4 +1,4 @@
-#include "omath/projectile_prediction/ProjPredEngineLegacy.hpp"
+#include "omath/projectile_prediction/proj_pred_engine_legacy.hpp"
 #include <cmath>
 #include <omath/Angles.hpp>
 

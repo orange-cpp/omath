@@ -21,4 +21,4 @@ namespace omath::iw_engine
 
     [[nodiscard]]
     Mat4x4 CalcPerspectiveProjectionMatrix(float fieldOfView, float aspectRatio, float near, float far);
-} // namespace omath::source
+} // namespace omath::iw_engine
