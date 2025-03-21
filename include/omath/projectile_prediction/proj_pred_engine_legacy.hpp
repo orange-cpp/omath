@@ -5,10 +5,10 @@
 #pragma once
 
 #include <optional>
-#include "omath/Vector3.hpp"
 #include "omath/projectile_prediction/proj_pred_engine.hpp"
-#include "omath/projectile_prediction/Projectile.hpp"
-#include "omath/projectile_prediction/Target.hpp"
+#include "omath/projectile_prediction/projectile.hpp"
+#include "omath/projectile_prediction/target.hpp"
+#include "omath/vector3.hpp"
 
 
 namespace omath::projectile_prediction

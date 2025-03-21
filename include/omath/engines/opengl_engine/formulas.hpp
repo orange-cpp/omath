@@ -2,7 +2,7 @@
 // Created by Orange on 12/23/2024.
 //
 #pragma once
-#include "Constants.hpp"
+#include "omath/engines/opengl_engine/constants.hpp"
 
 
 namespace omath::opengl_engine

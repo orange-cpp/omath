@@ -4,17 +4,17 @@
 
 #pragma once
 
-#include "omath/Vector3.hpp"
 #include <expected>
-#include <vector>
 #include <string>
+#include <vector>
+#include "omath/vector3.hpp"
 
 namespace omath::pathfinding
 {
 
     enum Error
     {
-        
+
     };
 
     class NavigationMesh final

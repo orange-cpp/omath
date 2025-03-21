@@ -4,12 +4,11 @@
 
 #pragma once
 
-#include "Vector2.hpp"
 #include <cstdint>
 #include <expected>
 #include <functional>
-#include "omath/Angle.hpp"
-#include "omath/Vector2.hpp"
+#include "omath/angle.hpp"
+#include "omath/vector2.hpp"
 
 namespace omath
 {

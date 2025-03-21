@@ -3,8 +3,8 @@
 //
 #include "omath/pathfinding/navigation_mesh.hpp"
 
-#include <stdexcept>
 #include <algorithm>
+#include <stdexcept>
 namespace omath::pathfinding
 {
     std::expected<Vector3<float>, std::string> NavigationMesh::GetClosestVertex(const Vector3<float> &point) const

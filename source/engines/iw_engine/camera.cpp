@@ -1,8 +1,8 @@
 //
 // Created by Vlad on 3/17/2025.
 //
-#include "omath/engines/iw_engine/Camera.hpp"
-#include "omath/engines/iw_engine/Formulas.hpp"
+#include "omath/engines/iw_engine/camera.hpp"
+#include "omath/engines/iw_engine/formulas.hpp"
 
 namespace omath::iw_engine
 {

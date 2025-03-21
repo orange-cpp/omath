@@ -2,8 +2,8 @@
 // Created by Orange on 12/4/2024.
 //
 #pragma once
-#include "Constants.hpp"
-#include "omath/projection/Camera.hpp"
+#include "omath/engines/source_engine/constants.hpp"
+#include "omath/projection/camera.hpp"
 
 namespace omath::source_engine
 {

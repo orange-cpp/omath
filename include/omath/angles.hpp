@@ -3,8 +3,8 @@
 //
 
 #pragma once
-#include <numbers>
 #include <cmath>
+#include <numbers>
 
 namespace omath::angles
 {

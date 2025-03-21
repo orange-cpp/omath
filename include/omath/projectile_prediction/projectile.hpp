@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "omath/Vector3.hpp"
+#include "omath/vector3.hpp"
 
 namespace omath::projectile_prediction
 {

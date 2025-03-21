@@ -3,8 +3,8 @@
 //
 
 #pragma once
-#include "Constants.hpp"
-#include "omath/projection/Camera.hpp"
+#include "omath/engines/iw_engine/constants.hpp"
+#include "omath/projection/camera.hpp"
 
 namespace omath::iw_engine
 {

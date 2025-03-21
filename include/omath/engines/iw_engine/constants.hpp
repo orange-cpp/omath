@@ -3,9 +3,9 @@
 //
 
 #pragma once
-#include <omath/Vector3.hpp>
-#include <omath/Mat.hpp>
-#include <omath/Angle.hpp>
+#include <omath/vector3.hpp>
+#include <omath/mat.hpp>
+#include <omath/angle.hpp>
 #include <omath/view_angles.hpp>
 
 namespace omath::iw_engine
