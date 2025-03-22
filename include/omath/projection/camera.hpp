@@ -119,11 +119,12 @@ namespace omath::projection
             auto normalizedCords = WorldToViewPort(worldPosition);
 
             if (!normalizedCords.has_value())
-                return normalizedCords;
+                return std::unexpected{normalizedCords.error()};
 
 
             return NdcToScreenPosition(*normalizedCords);
         }
+
         [[nodiscard]] std::expected<Vector3<float>, Error> WorldToViewPort(const Vector3<float>& worldPosition) const
         {
             auto projected = GetViewProjectionMatrix() *
