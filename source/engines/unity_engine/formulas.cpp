@@ -40,7 +40,6 @@ namespace omath::unity_engine
                 {0, 1.f / (fovHalfTan), 0, 0},
                 {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
                 {0, 0, -1.f, 0},
-
         };
     }
 } // namespace omath::unity_engine
