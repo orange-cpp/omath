@@ -36,8 +36,8 @@ namespace omath::projection
             m_viewPort(viewPort), m_fieldOfView(fov), m_farPlaneDistance(far), m_nearPlaneDistance(near),
             m_viewAngles(viewAngles), m_origin(position)
         {
-
         }
+
     protected:
         virtual void LookAt(const Vector3<float>& target) = 0;
 
@@ -49,8 +49,8 @@ namespace omath::projection
         {
             return CalcProjectionMatrix() * CalcViewMatrix();
         }
-    public:
 
+    public:
         [[nodiscard]] const Mat4x4Type& GetViewProjectionMatrix() const
         {
             if (!m_viewProjectionMatrix.has_value())
@@ -116,10 +116,18 @@ namespace omath::projection
 
         [[nodiscard]] std::expected<Vector3<float>, Error> WorldToScreen(const Vector3<float>& worldPosition) const
         {
-            const auto& viewProjMatrix = GetViewProjectionMatrix();
-            const auto cameraCord = CalcViewMatrix() * MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);;
+            auto normalizedCords = WorldToViewPort(worldPosition);
 
-            auto projected = CalcProjectionMatrix() * cameraCord;
+            if (!normalizedCords.has_value())
+                return normalizedCords;
+
+
+            return NdcToScreenPosition(*normalizedCords);
+        }
+        [[nodiscard]] std::expected<Vector3<float>, Error> WorldToViewPort(const Vector3<float>& worldPosition) const
+        {
+            auto projected = GetViewProjectionMatrix() *
+                                   MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);
 
             if (projected.At(3, 0) == 0.0f)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
@@ -129,10 +137,7 @@ namespace omath::projection
             if (IsNdcOutOfBounds(projected))
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
-            const auto screenPositionX = (projected.At(0,0)+1.f) / 2.f * m_viewPort.m_width;
-            const auto screenPositionY = (projected.At(1,0)+1.f) / 2.f * m_viewPort.m_height;
-
-            return Vector3{screenPositionX, screenPositionY, projected.At(2,0)};
+            return Vector3<float>{projected.At(0, 0), projected.At(1, 0), projected.At(2, 0)};
         }
 
     protected:
@@ -153,7 +158,17 @@ namespace omath::projection
         [[nodiscard]]
         constexpr static bool IsNdcOutOfBounds(const Type& ndc)
         {
-            return std::ranges::any_of( ndc.RawArray(), [](const auto& val) { return val < -1 || val > 1; });
+            return std::ranges::any_of(ndc.RawArray(), [](const auto& val) { return val < -1 || val > 1; });
+        }
+
+        [[nodiscard]] Vector3<float> NdcToScreenPosition(const Vector3<float>& ndc) const
+        {
+            return
+            {
+                (ndc.x + 1.f) / 2.f * m_viewPort.m_width,
+                (1.f - ndc.y) / 2.f * m_viewPort.m_height,
+                ndc.z
+            };
         }
     };
 } // namespace omath::projection

@@ -26,10 +26,10 @@ namespace omath::iw_engine
 
         return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
-    
+
     Mat4x4 CalcViewMatrix(const ViewAngles& angles, const Vector3<float>& cam_origin)
     {
-        return MatCameraView(ForwardVector(angles), RightVector(angles), -UpVector(angles), cam_origin);
+        return MatCameraView(ForwardVector(angles), RightVector(angles), UpVector(angles), cam_origin);
     }
 
     Mat4x4 CalcPerspectiveProjectionMatrix(const float fieldOfView, const float aspectRatio, const float near,
