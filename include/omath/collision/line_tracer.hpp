@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include "omath/Vector3.hpp"
-#include "omath/Triangle.hpp"
+#include "omath/triangle.hpp"
+#include "omath/vector3.hpp"
 
 namespace omath::collision
 {
