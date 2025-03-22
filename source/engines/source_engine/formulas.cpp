@@ -30,6 +30,7 @@ namespace omath::source_engine
     {
         return MatCameraView(ForwardVector(angles), RightVector(angles), UpVector(angles), cam_origin);
     }
+
     Mat4x4 CalcPerspectiveProjectionMatrix(const float fieldOfView, const float aspectRatio, const float near,
                                            const float far)
     {
@@ -43,7 +44,6 @@ namespace omath::source_engine
                 {0, 1.f / (fovHalfTan), 0, 0},
                 {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
                 {0, 0, 1, 0},
-
         };
     }
 } // namespace omath::source_engine

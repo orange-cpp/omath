@@ -47,6 +47,26 @@ TEST(UnitTestSourceEngine, ProjectTargetMovedFromCamera)
     }
 }
 
+TEST(UnitTestSourceEngine, ProjectTargetMovedUp)
+{
+    constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    auto prev = 1080.f;
+    for (float distance = 0.0f; distance < 10.f; distance += 1.f)
+    {
+        const auto projected = cam.WorldToScreen({100.f, 0, distance});
+        EXPECT_TRUE(projected.has_value());
+
+        if (!projected.has_value())
+            continue;
+
+        EXPECT_TRUE(projected->y < prev);
+
+        prev = projected->y;
+    }
+}
+
 TEST(UnitTestSourceEngine, CameraSetAndGetFov)
 {
     constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
