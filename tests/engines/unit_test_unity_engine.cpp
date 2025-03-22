@@ -1,9 +1,6 @@
 //
 // Created by Orange on 11/27/2024.
 //
-//
-// Created by Orange on 11/23/2024.
-//
 #include <gtest/gtest.h>
 #include <omath/engines/unity_engine/camera.hpp>
 #include <omath/engines/unity_engine/constants.hpp>
