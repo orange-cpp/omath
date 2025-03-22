@@ -1,13 +1,13 @@
 //
-// Created by Vlad on 3/19/2025.
+// Created by Vlad on 3/22/2025.
 //
-#include "omath/engines/opengl_engine/formulas.hpp"
+#include "omath/engines/unity_engine/formulas.hpp"
 
 
-namespace omath::opengl_engine
+
+namespace omath::unity_engine
 {
-
-    Vector3<float> ForwardVector(const ViewAngles& angles)
+    Vector3<float> unity_engine::ForwardVector(const ViewAngles& angles)
     {
         const auto vec = MatRotation(angles) * MatColumnFromVector(kAbsForward);
 
@@ -27,8 +27,8 @@ namespace omath::opengl_engine
     }
     Mat4x4 CalcViewMatrix(const ViewAngles& angles, const Vector3<float>& cam_origin)
     {
-        return MatCameraView<float, MatStoreType::COLUMN_MAJOR>(-ForwardVector(angles), RightVector(angles),
-                                                                UpVector(angles), cam_origin);
+        return MatCameraView<float, MatStoreType::ROW_MAJOR>(ForwardVector(angles), RightVector(angles),
+                                                             UpVector(angles), cam_origin);
     }
     Mat4x4 CalcPerspectiveProjectionMatrix(const float fieldOfView, const float aspectRatio, const float near,
                                            const float far)
@@ -38,8 +38,8 @@ namespace omath::opengl_engine
         return {
                 {1.f / (aspectRatio * fovHalfTan), 0, 0, 0},
                 {0, 1.f / (fovHalfTan), 0, 0},
-                {0, 0, -(far + near) / (far - near), -(2.f * far * near) / (far - near)},
-                {0, 0, -1, 0},
+                {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
+                {0, 0, -1.f, 0},
         };
     }
-} // namespace omath::opengl_engine
+} // namespace omath::unity_engine
