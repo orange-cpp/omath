@@ -55,8 +55,6 @@ TEST(UnitTestUnityEngine, Project)
 
     const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
     const auto proj = cam.WorldToScreen({0.f, 2.f, 10.f});
-    std::println("Unity projected: {}, {}", proj->x, proj->y);
-    std::println("{}", cam.GetViewProjectionMatrix().ToString());
 }
 
 TEST(UnitTestUnityEngine, CameraSetAndGetFov)
