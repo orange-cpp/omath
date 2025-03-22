@@ -5,8 +5,8 @@
 #pragma once
 
 #include <expected>
-#include <omath/Angle.hpp>
-#include <omath/Mat.hpp>
+#include <omath/angle.hpp>
+#include <omath/mat.hpp>
 #include <omath/vector3.hpp>
 #include <type_traits>
 #include "omath/projection/error_codes.hpp"
