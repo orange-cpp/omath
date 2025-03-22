@@ -117,8 +117,9 @@ namespace omath::projection
         [[nodiscard]] std::expected<Vector3<float>, Error> WorldToScreen(const Vector3<float>& worldPosition) const
         {
             const auto& viewProjMatrix = GetViewProjectionMatrix();
+            const auto cameraCord = CalcViewMatrix() * MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);;
 
-            auto projected = viewProjMatrix * MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);
+            auto projected = CalcProjectionMatrix() * cameraCord;
 
             if (projected.At(3, 0) == 0.0f)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
@@ -129,7 +130,7 @@ namespace omath::projection
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
             const auto screenPositionX = (projected.At(0,0)+1.f) / 2.f * m_viewPort.m_width;
-            const auto screenPositionY = (-projected.At(1,0)+1) / 2.f * m_viewPort.m_height;
+            const auto screenPositionY = (projected.At(1,0)+1.f) / 2.f * m_viewPort.m_height;
 
             return Vector3{screenPositionX, screenPositionY, projected.At(2,0)};
         }

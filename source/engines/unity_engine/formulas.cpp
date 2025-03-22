@@ -4,6 +4,7 @@
 #include "omath/engines/unity_engine/formulas.hpp"
 
 
+
 namespace omath::unity_engine
 {
     Vector3<float> unity_engine::ForwardVector(const ViewAngles& angles)
@@ -38,7 +39,7 @@ namespace omath::unity_engine
                 {1.f / (aspectRatio * fovHalfTan), 0, 0, 0},
                 {0, 1.f / (fovHalfTan), 0, 0},
                 {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
-                {0, 0, 1, 0},
+                {0, 0, 1.f, 0},
 
         };
     }
