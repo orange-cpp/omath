@@ -430,4 +430,30 @@ namespace omath
     {
         return MatRotationAxisZ(angles.yaw) * MatRotationAxisY(angles.pitch) * MatRotationAxisX(angles.roll);
     }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    Mat<4, 4, Type, St> MatPerspectiveLeftHanded(const float fieldOfView, const float aspectRatio, const float near,
+                                                 const float far) noexcept
+    {
+        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
+
+        return {{1.f / (aspectRatio * fovHalfTan), 0.f, 0.f, 0.f},
+                {0.f, 1.f / fovHalfTan, 0.f, 0.f},
+                {0.f, 0.f, (far + near) / (far - near), -(2.f * near * far) / (far - near)},
+                {0.f, 0.f, 1.f, 0.f}};
+    }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    Mat<4, 4, Type, St> MatPerspectiveRightHanded(const float fieldOfView, const float aspectRatio, const float near,
+                                                  const float far) noexcept
+    {
+        const float fovHalfTan = std::tan(angles::DegreesToRadians(fieldOfView) / 2.f);
+
+        return {{1.f / (aspectRatio * fovHalfTan), 0.f, 0.f, 0.f},
+                {0.f, 1.f / fovHalfTan, 0.f, 0.f},
+                {0.f, 0.f, -(far + near) / (far - near), -(2.f * near * far) / (far - near)},
+                {0.f, 0.f, -1.f, 0.f}};
+    }
 } // namespace omath
