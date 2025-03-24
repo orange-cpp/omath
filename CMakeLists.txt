@@ -22,6 +22,16 @@ add_library(omath::omath ALIAS omath)
 
 if (OMATH_IMGUI_INTEGRATION)
     target_compile_definitions(omath PUBLIC OMATH_IMGUI_INTEGRATION)
+
+    if(TARGET imgui)
+        target_link_libraries(omath PUBLIC imgui)
+        install(TARGETS imgui
+                EXPORT omathTargets
+                ARCHIVE DESTINATION lib
+                LIBRARY DESTINATION lib
+                RUNTIME DESTINATION bin)
+    endif()
+
 endif()
 
 if (OMATH_USE_AVX2)
