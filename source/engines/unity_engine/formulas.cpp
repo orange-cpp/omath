@@ -7,7 +7,7 @@
 
 namespace omath::unity_engine
 {
-    Vector3<float> unity_engine::ForwardVector(const ViewAngles& angles)
+    Vector3<float> ForwardVector(const ViewAngles& angles)
     {
         const auto vec = MatRotation(angles) * MatColumnFromVector(kAbsForward);
 
