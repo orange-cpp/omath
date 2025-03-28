@@ -11,6 +11,7 @@ option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
 option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types to imgui types" OFF)
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
+option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY  "Force Omath to link static runtime" OFF)
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/Matrix.cpp)
@@ -45,6 +46,12 @@ set_target_properties(omath PROPERTIES
         UNITY_BUILD_BATCH_SIZE 20
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON)
+
+if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
+    set_target_properties(omath PROPERTIES
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+    )
+endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(omath PRIVATE -mavx2 -mfma)
