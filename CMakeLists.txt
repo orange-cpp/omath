@@ -24,6 +24,7 @@ add_library(omath::omath ALIAS omath)
 if (OMATH_IMGUI_INTEGRATION)
     target_compile_definitions(omath PUBLIC OMATH_IMGUI_INTEGRATION)
 
+    # IMGUI is being linked as submodule
     if(TARGET imgui)
         target_link_libraries(omath PUBLIC imgui)
         install(TARGETS imgui
@@ -31,6 +32,10 @@ if (OMATH_IMGUI_INTEGRATION)
                 ARCHIVE DESTINATION lib
                 LIBRARY DESTINATION lib
                 RUNTIME DESTINATION bin)
+    else()
+        # Assume that IMGUI linked via VCPKG.
+        find_package(imgui CONFIG REQUIRED)
+        target_link_libraries(omath PUBLIC imgui::imgui)
     endif()
 
 endif()
