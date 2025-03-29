@@ -63,9 +63,9 @@ TEST_F(UnitTestColor, FromHSV)
 TEST_F(UnitTestColor, ToHSV)
 {
     HSV hsv = color1.ToHSV(); // Red color
-    EXPECT_FLOAT_EQ(hsv.m_hue, 0.0f);
-    EXPECT_FLOAT_EQ(hsv.m_saturation, 1.0f);
-    EXPECT_FLOAT_EQ(hsv.m_value, 1.0f);
+    EXPECT_FLOAT_EQ(hsv.hue, 0.0f);
+    EXPECT_FLOAT_EQ(hsv.saturation, 1.0f);
+    EXPECT_FLOAT_EQ(hsv.value, 1.0f);
 }
 
 // Test color blending
@@ -106,7 +106,7 @@ TEST_F(UnitTestColor, BlendVector3)
 {
     constexpr Color v1(1.0f, 0.0f, 0.0f, 1.f); // Red
     constexpr Color v2(0.0f, 1.0f, 0.0f, 1.f); // Green
-    constexpr Color blended = Blend(v1, v2, 0.5f);
+    constexpr Color blended = v1.Blend(v2, 0.5f);
     EXPECT_FLOAT_EQ(blended.x, 0.5f);
     EXPECT_FLOAT_EQ(blended.y, 0.5f);
     EXPECT_FLOAT_EQ(blended.z, 0.0f);
