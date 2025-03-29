@@ -118,7 +118,29 @@ namespace omath
         {
             Clamp(0.f, 1.f);
         }
+        consteval void SetHue(const float hue)
+        {
+            auto hsv = ToHSV();
+            hsv.hue = hue;
 
+            *this = FromHSV(hsv);
+        }
+
+        consteval void SetSaturation(const float saturation)
+        {
+            auto hsv = ToHSV();
+            hsv.saturation = saturation;
+
+            *this = FromHSV(hsv);
+        }
+
+        consteval void SetValue(const float value)
+        {
+            auto hsv = ToHSV();
+            hsv.value = value;
+
+            *this = FromHSV(hsv);
+        }
         [[nodiscard]]
         constexpr Color Blend(const Color& other, float ratio) const
         {
