@@ -17,7 +17,7 @@
 
 
 #ifdef far
-#undef fa
+#undef far
 #endif
 
 namespace omath
