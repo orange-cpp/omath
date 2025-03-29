@@ -10,6 +10,16 @@
 #include <utility>
 #include "omath/vector3.hpp"
 
+
+#ifdef near
+#undef near
+#endif
+
+
+#ifdef far
+#undef fa
+#endif
+
 namespace omath
 {
     struct MatSize
