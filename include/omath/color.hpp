@@ -8,6 +8,15 @@
 #include "omath/vector3.hpp"
 #include "omath/vector4.hpp"
 
+#ifdef max
+#undef max
+#endif
+
+
+#ifdef min
+#undef min
+#endif
+
 namespace omath
 {
     struct HSV
