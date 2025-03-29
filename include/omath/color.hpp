@@ -118,7 +118,7 @@ namespace omath
         {
             Clamp(0.f, 1.f);
         }
-        consteval void SetHue(const float hue)
+        constexpr void SetHue(const float hue)
         {
             auto hsv = ToHSV();
             hsv.hue = hue;
@@ -126,7 +126,7 @@ namespace omath
             *this = FromHSV(hsv);
         }
 
-        consteval void SetSaturation(const float saturation)
+        constexpr void SetSaturation(const float saturation)
         {
             auto hsv = ToHSV();
             hsv.saturation = saturation;
@@ -134,7 +134,7 @@ namespace omath
             *this = FromHSV(hsv);
         }
 
-        consteval void SetValue(const float value)
+        constexpr void SetValue(const float value)
         {
             auto hsv = ToHSV();
             hsv.value = value;
