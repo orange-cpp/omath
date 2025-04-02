@@ -2,7 +2,7 @@
 
 Oranges's Math Library (omath) is a comprehensive, open-source library aimed at providing efficient, reliable, and versatile mathematical functions and algorithms. Developed primarily in C++, this library is designed to cater to a wide range of mathematical operations essential in scientific computing, engineering, and academic research.
 
-## 👁‍🗨 Features
+## Features
 - **Efficiency**: Optimized for performance, ensuring quick computations using AVX2.
 - **Versatility**: Includes a wide array of mathematical functions and algorithms.
 - **Ease of Use**: Simplified interface for convenient integration into various projects.
@@ -20,7 +20,7 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 |Unreal  |❌NO    |
 
 
-## 💘 Acknowledgments
+## Acknowledgments
 We value each person that made pull request to this project! And YOU can become one of them!
 -  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
 <seealso>
