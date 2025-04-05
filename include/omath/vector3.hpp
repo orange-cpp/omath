@@ -121,12 +121,12 @@ namespace omath
 #ifndef _MSC_VER
         [[nodiscard]] constexpr Type Length() const
         {
-            return std::hypot(x, y, z);
+            return std::hypot(this->x, this->y, z);
         }
 
         [[nodiscard]] constexpr Type Length2D() const
         {
-            return Vector2::Length();
+            return Vector2<Type>::Length();
         }
         [[nodiscard]] Type DistTo(const Vector3& vOther) const
         {

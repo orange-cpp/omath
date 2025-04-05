@@ -4,13 +4,17 @@
 #include "omath/projectile_prediction/proj_pred_engine_avx2.hpp"
 #include "source_location"
 
+#if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
+#include <immintrin.h>
+#endif
+
 namespace omath::projectile_prediction
 {
     std::optional<Vector3<float>>
     ProjPredEngineAVX2::MaybeCalculateAimPoint([[maybe_unused]] const Projectile& projectile,
                                                [[maybe_unused]] const Target& target) const
     {
-#ifdef OMATH_USE_AVX2
+#if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
         const float bulletGravity = m_gravityConstant * projectile.m_gravityScale;
         const float v0 = projectile.m_launchSpeed;
         const float v0Sqr = v0 * v0;
