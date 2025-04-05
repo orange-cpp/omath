@@ -21,12 +21,21 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 - **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
 - **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
 
-|ENGINE  |SUPPORT|
-|--------|-------|
-|Source  |✅YES   |
-|Unity   |✅YES   |
-|IWEngine|✅YES   |
-|Unreal  |❌NO    |
+## Supported Render Pipelines
+| ENGINE   | SUPPORT |
+|----------|---------|
+| Source   | ✅YES    |
+| Unity    | ✅YES    |
+| IWEngine | ✅YES    |
+| Unreal   | ❌NO     |
+
+## Supported Operating Systems
+
+| OS             | SUPPORT |
+|----------------|---------|
+| Windows 10/11  | ✅YES    |
+| Linux          | ✅YES    |
+| Darwin (MacOS) | ✅YES    |
 
 ## ⏬ Getting Started
 ### Prerequisites
