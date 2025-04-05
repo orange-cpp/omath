@@ -4,8 +4,10 @@
 #include "omath/projectile_prediction/proj_pred_engine_avx2.hpp"
 #include "source_location"
 
+
 #if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
 #include <immintrin.h>
+#include <format>
 #endif
 
 namespace omath::projectile_prediction
