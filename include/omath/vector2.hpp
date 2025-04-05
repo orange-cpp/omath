@@ -124,9 +124,9 @@ namespace omath
         }
 
 #ifndef _MSC_VER
-        [[nodiscard]] constexpr Type& Length() const
+        [[nodiscard]] constexpr Type Length() const
         {
-            return std::hypot(x, y);
+            return std::hypot(this->x, this->y);
         }
 
         [[nodiscard]] constexpr Vector2 Normalized() const
