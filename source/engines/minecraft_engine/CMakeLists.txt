@@ -1,0 +1,4 @@
+target_sources(omath PRIVATE
+        camera.cpp
+        formulas.cpp
+)

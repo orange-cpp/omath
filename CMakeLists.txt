@@ -16,8 +16,7 @@ option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY  "Force Omath to link static runtime" O
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/matrix.cpp)
 else()
-    add_library(omath STATIC source/matrix.cpp
-            source/matrix.cpp)
+    add_library(omath STATIC source/matrix.cpp)
 endif()
 message(STATUS "Building on ${CMAKE_HOST_SYSTEM_NAME}")
 add_library(omath::omath ALIAS omath)
