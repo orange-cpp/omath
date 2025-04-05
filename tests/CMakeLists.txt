@@ -23,6 +23,7 @@ add_executable(unit-tests
         engines/unit_test_unity_engine.cpp
         engines/unit_test_source_engine.cpp
         engines/unit_test_iw_engine.cpp
+        engines/unit_test_minecraft_engine.cpp
 
 )
 
