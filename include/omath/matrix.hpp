@@ -62,10 +62,12 @@ namespace omath
         [[nodiscard]]
         const float& At(size_t iRow, size_t iCol) const;
 
+        [[nodiscard]]
         Matrix operator*(const Matrix& other) const;
 
         Matrix& operator*=(const Matrix& other);
 
+        [[nodiscard]]
         Matrix operator*(float f) const;
 
         Matrix& operator*=(float f);
@@ -93,6 +95,7 @@ namespace omath
 
         Matrix& operator=(Matrix&& other) noexcept;
 
+        [[nodiscard]]
         Matrix operator/(float f) const;
 
         [[nodiscard]]
