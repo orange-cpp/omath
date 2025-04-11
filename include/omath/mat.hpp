@@ -175,9 +175,7 @@ namespace omath
 
         constexpr Mat& operator*=(const Type& f) noexcept
         {
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) *= f;
+            std::ranges::for_each(m_data,[&f](auto& val) {val *= f;});
             return *this;
         }
 
@@ -189,45 +187,39 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat operator*(const Type& f) const noexcept
+        constexpr Mat operator*(const Type& value) const noexcept
         {
             Mat result(*this);
-            result *= f;
+            result *= value;
             return result;
         }
 
-        constexpr Mat& operator/=(const Type& f) noexcept
+        constexpr Mat& operator/=(const Type& value) noexcept
         {
-            std::ranges::for_each(m_data,[&f](auto& val) {val /= f;});
+            std::ranges::for_each(m_data,[&value](auto& val) {val /= value;});
             return *this;
         }
 
         [[nodiscard]]
-        constexpr Mat operator/(const Type& f) const noexcept
+        constexpr Mat operator/(const Type& value) const noexcept
         {
             Mat result(*this);
-            result /= f;
+            result /= value;
             return result;
         }
 
         constexpr Mat& operator=(const Mat& other) noexcept
         {
-            if (this == &other)
-                return *this;
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) = other.At(i, j);
+            if (this != &other)
+                m_data = other.m_data;
+
             return *this;
         }
 
         constexpr Mat& operator=(Mat&& other) noexcept
         {
-            if (this == &other)
-                return *this;
-
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) = other.At(i, j);
+            if (this != &other)
+                m_data = std::move(other.m_data);
 
             return *this;
         }
