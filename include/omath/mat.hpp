@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <utility>
 #include "omath/vector3.hpp"
+#include <numeric>
 
 
 #ifdef near
@@ -141,12 +142,7 @@ namespace omath
         [[nodiscard]]
         constexpr Type Sum() const noexcept
         {
-            Type sum = 0;
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    sum += At(i, j);
-
-            return sum;
+            return std::accumulate(m_data.begin(), m_data.end(), Type(0));
         }
 
         constexpr void Clear() noexcept
