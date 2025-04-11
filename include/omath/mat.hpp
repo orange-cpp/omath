@@ -92,6 +92,12 @@ namespace omath
             return At(row, col);
         }
 
+        [[nodiscard]]
+        constexpr Type& operator[](const size_t row, const size_t col) const
+        {
+            return At(row, col);
+        }
+        
         constexpr Mat(Mat&& other) noexcept
         {
             m_data = std::move(other.m_data);
