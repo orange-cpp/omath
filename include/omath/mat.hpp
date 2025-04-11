@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <utility>
 #include "omath/vector3.hpp"
+#include <numeric>
 
 
 #ifdef near
@@ -91,6 +92,12 @@ namespace omath
             return At(row, col);
         }
 
+        [[nodiscard]]
+        constexpr Type& operator[](const size_t row, const size_t col) const
+        {
+            return At(row, col);
+        }
+        
         constexpr Mat(Mat&& other) noexcept
         {
             m_data = std::move(other.m_data);
@@ -117,9 +124,10 @@ namespace omath
         [[nodiscard]]
         constexpr const Type& At(const size_t rowIndex, const size_t columnIndex) const
         {
+#if !defined(NDEBUG) && defined(OMATH_SUPRESS_SAFETY_CHECKS)
             if (rowIndex >= Rows || columnIndex >= Columns)
                 throw std::out_of_range("Index out of range");
-
+#endif
             if constexpr (StoreType == MatStoreType::ROW_MAJOR)
                 return m_data[rowIndex * Columns + columnIndex];
 
@@ -141,12 +149,7 @@ namespace omath
         [[nodiscard]]
         constexpr Type Sum() const noexcept
         {
-            Type sum = 0;
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    sum += At(i, j);
-
-            return sum;
+            return std::accumulate(m_data.begin(), m_data.end(), Type(0));
         }
 
         constexpr void Clear() noexcept
@@ -161,6 +164,7 @@ namespace omath
 
         // Operator overloading for multiplication with another Mat
         template<size_t OtherColumns>
+        [[nodiscard]]
         constexpr Mat<Rows, OtherColumns, Type, StoreType>
         operator*(const Mat<Columns, OtherColumns, Type, StoreType>& other) const
         {
@@ -179,9 +183,7 @@ namespace omath
 
         constexpr Mat& operator*=(const Type& f) noexcept
         {
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) *= f;
+            std::ranges::for_each(m_data, [&f](auto& val) {val *= f;});
             return *this;
         }
 
@@ -193,47 +195,39 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat operator*(const Type& f) const noexcept
+        constexpr Mat operator*(const Type& value) const noexcept
         {
             Mat result(*this);
-            result *= f;
+            result *= value;
             return result;
         }
 
-        constexpr Mat& operator/=(const Type& f) noexcept
+        constexpr Mat& operator/=(const Type& value) noexcept
         {
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) /= f;
+            std::ranges::for_each(m_data, [&value](auto& val) {val /= value;});
             return *this;
         }
 
         [[nodiscard]]
-        constexpr Mat operator/(const Type& f) const noexcept
+        constexpr Mat operator/(const Type& value) const noexcept
         {
             Mat result(*this);
-            result /= f;
+            result /= value;
             return result;
         }
 
         constexpr Mat& operator=(const Mat& other) noexcept
         {
-            if (this == &other)
-                return *this;
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) = other.At(i, j);
+            if (this != &other)
+                m_data = other.m_data;
+
             return *this;
         }
 
         constexpr Mat& operator=(Mat&& other) noexcept
         {
-            if (this == &other)
-                return *this;
-
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) = other.At(i, j);
+            if (this != &other)
+                m_data = std::move(other.m_data);
 
             return *this;
         }
@@ -257,7 +251,7 @@ namespace omath
             if constexpr (Rows == 1)
                 return At(0, 0);
 
-            else if constexpr (Rows == 2)
+            if constexpr (Rows == 2)
                 return At(0, 0) * At(1, 1) - At(0, 1) * At(1, 0);
             else
             {
