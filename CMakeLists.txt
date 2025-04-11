@@ -12,6 +12,8 @@ option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
 option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types to imgui types" OFF)
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY  "Force Omath to link static runtime" OFF)
+option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
+
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/matrix.cpp)
@@ -43,6 +45,10 @@ endif()
 
 if (OMATH_USE_AVX2)
     target_compile_definitions(omath PUBLIC OMATH_USE_AVX2)
+endif()
+
+if (OMATH_SUPRESS_SAFETY_CHECKS)
+    target_compile_definitions(omath PUBLIC OMATH_SUPRESS_SAFETY_CHECKS)
 endif()
 
 set_target_properties(omath PROPERTIES

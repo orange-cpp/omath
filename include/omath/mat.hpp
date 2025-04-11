@@ -118,9 +118,10 @@ namespace omath
         [[nodiscard]]
         constexpr const Type& At(const size_t rowIndex, const size_t columnIndex) const
         {
+#if !defined(NDEBUG) && defined(OMATH_SUPRESS_SAFETY_CHECKS)
             if (rowIndex >= Rows || columnIndex >= Columns)
                 throw std::out_of_range("Index out of range");
-
+#endif
             if constexpr (StoreType == MatStoreType::ROW_MAJOR)
                 return m_data[rowIndex * Columns + columnIndex];
 
@@ -175,7 +176,7 @@ namespace omath
 
         constexpr Mat& operator*=(const Type& f) noexcept
         {
-            std::ranges::for_each(m_data,[&f](auto& val) {val *= f;});
+            std::ranges::for_each(m_data, [&f](auto& val) {val *= f;});
             return *this;
         }
 
@@ -196,7 +197,7 @@ namespace omath
 
         constexpr Mat& operator/=(const Type& value) noexcept
         {
-            std::ranges::for_each(m_data,[&value](auto& val) {val /= value;});
+            std::ranges::for_each(m_data, [&value](auto& val) {val /= value;});
             return *this;
         }
 
@@ -243,7 +244,7 @@ namespace omath
             if constexpr (Rows == 1)
                 return At(0, 0);
 
-            else if constexpr (Rows == 2)
+            if constexpr (Rows == 2)
                 return At(0, 0) * At(1, 1) - At(0, 1) * At(1, 0);
             else
             {
