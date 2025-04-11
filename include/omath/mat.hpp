@@ -198,9 +198,7 @@ namespace omath
 
         constexpr Mat& operator/=(const Type& f) noexcept
         {
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < Columns; ++j)
-                    At(i, j) /= f;
+            std::ranges::for_each(m_data,[&f](auto& val) {val /= f;});
             return *this;
         }
 
