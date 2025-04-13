@@ -2,7 +2,8 @@
 // Created by Vlad on 2/23/2025.
 //
 #include "omath/projectile_prediction/proj_pred_engine_avx2.hpp"
-#include "source_location"
+#include <source_location>
+#include <stdexcept>
 
 
 #if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
