@@ -8,20 +8,25 @@ namespace omath::source_engine
 {
     Vector3<float> ForwardVector(const ViewAngles& angles)
     {
-        const auto vec = MatRotation(angles) * MatColumnFromVector(kAbsForward);
+        const auto vec = RotationMatrix(angles) * MatColumnFromVector(kAbsForward);
 
         return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
 
+    Mat4x4 RotationMatrix(const ViewAngles& angles)
+    {
+        return MatRotationAxisZ(angles.yaw) * MatRotationAxisY(angles.pitch) * MatRotationAxisX(angles.roll);
+    }
+
     Vector3<float> RightVector(const ViewAngles& angles)
     {
-        const auto vec = MatRotation(angles) * MatColumnFromVector(kAbsRight);
+        const auto vec = RotationMatrix(angles) * MatColumnFromVector(kAbsRight);
 
         return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
     Vector3<float> UpVector(const ViewAngles& angles)
     {
-        const auto vec = MatRotation(angles) * MatColumnFromVector(kAbsUp);
+        const auto vec = RotationMatrix(angles) * MatColumnFromVector(kAbsUp);
 
         return {vec.At(0, 0), vec.At(1, 0), vec.At(2, 0)};
     }
