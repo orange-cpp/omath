@@ -10,11 +10,6 @@
 TEST(UnitTestSourceEngine, ForwardVector)
 {
     const auto forward = omath::source_engine::ForwardVector({});
-    omath::source_engine::ViewAngles angles;
-    //angles.pitch = omath::source_engine::PitchAngle::FromDegrees(-90);
-    const auto forward2 = omath::source_engine::ForwardVector(angles);
-
-    //std::println("{} {} {}", forward2.x, forward2.y, forward2.z);
 
     EXPECT_EQ(forward, omath::source_engine::kAbsForward);
 }

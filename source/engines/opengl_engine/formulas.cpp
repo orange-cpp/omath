@@ -34,7 +34,7 @@ namespace omath::opengl_engine
     {
         return MatRotationAxisZ<float, MatStoreType::COLUMN_MAJOR>(angles.roll) *
                MatRotationAxisY<float, MatStoreType::COLUMN_MAJOR>(angles.yaw) *
-               MatRotationAxisX<float, MatStoreType::COLUMN_MAJOR>(angles.pitch);
+               MatRotationAxisX<float, MatStoreType::COLUMN_MAJOR>(-angles.pitch);
     }
     Mat4x4 CalcPerspectiveProjectionMatrix(const float fieldOfView, const float aspectRatio, const float near,
                                            const float far)
