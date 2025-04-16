@@ -18,6 +18,8 @@ namespace omath::unity_engine
 
     [[nodiscard]] Mat4x4 CalcViewMatrix(const ViewAngles& angles, const Vector3<float>& cam_origin);
 
+    [[nodiscard]]
+    Mat4x4 RotationMatrix(const ViewAngles& angles);
 
     [[nodiscard]]
     Mat4x4 CalcPerspectiveProjectionMatrix(float fieldOfView, float aspectRatio, float near, float far);
