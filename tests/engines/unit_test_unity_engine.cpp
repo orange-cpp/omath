@@ -14,6 +14,42 @@ TEST(UnitTestUnityEngine, ForwardVector)
     EXPECT_EQ(forward, omath::unity_engine::kAbsForward);
 }
 
+TEST(UnitTestUnityEngine, ForwardVectorRotationYaw)
+{
+    omath::unity_engine::ViewAngles angles;
+
+    angles.yaw = omath::unity_engine::YawAngle::FromDegrees(90.f);
+
+    const auto forward = omath::unity_engine::ForwardVector(angles);
+    EXPECT_NEAR(forward.x, omath::unity_engine::kAbsRight.x, 0.00001f);
+    EXPECT_NEAR(forward.y, omath::unity_engine::kAbsRight.y, 0.00001f);
+    EXPECT_NEAR(forward.z, omath::unity_engine::kAbsRight.z, 0.00001f);
+}
+
+TEST(UnitTestUnityEngine, ForwardVectorRotationPitch)
+{
+    omath::unity_engine::ViewAngles angles;
+
+    angles.pitch = omath::unity_engine::PitchAngle::FromDegrees(-90.f);
+
+    const auto forward = omath::unity_engine::ForwardVector(angles);
+    EXPECT_NEAR(forward.x, omath::unity_engine::kAbsUp.x, 0.00001f);
+    EXPECT_NEAR(forward.y, omath::unity_engine::kAbsUp.y, 0.00001f);
+    EXPECT_NEAR(forward.z, omath::unity_engine::kAbsUp.z, 0.00001f);
+}
+
+TEST(UnitTestUnityEngine, ForwardVectorRotationRoll)
+{
+    omath::unity_engine::ViewAngles angles;
+
+    angles.roll = omath::unity_engine::RollAngle::FromDegrees(-90.f);
+
+    const auto forward = omath::unity_engine::UpVector(angles);
+    EXPECT_NEAR(forward.x, omath::unity_engine::kAbsRight.x, 0.00001f);
+    EXPECT_NEAR(forward.y, omath::unity_engine::kAbsRight.y, 0.00001f);
+    EXPECT_NEAR(forward.z, omath::unity_engine::kAbsRight.z, 0.00001f);
+}
+
 TEST(UnitTestUnityEngine, RightVector)
 {
     const auto right = omath::unity_engine::RightVector({});
