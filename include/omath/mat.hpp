@@ -97,7 +97,7 @@ namespace omath
         {
             return At(row, col);
         }
-        
+
         constexpr Mat(Mat&& other) noexcept
         {
             m_data = std::move(other.m_data);
