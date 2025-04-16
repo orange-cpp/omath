@@ -10,7 +10,13 @@
 TEST(UnitTestOpenGL, ForwardVector)
 {
     const auto forward = omath::opengl_engine::ForwardVector({});
+    omath::opengl_engine::ViewAngles angles = {};
+    angles.pitch = omath::opengl_engine::PitchAngle::FromDegrees(90);
 
+    std::print("{}\n", angles.pitch.AsDegrees());
+    const auto forward2 = omath::opengl_engine::ForwardVector(angles);
+
+    std::println("{} {} {}", forward2.x, (int)forward2.y, forward2.z);
     EXPECT_EQ(forward, omath::opengl_engine::kAbsForward);
 }
 
