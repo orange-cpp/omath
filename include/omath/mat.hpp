@@ -428,13 +428,6 @@ namespace omath
         } * MatTranslation<Type, St>(-cameraOrigin);
     }
 
-    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class ViewAngles>
-    [[nodiscard]]
-    Mat<4, 4, Type, St> MatRotation(const ViewAngles& angles) noexcept
-    {
-        return MatRotationAxisZ(angles.yaw) * MatRotationAxisY(angles.pitch) * MatRotationAxisX(angles.roll);
-    }
-
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
     Mat<4, 4, Type, St> MatPerspectiveLeftHanded(const float fieldOfView, const float aspectRatio, const float near,

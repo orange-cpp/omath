@@ -5,7 +5,7 @@
 #include <source_location>
 #include <stdexcept>
 
-
+#include <format>
 #if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
 #include <immintrin.h>
 #include <format>
