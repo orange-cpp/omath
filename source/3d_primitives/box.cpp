@@ -8,10 +8,11 @@ namespace omath::primitives
 
     std::array<Vector3<float>, 8> CreateBox(const Vector3<float>& top, const Vector3<float>& bottom,
                                             const Vector3<float>& dirForward,
-                                            const Vector3<float>& dirRight)
+                                            const Vector3<float>& dirRight,
+                                            const float ratio)
     {
         const auto height = top.DistTo(bottom);
-        const auto sideSize = height / 6.f;
+        const auto sideSize = height / ratio;
 
         std::array<Vector3<float>, 8> points;
 
