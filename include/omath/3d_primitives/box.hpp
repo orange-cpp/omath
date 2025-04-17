@@ -4,7 +4,7 @@
 
 #pragma once
 #include <array>
-
+#include "omath/vector3.hpp"
 
 namespace omath::primitives
 {
