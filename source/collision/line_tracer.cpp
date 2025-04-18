@@ -54,7 +54,12 @@ namespace omath::collision
         const auto tHit = sideB.Dot(q) * invDet;
 
 
-        if (tHit <= kEpsilon)
+        if (ray.infinite_length)
+        {
+            if (tHit <= kEpsilon)
+                return ray.end;
+        }
+        else if (tHit < 0.0f || tHit > 1.0f)
             return ray.end;
 
         return ray.start + rayDir * tHit;
