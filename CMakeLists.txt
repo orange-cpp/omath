@@ -5,7 +5,7 @@ project(omath VERSION 1.0.1 LANGUAGES CXX)
 include(CMakePackageConfigHelpers)
 
 
-option(OMATH_BUILD_TESTS "Build unit tests" ON)
+option(OMATH_BUILD_TESTS "Build unit tests" OFF)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
@@ -13,7 +13,7 @@ option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types 
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY  "Force Omath to link static runtime" OFF)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
-option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
+option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" ON)
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/matrix.cpp)
