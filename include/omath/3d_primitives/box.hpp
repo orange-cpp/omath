@@ -4,12 +4,14 @@
 
 #pragma once
 #include <array>
+#include "omath/triangle.hpp"
 #include "omath/vector3.hpp"
+
 
 namespace omath::primitives
 {
     [[nodiscard]]
-    std::array<Vector3<float>, 8> CreateBox(const Vector3<float>& top, const Vector3<float>& bottom,
-                                            const Vector3<float>& dirForward, const Vector3<float>& dirRight,
-                                            float ratio = 4.f);
+    std::array<Triangle<Vector3<float>>, 8> CreateBox(const Vector3<float>& top, const Vector3<float>& bottom,
+                                             const Vector3<float>& dirForward, const Vector3<float>& dirRight,
+                                             float ratio = 4.f);
 }

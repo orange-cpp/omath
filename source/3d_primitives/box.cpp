@@ -3,10 +3,12 @@
 //
 #include "omath/3d_primitives/box.hpp"
 
+
+
 namespace omath::primitives
 {
 
-    std::array<Vector3<float>, 8> CreateBox(const Vector3<float>& top, const Vector3<float>& bottom,
+    std::array<Triangle<Vector3<float>>, 8> CreateBox(const Vector3<float>& top, const Vector3<float>& bottom,
                                             const Vector3<float>& dirForward,
                                             const Vector3<float>& dirRight,
                                             const float ratio)
@@ -28,6 +30,10 @@ namespace omath::primitives
         points[6] = top + (-dirForward + dirRight) * sideSize;
         points[7] = top + (-dirForward - dirRight) * sideSize;
 
-        return points;
+
+        std::array<Triangle<Vector3<float>>, 8> polygons;
+
+        polygons[0] = {points[0], points[2], points[3]};
+        return polygons;
     }
 }
