@@ -13,7 +13,7 @@ namespace omath::collision
     public:
         Vector3<float> start;
         Vector3<float> end;
-
+        bool infinite_length = false;
         [[nodiscard]]
         Vector3<float> DirectionVector() const;
 
