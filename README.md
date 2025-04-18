@@ -91,7 +91,8 @@ With `omath/projection` module you can achieve simple ESP hack for powered by So
 ![banner](https://i.imgur.com/lcJrfcZ.png)
 Or for InfinityWard Engine based games. Like Call of Duty Black Ops 2!
 ![banner](https://i.imgur.com/F8dmdoo.png)
-
+Or create simple trigger bot with embeded traceline from omath::collision::LineTrace
+![banner](https://i.imgur.com/fxMjRKo.jpeg)
 Or even advanced projectile aimbot
 [Watch Video](https://youtu.be/lM_NJ1yCunw?si=5E87OrQMeypxSJ3E)
 </details>
