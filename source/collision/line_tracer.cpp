@@ -59,7 +59,7 @@ namespace omath::collision
             if (tHit <= kEpsilon)
                 return ray.end;
         }
-        else if (tHit < 0.0f || tHit > 1.0f)
+        else if (tHit <= kEpsilon || tHit >= 1.0f - kEpsilon)
             return ray.end;
 
         return ray.start + rayDir * tHit;
