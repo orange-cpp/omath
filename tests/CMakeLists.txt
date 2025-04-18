@@ -18,6 +18,7 @@ add_executable(unit-tests
         general/unit_test_view_angles.cpp
         general/unit_test_angle.cpp
         general/unit_test_triangle.cpp
+        general/unit_test_box_primitive.cpp
 
         engines/unit_test_open_gl.cpp
         engines/unit_test_unity_engine.cpp

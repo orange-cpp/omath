@@ -13,13 +13,12 @@ option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types 
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY  "Force Omath to link static runtime" OFF)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
-
+option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" ON)
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(omath SHARED source/matrix.cpp)
 else()
-    add_library(omath STATIC source/matrix.cpp
-            source/matrix.cpp)
+    add_library(omath STATIC source/matrix.cpp)
 endif()
 
 message(STATUS "Building on ${CMAKE_HOST_SYSTEM_NAME}")
@@ -55,10 +54,14 @@ endif()
 set_target_properties(omath PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
-        UNITY_BUILD ON
-        UNITY_BUILD_BATCH_SIZE 20
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON)
+
+if (OMATH_USE_UNITY_BUILD)
+    set_target_properties(omath PROPERTIES
+            UNITY_BUILD ON
+            UNITY_BUILD_BATCH_SIZE 20)
+endif()
 
 if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
     set_target_properties(omath PROPERTIES

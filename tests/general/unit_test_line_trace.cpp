@@ -1,80 +1,121 @@
+//
+// Revised unit‑test suite for LineTracer (segment‑based Möller–Trumbore)
+// Pure ASCII: avoids non‑standard characters that MSVC rejects.
+//
 #include "gtest/gtest.h"
 #include "omath/collision/line_tracer.hpp"
 #include "omath/triangle.hpp"
 #include "omath/vector3.hpp"
+#include <cmath>
 
 using namespace omath;
 using namespace omath::collision;
 
-class LineTracerTest : public ::testing::Test
+using Vec3 = Vector3<float>;
+
+namespace
 {
-protected:
-    // Set up common variables for use in each test
-    Vector3<float> vertex1{0.0f, 0.0f, 0.0f};
-    Vector3<float> vertex2{1.0f, 0.0f, 0.0f};
-    Vector3<float> vertex3{0.0f, 1.0f, 0.0f};
-    Triangle<Vector3<float>> triangle{vertex1, vertex2, vertex3};
-};
 
-// Test that a ray intersecting the triangle returns false for CanTraceLine
-TEST_F(LineTracerTest, RayIntersectsTriangle)
-{
-    constexpr Ray ray{{0.3f, 0.3f, -1.0f}, {0.3f, 0.3f, 1.0f}};
-    EXPECT_FALSE(LineTracer::CanTraceLine(ray, triangle));
-}
+    // -----------------------------------------------------------------------------
+    // Constants & helpers
+    // -----------------------------------------------------------------------------
+    constexpr float kTol = 1e-5f;
 
-// Test that a ray parallel to the triangle plane returns true for CanTraceLine
-TEST_F(LineTracerTest, RayParallelToTriangle)
-{
-    constexpr Ray ray{{0.3f, 0.3f, 1.0f}, {0.3f, 0.3f, 2.0f}};
-    EXPECT_TRUE(LineTracer::CanTraceLine(ray, triangle));
-}
+    bool VecEqual(const Vec3& a, const Vec3& b, float tol = kTol)
+    {
+        return std::fabs(a.x - b.x) < tol &&
+               std::fabs(a.y - b.y) < tol &&
+               std::fabs(a.z - b.z) < tol;
+    }
 
-// Test that a ray starting inside the triangle but pointing away returns true
-TEST_F(LineTracerTest, RayStartsInTriangleButDoesNotIntersect)
-{
-    constexpr Ray ray{{0.3f, 0.3f, 0.0f}, {0.3f, 0.3f, -1.0f}};
-    EXPECT_TRUE(LineTracer::CanTraceLine(ray, triangle));
-}
+    // -----------------------------------------------------------------------------
+    // Fixture with one canonical right‑angled triangle in the XY plane.
+    // -----------------------------------------------------------------------------
+    class LineTracerFixture : public ::testing::Test
+    {
+    protected:
+        LineTracerFixture() :
+            triangle({0.f, 0.f, 0.f}, {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f})
+        {
+        }
 
-// Test that a ray not intersecting the triangle plane returns true
-TEST_F(LineTracerTest, RayMissesTriangle)
-{
-    constexpr Ray ray{{2.0f, 2.0f, -1.0f}, {2.0f, 2.0f, 1.0f}};
-    EXPECT_TRUE(LineTracer::CanTraceLine(ray, triangle));
-}
-
-// Test that a ray lying exactly in the plane of the triangle without intersecting returns true
-TEST_F(LineTracerTest, RayInPlaneNotIntersecting)
-{
-    constexpr Ray ray{{-1.0f, -1.0f, 0.0f}, {1.5f, 1.5f, 0.0f}};
-    EXPECT_TRUE(LineTracer::CanTraceLine(ray, triangle));
-}
-
-
-TEST_F(LineTracerTest, RayIntersectsVertex)
-{
-    const Ray ray{{-1.0f, -1.0f, -1.0f}, vertex1}; // Intersecting at vertex1
-    EXPECT_TRUE(LineTracer::CanTraceLine(ray, triangle));
-}
-
-TEST_F(LineTracerTest, RayIntersectsEdge)
-{
-    constexpr Ray ray{{-1.0f, 0.0f, -1.0f}, {0.5f, 0.0f, 0.0f}};
-    // Intersecting on the edge between vertex1 and vertex2
-    EXPECT_TRUE(LineTracer::CanTraceLine(ray, triangle));
-}
-
-TEST_F(LineTracerTest, TriangleFarBeyondRayEndPoint)
-{
-    // Define a ray with a short length
-    constexpr Ray ray{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
-
-    // Define a triangle far beyond the ray's endpoint
-    constexpr Triangle<Vector3<float>> distantTriangle{
-        {1000.0f, 1000.0f, 1000.0f}, {1001.0f, 1000.0f, 1000.0f}, {1000.0f, 1001.0f, 1000.0f}
+        Triangle<Vec3> triangle;
     };
 
-    // Expect true because the ray ends long before it could reach the distant triangle
-    EXPECT_TRUE(LineTracer::CanTraceLine(ray, distantTriangle));
-}
+    // -----------------------------------------------------------------------------
+    // Data‑driven tests for CanTraceLine
+    // -----------------------------------------------------------------------------
+    struct TraceCase
+    {
+        Ray ray;
+        bool expected_clear; // true => segment does NOT hit the triangle
+    };
+
+    class CanTraceLineParam : public LineTracerFixture,
+                              public ::testing::WithParamInterface<TraceCase>
+    {
+    };
+
+    TEST_P(CanTraceLineParam, VariousRays)
+    {
+        const auto& p = GetParam();
+        EXPECT_EQ(LineTracer::CanTraceLine(p.ray, triangle), p.expected_clear);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(
+            BasicScenarios,
+            CanTraceLineParam,
+            ::testing::Values(
+                TraceCase{Ray{{ 0.3f, 0.3f, -1.f},{ 0.3f, 0.3f, 1.f}}, false}, // hit through centre
+                TraceCase{Ray{{ 0.3f, 0.3f, 1.f},{ 0.3f, 0.3f, 2.f}}, true}, // parallel above
+                TraceCase{Ray{{ 0.3f, 0.3f, 0.f},{ 0.3f, 0.3f,-1.f}}, true}, // starts inside, goes away
+                TraceCase{Ray{{ 2.0f, 2.0f, -1.f},{ 2.0f, 2.0f, 1.f}}, true}, // misses entirely
+                TraceCase{Ray{{-1.0f,-1.0f, 0.f},{ 1.5f, 1.5f, 0.f}},true}, // lies in plane, outside tri
+                TraceCase{Ray{{-1.0f,-1.0f, -1.f},{ 0.0f, 0.0f, 0.f}}, true}, // endpoint on vertex
+                TraceCase{Ray{{-1.0f, 0.0f, -1.f},{ 0.5f, 0.0f, 0.f}}, true} // endpoint on edge
+            )
+            );
+
+    // -----------------------------------------------------------------------------
+    // Validate that the reported hit point is correct for a genuine intersection.
+    // -----------------------------------------------------------------------------
+    TEST_F(LineTracerFixture, HitPointCorrect)
+    {
+        constexpr Ray ray{{0.3f, 0.3f, -1.f}, {0.3f, 0.3f, 1.f}};
+        constexpr Vec3 expected{0.3f, 0.3f, 0.f};
+
+        const Vec3 hit = LineTracer::GetRayHitPoint(ray, triangle);
+        ASSERT_FALSE(VecEqual(hit, ray.end));
+        EXPECT_TRUE(VecEqual(hit, expected));
+    }
+
+    // -----------------------------------------------------------------------------
+    // Triangle far beyond the ray should not block.
+    // -----------------------------------------------------------------------------
+    TEST_F(LineTracerFixture, DistantTriangleClear)
+    {
+        constexpr Ray short_ray{{0.f, 0.f, 0.f}, {0.f, 0.f, 1.f}};
+        constexpr Triangle<Vec3> distant{{1000.f, 1000.f, 1000.f},
+                                         {1001.f, 1000.f, 1000.f},
+                                         {1000.f, 1001.f, 1000.f}};
+
+        EXPECT_TRUE(LineTracer::CanTraceLine(short_ray, distant));
+    }
+
+    TEST(LineTracerTraceRayEdge, CantHit)
+    {
+        constexpr omath::Triangle<Vector3<float>> triangle{{2, 0, 0}, {2, 2, 0}, {2, 2, 2}};
+
+        constexpr Ray ray{{}, {1.0, 0, 0}, false};
+
+        EXPECT_TRUE(omath::collision::LineTracer::CanTraceLine(ray, triangle));
+    }
+    TEST(LineTracerTraceRayEdge, CanHit)
+    {
+        constexpr omath::Triangle<Vector3<float>> triangle{{2, 0, 0}, {2, 2, 0}, {2, 2, 2}};
+
+        constexpr Ray ray{{}, {2.1, 0, 0}, false};
+        auto endPoint = omath::collision::LineTracer::GetRayHitPoint(ray, triangle);
+        EXPECT_FALSE(omath::collision::LineTracer::CanTraceLine(ray, triangle));
+    }
+} // namespace
