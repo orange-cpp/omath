@@ -294,7 +294,7 @@ namespace omath
         [[nodiscard]]
         constexpr std::array<Type, Rows * Columns>& RawArray()
         {
-            return const_cast<std::array<Type, Rows * Columns>>(std::as_const(*this).RawArray());
+            return m_data;
         }
 
         [[nodiscard]]
