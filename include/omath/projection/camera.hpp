@@ -62,31 +62,37 @@ namespace omath::projection
         void SetFieldOfView(const FieldOfView& fov)
         {
             m_fieldOfView = fov;
+            m_viewProjectionMatrix = std::nullopt;
         }
 
         void SetNearPlane(const float near)
         {
             m_nearPlaneDistance = near;
+            m_viewProjectionMatrix = std::nullopt;
         }
 
         void SetFarPlane(const float far)
         {
             m_farPlaneDistance = far;
+            m_viewProjectionMatrix = std::nullopt;
         }
 
         void SetViewAngles(const ViewAnglesType& viewAngles)
         {
             m_viewAngles = viewAngles;
+            m_viewProjectionMatrix = std::nullopt;
         }
 
         void SetOrigin(const Vector3<float>& origin)
         {
             m_origin = origin;
+            m_viewProjectionMatrix = std::nullopt;
         }
 
         void SetViewPort(const ViewPort& viewPort)
         {
             m_viewPort = viewPort;
+            m_viewProjectionMatrix = std::nullopt;
         }
 
         [[nodiscard]] const FieldOfView& GetFieldOfView() const
