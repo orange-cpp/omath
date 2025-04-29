@@ -253,21 +253,24 @@ namespace omath
 
             if constexpr (Rows == 2)
                 return At(0, 0) * At(1, 1) - At(0, 1) * At(1, 0);
-            else
+
+            if constexpr (Rows > 2)
             {
                 Type det = 0;
-                for (size_t i = 0; i < Columns; ++i)
+                for (size_t column = 0; column < Columns; ++column)
                 {
-                    const Type cofactor = (i % 2 == 0 ? 1 : -1) * At(0, i) * Minor(0, i).Determinant();
+                    const Type cofactor = At(0, column) * AlgComplement(0, column);
                     det += cofactor;
                 }
                 return det;
             }
+            std::unreachable();
         }
 
         [[nodiscard]]
-        constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> Minor(const size_t row, const size_t column) const
+        constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> Strip(const size_t row, const size_t column) const
         {
+            static_assert(Rows-1 > 0 && Columns-1 > 0);
             Mat<Rows - 1, Columns - 1, Type, StoreType> result;
             for (size_t i = 0, m = 0; i < Rows; ++i)
             {
@@ -283,6 +286,19 @@ namespace omath
                 ++m;
             }
             return result;
+        }
+
+        [[nodiscard]]
+        constexpr Type Minor(const size_t row, const size_t column) const
+        {
+            return Strip(row, column).Determinant();
+        }
+
+        [[nodiscard]]
+        constexpr Type AlgComplement(const size_t row, const size_t column) const
+        {
+            const auto minor = Minor(row, column);
+            return (row + column + 2) % 2 == 0 ? minor: -minor;
         }
 
         [[nodiscard]]
@@ -343,6 +359,25 @@ namespace omath
             };
         }
 
+        [[nodiscard]]
+        constexpr std::optional<Mat> Inverted() const
+        {
+            const auto det = Determinant();
+
+            if (det == 0)
+                return std::nullopt;
+
+            const auto transposed = Transposed();
+            Mat result;
+
+            for (std::size_t row = 0; row < Rows; row++)
+                for (std::size_t column = 0; column < Rows; column++)
+                    result.At(row, column) = transposed.AlgComplement(row, column);
+
+            result /= det;
+
+            return {result};
+        }
     private:
         std::array<Type, Rows * Columns> m_data;
     };
