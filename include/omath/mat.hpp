@@ -359,6 +359,25 @@ namespace omath
             };
         }
 
+        [[nodiscard]]
+        constexpr std::optional<Mat> Inverted() const
+        {
+            const auto det = Determinant();
+
+            if (det == 0)
+                return std::nullopt;
+
+            const auto transposed = Transposed();
+            Mat result;
+
+            for (std::size_t row = 0; row < Rows; row++)
+                for (std::size_t column = 0; column < Rows; column++)
+                    result.At(row, column) = transposed.AlgComplement(row, column);
+
+            result /= det;
+            
+            return {result};
+        }
     private:
         std::array<Type, Rows * Columns> m_data;
     };
