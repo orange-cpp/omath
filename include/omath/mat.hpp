@@ -253,7 +253,8 @@ namespace omath
 
             if constexpr (Rows == 2)
                 return At(0, 0) * At(1, 1) - At(0, 1) * At(1, 0);
-            else
+
+            if constexpr (Rows > 2)
             {
                 Type det = 0;
                 for (size_t i = 0; i < Columns; ++i)
@@ -263,11 +264,13 @@ namespace omath
                 }
                 return det;
             }
+            std::unreachable();
         }
 
         [[nodiscard]]
         constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> Minor(const size_t row, const size_t column) const
         {
+            static_assert(Rows-1 > 0 && Columns-1 > 0);
             Mat<Rows - 1, Columns - 1, Type, StoreType> result;
             for (size_t i = 0, m = 0; i < Rows; ++i)
             {
