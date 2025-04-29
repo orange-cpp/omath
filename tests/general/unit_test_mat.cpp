@@ -206,3 +206,12 @@ TEST(UnitTestMatStandalone, Transpose_NonSquare)
     EXPECT_FLOAT_EQ(transposed.At(1, 1), 5.0f);
     EXPECT_FLOAT_EQ(transposed.At(2, 1), 6.0f);
 }
+
+TEST(UnitTestMatStandalone, Enverse)
+{
+
+    constexpr Mat<2, 2> m{{1.0f, 3.0f}, {2.0f, 5.0f}};
+    constexpr Mat<2,2> mv{{-5.0f, 3.0f}, {2.0f, -1.0f}};
+
+    EXPECT_EQ(mv, m.Inverted());
+}

@@ -375,7 +375,7 @@ namespace omath
                     result.At(row, column) = transposed.AlgComplement(row, column);
 
             result /= det;
-            
+
             return {result};
         }
     private:
