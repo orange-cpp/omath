@@ -209,7 +209,6 @@ TEST(UnitTestMatStandalone, Transpose_NonSquare)
 
 TEST(UnitTestMatStandalone, Enverse)
 {
-
     constexpr Mat<2, 2> m{{1.0f, 3.0f}, {2.0f, 5.0f}};
     constexpr Mat<2,2> mv{{-5.0f, 3.0f}, {2.0f, -1.0f}};
 
