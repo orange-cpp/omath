@@ -257,9 +257,9 @@ namespace omath
             if constexpr (Rows > 2)
             {
                 Type det = 0;
-                for (size_t i = 0; i < Columns; ++i)
+                for (size_t column = 0; column < Columns; ++column)
                 {
-                    const Type cofactor = (i % 2 == 0 ? 1 : -1) * At(0, i) * Minor(0, i).Determinant();
+                    const Type cofactor = At(0, column) * AlgComplement(0, column);
                     det += cofactor;
                 }
                 return det;
@@ -268,7 +268,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> Minor(const size_t row, const size_t column) const
+        constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> Strip(const size_t row, const size_t column) const
         {
             static_assert(Rows-1 > 0 && Columns-1 > 0);
             Mat<Rows - 1, Columns - 1, Type, StoreType> result;
@@ -286,6 +286,19 @@ namespace omath
                 ++m;
             }
             return result;
+        }
+
+        [[nodiscard]]
+        constexpr Type Minor(const size_t row, const size_t column) const
+        {
+            return Strip(row, column).Determinant();
+        }
+
+        [[nodiscard]]
+        constexpr Type AlgComplement(const size_t row, const size_t column) const
+        {
+            const auto minor = Minor(row, column);
+            return (row + column + 2) % 2 == 0 ? minor: -minor;
         }
 
         [[nodiscard]]

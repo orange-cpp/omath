@@ -180,10 +180,10 @@ TEST(UnitTestMatStandalone, Determinant_3x3)
 }
 
 // Test Minor for 3x3 matrix
-TEST(UnitTestMatStandalone, Minor_3x3)
+TEST(UnitTestMatStandalone, Strip_3x3)
 {
     constexpr Mat<3, 3> m{{3, 0, 2}, {2, 0, -2}, {0, 1, 1}};
-    auto minor = m.Minor(0, 0);
+    auto minor = m.Strip(0, 0);
     EXPECT_EQ(minor.RowCount(), 2);
     EXPECT_EQ(minor.ColumnsCount(), 2);
     EXPECT_FLOAT_EQ(minor.At(0, 0), 0.0f);
