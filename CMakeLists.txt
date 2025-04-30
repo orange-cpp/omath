@@ -11,15 +11,19 @@ option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
 option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types to imgui types" OFF)
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
-option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY  "Force Omath to link static runtime" OFF)
+option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OFF)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" ON)
 
+file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
+file(GLOB_RECURSE OMATH_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
+
+
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
-    add_library(omath SHARED source/matrix.cpp)
-else()
-    add_library(omath STATIC source/matrix.cpp)
-endif()
+    add_library(omath SHARED ${OMATH_SOURCES} ${OMATH_HEADERS})
+else ()
+    add_library(omath STATIC ${OMATH_SOURCES} ${OMATH_HEADERS})
+endif ()
 
 message(STATUS "Building on ${CMAKE_HOST_SYSTEM_NAME}")
 add_library(omath::omath ALIAS omath)
@@ -28,28 +32,28 @@ if (OMATH_IMGUI_INTEGRATION)
     target_compile_definitions(omath PUBLIC OMATH_IMGUI_INTEGRATION)
 
     # IMGUI is being linked as submodule
-    if(TARGET imgui)
+    if (TARGET imgui)
         target_link_libraries(omath PUBLIC imgui)
         install(TARGETS imgui
                 EXPORT omathTargets
                 ARCHIVE DESTINATION lib
                 LIBRARY DESTINATION lib
                 RUNTIME DESTINATION bin)
-    else()
+    else ()
         # Assume that IMGUI linked via VCPKG.
         find_package(imgui CONFIG REQUIRED)
         target_link_libraries(omath PUBLIC imgui::imgui)
-    endif()
+    endif ()
 
-endif()
+endif ()
 
 if (OMATH_USE_AVX2)
     target_compile_definitions(omath PUBLIC OMATH_USE_AVX2)
-endif()
+endif ()
 
 if (OMATH_SUPRESS_SAFETY_CHECKS)
     target_compile_definitions(omath PUBLIC OMATH_SUPRESS_SAFETY_CHECKS)
-endif()
+endif ()
 
 set_target_properties(omath PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
@@ -61,37 +65,35 @@ if (OMATH_USE_UNITY_BUILD)
     set_target_properties(omath PROPERTIES
             UNITY_BUILD ON
             UNITY_BUILD_BATCH_SIZE 20)
-endif()
+endif ()
 
 if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
     set_target_properties(omath PROPERTIES
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
     )
-endif()
+endif ()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(omath PRIVATE -mavx2 -mfma)
-endif()
+endif ()
 
 target_compile_features(omath PUBLIC cxx_std_23)
 
 
-add_subdirectory(source)
-
-if(OMATH_BUILD_TESTS)
+if (OMATH_BUILD_TESTS)
     add_subdirectory(extlibs)
     add_subdirectory(tests)
-endif()
+endif ()
 
 if (OMATH_BUILD_EXAMPLES)
     add_subdirectory(examples)
-endif()
+endif ()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND OMATH_THREAT_WARNING_AS_ERROR)
     target_compile_options(omath PRIVATE /W4 /WX)
-elseif(OMATH_THREAT_WARNING_AS_ERROR)
+elseif (OMATH_THREAT_WARNING_AS_ERROR)
     target_compile_options(omath PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
+endif ()
 
 target_include_directories(omath
         PUBLIC
