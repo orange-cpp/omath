@@ -1,1 +1,0 @@
-target_sources(omath PRIVATE navigation_mesh.cpp a_star.cpp)
