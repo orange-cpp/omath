@@ -37,40 +37,9 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 | Linux          | ✅YES    |
 | Darwin (MacOS) | ✅YES    |
 
-## ⏬ Getting Started
-### Prerequisites
-- C++ Compiler
-- CMake (for building the project)
+## ⏬ Installation
+Please read our [installation guide](https://github.com/orange-cpp/omath/blob/main/INSTALL.md). If this link doesn't work check out INSTALL.md file.
 
-### Installation
-### vcpkg
-**Note**: Support vcpkg for package management
-1. Install vcpkg (https://github.com/microsoft/vcpkg)
-2. Run the following command to install the orange-math package:
-```
-vcpkg install orange-math
-```
-CMakeLists.txt
-```cmake
-find_package(omath CONFIG REQUIRED)
-target_link_libraries(main PRIVATE omath::omath)
-```
-For detailed commands on installing different versions and more information, please refer to Microsoft's official instructions (https://learn.microsoft.com/en-us/vcpkg/get_started/overview)
-### Build from source
-1. Clone the repository:
-   ```
-   git clone https://github.com/orange-cpp/omath.git
-   ```
-2. Navigate to the project directory:
-   ```
-   cd omath
-   ```
-3. Build the project using CMake:
-   ```
-   cmake --preset windows-release -S .
-   cmake --build cmake-build/build/windows-release --target omath -j 6
-   ```
-   Use **\<platform\>-\<build configuration\>** preset to build siutable version for yourself. Like **windows-release** or **linux-release**.
 ## ❔ Usage
 Simple world to screen function
 ```c++
