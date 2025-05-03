@@ -10,12 +10,11 @@
 #include <imgui.h>
 #endif
 
-
 namespace omath
 {
 
     template<class Type>
-        requires std::is_arithmetic_v<Type>
+    requires std::is_arithmetic_v<Type>
     class Vector2
     {
     public:
@@ -25,7 +24,7 @@ namespace omath
         // Constructors
         constexpr Vector2() = default;
 
-        constexpr Vector2(const Type& x, const Type& y) : x(x), y(y)
+        constexpr Vector2(const Type& x, const Type& y): x(x), y(y)
         {
         }
 
@@ -108,30 +107,30 @@ namespace omath
         }
 
         // Basic vector operations
-        [[nodiscard]] Type DistTo(const Vector2& vOther) const
+        [[nodiscard]] Type distance_to(const Vector2& other) const
         {
-            return std::sqrt(DistToSqr(vOther));
+            return std::sqrt(distance_to_sqr(other));
         }
 
-        [[nodiscard]] constexpr Type DistToSqr(const Vector2& vOther) const
+        [[nodiscard]] constexpr Type distance_to_sqr(const Vector2& other) const
         {
-            return (x - vOther.x) * (x - vOther.x) + (y - vOther.y) * (y - vOther.y);
+            return (x - other.x) * (x - other.x) + (y - other.y) * (y - other.y);
         }
 
-        [[nodiscard]] constexpr Type Dot(const Vector2& vOther) const
+        [[nodiscard]] constexpr Type dot(const Vector2& other) const
         {
-            return x * vOther.x + y * vOther.y;
+            return x * other.x + y * other.y;
         }
 
 #ifndef _MSC_VER
-        [[nodiscard]] constexpr Type Length() const
+        [[nodiscard]] constexpr Type length() const
         {
             return std::hypot(this->x, this->y);
         }
 
-        [[nodiscard]] constexpr Vector2 Normalized() const
+        [[nodiscard]] constexpr Vector2 normalized() const
         {
-            const Type len = Length();
+            const Type len = length();
             return len > 0.f ? *this / len : *this;
         }
 #else
@@ -146,12 +145,12 @@ namespace omath
             return len > 0.f ? *this / len : *this;
         }
 #endif
-        [[nodiscard]] constexpr Type LengthSqr() const
+        [[nodiscard]] constexpr Type length_sqr() const
         {
             return x * x + y * y;
         }
 
-        constexpr Vector2& Abs()
+        constexpr Vector2& abs()
         {
             // FIXME: Replace with std::abs, if it will become constexprable
             x = x < 0 ? -x : x;
@@ -186,20 +185,20 @@ namespace omath
         }
 
         // Sum of elements
-        [[nodiscard]] constexpr Type Sum() const
+        [[nodiscard]] constexpr Type sum() const
         {
             return x + y;
         }
 
         [[nodiscard]]
-        constexpr std::tuple<Type, Type> AsTuple() const
+        constexpr std::tuple<Type, Type> as_tuple() const
         {
             return std::make_tuple(x, y);
         }
 
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
-        ImVec2 ToImVec2() const
+        ImVec2 to_im_vec2() const
         {
             return {static_cast<float>(this->x), static_cast<float>(this->y)};
         }

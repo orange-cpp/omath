@@ -5,7 +5,6 @@
 #pragma once
 #include <cstdint>
 
-
 namespace omath::projection
 {
     enum class Error : uint16_t

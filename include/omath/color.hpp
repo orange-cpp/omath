@@ -4,14 +4,13 @@
 
 #pragma once
 
-#include <cstdint>
 #include "omath/vector3.hpp"
 #include "omath/vector4.hpp"
+#include <cstdint>
 
 #ifdef max
 #undef max
 #endif
-
 
 #ifdef min
 #undef min
@@ -19,80 +18,79 @@
 
 namespace omath
 {
-    struct HSV
+    struct Hsv
     {
         float hue{};
         float saturation{};
         float value{};
     };
 
-
     class Color final : public Vector4<float>
     {
     public:
-        constexpr Color(const float r, const float g, const float b, const float a) : Vector4(r, g, b, a)
+        constexpr Color(const float r, const float g, const float b, const float a): Vector4(r, g, b, a)
         {
-            Clamp(0.f, 1.f);
+            clamp(0.f, 1.f);
         }
 
         constexpr explicit Color() = default;
         [[nodiscard]]
-        constexpr static Color FromRGBA(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a)
+        constexpr static Color from_rgba(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a)
         {
             return Color{Vector4(r, g, b, a) / 255.f};
         }
 
         [[nodiscard]]
-        constexpr static Color FromHSV(float hue, const float saturation, const float value)
+        constexpr static Color from_hsv(float hue, const float saturation, const float value)
         {
             float r{}, g{}, b{};
 
             hue = std::clamp(hue, 0.f, 1.f);
 
             const int i = static_cast<int>(hue * 6.f);
-            const float f = hue * 6 - i;
+            const float f = hue * 6.f - static_cast<float>(i);
             const float p = value * (1 - saturation);
             const float q = value * (1 - f * saturation);
             const float t = value * (1 - (1 - f) * saturation);
 
             switch (i % 6)
             {
-                case 0:
-                    r = value, g = t, b = p;
-                    break;
-                case 1:
-                    r = q, g = value, b = p;
-                    break;
-                case 2:
-                    r = p, g = value, b = t;
-                    break;
-                case 3:
-                    r = p, g = q, b = value;
-                    break;
-                case 4:
-                    r = t, g = p, b = value;
-                    break;
-                case 5:
-                    r = value, g = p, b = q;
-                    break;
+            case 0:
+                r = value, g = t, b = p;
+                break;
+            case 1:
+                r = q, g = value, b = p;
+                break;
+            case 2:
+                r = p, g = value, b = t;
+                break;
+            case 3:
+                r = p, g = q, b = value;
+                break;
+            case 4:
+                r = t, g = p, b = value;
+                break;
+            case 5:
+                r = value, g = p, b = q;
+                break;
 
-                default:
-                    return {0.f, 0.f, 0.f, 0.f};
+            default:
+                return {0.f, 0.f, 0.f, 0.f};
             }
 
             return {r, g, b, 1.f};
         }
 
         [[nodiscard]]
-        constexpr static Color FromHSV(const HSV& hsv)
+        constexpr static Color from_hsv(const Hsv& hsv)
         {
-            return FromHSV(hsv.hue, hsv.saturation, hsv.value);
+            return from_hsv(hsv.hue, hsv.saturation, hsv.value);
         }
 
         [[nodiscard]]
-        constexpr HSV ToHSV() const
+        constexpr Hsv to_hsv() const
         {
-            HSV hsvData;
+            Hsv hsv_data;
 
             const float& red = x;
             const float& green = y;
@@ -102,70 +100,69 @@ namespace omath
             const float min = std::min({red, green, blue});
             const float delta = max - min;
 
-
             if (delta == 0.f)
-                hsvData.hue = 0.f;
+                hsv_data.hue = 0.f;
 
             else if (max == red)
-                hsvData.hue = 60.f * (std::fmodf(((green - blue) / delta), 6.f));
+                hsv_data.hue = 60.f * (std::fmodf(((green - blue) / delta), 6.f));
             else if (max == green)
-                hsvData.hue = 60.f * (((blue - red) / delta) + 2.f);
+                hsv_data.hue = 60.f * (((blue - red) / delta) + 2.f);
             else if (max == blue)
-                hsvData.hue = 60.f * (((red - green) / delta) + 4.f);
+                hsv_data.hue = 60.f * (((red - green) / delta) + 4.f);
 
-            if (hsvData.hue < 0.f)
-                hsvData.hue += 360.f;
+            if (hsv_data.hue < 0.f)
+                hsv_data.hue += 360.f;
 
-            hsvData.hue /= 360.f;
-            hsvData.saturation = max == 0.f ? 0.f : delta / max;
-            hsvData.value = max;
+            hsv_data.hue /= 360.f;
+            hsv_data.saturation = max == 0.f ? 0.f : delta / max;
+            hsv_data.value = max;
 
-            return hsvData;
+            return hsv_data;
         }
 
-        constexpr explicit Color(const Vector4& vec) : Vector4(vec)
+        constexpr explicit Color(const Vector4& vec): Vector4(vec)
         {
-            Clamp(0.f, 1.f);
+            clamp(0.f, 1.f);
         }
-        constexpr void SetHue(const float hue)
+        constexpr void set_hue(const float hue)
         {
-            auto hsv = ToHSV();
+            auto hsv = to_hsv();
             hsv.hue = hue;
 
-            *this = FromHSV(hsv);
+            *this = from_hsv(hsv);
         }
 
-        constexpr void SetSaturation(const float saturation)
+        constexpr void set_saturation(const float saturation)
         {
-            auto hsv = ToHSV();
+            auto hsv = to_hsv();
             hsv.saturation = saturation;
 
-            *this = FromHSV(hsv);
+            *this = from_hsv(hsv);
         }
 
-        constexpr void SetValue(const float value)
+        constexpr void set_value(const float value)
         {
-            auto hsv = ToHSV();
+            auto hsv = to_hsv();
             hsv.value = value;
 
-            *this = FromHSV(hsv);
+            *this = from_hsv(hsv);
         }
         [[nodiscard]]
-        constexpr Color Blend(const Color& other, float ratio) const
+        constexpr Color blend(const Color& other, float ratio) const
         {
             ratio = std::clamp(ratio, 0.f, 1.f);
             return Color(*this * (1.f - ratio) + other * ratio);
         }
 
-        [[nodiscard]] static constexpr Color Red()
+        [[nodiscard]] static constexpr Color red()
         {
             return {1.f, 0.f, 0.f, 1.f};
         }
-        [[nodiscard]] static constexpr Color Green()
+        [[nodiscard]] static constexpr Color green()
         {
             return {0.f, 1.f, 0.f, 1.f};
         }
-        [[nodiscard]] static constexpr Color Blue()
+        [[nodiscard]] static constexpr Color blue()
         {
             return {0.f, 0.f, 1.f, 1.f};
         }

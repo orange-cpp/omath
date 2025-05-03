@@ -180,20 +180,20 @@ TEST_F(UnitTestVector4, NegationOperator)
 // Test other member functions
 TEST_F(UnitTestVector4, LengthSqr)
 {
-    constexpr float lengthSqr = Vector4(1.0f, 2.0f, 3.0f, 4.0f).LengthSqr();
+    constexpr float lengthSqr = Vector4(1.0f, 2.0f, 3.0f, 4.0f).length_sqr();
     EXPECT_FLOAT_EQ(lengthSqr, 30.0f);
 }
 
 TEST_F(UnitTestVector4, DotProduct)
 {
-    constexpr float dot = Vector4(1.0f, 2.0f, 3.0f, 4.0f).Dot(Vector4(4.0f, 5.0f, 6.0f, 7.0f));
+    constexpr float dot = Vector4(1.0f, 2.0f, 3.0f, 4.0f).dot(Vector4(4.0f, 5.0f, 6.0f, 7.0f));
     EXPECT_FLOAT_EQ(dot, 60.0f);
 }
 
 TEST_F(UnitTestVector4, Abs)
 {
     Vector4 v3 = Vector4(-1.0f, -2.0f, -3.0f, -4.0f);
-    v3.Abs();
+    v3.abs();
     EXPECT_FLOAT_EQ(v3.x, 1.0f);
     EXPECT_FLOAT_EQ(v3.y, 2.0f);
     EXPECT_FLOAT_EQ(v3.z, 3.0f);
@@ -202,14 +202,14 @@ TEST_F(UnitTestVector4, Abs)
 
 TEST_F(UnitTestVector4, Sum)
 {
-    constexpr float sum = Vector4(1.0f, 2.0f, 3.0f, 4.0f).Sum();
+    constexpr float sum = Vector4(1.0f, 2.0f, 3.0f, 4.0f).sum();
     EXPECT_FLOAT_EQ(sum, 10.0f);
 }
 
 TEST_F(UnitTestVector4, Clamp)
 {
     Vector4 v3 = Vector4(1.0f, 2.0f, 3.0f, 4.0f);
-    v3.Clamp(1.5f, 2.5f);
+    v3.clamp(1.5f, 2.5f);
     EXPECT_FLOAT_EQ(v3.x, 1.5f);
     EXPECT_FLOAT_EQ(v3.y, 2.0f);
     EXPECT_FLOAT_EQ(v3.z, 2.5f);

@@ -3,9 +3,9 @@
 //
 
 #pragma once
-#include <vector>
 #include "omath/pathfinding/navigation_mesh.hpp"
 #include "omath/vector3.hpp"
+#include <vector>
 
 namespace omath::pathfinding
 {
@@ -14,17 +14,17 @@ namespace omath::pathfinding
     {
     public:
         [[nodiscard]]
-        static std::vector<Vector3<float>> FindPath(const Vector3<float>& start, const Vector3<float>& end,
-                                                    const NavigationMesh& navMesh);
+        static std::vector<Vector3<float>> find_path(const Vector3<float>& start, const Vector3<float>& end,
+                                                     const NavigationMesh& nav_mesh);
 
     private:
         [[nodiscard]]
         static std::vector<Vector3<float>>
-        ReconstructFinalPath(const std::unordered_map<Vector3<float>, PathNode>& closedList,
-                             const Vector3<float>& current);
+        reconstruct_final_path(const std::unordered_map<Vector3<float>, PathNode>& closed_list,
+                               const Vector3<float>& current);
 
         [[nodiscard]]
-        static auto GetPerfectNode(const std::unordered_map<Vector3<float>, PathNode>& openList,
-                                   const Vector3<float>& endVertex);
+        static auto get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
+                                     const Vector3<float>& end_vertex);
     };
 } // namespace omath::pathfinding

@@ -3,7 +3,6 @@
 //
 #include "omath/projectile_prediction/proj_pred_engine.hpp"
 
-
 namespace omath::projectile_prediction
 {
 

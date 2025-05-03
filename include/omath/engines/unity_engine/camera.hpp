@@ -8,14 +8,15 @@
 
 namespace omath::unity_engine
 {
-    class Camera final : public projection::Camera<Mat4x4, ViewAngles>
+    class Camera final : public projection::Camera<Mat4X4, ViewAngles>
     {
     public:
-        Camera(const Vector3<float>& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
+        Camera(const Vector3<float>& position, const ViewAngles& view_angles, const projection::ViewPort& view_port,
                const Angle<float, 0.f, 180.f, AngleFlags::Clamped>& fov, float near, float far);
-        void LookAt(const Vector3<float>& target) override;
+        void look_at(const Vector3<float>& target) override;
+
     protected:
-        [[nodiscard]] Mat4x4 CalcViewMatrix() const override;
-        [[nodiscard]] Mat4x4 CalcProjectionMatrix() const override;
+        [[nodiscard]] Mat4X4 calc_view_matrix() const override;
+        [[nodiscard]] Mat4X4 calc_projection_matrix() const override;
     };
-}
+} // namespace omath::unity_engine

@@ -4,12 +4,12 @@
 
 #pragma once
 
+#include "omath/projection/error_codes.hpp"
 #include <expected>
 #include <omath/angle.hpp>
 #include <omath/mat.hpp>
 #include <omath/vector3.hpp>
 #include <type_traits>
-#include "omath/projection/error_codes.hpp"
 
 namespace omath::projection
 {
@@ -19,163 +19,156 @@ namespace omath::projection
         float m_width;
         float m_height;
 
-        [[nodiscard]] constexpr float AspectRatio() const
+        [[nodiscard]] constexpr float aspect_ratio() const
         {
             return m_width / m_height;
         }
     };
     using FieldOfView = Angle<float, 0.f, 180.f, AngleFlags::Clamped>;
 
-    template<class Mat4x4Type, class ViewAnglesType>
+    template<class Mat4X4Type, class ViewAnglesType>
     class Camera
     {
     public:
         virtual ~Camera() = default;
-        Camera(const Vector3<float>& position, const ViewAnglesType& viewAngles, const ViewPort& viewPort,
-               const FieldOfView& fov, const float near, const float far) :
-            m_viewPort(viewPort), m_fieldOfView(fov), m_farPlaneDistance(far), m_nearPlaneDistance(near),
-            m_viewAngles(viewAngles), m_origin(position)
+        Camera(const Vector3<float>& position, const ViewAnglesType& view_angles, const ViewPort& view_port,
+               const FieldOfView& fov, const float near, const float far)
+            : m_view_port(view_port), m_field_of_view(fov), m_far_plane_distance(far), m_near_plane_distance(near),
+              m_view_angles(view_angles), m_origin(position)
         {
         }
 
     protected:
-        virtual void LookAt(const Vector3<float>& target) = 0;
+        virtual void look_at(const Vector3<float>& target) = 0;
 
-        [[nodiscard]] virtual Mat4x4Type CalcViewMatrix() const = 0;
+        [[nodiscard]] virtual Mat4X4Type calc_view_matrix() const = 0;
 
-        [[nodiscard]] virtual Mat4x4Type CalcProjectionMatrix() const = 0;
+        [[nodiscard]] virtual Mat4X4Type calc_projection_matrix() const = 0;
 
-        [[nodiscard]] Mat4x4Type CalcViewProjectionMatrix() const
+        [[nodiscard]] Mat4X4Type calc_view_projection_matrix() const
         {
-            return CalcProjectionMatrix() * CalcViewMatrix();
+            return calc_projection_matrix() * calc_view_matrix();
         }
 
     public:
-        [[nodiscard]] const Mat4x4Type& GetViewProjectionMatrix() const
+        [[nodiscard]] const Mat4X4Type& get_view_projection_matrix() const
         {
-            if (!m_viewProjectionMatrix.has_value())
-                m_viewProjectionMatrix = CalcViewProjectionMatrix();
+            if (!m_view_projection_matrix.has_value())
+                m_view_projection_matrix = calc_view_projection_matrix();
 
-            return m_viewProjectionMatrix.value();
+            return m_view_projection_matrix.value();
         }
 
-        void SetFieldOfView(const FieldOfView& fov)
+        void set_field_of_view(const FieldOfView& fov)
         {
-            m_fieldOfView = fov;
-            m_viewProjectionMatrix = std::nullopt;
+            m_field_of_view = fov;
+            m_view_projection_matrix = std::nullopt;
         }
 
-        void SetNearPlane(const float near)
+        void set_near_plane(const float near)
         {
-            m_nearPlaneDistance = near;
-            m_viewProjectionMatrix = std::nullopt;
+            m_near_plane_distance = near;
+            m_view_projection_matrix = std::nullopt;
         }
 
-        void SetFarPlane(const float far)
+        void set_far_plane(const float far)
         {
-            m_farPlaneDistance = far;
-            m_viewProjectionMatrix = std::nullopt;
+            m_far_plane_distance = far;
+            m_view_projection_matrix = std::nullopt;
         }
 
-        void SetViewAngles(const ViewAnglesType& viewAngles)
+        void set_view_angles(const ViewAnglesType& view_angles)
         {
-            m_viewAngles = viewAngles;
-            m_viewProjectionMatrix = std::nullopt;
+            m_view_angles = view_angles;
+            m_view_projection_matrix = std::nullopt;
         }
 
-        void SetOrigin(const Vector3<float>& origin)
+        void set_origin(const Vector3<float>& origin)
         {
             m_origin = origin;
-            m_viewProjectionMatrix = std::nullopt;
+            m_view_projection_matrix = std::nullopt;
         }
 
-        void SetViewPort(const ViewPort& viewPort)
+        void set_view_port(const ViewPort& view_port)
         {
-            m_viewPort = viewPort;
-            m_viewProjectionMatrix = std::nullopt;
+            m_view_port = view_port;
+            m_view_projection_matrix = std::nullopt;
         }
 
-        [[nodiscard]] const FieldOfView& GetFieldOfView() const
+        [[nodiscard]] const FieldOfView& get_field_of_view() const
         {
-            return m_fieldOfView;
+            return m_field_of_view;
         }
 
-        [[nodiscard]] const float& GetNearPlane() const
+        [[nodiscard]] const float& get_near_plane() const
         {
-            return m_nearPlaneDistance;
+            return m_near_plane_distance;
         }
 
-        [[nodiscard]] const float& GetFarPlane() const
+        [[nodiscard]] const float& get_far_plane() const
         {
-            return m_farPlaneDistance;
+            return m_far_plane_distance;
         }
 
-        [[nodiscard]] const ViewAnglesType& GetViewAngles() const
+        [[nodiscard]] const ViewAnglesType& get_view_angles() const
         {
-            return m_viewAngles;
+            return m_view_angles;
         }
 
-        [[nodiscard]] const Vector3<float>& GetOrigin() const
+        [[nodiscard]] const Vector3<float>& get_origin() const
         {
             return m_origin;
         }
 
-        [[nodiscard]] std::expected<Vector3<float>, Error> WorldToScreen(const Vector3<float>& worldPosition) const
+        [[nodiscard]] std::expected<Vector3<float>, Error> world_to_screen(const Vector3<float>& world_position) const
         {
-            auto normalizedCords = WorldToViewPort(worldPosition);
+            auto normalized_cords = world_to_view_port(world_position);
 
-            if (!normalizedCords.has_value())
-                return std::unexpected{normalizedCords.error()};
+            if (!normalized_cords.has_value())
+                return std::unexpected{normalized_cords.error()};
 
-
-            return NdcToScreenPosition(*normalizedCords);
+            return ndc_to_screen_position(*normalized_cords);
         }
 
-        [[nodiscard]] std::expected<Vector3<float>, Error> WorldToViewPort(const Vector3<float>& worldPosition) const
+        [[nodiscard]] std::expected<Vector3<float>, Error>
+        world_to_view_port(const Vector3<float>& world_position) const
         {
-            auto projected = GetViewProjectionMatrix() *
-                                   MatColumnFromVector<float, Mat4x4Type::GetStoreOrdering()>(worldPosition);
+            auto projected = get_view_projection_matrix()
+                             * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(world_position);
 
-            if (projected.At(3, 0) == 0.0f)
+            if (projected.at(3, 0) == 0.0f)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
-            projected /= projected.At(3, 0);
+            projected /= projected.at(3, 0);
 
-            if (IsNdcOutOfBounds(projected))
+            if (is_ndc_out_of_bounds(projected))
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
-            return Vector3<float>{projected.At(0, 0), projected.At(1, 0), projected.At(2, 0)};
+            return Vector3<float>{projected.at(0, 0), projected.at(1, 0), projected.at(2, 0)};
         }
 
     protected:
-        ViewPort m_viewPort{};
-        Angle<float, 0.f, 180.f, AngleFlags::Clamped> m_fieldOfView;
+        ViewPort m_view_port{};
+        Angle<float, 0.f, 180.f, AngleFlags::Clamped> m_field_of_view;
 
-        mutable std::optional<Mat4x4Type> m_viewProjectionMatrix;
+        mutable std::optional<Mat4X4Type> m_view_projection_matrix;
 
-        float m_farPlaneDistance;
-        float m_nearPlaneDistance;
+        float m_far_plane_distance;
+        float m_near_plane_distance;
 
-
-        ViewAnglesType m_viewAngles;
+        ViewAnglesType m_view_angles;
         Vector3<float> m_origin;
 
     private:
-        template<class Type>
-        [[nodiscard]]
-        constexpr static bool IsNdcOutOfBounds(const Type& ndc)
+        template<class Type> [[nodiscard]]
+        constexpr static bool is_ndc_out_of_bounds(const Type& ndc)
         {
-            return std::ranges::any_of(ndc.RawArray(), [](const auto& val) { return val < -1 || val > 1; });
+            return std::ranges::any_of(ndc.raw_array(), [](const auto& val) { return val < -1 || val > 1; });
         }
 
-        [[nodiscard]] Vector3<float> NdcToScreenPosition(const Vector3<float>& ndc) const
+        [[nodiscard]] Vector3<float> ndc_to_screen_position(const Vector3<float>& ndc) const
         {
-            return
-            {
-                (ndc.x + 1.f) / 2.f * m_viewPort.m_width,
-                (1.f - ndc.y) / 2.f * m_viewPort.m_height,
-                ndc.z
-            };
+            return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (1.f - ndc.y) / 2.f * m_view_port.m_height, ndc.z};
         }
     };
 } // namespace omath::projection

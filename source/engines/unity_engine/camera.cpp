@@ -4,25 +4,24 @@
 #include <omath/engines/unity_engine/camera.hpp>
 #include <omath/engines/unity_engine/formulas.hpp>
 
-
 namespace omath::unity_engine
 {
-    Camera::Camera(const Vector3<float>& position, const ViewAngles& viewAngles, const projection::ViewPort& viewPort,
-                   const projection::FieldOfView& fov, const float near, const float far) :
-        projection::Camera<Mat4x4, ViewAngles>(position, viewAngles, viewPort, fov, near, far)
+    Camera::Camera(const Vector3<float>& position, const ViewAngles& view_angles, const projection::ViewPort& view_port,
+                   const projection::FieldOfView& fov, const float near, const float far)
+        : projection::Camera<Mat4X4, ViewAngles>(position, view_angles, view_port, fov, near, far)
     {
     }
-    void Camera::LookAt([[maybe_unused]] const Vector3<float>& target)
+    void Camera::look_at([[maybe_unused]] const Vector3<float>& target)
     {
         throw std::runtime_error("Not implemented");
     }
-    Mat4x4 Camera::CalcViewMatrix() const
+    Mat4X4 Camera::calc_view_matrix() const
     {
-        return unity_engine::CalcViewMatrix(m_viewAngles, m_origin);
+        return unity_engine::calc_view_matrix(m_view_angles, m_origin);
     }
-    Mat4x4 Camera::CalcProjectionMatrix() const
+    Mat4X4 Camera::calc_projection_matrix() const
     {
-        return CalcPerspectiveProjectionMatrix(m_fieldOfView.AsDegrees(), m_viewPort.AspectRatio(), m_nearPlaneDistance,
-                                               m_farPlaneDistance);
+        return calc_perspective_projection_matrix(m_field_of_view.as_degrees(), m_view_port.aspect_ratio(),
+                                                  m_near_plane_distance, m_far_plane_distance);
     }
 } // namespace omath::unity_engine

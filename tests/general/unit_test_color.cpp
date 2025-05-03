@@ -15,8 +15,8 @@ protected:
 
     void SetUp() override
     {
-        color1 = Color::Red();
-        color2 = Color::Green();
+        color1 = Color::red();
+        color2 = Color::green();
     }
 };
 
@@ -43,7 +43,7 @@ TEST_F(UnitTestColor, Constructor_Vector4)
 // Test static methods for color creation
 TEST_F(UnitTestColor, FromRGBA)
 {
-    constexpr Color color = Color::FromRGBA(128, 64, 32, 255);
+    constexpr Color color = Color::from_rgba(128, 64, 32, 255);
     EXPECT_FLOAT_EQ(color.x, 128.0f / 255.0f);
     EXPECT_FLOAT_EQ(color.y, 64.0f / 255.0f);
     EXPECT_FLOAT_EQ(color.z, 32.0f / 255.0f);
@@ -52,7 +52,7 @@ TEST_F(UnitTestColor, FromRGBA)
 
 TEST_F(UnitTestColor, FromHSV)
 {
-    constexpr Color color = Color::FromHSV(0.0f, 1.0f, 1.0f); // Red in HSV
+    constexpr Color color = Color::from_hsv(0.0f, 1.0f, 1.0f); // Red in HSV
     EXPECT_FLOAT_EQ(color.x, 1.0f);
     EXPECT_FLOAT_EQ(color.y, 0.0f);
     EXPECT_FLOAT_EQ(color.z, 0.0f);
@@ -62,7 +62,7 @@ TEST_F(UnitTestColor, FromHSV)
 // Test HSV conversion
 TEST_F(UnitTestColor, ToHSV)
 {
-    HSV hsv = color1.ToHSV(); // Red color
+    Hsv hsv = color1.to_hsv(); // Red color
     EXPECT_FLOAT_EQ(hsv.hue, 0.0f);
     EXPECT_FLOAT_EQ(hsv.saturation, 1.0f);
     EXPECT_FLOAT_EQ(hsv.value, 1.0f);
@@ -71,7 +71,7 @@ TEST_F(UnitTestColor, ToHSV)
 // Test color blending
 TEST_F(UnitTestColor, Blend)
 {
-    Color blended = color1.Blend(color2, 0.5f);
+    Color blended = color1.blend(color2, 0.5f);
     EXPECT_FLOAT_EQ(blended.x, 0.5f);
     EXPECT_FLOAT_EQ(blended.y, 0.5f);
     EXPECT_FLOAT_EQ(blended.z, 0.0f);
@@ -81,9 +81,9 @@ TEST_F(UnitTestColor, Blend)
 // Test predefined colors
 TEST_F(UnitTestColor, PredefinedColors)
 {
-    constexpr Color red = Color::Red();
-    constexpr Color green = Color::Green();
-    constexpr Color blue = Color::Blue();
+    constexpr Color red = Color::red();
+    constexpr Color green = Color::green();
+    constexpr Color blue = Color::blue();
 
     EXPECT_FLOAT_EQ(red.x, 1.0f);
     EXPECT_FLOAT_EQ(red.y, 0.0f);
@@ -106,7 +106,7 @@ TEST_F(UnitTestColor, BlendVector3)
 {
     constexpr Color v1(1.0f, 0.0f, 0.0f, 1.f); // Red
     constexpr Color v2(0.0f, 1.0f, 0.0f, 1.f); // Green
-    constexpr Color blended = v1.Blend(v2, 0.5f);
+    constexpr Color blended = v1.blend(v2, 0.5f);
     EXPECT_FLOAT_EQ(blended.x, 0.5f);
     EXPECT_FLOAT_EQ(blended.y, 0.5f);
     EXPECT_FLOAT_EQ(blended.z, 0.0f);

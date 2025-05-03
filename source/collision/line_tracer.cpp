@@ -5,63 +5,59 @@
 
 namespace omath::collision
 {
-    bool LineTracer::CanTraceLine(const Ray& ray, const Triangle<Vector3<float>>& triangle)
+    bool LineTracer::can_trace_line(const Ray& ray, const Triangle<Vector3<float>>& triangle)
     {
-        return GetRayHitPoint(ray, triangle) == ray.end;
+        return get_ray_hit_point(ray, triangle) == ray.end;
     }
-    Vector3<float> Ray::DirectionVector() const
+    Vector3<float> Ray::direction_vector() const
     {
         return end - start;
     }
 
-    Vector3<float> Ray::DirectionVectorNormalized() const
+    Vector3<float> Ray::direction_vector_normalized() const
     {
-        return DirectionVector().Normalized();
+        return direction_vector().normalized();
     }
 
-    Vector3<float> LineTracer::GetRayHitPoint(const Ray& ray, const Triangle<Vector3<float>>& triangle)
+    Vector3<float> LineTracer::get_ray_hit_point(const Ray& ray, const Triangle<Vector3<float>>& triangle)
     {
-        constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
+        constexpr float k_epsilon = std::numeric_limits<float>::epsilon();
 
-        const auto sideA = triangle.SideAVector();
-        const auto sideB = triangle.SideBVector();
+        const auto side_a = triangle.side_a_vector();
+        const auto side_b = triangle.side_b_vector();
 
+        const auto ray_dir = ray.direction_vector();
 
-        const auto rayDir = ray.DirectionVector();
+        const auto p = ray_dir.cross(side_b);
+        const auto det = side_a.dot(p);
 
-        const auto p = rayDir.Cross(sideB);
-        const auto det = sideA.Dot(p);
-
-
-        if (std::abs(det) < kEpsilon)
+        if (std::abs(det) < k_epsilon)
             return ray.end;
 
-        const auto invDet = 1.0f / det;
+        const auto inv_det = 1.0f / det;
         const auto t = ray.start - triangle.m_vertex2;
-        const auto u = t.Dot(p) * invDet;
+        const auto u = t.dot(p) * inv_det;
 
-
-        if ((u < 0 && std::abs(u) > kEpsilon) || (u > 1 && std::abs(u - 1) > kEpsilon))
+        if ((u < 0 && std::abs(u) > k_epsilon) || (u > 1 && std::abs(u - 1) > k_epsilon))
             return ray.end;
 
-        const auto q = t.Cross(sideA);
-        const auto v = rayDir.Dot(q) * invDet;
+        const auto q = t.cross(side_a);
+        // ReSharper disable once CppTooWideScopeInitStatement
+        const auto v = ray_dir.dot(q) * inv_det;
 
-
-        if ((v < 0 && std::abs(v) > kEpsilon) || (u + v > 1 && std::abs(u + v - 1) > kEpsilon))
+        if ((v < 0 && std::abs(v) > k_epsilon) || (u + v > 1 && std::abs(u + v - 1) > k_epsilon))
             return ray.end;
 
-        const auto tHit = sideB.Dot(q) * invDet;
-
+        const auto t_hit = side_b.dot(q) * inv_det;
 
         if (ray.infinite_length)
         {
-            if (tHit <= kEpsilon)
+            if (t_hit <= k_epsilon)
                 return ray.end;
         }
-        else if (tHit <= kEpsilon || tHit > 1.0f - kEpsilon)
+        else if (t_hit <= k_epsilon || t_hit > 1.0f - k_epsilon)
             return ray.end;
 
-        return ray.start + rayDir * tHit;
+        return ray.start + ray_dir * t_hit;
     }
 } // namespace omath::collision

@@ -164,26 +164,26 @@ TEST_F(UnitTestVector3, NegationOperator)
 // Test other member functions
 TEST_F(UnitTestVector3, DistToSqr)
 {
-    constexpr auto distSqr = Vector3(1.0f, 2.0f, 3.0f).DistToSqr(Vector3(4.0f, 5.0f, 6.0f));
+    constexpr auto distSqr = Vector3(1.0f, 2.0f, 3.0f).distance_to_sqr(Vector3(4.0f, 5.0f, 6.0f));
     EXPECT_FLOAT_EQ(distSqr, 27.0f);
 }
 
 TEST_F(UnitTestVector3, DotProduct)
 {
-    constexpr auto dot = Vector3(1.0f, 2.0f, 3.0f).Dot(Vector3(4.0f, 5.0f, 6.0f));
+    constexpr auto dot = Vector3(1.0f, 2.0f, 3.0f).dot(Vector3(4.0f, 5.0f, 6.0f));
     EXPECT_FLOAT_EQ(dot, 32.0f);
 }
 
 TEST_F(UnitTestVector3, LengthSqr)
 {
-    constexpr auto lengthSqr = Vector3(1.0f, 2.0f, 3.0f).LengthSqr();
+    constexpr auto lengthSqr = Vector3(1.0f, 2.0f, 3.0f).length_sqr();
     EXPECT_FLOAT_EQ(lengthSqr, 14.0f);
 }
 
 TEST_F(UnitTestVector3, Abs)
 {
     auto v3 = Vector3(-1.0f, -2.0f, -3.0f);
-    v3.Abs();
+    v3.abs();
     EXPECT_FLOAT_EQ(v3.x, 1.0f);
     EXPECT_FLOAT_EQ(v3.y, 2.0f);
     EXPECT_FLOAT_EQ(v3.z, 3.0f);
@@ -191,19 +191,19 @@ TEST_F(UnitTestVector3, Abs)
 
 TEST_F(UnitTestVector3, Sum)
 {
-    constexpr auto sum = Vector3(1.0f, 2.0f, 3.0f).Sum();
+    constexpr auto sum = Vector3(1.0f, 2.0f, 3.0f).sum();
     EXPECT_FLOAT_EQ(sum, 6.0f);
 }
 
 TEST_F(UnitTestVector3, Sum2D)
 {
-    constexpr auto sum2D = Vector3(1.0f, 2.0f, 3.0f).Sum2D();
+    constexpr auto sum2D = Vector3(1.0f, 2.0f, 3.0f).sum_2d();
     EXPECT_FLOAT_EQ(sum2D, 3.0f);
 }
 
 TEST_F(UnitTestVector3, CrossProduct)
 {
-    constexpr Vector3 v3 = Vector3(1.0f, 2.0f, 3.0f).Cross(Vector3(4.0f, 5.0f, 6.0f));
+    constexpr Vector3 v3 = Vector3(1.0f, 2.0f, 3.0f).cross(Vector3(4.0f, 5.0f, 6.0f));
     EXPECT_FLOAT_EQ(v3.x, -3.0f);
     EXPECT_FLOAT_EQ(v3.y, 6.0f);
     EXPECT_FLOAT_EQ(v3.z, -3.0f);
@@ -298,41 +298,41 @@ TEST_F(UnitTestVector3, Division_WithNaN)
 // Test Length, Length2D, and Normalized
 TEST_F(UnitTestVector3, Length)
 {
-    const float length = v1.Length();
+    const float length = v1.length();
     EXPECT_FLOAT_EQ(length, std::sqrt(14.0f));
 }
 
 TEST_F(UnitTestVector3, Length_ZeroVector)
 {
     constexpr Vector3 v_zero(0.0f, 0.0f, 0.0f);
-    const float length = v_zero.Length();
+    const float length = v_zero.length();
     EXPECT_FLOAT_EQ(length, 0.0f);
 }
 
 TEST_F(UnitTestVector3, Length_LargeValues)
 {
     constexpr Vector3 v_large(FLT_MAX, FLT_MAX, FLT_MAX);
-    const float length = v_large.Length();
+    const float length = v_large.length();
     EXPECT_TRUE(std::isinf(length));
 }
 
 TEST_F(UnitTestVector3, Length2D)
 {
-    const float length2D = v1.Length2D();
+    const float length2D = v1.length_2d();
     EXPECT_FLOAT_EQ(length2D, std::sqrt(5.0f));
 }
 
 TEST_F(UnitTestVector3, Normalized)
 {
-    const Vector3 v_norm = v1.Normalized();
-    const float length = v_norm.Length();
+    const Vector3 v_norm = v1.normalized();
+    const float length = v_norm.length();
     EXPECT_NEAR(length, 1.0f, 0.0001f);
 }
 
 TEST_F(UnitTestVector3, Normalized_ZeroVector)
 {
     constexpr Vector3 v_zero(0.0f, 0.0f, 0.0f);
-    const Vector3 v_norm = v_zero.Normalized();
+    const Vector3 v_norm = v_zero.normalized();
     EXPECT_FLOAT_EQ(v_norm.x, 0.0f);
     EXPECT_FLOAT_EQ(v_norm.y, 0.0f);
     EXPECT_FLOAT_EQ(v_norm.z, 0.0f);
@@ -343,7 +343,7 @@ TEST_F(UnitTestVector3, CrossProduct_ParallelVectors)
 {
     constexpr Vector3 v_a(1.0f, 2.0f, 3.0f);
     constexpr Vector3 v_b = v_a * 2.0f; // Parallel to v_a
-    constexpr Vector3 cross = v_a.Cross(v_b);
+    constexpr Vector3 cross = v_a.cross(v_b);
     EXPECT_FLOAT_EQ(cross.x, 0.0f);
     EXPECT_FLOAT_EQ(cross.y, 0.0f);
     EXPECT_FLOAT_EQ(cross.z, 0.0f);
@@ -353,7 +353,7 @@ TEST_F(UnitTestVector3, CrossProduct_OrthogonalVectors)
 {
     constexpr Vector3 v_a(1.0f, 0.0f, 0.0f);
     constexpr Vector3 v_b(0.0f, 1.0f, 0.0f);
-    constexpr Vector3 cross = v_a.Cross(v_b);
+    constexpr Vector3 cross = v_a.cross(v_b);
     EXPECT_FLOAT_EQ(cross.x, 0.0f);
     EXPECT_FLOAT_EQ(cross.y, 0.0f);
     EXPECT_FLOAT_EQ(cross.z, 1.0f);
@@ -381,7 +381,7 @@ TEST_F(UnitTestVector3, Subtraction_NegativeValues)
 // Test AsTuple method
 TEST_F(UnitTestVector3, AsTuple)
 {
-    const auto tuple = v1.AsTuple();
+    const auto tuple = v1.as_tuple();
     EXPECT_FLOAT_EQ(std::get<0>(tuple), v1.x);
     EXPECT_FLOAT_EQ(std::get<1>(tuple), v1.y);
     EXPECT_FLOAT_EQ(std::get<2>(tuple), v1.z);
@@ -390,20 +390,20 @@ TEST_F(UnitTestVector3, AsTuple)
 // Test AsTuple method
 TEST_F(UnitTestVector3, AngleBeatween)
 {
-    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).AngleBetween({1, 0 ,0}).value().AsDegrees(), 90.0f);
-    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).AngleBetween({0.0f, 0.0f, 1.0f}).value().AsDegrees(), 0.0f);
-    EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).AngleBetween({0.0f, 0.0f, 1.0f}).has_value());
+    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).angle_between({1, 0 ,0}).value().as_degrees(), 90.0f);
+    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).angle_between({0.0f, 0.0f, 1.0f}).value().as_degrees(), 0.0f);
+    EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).angle_between({0.0f, 0.0f, 1.0f}).has_value());
 }
 
 TEST_F(UnitTestVector3, IsPerpendicular)
 {
-    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).IsPerpendicular({1, 0 ,0}), true);
-    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).IsPerpendicular({0.0f, 0.0f, 1.0f}), false);
-    EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).IsPerpendicular({0.0f, 0.0f, 1.0f}));
+    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).is_perpendicular({1, 0 ,0}), true);
+    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).is_perpendicular({0.0f, 0.0f, 1.0f}), false);
+    EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).is_perpendicular({0.0f, 0.0f, 1.0f}));
 }
 
 // Static assertions (compile-time checks)
-static_assert(Vector3(1.0f, 2.0f, 3.0f).LengthSqr() == 14.0f, "LengthSqr should be 14");
-static_assert(Vector3(1.0f, 2.0f, 3.0f).Dot(Vector3(4.0f, 5.0f, 6.0f)) == 32.0f, "Dot product should be 32");
-static_assert(Vector3(4.0f, 5.0f, 6.0f).DistToSqr(Vector3(1.0f, 2.0f, 3.0f)) == 27.0f, "DistToSqr should be 27");
-static_assert(Vector3(-1.0f, -2.0f, -3.0f).Abs() == Vector3(1.0f, 2.0f, 3.0f), "Abs should convert negative values to positive");
+static_assert(Vector3(1.0f, 2.0f, 3.0f).length_sqr() == 14.0f, "LengthSqr should be 14");
+static_assert(Vector3(1.0f, 2.0f, 3.0f).dot(Vector3(4.0f, 5.0f, 6.0f)) == 32.0f, "Dot product should be 32");
+static_assert(Vector3(4.0f, 5.0f, 6.0f).distance_to_sqr(Vector3(1.0f, 2.0f, 3.0f)) == 27.0f, "DistToSqr should be 27");
+static_assert(Vector3(-1.0f, -2.0f, -3.0f).abs() == Vector3(1.0f, 2.0f, 3.0f), "Abs should convert negative values to positive");

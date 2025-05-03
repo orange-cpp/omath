@@ -6,15 +6,14 @@
 #include "omath/projectile_prediction/target.hpp"
 #include "omath/vector3.hpp"
 
-
 namespace omath::projectile_prediction
 {
     class ProjPredEngine
     {
     public:
         [[nodiscard]]
-        virtual std::optional<Vector3<float>> MaybeCalculateAimPoint(const Projectile& projectile,
-                                                              const Target& target) const = 0;
+        virtual std::optional<Vector3<float>> maybe_calculate_aim_point(const Projectile& projectile,
+                                                                        const Target& target) const = 0;
         virtual ~ProjPredEngine() = default;
     };
 } // namespace omath::projectile_prediction

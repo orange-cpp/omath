@@ -1,8 +1,8 @@
 #pragma once
+#include "omath/vector3.hpp"
 #include <initializer_list>
 #include <memory>
 #include <string>
-#include "omath/vector3.hpp"
 
 namespace omath
 {
@@ -16,51 +16,51 @@ namespace omath
         Matrix(const std::initializer_list<std::initializer_list<float>>& rows);
 
         [[nodiscard]]
-        static Matrix ToScreenMatrix(float screenWidth, float screenHeight);
+        static Matrix to_screen_matrix(float screen_width, float screen_height);
 
         [[nodiscard]]
-        static Matrix TranslationMatrix(const Vector3<float>& diff);
+        static Matrix translation_matrix(const Vector3<float>& diff);
 
         [[nodiscard]]
-        static Matrix OrientationMatrix(const Vector3<float>& forward, const Vector3<float>& right, const Vector3<float>& up);
+        static Matrix orientation_matrix(const Vector3<float>& forward, const Vector3<float>& right,
+                                         const Vector3<float>& up);
 
         [[nodiscard]]
-        static Matrix ProjectionMatrix(float fieldOfView, float aspectRatio, float near, float far);
+        static Matrix projection_matrix(float field_of_view, float aspect_ratio, float near, float far);
 
         Matrix(const Matrix& other);
 
-        Matrix(size_t rows, size_t columns, const float* pRaw);
+        Matrix(size_t rows, size_t columns, const float* raw_data);
 
         Matrix(Matrix&& other) noexcept;
 
         [[nodiscard]]
-        size_t RowCount() const noexcept;
-
+        size_t row_count() const noexcept;
 
         [[nodiscard]]
         float& operator[](size_t row, size_t column);
 
         [[nodiscard]]
-        size_t ColumnsCount() const noexcept;
+        size_t columns_count() const noexcept;
 
         [[nodiscard]]
-        std::pair<size_t, size_t> Size() const noexcept;
+        std::pair<size_t, size_t> size() const noexcept;
 
         [[nodiscard]]
-        float& At(size_t iRow, size_t iCol);
+        float& at(size_t row, size_t col);
 
         [[nodiscard]]
-        float Sum();
+        float sum();
 
-        void SetDataFromRaw(const float* pRawMatrix);
-
-        [[nodiscard]]
-        Matrix Transpose() const;
-
-        void Set(float val);
+        void set_data_from_raw(const float* raw_matrix);
 
         [[nodiscard]]
-        const float& At(size_t iRow, size_t iCol) const;
+        Matrix transpose() const;
+
+        void set(float val);
+
+        [[nodiscard]]
+        const float& at(size_t row, size_t col) const;
 
         Matrix operator*(const Matrix& other) const;
 
@@ -72,22 +72,22 @@ namespace omath
 
         Matrix& operator/=(float f);
 
-        void Clear();
+        void clear();
 
         [[nodiscard]]
-        Matrix Strip(size_t row, size_t column) const;
+        Matrix strip(size_t row, size_t column) const;
 
         [[nodiscard]]
-        float Minor(size_t i, size_t j) const;
+        float minor(size_t i, size_t j) const;
 
         [[nodiscard]]
-        float AlgComplement(size_t i, size_t j) const;
+        float alg_complement(size_t i, size_t j) const;
 
         [[nodiscard]]
-        float Determinant() const;
+        float determinant() const;
 
         [[nodiscard]]
-        const float* Raw() const;
+        const float* raw() const;
 
         Matrix& operator=(const Matrix& other);
 
@@ -96,7 +96,7 @@ namespace omath
         Matrix operator/(float f) const;
 
         [[nodiscard]]
-        std::string ToString() const;
+        std::string to_string() const;
 
         ~Matrix();
 
