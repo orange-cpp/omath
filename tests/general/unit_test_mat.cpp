@@ -96,7 +96,7 @@ TEST_F(UnitTestMat, Operator_Division_Scalar)
 // Test matrix functions
 TEST_F(UnitTestMat, Transpose)
 {
-    Mat<2, 2> m3 = m2.Transposed();
+    Mat<2, 2> m3 = m2.transposed();
     EXPECT_FLOAT_EQ(m3.at(0, 0), m2.at(0, 0));
     EXPECT_FLOAT_EQ(m3.at(0, 1), m2.at(1, 0));
     EXPECT_FLOAT_EQ(m3.at(1, 0), m2.at(0, 1));
@@ -105,7 +105,7 @@ TEST_F(UnitTestMat, Transpose)
 
 TEST_F(UnitTestMat, Determinant)
 {
-    const float det = m2.Determinant();
+    const float det = m2.determinant();
     EXPECT_FLOAT_EQ(det, -2.0f);
 }
 
@@ -175,7 +175,7 @@ TEST_F(UnitTestMat, Method_At_OutOfRange)
 // Test Determinant for 3x3 matrix
 TEST(UnitTestMatStandalone, Determinant_3x3)
 {
-    constexpr auto det = Mat<3, 3>{{6, 1, 1}, {4, -2, 5}, {2, 8, 7}}.Determinant();
+    constexpr auto det = Mat<3, 3>{{6, 1, 1}, {4, -2, 5}, {2, 8, 7}}.determinant();
     EXPECT_FLOAT_EQ(det, -306.0f);
 }
 
@@ -196,7 +196,7 @@ TEST(UnitTestMatStandalone, Strip_3x3)
 TEST(UnitTestMatStandalone, Transpose_NonSquare)
 {
     constexpr Mat<2, 3> m{{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
-    auto transposed = m.Transposed();
+    auto transposed = m.transposed();
     EXPECT_EQ(transposed.row_count(), 3);
     EXPECT_EQ(transposed.columns_count(), 2);
     EXPECT_FLOAT_EQ(transposed.at(0, 0), 1.0f);

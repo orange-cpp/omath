@@ -27,7 +27,7 @@ namespace omath::opengl_engine
     }
     Mat4X4 Camera::calc_projection_matrix() const
     {
-        return calc_perspective_projection_matrix(m_field_of_view.as_degrees(), m_view_port.AspectRatio(),
+        return calc_perspective_projection_matrix(m_field_of_view.as_degrees(), m_view_port.aspect_ratio(),
                                                   m_near_plane_distance, m_far_plane_distance);
     }
 } // namespace omath::opengl_engine

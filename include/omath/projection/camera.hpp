@@ -19,7 +19,7 @@ namespace omath::projection
         float m_width;
         float m_height;
 
-        [[nodiscard]] constexpr float AspectRatio() const
+        [[nodiscard]] constexpr float aspect_ratio() const
         {
             return m_width / m_height;
         }
