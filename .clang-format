@@ -10,10 +10,10 @@ AlignConsecutiveBitFields: None
 AlignConsecutiveDeclarations: None
 AlignConsecutiveMacros: AcrossEmptyLinesAndComments
 AlignTrailingComments: false
-AllowShortBlocksOnASingleLine: Always
-AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: true
-AllowShortLoopsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
 AlwaysBreakTemplateDeclarations: No
 BreakBeforeBraces: Custom
 BraceWrapping:
