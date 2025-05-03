@@ -134,14 +134,14 @@ namespace omath
             return len > 0.f ? *this / len : *this;
         }
 #else
-        [[nodiscard]] Type Length() const
+        [[nodiscard]] Type length() const
         {
             return std::hypot(x, y);
         }
 
-        [[nodiscard]] Vector2 Normalized() const
+        [[nodiscard]] Vector2 normalized() const
         {
-            const Type len = Length();
+            const Type len = length();
             return len > 0.f ? *this / len : *this;
         }
 #endif

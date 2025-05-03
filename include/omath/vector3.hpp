@@ -149,19 +149,19 @@ namespace omath
 
         [[nodiscard]] Vector3 normalized() const
         {
-            const Type length = this->Length();
+            const Type len = this->length();
 
-            return length != 0 ? *this / length : *this;
+            return len != 0 ? *this / len : *this;
         }
 
         [[nodiscard]] Type length_2d() const
         {
-            return Vector2<Type>::Length();
+            return Vector2<Type>::length();
         }
 
         [[nodiscard]] Type distance_to(const Vector3& vOther) const
         {
-            return (*this - vOther).Length();
+            return (*this - vOther).length();
         }
 #endif
 
