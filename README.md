@@ -6,6 +6,7 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/orange-cpp/omath)
 ![GitHub top language](https://img.shields.io/github/languages/top/orange-cpp/omath)
 [![CodeFactor](https://www.codefactor.io/repository/github/orange-cpp/omath/badge)](https://www.codefactor.io/repository/github/orange-cpp/omath)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/orange-cpp/omath/cmake-multi-platform.yml)
 ![GitHub forks](https://img.shields.io/github/forks/orange-cpp/omath)
 </div>
 
