@@ -59,7 +59,7 @@ namespace
     TEST_P(CanTraceLineParam, VariousRays)
     {
         const auto& p = GetParam();
-        EXPECT_EQ(LineTracer::CanTraceLine(p.ray, triangle), p.expected_clear);
+        EXPECT_EQ(LineTracer::can_trace_line(p.ray, triangle), p.expected_clear);
     }
 
     INSTANTIATE_TEST_SUITE_P(
@@ -84,7 +84,7 @@ namespace
         constexpr Ray ray{{0.3f, 0.3f, -1.f}, {0.3f, 0.3f, 1.f}};
         constexpr Vec3 expected{0.3f, 0.3f, 0.f};
 
-        const Vec3 hit = LineTracer::GetRayHitPoint(ray, triangle);
+        const Vec3 hit = LineTracer::get_ray_hit_point(ray, triangle);
         ASSERT_FALSE(VecEqual(hit, ray.end));
         EXPECT_TRUE(VecEqual(hit, expected));
     }
@@ -99,7 +99,7 @@ namespace
                                          {1001.f, 1000.f, 1000.f},
                                          {1000.f, 1001.f, 1000.f}};
 
-        EXPECT_TRUE(LineTracer::CanTraceLine(short_ray, distant));
+        EXPECT_TRUE(LineTracer::can_trace_line(short_ray, distant));
     }
 
     TEST(LineTracerTraceRayEdge, CantHit)
@@ -108,14 +108,13 @@ namespace
 
         constexpr Ray ray{{}, {1.0, 0, 0}, false};
 
-        EXPECT_TRUE(omath::collision::LineTracer::CanTraceLine(ray, triangle));
+        EXPECT_TRUE(omath::collision::LineTracer::can_trace_line(ray, triangle));
     }
     TEST(LineTracerTraceRayEdge, CanHit)
     {
         constexpr omath::Triangle<Vector3<float>> triangle{{2, 0, 0}, {2, 2, 0}, {2, 2, 2}};
 
         constexpr Ray ray{{}, {2.1, 0, 0}, false};
-        auto endPoint = omath::collision::LineTracer::GetRayHitPoint(ray, triangle);
-        EXPECT_FALSE(omath::collision::LineTracer::CanTraceLine(ray, triangle));
+        EXPECT_FALSE(omath::collision::LineTracer::can_trace_line(ray, triangle));
     }
 } // namespace

@@ -12,4 +12,4 @@ namespace omath
         YawType yaw;
         RollType roll;
     };
-}
+} // namespace omath

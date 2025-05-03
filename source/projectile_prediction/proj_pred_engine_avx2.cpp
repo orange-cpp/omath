@@ -14,8 +14,8 @@
 namespace omath::projectile_prediction
 {
     std::optional<Vector3<float>>
-    ProjPredEngineAVX2::MaybeCalculateAimPoint([[maybe_unused]] const Projectile& projectile,
-                                               [[maybe_unused]] const Target& target) const
+    ProjPredEngineAvx2::maybe_calculate_aim_point([[maybe_unused]] const Projectile& projectile,
+                                                  [[maybe_unused]] const Target& target) const
     {
 #if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
         const float bulletGravity = m_gravityConstant * projectile.m_gravityScale;
@@ -28,16 +28,16 @@ namespace omath::projectile_prediction
 
         for (; currentTime <= m_maximumSimulationTime; currentTime += m_simulationTimeStep * SIMD_FACTOR)
         {
-            const __m256 times =
-                    _mm256_setr_ps(currentTime, currentTime + m_simulationTimeStep,
-                                   currentTime + m_simulationTimeStep * 2, currentTime + m_simulationTimeStep * 3,
-                                   currentTime + m_simulationTimeStep * 4, currentTime + m_simulationTimeStep * 5,
-                                   currentTime + m_simulationTimeStep * 6, currentTime + m_simulationTimeStep * 7);
+            const __m256 times
+                    = _mm256_setr_ps(currentTime, currentTime + m_simulationTimeStep,
+                                     currentTime + m_simulationTimeStep * 2, currentTime + m_simulationTimeStep * 3,
+                                     currentTime + m_simulationTimeStep * 4, currentTime + m_simulationTimeStep * 5,
+                                     currentTime + m_simulationTimeStep * 6, currentTime + m_simulationTimeStep * 7);
 
-            const __m256 targetX =
-                    _mm256_fmadd_ps(_mm256_set1_ps(target.m_velocity.x), times, _mm256_set1_ps(target.m_origin.x));
-            const __m256 targetY =
-                    _mm256_fmadd_ps(_mm256_set1_ps(target.m_velocity.y), times, _mm256_set1_ps(target.m_origin.y));
+            const __m256 targetX
+                    = _mm256_fmadd_ps(_mm256_set1_ps(target.m_velocity.x), times, _mm256_set1_ps(target.m_origin.x));
+            const __m256 targetY
+                    = _mm256_fmadd_ps(_mm256_set1_ps(target.m_velocity.y), times, _mm256_set1_ps(target.m_origin.y));
             const __m256 timesSq = _mm256_mul_ps(times, times);
             const __m256 targetZ = _mm256_fmadd_ps(_mm256_set1_ps(target.m_velocity.z), times,
                                                    _mm256_fnmadd_ps(_mm256_set1_ps(0.5f * m_gravityConstant), timesSq,
@@ -112,25 +112,32 @@ namespace omath::projectile_prediction
         }
 
         return std::nullopt;
+#else
+        throw std::runtime_error(
+                std::format("{} AVX2 feature is not enabled!", std::source_location::current().function_name()));
+#endif
     }
-    ProjPredEngineAVX2::ProjPredEngineAVX2(const float gravityConstant, const float simulationTimeStep,
-                                           const float maximumSimulationTime) :
-        m_gravityConstant(gravityConstant), m_simulationTimeStep(simulationTimeStep),
-        m_maximumSimulationTime(maximumSimulationTime)
+    ProjPredEngineAvx2::ProjPredEngineAvx2(const float gravity_constant, const float simulation_time_step,
+                                           const float maximum_simulation_time)
+        : m_gravity_constant(gravity_constant), m_simulation_time_step(simulation_time_step),
+          m_maximum_simulation_time(maximum_simulation_time)
     {
     }
-    std::optional<float> ProjPredEngineAVX2::CalculatePitch(const Vector3<float>& projOrigin,
-                                                            const Vector3<float>& targetPos, const float bulletGravity,
-                                                            const float v0, const float time)
+    std::optional<float> ProjPredEngineAvx2::calculate_pitch([[maybe_unused]] const Vector3<float>& proj_origin,
+                                                             [[maybe_unused]] const Vector3<float>& target_pos,
+                                                             [[maybe_unused]] const float bullet_gravity,
+                                                             [[maybe_unused]] const float v0,
+                                                             [[maybe_unused]] const float time)
     {
+#if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
         if (time <= 0.0f)
             return std::nullopt;
 
-        const Vector3 delta = targetPos - projOrigin;
+        const Vector3 delta = target_pos - proj_origin;
         const float dSqr = delta.x * delta.x + delta.y * delta.y;
         const float h = delta.z;
 
-        const float term = h + 0.5f * bulletGravity * time * time;
+        const float term = h + 0.5f * bullet_gravity * time * time;
         const float requiredV0Sqr = (dSqr + term * term) / (time * time);
         const float v0Sqr = v0 * v0;
 
@@ -139,7 +146,6 @@ namespace omath::projectile_prediction
 
         if (dSqr == 0.0f)
             return term >= 0.0f ? 90.0f : -90.0f;
-
 
         const float d = std::sqrt(dSqr);
         const float tanTheta = term / d;

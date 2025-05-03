@@ -6,15 +6,14 @@
 
 namespace omath
 {
-        /*
-        |\
-        | \
-      a |  \ hypot
-        |   \
-        -----
-          b
-        */
-
+    /*
+    |\
+    | \
+  a |  \ hypot
+    |   \
+    -----
+      b
+    */
 
     template<class Vector>
     class Triangle final
@@ -31,52 +30,53 @@ namespace omath
         Vector3<float> m_vertex3;
 
         [[nodiscard]]
-        constexpr Vector3<float> CalculateNormal() const
+        constexpr Vector3<float> calculate_normal() const
         {
-            const auto b = SideBVector();
-            const auto a = SideAVector();
-            return b.Cross(a).Normalized();
+            const auto b = side_b_vector();
+            const auto a = side_a_vector();
+
+            return b.cross(a).normalized();
         }
 
         [[nodiscard]]
-        float SideALength() const
+        float side_a_length() const
         {
-            return m_vertex1.DistTo(m_vertex2);
+            return m_vertex1.distance_to(m_vertex2);
         }
 
         [[nodiscard]]
-        float SideBLength() const
+        float side_b_length() const
         {
-            return m_vertex3.DistTo(m_vertex2);
+            return m_vertex3.distance_to(m_vertex2);
         }
 
         [[nodiscard]]
-        constexpr Vector3<float> SideAVector() const
+        constexpr Vector3<float> side_a_vector() const
         {
             return m_vertex1 - m_vertex2;
         }
 
         [[nodiscard]]
-        constexpr float Hypot() const
+        constexpr float hypot() const
         {
-            return m_vertex1.DistTo(m_vertex3);
+            return m_vertex1.distance_to(m_vertex3);
         }
         [[nodiscard]]
-        constexpr bool IsRectangular() const
+        constexpr bool is_rectangular() const
         {
-            const auto sideA = SideALength();
-            const auto sideB = SideBLength();
-            const auto hypot = Hypot();
+            const auto side_a = side_a_length();
+            const auto side_b = side_b_length();
+            const auto hypot_value = hypot();
 
-            return std::abs(sideA*sideA + sideB*sideB - hypot*hypot) <= 0.0001f;
+            return std::abs(side_a * side_a + side_b * side_b - hypot_value * hypot_value) <= 0.0001f;
         }
         [[nodiscard]]
-        constexpr Vector3<float> SideBVector() const
+        constexpr Vector3<float> side_b_vector() const
         {
             return m_vertex3 - m_vertex2;
         }
         [[nodiscard]]
-        constexpr Vector3<float> MidPoint() const
+        constexpr Vector3<float> mid_point() const
         {
             return (m_vertex1 + m_vertex2 + m_vertex3) / 3;
         }

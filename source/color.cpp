@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cmath>
 
-
 namespace omath
 {
 
