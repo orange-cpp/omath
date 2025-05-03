@@ -3,7 +3,6 @@
 //
 #include "omath/projection/camera.hpp"
 
-
 namespace omath::projection
 {
 }

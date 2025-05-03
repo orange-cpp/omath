@@ -3,27 +3,25 @@
 //
 #include "omath/3d_primitives/box.hpp"
 
-
 namespace omath::primitives
 {
-    std::array<Triangle<Vector3<float>>, 12> CreateBox(const Vector3<float>& top, const Vector3<float>& bottom,
-                                                       const Vector3<float>& dirForward,
-                                                       const Vector3<float>& dirRight,
-                                                       const float ratio)
+    std::array<Triangle<Vector3<float>>, 12> create_box(const Vector3<float>& top, const Vector3<float>& bottom,
+                                                        const Vector3<float>& dir_forward,
+                                                        const Vector3<float>& dir_right, const float ratio)
     {
-        const auto height = top.DistTo(bottom);
-        const auto sideSize = height / ratio;
+        const auto height = top.distance_to(bottom);
+        const auto side_size = height / ratio;
 
         // corner layout (0‑3 bottom, 4‑7 top)
         std::array<Vector3<float>, 8> p;
-        p[0] = bottom + (dirForward + dirRight) * sideSize; // front‑right‑bottom
-        p[1] = bottom + (dirForward - dirRight) * sideSize; // front‑left‑bottom
-        p[2] = bottom + (-dirForward + dirRight) * sideSize; // back‑right‑bottom
-        p[3] = bottom + (-dirForward - dirRight) * sideSize; // back‑left‑bottom
-        p[4] = top + (dirForward + dirRight) * sideSize; // front‑right‑top
-        p[5] = top + (dirForward - dirRight) * sideSize; // front‑left‑top
-        p[6] = top + (-dirForward + dirRight) * sideSize; // back‑right‑top
-        p[7] = top + (-dirForward - dirRight) * sideSize; // back‑left‑top
+        p[0] = bottom + (dir_forward + dir_right) * side_size; // front‑right‑bottom
+        p[1] = bottom + (dir_forward - dir_right) * side_size; // front‑left‑bottom
+        p[2] = bottom + (-dir_forward + dir_right) * side_size; // back‑right‑bottom
+        p[3] = bottom + (-dir_forward - dir_right) * side_size; // back‑left‑bottom
+        p[4] = top + (dir_forward + dir_right) * side_size; // front‑right‑top
+        p[5] = top + (dir_forward - dir_right) * side_size; // front‑left‑top
+        p[6] = top + (-dir_forward + dir_right) * side_size; // back‑right‑top
+        p[7] = top + (-dir_forward - dir_right) * side_size; // back‑left‑top
 
         std::array<Triangle<Vector3<float>>, 12> poly;
 
@@ -53,4 +51,4 @@ namespace omath::primitives
 
         return poly;
     }
-}
+} // namespace omath::primitives

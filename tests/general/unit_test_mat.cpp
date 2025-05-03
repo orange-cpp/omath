@@ -22,22 +22,22 @@ protected:
 TEST_F(UnitTestMat, Constructor_Default)
 {
     Mat<3, 3> m;
-    EXPECT_EQ(m.RowCount(), 3);
-    EXPECT_EQ(m.ColumnsCount(), 3);
+    EXPECT_EQ(m.row_count(), 3);
+    EXPECT_EQ(m.columns_count(), 3);
     for (size_t i = 0; i < 3; ++i)
         for (size_t j = 0; j < 3; ++j)
-            EXPECT_FLOAT_EQ(m.At(i, j), 0.0f);
+            EXPECT_FLOAT_EQ(m.at(i, j), 0.0f);
 }
 
 TEST_F(UnitTestMat, Constructor_InitializerList)
 {
     constexpr Mat<2, 2> m{{1.0f, 2.0f}, {3.0f, 4.0f}};
-    EXPECT_EQ(m.RowCount(), 2);
-    EXPECT_EQ(m.ColumnsCount(), 2);
-    EXPECT_FLOAT_EQ(m.At(0, 0), 1.0f);
-    EXPECT_FLOAT_EQ(m.At(0, 1), 2.0f);
-    EXPECT_FLOAT_EQ(m.At(1, 0), 3.0f);
-    EXPECT_FLOAT_EQ(m.At(1, 1), 4.0f);
+    EXPECT_EQ(m.row_count(), 2);
+    EXPECT_EQ(m.columns_count(), 2);
+    EXPECT_FLOAT_EQ(m.at(0, 0), 1.0f);
+    EXPECT_FLOAT_EQ(m.at(0, 1), 2.0f);
+    EXPECT_FLOAT_EQ(m.at(1, 0), 3.0f);
+    EXPECT_FLOAT_EQ(m.at(1, 1), 4.0f);
 }
 
 TEST_F(UnitTestMat, Operator_SquareBrackets)
@@ -51,19 +51,19 @@ TEST_F(UnitTestMat, Operator_SquareBrackets)
 TEST_F(UnitTestMat, Constructor_Copy)
 {
     Mat<2, 2> m3 = m2;
-    EXPECT_EQ(m3.RowCount(), m2.RowCount());
-    EXPECT_EQ(m3.ColumnsCount(), m2.ColumnsCount());
-    EXPECT_FLOAT_EQ(m3.At(0, 0), m2.At(0, 0));
-    EXPECT_FLOAT_EQ(m3.At(1, 1), m2.At(1, 1));
+    EXPECT_EQ(m3.row_count(), m2.row_count());
+    EXPECT_EQ(m3.columns_count(), m2.columns_count());
+    EXPECT_FLOAT_EQ(m3.at(0, 0), m2.at(0, 0));
+    EXPECT_FLOAT_EQ(m3.at(1, 1), m2.at(1, 1));
 }
 
 TEST_F(UnitTestMat, Constructor_Move)
 {
     Mat<2, 2> m3 = std::move(m2);
-    EXPECT_EQ(m3.RowCount(), 2);
-    EXPECT_EQ(m3.ColumnsCount(), 2);
-    EXPECT_FLOAT_EQ(m3.At(0, 0), 1.0f);
-    EXPECT_FLOAT_EQ(m3.At(1, 1), 4.0f);
+    EXPECT_EQ(m3.row_count(), 2);
+    EXPECT_EQ(m3.columns_count(), 2);
+    EXPECT_FLOAT_EQ(m3.at(0, 0), 1.0f);
+    EXPECT_FLOAT_EQ(m3.at(1, 1), 4.0f);
     // m2 is in a valid but unspecified state after move
 }
 
@@ -71,36 +71,36 @@ TEST_F(UnitTestMat, Constructor_Move)
 TEST_F(UnitTestMat, Operator_Multiplication_Matrix)
 {
     Mat<2, 2> m3 = m2 * m2;
-    EXPECT_EQ(m3.RowCount(), 2);
-    EXPECT_EQ(m3.ColumnsCount(), 2);
-    EXPECT_FLOAT_EQ(m3.At(0, 0), 7.0f);
-    EXPECT_FLOAT_EQ(m3.At(0, 1), 10.0f);
-    EXPECT_FLOAT_EQ(m3.At(1, 0), 15.0f);
-    EXPECT_FLOAT_EQ(m3.At(1, 1), 22.0f);
+    EXPECT_EQ(m3.row_count(), 2);
+    EXPECT_EQ(m3.columns_count(), 2);
+    EXPECT_FLOAT_EQ(m3.at(0, 0), 7.0f);
+    EXPECT_FLOAT_EQ(m3.at(0, 1), 10.0f);
+    EXPECT_FLOAT_EQ(m3.at(1, 0), 15.0f);
+    EXPECT_FLOAT_EQ(m3.at(1, 1), 22.0f);
 }
 
 TEST_F(UnitTestMat, Operator_Multiplication_Scalar)
 {
     Mat<2, 2> m3 = m2 * 2.0f;
-    EXPECT_FLOAT_EQ(m3.At(0, 0), 2.0f);
-    EXPECT_FLOAT_EQ(m3.At(1, 1), 8.0f);
+    EXPECT_FLOAT_EQ(m3.at(0, 0), 2.0f);
+    EXPECT_FLOAT_EQ(m3.at(1, 1), 8.0f);
 }
 
 TEST_F(UnitTestMat, Operator_Division_Scalar)
 {
     Mat<2, 2> m3 = m2 / 2.0f;
-    EXPECT_FLOAT_EQ(m3.At(0, 0), 0.5f);
-    EXPECT_FLOAT_EQ(m3.At(1, 1), 2.0f);
+    EXPECT_FLOAT_EQ(m3.at(0, 0), 0.5f);
+    EXPECT_FLOAT_EQ(m3.at(1, 1), 2.0f);
 }
 
 // Test matrix functions
 TEST_F(UnitTestMat, Transpose)
 {
     Mat<2, 2> m3 = m2.Transposed();
-    EXPECT_FLOAT_EQ(m3.At(0, 0), m2.At(0, 0));
-    EXPECT_FLOAT_EQ(m3.At(0, 1), m2.At(1, 0));
-    EXPECT_FLOAT_EQ(m3.At(1, 0), m2.At(0, 1));
-    EXPECT_FLOAT_EQ(m3.At(1, 1), m2.At(1, 1));
+    EXPECT_FLOAT_EQ(m3.at(0, 0), m2.at(0, 0));
+    EXPECT_FLOAT_EQ(m3.at(0, 1), m2.at(1, 0));
+    EXPECT_FLOAT_EQ(m3.at(1, 0), m2.at(0, 1));
+    EXPECT_FLOAT_EQ(m3.at(1, 1), m2.at(1, 1));
 }
 
 TEST_F(UnitTestMat, Determinant)
@@ -111,21 +111,21 @@ TEST_F(UnitTestMat, Determinant)
 
 TEST_F(UnitTestMat, Sum)
 {
-    const float sum = m2.Sum();
+    const float sum = m2.sum();
     EXPECT_FLOAT_EQ(sum, 10.0f);
 }
 
 TEST_F(UnitTestMat, Clear)
 {
-    m2.Clear();
-    for (size_t i = 0; i < m2.RowCount(); ++i)
-        for (size_t j = 0; j < m2.ColumnsCount(); ++j)
-            EXPECT_FLOAT_EQ(m2.At(i, j), 0.0f);
+    m2.clear();
+    for (size_t i = 0; i < m2.row_count(); ++i)
+        for (size_t j = 0; j < m2.columns_count(); ++j)
+            EXPECT_FLOAT_EQ(m2.at(i, j), 0.0f);
 }
 
 TEST_F(UnitTestMat, ToString)
 {
-    const std::string str = m2.ToString();
+    const std::string str = m2.to_string();
     EXPECT_FALSE(str.empty());
     EXPECT_EQ(str, "[[    1.000,     2.000]\n [    3.000,     4.000]]");
 }
@@ -135,31 +135,31 @@ TEST_F(UnitTestMat, AssignmentOperator_Copy)
 {
     Mat<2, 2> m3;
     m3 = m2;
-    EXPECT_EQ(m3.RowCount(), m2.RowCount());
-    EXPECT_EQ(m3.ColumnsCount(), m2.ColumnsCount());
-    EXPECT_FLOAT_EQ(m3.At(0, 0), m2.At(0, 0));
+    EXPECT_EQ(m3.row_count(), m2.row_count());
+    EXPECT_EQ(m3.columns_count(), m2.columns_count());
+    EXPECT_FLOAT_EQ(m3.at(0, 0), m2.at(0, 0));
 }
 
 TEST_F(UnitTestMat, AssignmentOperator_Move)
 {
     Mat<2, 2> m3;
     m3 = std::move(m2);
-    EXPECT_EQ(m3.RowCount(), 2);
-    EXPECT_EQ(m3.ColumnsCount(), 2);
-    EXPECT_FLOAT_EQ(m3.At(0, 0), 1.0f);
-    EXPECT_FLOAT_EQ(m3.At(1, 1), 4.0f);
+    EXPECT_EQ(m3.row_count(), 2);
+    EXPECT_EQ(m3.columns_count(), 2);
+    EXPECT_FLOAT_EQ(m3.at(0, 0), 1.0f);
+    EXPECT_FLOAT_EQ(m3.at(1, 1), 4.0f);
     // m2 is in a valid but unspecified state after move
 }
 
 // Test static methods
 TEST_F(UnitTestMat, StaticMethod_ToScreenMat)
 {
-    Mat<4, 4> screenMat = Mat<4, 4>::ToScreenMat(800.0f, 600.0f);
-    EXPECT_FLOAT_EQ(screenMat.At(0, 0), 400.0f);
-    EXPECT_FLOAT_EQ(screenMat.At(1, 1), -300.0f);
-    EXPECT_FLOAT_EQ(screenMat.At(3, 0), 400.0f);
-    EXPECT_FLOAT_EQ(screenMat.At(3, 1), 300.0f);
-    EXPECT_FLOAT_EQ(screenMat.At(3, 3), 1.0f);
+    Mat<4, 4> screenMat = Mat<4, 4>::to_screen_mat(800.0f, 600.0f);
+    EXPECT_FLOAT_EQ(screenMat.at(0, 0), 400.0f);
+    EXPECT_FLOAT_EQ(screenMat.at(1, 1), -300.0f);
+    EXPECT_FLOAT_EQ(screenMat.at(3, 0), 400.0f);
+    EXPECT_FLOAT_EQ(screenMat.at(3, 1), 300.0f);
+    EXPECT_FLOAT_EQ(screenMat.at(3, 3), 1.0f);
 }
 
 
@@ -183,13 +183,13 @@ TEST(UnitTestMatStandalone, Determinant_3x3)
 TEST(UnitTestMatStandalone, Strip_3x3)
 {
     constexpr Mat<3, 3> m{{3, 0, 2}, {2, 0, -2}, {0, 1, 1}};
-    auto minor = m.Strip(0, 0);
-    EXPECT_EQ(minor.RowCount(), 2);
-    EXPECT_EQ(minor.ColumnsCount(), 2);
-    EXPECT_FLOAT_EQ(minor.At(0, 0), 0.0f);
-    EXPECT_FLOAT_EQ(minor.At(0, 1), -2.0f);
-    EXPECT_FLOAT_EQ(minor.At(1, 0), 1.0f);
-    EXPECT_FLOAT_EQ(minor.At(1, 1), 1.0f);
+    auto minor = m.strip(0, 0);
+    EXPECT_EQ(minor.row_count(), 2);
+    EXPECT_EQ(minor.columns_count(), 2);
+    EXPECT_FLOAT_EQ(minor.at(0, 0), 0.0f);
+    EXPECT_FLOAT_EQ(minor.at(0, 1), -2.0f);
+    EXPECT_FLOAT_EQ(minor.at(1, 0), 1.0f);
+    EXPECT_FLOAT_EQ(minor.at(1, 1), 1.0f);
 }
 
 // Test Transpose for non-square matrix
@@ -197,14 +197,14 @@ TEST(UnitTestMatStandalone, Transpose_NonSquare)
 {
     constexpr Mat<2, 3> m{{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
     auto transposed = m.Transposed();
-    EXPECT_EQ(transposed.RowCount(), 3);
-    EXPECT_EQ(transposed.ColumnsCount(), 2);
-    EXPECT_FLOAT_EQ(transposed.At(0, 0), 1.0f);
-    EXPECT_FLOAT_EQ(transposed.At(1, 0), 2.0f);
-    EXPECT_FLOAT_EQ(transposed.At(2, 0), 3.0f);
-    EXPECT_FLOAT_EQ(transposed.At(0, 1), 4.0f);
-    EXPECT_FLOAT_EQ(transposed.At(1, 1), 5.0f);
-    EXPECT_FLOAT_EQ(transposed.At(2, 1), 6.0f);
+    EXPECT_EQ(transposed.row_count(), 3);
+    EXPECT_EQ(transposed.columns_count(), 2);
+    EXPECT_FLOAT_EQ(transposed.at(0, 0), 1.0f);
+    EXPECT_FLOAT_EQ(transposed.at(1, 0), 2.0f);
+    EXPECT_FLOAT_EQ(transposed.at(2, 0), 3.0f);
+    EXPECT_FLOAT_EQ(transposed.at(0, 1), 4.0f);
+    EXPECT_FLOAT_EQ(transposed.at(1, 1), 5.0f);
+    EXPECT_FLOAT_EQ(transposed.at(2, 1), 6.0f);
 }
 
 TEST(UnitTestMatStandalone, Enverse)
@@ -212,5 +212,5 @@ TEST(UnitTestMatStandalone, Enverse)
     constexpr Mat<2, 2> m{{1.0f, 3.0f}, {2.0f, 5.0f}};
     constexpr Mat<2,2> mv{{-5.0f, 3.0f}, {2.0f, -1.0f}};
 
-    EXPECT_EQ(mv, m.Inverted());
+    EXPECT_EQ(mv, m.inverted());
 }

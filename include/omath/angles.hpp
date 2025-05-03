@@ -10,43 +10,43 @@ namespace omath::angles
 {
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] constexpr Type RadiansToDegrees(const Type& radians)
+    [[nodiscard]] constexpr Type radians_to_degrees(const Type& radians)
     {
         return radians * (Type(180) / std::numbers::pi_v<Type>);
     }
 
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] constexpr Type DegreesToRadians(const Type& degrees)
+    [[nodiscard]] constexpr Type degrees_to_radians(const Type& degrees)
     {
         return degrees * (std::numbers::pi_v<Type> / Type(180));
     }
 
     template<class type>
     requires std::is_floating_point_v<type>
-    [[nodiscard]] type HorizontalFovToVertical(const type& horFov, const type& aspect)
+    [[nodiscard]] type horizontal_fov_to_vertical(const type& horizontal_fov, const type& aspect)
     {
-        const auto fovRad = DegreesToRadians(horFov);
+        const auto fov_rad = degrees_to_radians(horizontal_fov);
 
-        const auto vertFov = type(2) * std::atan(std::tan(fovRad / type(2)) / aspect);
+        const auto vert_fov = type(2) * std::atan(std::tan(fov_rad / type(2)) / aspect);
 
-        return RadiansToDegrees(vertFov);
+        return radians_to_degrees(vert_fov);
     }
 
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] Type VerticalFovToHorizontal(const Type& vertFov, const Type& aspect)
+    [[nodiscard]] Type vertical_fov_to_horizontal(const Type& vertical_fov, const Type& aspect)
     {
-        const auto fovRad = DegreesToRadians(vertFov);
+        const auto fov_as_radians = degrees_to_radians(vertical_fov);
 
-        const auto horFov = Type(2) * std::atan(std::tan(fovRad / Type(2)) * aspect);
+        const auto horizontal_fov = Type(2) * std::atan(std::tan(fov_as_radians / Type(2)) * aspect);
 
-        return RadiansToDegrees(horFov);
+        return radians_to_degrees(horizontal_fov);
     }
 
     template<class Type>
     requires std::is_arithmetic_v<Type>
-    [[nodiscard]] Type WrapAngle(const Type& angle, const Type& min, const Type& max)
+    [[nodiscard]] Type wrap_angle(const Type& angle, const Type& min, const Type& max)
     {
         if (angle <= max && angle >= min)
             return angle;
@@ -60,4 +60,4 @@ namespace omath::angles
 
         return wrappedAngle + min;
     }
-}
+} // namespace omath::angles

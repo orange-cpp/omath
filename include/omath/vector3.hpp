@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include "omath/angle.hpp"
+#include "omath/vector2.hpp"
 #include <cstdint>
 #include <expected>
 #include <functional>
-#include "omath/angle.hpp"
-#include "omath/vector2.hpp"
 
 namespace omath
 {
@@ -18,13 +18,16 @@ namespace omath
         IMPOSSIBLE_BETWEEN_ANGLE,
     };
 
-    template<class Type> requires std::is_arithmetic_v<Type>
+    template<class Type>
+    requires std::is_arithmetic_v<Type>
     class Vector3 : public Vector2<Type>
     {
     public:
         Type z = static_cast<Type>(0);
-        constexpr Vector3(const Type& x, const Type& y, const Type& z) : Vector2<Type>(x, y), z(z) { }
-        constexpr Vector3() : Vector2<Type>() {};
+        constexpr Vector3(const Type& x, const Type& y, const Type& z): Vector2<Type>(x, y), z(z)
+        {
+        }
+        constexpr Vector3(): Vector2<Type>() {};
 
         [[nodiscard]] constexpr bool operator==(const Vector3& src) const
         {
@@ -100,72 +103,71 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& Abs()
+        constexpr Vector3& abs()
         {
-            Vector2<Type>::Abs();
+            Vector2<Type>::abs();
             z = z < 0.f ? -z : z;
 
             return *this;
         }
 
-        [[nodiscard]] constexpr Type DistToSqr(const Vector3& vOther) const
+        [[nodiscard]] constexpr Type distance_to_sqr(const Vector3& other) const
         {
-            return (*this - vOther).LengthSqr();
+            return (*this - other).length_sqr();
         }
 
-        [[nodiscard]] constexpr Type Dot(const Vector3& vOther) const
+        [[nodiscard]] constexpr Type dot(const Vector3& other) const
         {
-            return Vector2<Type>::Dot(vOther) + z * vOther.z;
+            return Vector2<Type>::dot(other) + z * other.z;
         }
 
 #ifndef _MSC_VER
-        [[nodiscard]] constexpr Type Length() const
+        [[nodiscard]] constexpr Type length() const
         {
             return std::hypot(this->x, this->y, z);
         }
 
-        [[nodiscard]] constexpr Type Length2D() const
+        [[nodiscard]] constexpr Type length_2d() const
         {
-            return Vector2<Type>::Length();
+            return Vector2<Type>::length();
         }
-        [[nodiscard]] Type DistTo(const Vector3& vOther) const
+        [[nodiscard]] Type distance_to(const Vector3& other) const
         {
-            return (*this - vOther).Length();
+            return (*this - other).length();
         }
-        [[nodiscard]] constexpr Vector3 Normalized() const
+        [[nodiscard]] constexpr Vector3 normalized() const
         {
-            const Type length = this->Length();
+            const Type length_value = this->length();
 
-            return length != 0 ? *this / length : *this;
+            return length_value != 0 ? *this / length_value : *this;
         }
 #else
-        [[nodiscard]] Type Length() const
+        [[nodiscard]] Type length() const
         {
             return std::hypot(this->x, this->y, z);
         }
 
-        [[nodiscard]] Vector3 Normalized() const
+        [[nodiscard]] Vector3 normalized() const
         {
             const Type length = this->Length();
 
             return length != 0 ? *this / length : *this;
         }
 
-        [[nodiscard]] Type Length2D() const
+        [[nodiscard]] Type length_2d() const
         {
             return Vector2<Type>::Length();
         }
 
-        [[nodiscard]] Type DistTo(const Vector3& vOther) const
+        [[nodiscard]] Type distance_to(const Vector3& vOther) const
         {
             return (*this - vOther).Length();
         }
 #endif
 
-
-        [[nodiscard]] constexpr Type LengthSqr() const
+        [[nodiscard]] constexpr Type length_sqr() const
         {
-            return Vector2<Type>::LengthSqr() + z * z;
+            return Vector2<Type>::length_sqr() + z * z;
         }
 
         [[nodiscard]] constexpr Vector3 operator-() const
@@ -203,79 +205,69 @@ namespace omath
             return {this->x / v.x, this->y / v.y, z / v.z};
         }
 
-        [[nodiscard]] constexpr Vector3 Cross(const Vector3 &v) const
+        [[nodiscard]] constexpr Vector3 cross(const Vector3& v) const
         {
-            return
-            {
-                this->y * v.z - z * v.y,
-                z * v.x - this->x * v.z,
-                this->x * v.y - this->y * v.x
-            };
+            return {this->y * v.z - z * v.y, z * v.x - this->x * v.z, this->x * v.y - this->y * v.x};
         }
-        [[nodiscard]] constexpr Type Sum() const
+        [[nodiscard]] constexpr Type sum() const
         {
-            return Sum2D() + z;
+            return sum_2d() + z;
         }
 
         [[nodiscard]] std::expected<Angle<float, 0.f, 180.f, AngleFlags::Clamped>, Vector3Error>
-        AngleBetween(const Vector3& other) const
+        angle_between(const Vector3& other) const
         {
-            const auto bottom = Length() * other.Length();
+            const auto bottom = length() * other.length();
 
             if (bottom == 0.f)
                 return std::unexpected(Vector3Error::IMPOSSIBLE_BETWEEN_ANGLE);
 
-            return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::FromRadians(std::acos(Dot(other) / bottom));
+            return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(std::acos(dot(other) / bottom));
         }
 
-        [[nodiscard]] bool IsPerpendicular(const Vector3& other) const
+        [[nodiscard]] bool is_perpendicular(const Vector3& other) const
         {
-            if (const auto angle = AngleBetween(other))
-                return angle->AsDegrees() == 90.f;
+            if (const auto angle = angle_between(other))
+                return angle->as_degrees() == 90.f;
 
             return false;
         }
 
-        [[nodiscard]] constexpr Type Sum2D() const
+        [[nodiscard]] constexpr Type sum_2d() const
         {
-            return Vector2<Type>::Sum();
+            return Vector2<Type>::sum();
         }
 
-        [[nodiscard]] constexpr std::tuple<Type, Type, Type> AsTuple() const
+        [[nodiscard]] constexpr std::tuple<Type, Type, Type> as_tuple() const
         {
             return std::make_tuple(this->x, this->y, z);
         }
 
-        [[nodiscard]] Vector3 ViewAngleTo(const Vector3 &other) const
+        [[nodiscard]] Vector3 view_angle_to(const Vector3& other) const
         {
-            const float distance = DistTo(other);
+            const float distance = distance_to(other);
             const auto delta = other - *this;
 
-            return
-            {
-                angles::RadiansToDegrees(std::asin(delta.z / distance)),
-                angles::RadiansToDegrees(std::atan2(delta.y, delta.x)),
-                0
-            };
+            return {angles::radians_to_degrees(std::asin(delta.z / distance)),
+                    angles::radians_to_degrees(std::atan2(delta.y, delta.x)), 0};
         }
     };
-}
+} // namespace omath
 // ReSharper disable once CppRedundantNamespaceDefinition
 namespace std
 {
-    template<>
-    struct hash<omath::Vector3<float>>
+    template<> struct hash<omath::Vector3<float>>
     {
         std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
         {
             std::size_t hash = 0;
             constexpr std::hash<float> hasher;
 
-            hash ^= hasher(vec.x) + 0x9e3779b9 + (hash<<6) + (hash>>2);
-            hash ^= hasher(vec.y) + 0x9e3779b9 + (hash<<6) + (hash>>2);
-            hash ^= hasher(vec.z) + 0x9e3779b9 + (hash<<6) + (hash>>2);
+            hash ^= hasher(vec.x) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+            hash ^= hasher(vec.y) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+            hash ^= hasher(vec.z) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 
             return hash;
         }
     };
-}
+} // namespace std
