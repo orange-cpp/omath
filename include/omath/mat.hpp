@@ -226,7 +226,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Mat<Columns, Rows, Type, StoreType> Transposed() const noexcept
+        constexpr Mat<Columns, Rows, Type, StoreType> transposed() const noexcept
         {
             Mat<Columns, Rows, Type, StoreType> transposed;
             for (size_t i = 0; i < Rows; ++i)
@@ -237,7 +237,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Type Determinant() const
+        constexpr Type determinant() const
         {
             static_assert(Rows == Columns, "Determinant is only defined for square matrices.");
 
@@ -284,7 +284,7 @@ namespace omath
         [[nodiscard]]
         constexpr Type minor(const size_t row, const size_t column) const
         {
-            return strip(row, column).Determinant();
+            return strip(row, column).determinant();
         }
 
         [[nodiscard]]
@@ -355,17 +355,17 @@ namespace omath
         [[nodiscard]]
         constexpr std::optional<Mat> inverted() const
         {
-            const auto det = Determinant();
+            const auto det = determinant();
 
             if (det == 0)
                 return std::nullopt;
 
-            const auto transposed = Transposed();
+            const auto transposed_mat = transposed();
             Mat result;
 
             for (std::size_t row = 0; row < Rows; row++)
                 for (std::size_t column = 0; column < Rows; column++)
-                    result.at(row, column) = transposed.alg_complement(row, column);
+                    result.at(row, column) = transposed_mat.alg_complement(row, column);
 
             result /= det;
 

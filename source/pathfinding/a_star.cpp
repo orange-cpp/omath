@@ -38,13 +38,13 @@ namespace omath::pathfinding
         return path;
     }
     auto Astar::get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
-                                 const Vector3<float>& endVertex)
+                                 const Vector3<float>& end_vertex)
     {
         return std::ranges::min_element(open_list,
-                                        [&endVertex](const auto& a, const auto& b)
+                                        [&end_vertex](const auto& a, const auto& b)
                                         {
-                                            const float fa = a.second.g_cost + a.first.distance_to(endVertex);
-                                            const float fb = b.second.g_cost + b.first.distance_to(endVertex);
+                                            const float fa = a.second.g_cost + a.first.distance_to(end_vertex);
+                                            const float fb = b.second.g_cost + b.first.distance_to(end_vertex);
                                             return fa < fb;
                                         });
     }
@@ -86,6 +86,7 @@ namespace omath::pathfinding
 
                 const float tentative_g_cost = current_node.g_cost + neighbor.distance_to(current);
 
+                // ReSharper disable once CppTooWideScopeInitStatement
                 const auto open_it = open_list.find(neighbor);
 
                 if (open_it == open_list.end() || tentative_g_cost < open_it->second.g_cost)

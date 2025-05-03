@@ -12,23 +12,23 @@ namespace omath::angles
     requires std::is_floating_point_v<Type>
     [[nodiscard]] constexpr Type radians_to_degrees(const Type& radians)
     {
-        return radians * (Type(180) / std::numbers::pi_v<Type>);
+        return radians * (static_cast<Type>(180) / std::numbers::pi_v<Type>);
     }
 
     template<class Type>
     requires std::is_floating_point_v<Type>
     [[nodiscard]] constexpr Type degrees_to_radians(const Type& degrees)
     {
-        return degrees * (std::numbers::pi_v<Type> / Type(180));
+        return degrees * (std::numbers::pi_v<Type> / static_cast<Type>(180));
     }
 
-    template<class type>
-    requires std::is_floating_point_v<type>
-    [[nodiscard]] type horizontal_fov_to_vertical(const type& horizontal_fov, const type& aspect)
+    template<class Type>
+    requires std::is_floating_point_v<Type>
+    [[nodiscard]] Type horizontal_fov_to_vertical(const Type& horizontal_fov, const Type& aspect)
     {
         const auto fov_rad = degrees_to_radians(horizontal_fov);
 
-        const auto vert_fov = type(2) * std::atan(std::tan(fov_rad / type(2)) / aspect);
+        const auto vert_fov = static_cast<Type>(2) * std::atan(std::tan(fov_rad / static_cast<Type>(2)) / aspect);
 
         return radians_to_degrees(vert_fov);
     }
@@ -39,7 +39,8 @@ namespace omath::angles
     {
         const auto fov_as_radians = degrees_to_radians(vertical_fov);
 
-        const auto horizontal_fov = Type(2) * std::atan(std::tan(fov_as_radians / Type(2)) * aspect);
+        const auto horizontal_fov
+                = static_cast<Type>(2) * std::atan(std::tan(fov_as_radians / static_cast<Type>(2)) * aspect);
 
         return radians_to_degrees(horizontal_fov);
     }
@@ -53,11 +54,11 @@ namespace omath::angles
 
         const Type range = max - min;
 
-        Type wrappedAngle = std::fmod(angle - min, range);
+        Type wrapped_angle = std::fmod(angle - min, range);
 
-        if (wrappedAngle < 0)
-            wrappedAngle += range;
+        if (wrapped_angle < 0)
+            wrapped_angle += range;
 
-        return wrappedAngle + min;
+        return wrapped_angle + min;
     }
 } // namespace omath::angles

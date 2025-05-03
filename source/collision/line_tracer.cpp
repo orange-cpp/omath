@@ -42,6 +42,7 @@ namespace omath::collision
             return ray.end;
 
         const auto q = t.cross(side_a);
+        // ReSharper disable once CppTooWideScopeInitStatement
         const auto v = ray_dir.dot(q) * inv_det;
 
         if ((v < 0 && std::abs(v) > k_epsilon) || (u + v > 1 && std::abs(u + v - 1) > k_epsilon))

@@ -25,6 +25,6 @@ namespace omath::pathfinding
 
         [[nodiscard]]
         static auto get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
-                                     const Vector3<float>& endVertex);
+                                     const Vector3<float>& end_vertex);
     };
 } // namespace omath::pathfinding
