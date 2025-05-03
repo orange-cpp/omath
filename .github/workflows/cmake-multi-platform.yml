@@ -1,4 +1,4 @@
-name: Omath CI (presets)
+name: Omath CI (Arch Linux / Windows)
 
 on:
   push:
@@ -10,48 +10,70 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  build-and-test:
-    strategy:
-      fail-fast: false
-      matrix:
-        # ------- preset ↔ runner pairs -------------
-        include:
-          - os: ubuntu-latest   # GCC / Ninja (from linux-release preset)
-            preset: linux-release
-          - os: macos-latest    # Clang / Ninja (from darwin-release preset)
-            preset: darwin-release
-          - os: windows-latest  # MSVC / Ninja (from windows-release preset)
-            preset: windows-release
 
-    runs-on: ${{ matrix.os }}
+##############################################################################
+# 1)  ARCH LINUX  –  Clang / Ninja
+##############################################################################
+jobs:
+  arch-build-and-test:
+    name: Arch Linux (Clang)
+    runs-on: ubuntu-latest
+    container: archlinux:latest
 
     steps:
-      # 1) checkout (incl. GoogleTest sub-module)
-      - name: Checkout repository
+      - name: Install basic tool-chain with pacman
+        shell: bash
+        run: |
+          pacman -Sy --noconfirm archlinux-keyring
+          pacman -Syu --noconfirm --needed \
+                 git base-devel clang cmake ninja
+
+      - name: Checkout repository (with sub-modules)
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # 2) Ninja (needed only on Windows images)
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON
+
+      - name: Build
+        shell: bash
+        run: cmake --build cmake-build/build/linux-release --target all
+
+      - name: Run unit_tests
+        shell: bash
+        run: ./out/Release/unit_tests
+
+
+
+##############################################################################
+# 2)  Windows  –  MSVC / Ninja
+##############################################################################
+  windows-build-and-test:
+    name: Windows (MSVC)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@v4
 
-      # 3) MSVC environment
       - name: Set up MSVC developer command-prompt
-        if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
-      # 4) Configure with the selected CMake preset
       - name: Configure (cmake --preset)
-        run: cmake --preset ${{ matrix.preset }} -DOMATH_BUILD_TESTS=ON
+        shell: bash
+        run: cmake --preset windows-release -DOMATH_BUILD_TESTS=ON
 
-      # 5) Build
       - name: Build
-        # All configure presets put the binary dir in cmake-build/build/${presetName}
-        run: cmake --build cmake-build/build/${{ matrix.preset }}
+        shell: bash
+        run: cmake --build cmake-build/build/windows-release --target all
 
-      # 6) Run unit-tests
-      - name: Test
-        working-directory: cmake-build/build/${{ matrix.preset }}
-        run: ctest --output-on-failure
+      - name: Run unit_tests.exe
+        shell: bash
+        run: ./out/Release/unit_tests.exe
