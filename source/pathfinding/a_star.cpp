@@ -2,96 +2,94 @@
 // Created by Vlad on 28.07.2024.
 //
 #include "omath/pathfinding/a_star.hpp"
-
 #include <algorithm>
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
 
-
 namespace omath::pathfinding
 {
     struct PathNode final
     {
-        std::optional<Vector3<float>> cameFrom;
-        float gCost = 0.f;
+        std::optional<Vector3<float>> came_from;
+        float g_cost = 0.f;
     };
 
-
-    std::vector<Vector3<float>> Astar::ReconstructFinalPath(const std::unordered_map<Vector3<float>, PathNode>& closedList,
-                                                     const Vector3<float>& current)
+    std::vector<Vector3<float>>
+    Astar::reconstruct_final_path(const std::unordered_map<Vector3<float>, PathNode>& closed_list,
+                                  const Vector3<float>& current)
     {
         std::vector<Vector3<float>> path;
-        std::optional currentOpt = current;
+        std::optional current_opt = current;
 
-        while (currentOpt)
+        while (current_opt)
         {
-            path.push_back(*currentOpt);
+            path.push_back(*current_opt);
 
-            auto it = closedList.find(*currentOpt);
+            auto it = closed_list.find(*current_opt);
 
-            if (it == closedList.end())
+            if (it == closed_list.end())
                 break;
 
-            currentOpt = it->second.cameFrom;
+            current_opt = it->second.came_from;
         }
 
         std::ranges::reverse(path);
         return path;
     }
-    auto Astar::GetPerfectNode(const std::unordered_map<Vector3<float>, PathNode>& openList, const Vector3<float>& endVertex)
+    auto Astar::get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
+                                 const Vector3<float>& endVertex)
     {
-        return std::ranges::min_element(openList,
+        return std::ranges::min_element(open_list,
                                         [&endVertex](const auto& a, const auto& b)
                                         {
-                                            const float fA = a.second.gCost + a.first.DistTo(endVertex);
-                                            const float fB = b.second.gCost + b.first.DistTo(endVertex);
-                                            return fA < fB;
+                                            const float fa = a.second.g_cost + a.first.distance_to(endVertex);
+                                            const float fb = b.second.g_cost + b.first.distance_to(endVertex);
+                                            return fa < fb;
                                         });
     }
 
-    std::vector<Vector3<float>> Astar::FindPath(const Vector3<float>& start, const Vector3<float>& end, const NavigationMesh& navMesh)
+    std::vector<Vector3<float>> Astar::find_path(const Vector3<float>& start, const Vector3<float>& end,
+                                                 const NavigationMesh& nav_mesh)
     {
-        std::unordered_map<Vector3<float>, PathNode> closedList;
-        std::unordered_map<Vector3<float>, PathNode> openList;
+        std::unordered_map<Vector3<float>, PathNode> closed_list;
+        std::unordered_map<Vector3<float>, PathNode> open_list;
 
-        auto maybeStartVertex = navMesh.GetClosestVertex(start);
-        auto maybeEndVertex = navMesh.GetClosestVertex(end);
+        auto maybe_start_vertex = nav_mesh.get_closest_vertex(start);
+        auto maybe_end_vertex = nav_mesh.get_closest_vertex(end);
 
-        if (!maybeStartVertex || !maybeEndVertex)
+        if (!maybe_start_vertex || !maybe_end_vertex)
             return {};
 
-        const auto startVertex = maybeStartVertex.value();
-        const auto endVertex = maybeEndVertex.value();
+        const auto start_vertex = maybe_start_vertex.value();
+        const auto end_vertex = maybe_end_vertex.value();
 
+        open_list.emplace(start_vertex, PathNode{std::nullopt, 0.f});
 
-        openList.emplace(startVertex, PathNode{std::nullopt, 0.f});
-
-        while (!openList.empty())
+        while (!open_list.empty())
         {
-            auto currentIt = GetPerfectNode(openList, endVertex);
+            auto current_it = get_perfect_node(open_list, end_vertex);
 
-            const auto current = currentIt->first;
-            const auto currentNode = currentIt->second;
+            const auto current = current_it->first;
+            const auto current_node = current_it->second;
 
-            if (current == endVertex)
-                return ReconstructFinalPath(closedList, current);
+            if (current == end_vertex)
+                return reconstruct_final_path(closed_list, current);
 
+            closed_list.emplace(current, current_node);
+            open_list.erase(current_it);
 
-            closedList.emplace(current, currentNode);
-            openList.erase(currentIt);
-
-            for (const auto& neighbor: navMesh.GetNeighbors(current))
+            for (const auto& neighbor: nav_mesh.get_neighbors(current))
             {
-                if (closedList.contains(neighbor))
+                if (closed_list.contains(neighbor))
                     continue;
 
-                const float tentativeGCost = currentNode.gCost + neighbor.DistTo(current);
+                const float tentative_g_cost = current_node.g_cost + neighbor.distance_to(current);
 
-                const auto openIt = openList.find(neighbor);
+                const auto open_it = open_list.find(neighbor);
 
-                if (openIt == openList.end() || tentativeGCost < openIt->second.gCost)
-                    openList[neighbor] = PathNode{current, tentativeGCost};
+                if (open_it == open_list.end() || tentative_g_cost < open_it->second.g_cost)
+                    open_list[neighbor] = PathNode{current, tentative_g_cost};
             }
         }
 

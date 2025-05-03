@@ -4,7 +4,6 @@
 
 #include "omath/projectile_prediction/projectile.hpp"
 
-
 namespace omath::prediction
 {
 

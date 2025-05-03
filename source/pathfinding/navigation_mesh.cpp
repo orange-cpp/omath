@@ -2,94 +2,89 @@
 // Created by Vlad on 28.07.2024.
 //
 #include "omath/pathfinding/navigation_mesh.hpp"
-
 #include <algorithm>
 #include <stdexcept>
 namespace omath::pathfinding
 {
-    std::expected<Vector3<float>, std::string> NavigationMesh::GetClosestVertex(const Vector3<float> &point) const
+    std::expected<Vector3<float>, std::string> NavigationMesh::get_closest_vertex(const Vector3<float>& point) const
     {
-        const auto res = std::ranges::min_element(m_verTextMap,
-            [&point](const auto& a, const auto& b)
-            {
-                return a.first.DistTo(point) < b.first.DistTo(point);
-            });
+        const auto res = std::ranges::min_element(m_vertex_map, [&point](const auto& a, const auto& b)
+                                                  { return a.first.distance_to(point) < b.first.distance_to(point); });
 
-        if (res == m_verTextMap.cend())
+        if (res == m_vertex_map.cend())
             return std::unexpected("Failed to get clossest point");
 
         return res->first;
     }
 
-    const std::vector<Vector3<float>>& NavigationMesh::GetNeighbors(const Vector3<float> &vertex) const
+    const std::vector<Vector3<float>>& NavigationMesh::get_neighbors(const Vector3<float>& vertex) const
     {
-        return m_verTextMap.at(vertex);
+        return m_vertex_map.at(vertex);
     }
 
-    bool NavigationMesh::Empty() const
+    bool NavigationMesh::empty() const
     {
-        return m_verTextMap.empty();
+        return m_vertex_map.empty();
     }
 
-    std::vector<uint8_t> NavigationMesh::Serialize() const
+    std::vector<uint8_t> NavigationMesh::serialize() const
     {
-        auto dumpToVector =[]<typename T>(const T& t, std::vector<uint8_t>& vec){
+        auto dump_to_vector = []<typename T>(const T& t, std::vector<uint8_t>& vec)
+        {
             for (size_t i = 0; i < sizeof(t); i++)
-                vec.push_back(*(reinterpret_cast<const uint8_t*>(&t)+i));
+                vec.push_back(*(reinterpret_cast<const uint8_t*>(&t) + i));
         };
 
         std::vector<uint8_t> raw;
 
-
-        for (const auto& [vertex, neighbors] : m_verTextMap)
+        for (const auto& [vertex, neighbors]: m_vertex_map)
         {
-            const auto neighborsCount = neighbors.size();
+            const auto neighbors_count = neighbors.size();
 
-            dumpToVector(vertex, raw);
-            dumpToVector(neighborsCount, raw);
+            dump_to_vector(vertex, raw);
+            dump_to_vector(neighbors_count, raw);
 
-            for (const auto& neighbor : neighbors)
-                dumpToVector(neighbor, raw);
+            for (const auto& neighbor: neighbors)
+                dump_to_vector(neighbor, raw);
         }
         return raw;
-
     }
 
-    void NavigationMesh::Deserialize(const std::vector<uint8_t> &raw)
+    void NavigationMesh::deserialize(const std::vector<uint8_t>& raw)
     {
-        auto loadFromVector = [](const std::vector<uint8_t>& vec, size_t& offset, auto& value)
+        auto load_from_vector = [](const std::vector<uint8_t>& vec, size_t& offset, auto& value)
         {
             if (offset + sizeof(value) > vec.size())
             {
                 throw std::runtime_error("Deserialize: Invalid input data size.");
             }
-            std::copy_n(vec.data() + offset, sizeof(value), (uint8_t*)&value);
+            std::copy_n(vec.data() + offset, sizeof(value), reinterpret_cast<uint8_t*>(&value));
             offset += sizeof(value);
         };
 
-        m_verTextMap.clear();
+        m_vertex_map.clear();
 
         size_t offset = 0;
 
         while (offset < raw.size())
         {
             Vector3<float> vertex;
-            loadFromVector(raw, offset, vertex);
+            load_from_vector(raw, offset, vertex);
 
-            uint16_t neighborsCount;
-            loadFromVector(raw, offset, neighborsCount);
+            uint16_t neighbors_count;
+            load_from_vector(raw, offset, neighbors_count);
 
             std::vector<Vector3<float>> neighbors;
-            neighbors.reserve(neighborsCount);
+            neighbors.reserve(neighbors_count);
 
-            for (size_t i = 0; i < neighborsCount; ++i)
+            for (size_t i = 0; i < neighbors_count; ++i)
             {
                 Vector3<float> neighbor;
-                loadFromVector(raw, offset, neighbor);
+                load_from_vector(raw, offset, neighbor);
                 neighbors.push_back(neighbor);
             }
 
-            m_verTextMap.emplace(vertex, std::move(neighbors));
+            m_vertex_map.emplace(vertex, std::move(neighbors));
         }
     }
-}
+} // namespace omath::pathfinding

@@ -6,17 +6,18 @@
 #include <algorithm>
 #include <omath/vector3.hpp>
 
-
 namespace omath
 {
-    template <class Type>
+    template<class Type>
     class Vector4 : public Vector3<Type>
     {
     public:
         Type w;
 
-        constexpr Vector4(const Type& x, const Type& y, const Type& z, const Type& w) : Vector3<Type>(x, y, z), w(w) {}
-        constexpr Vector4() : Vector3<Type>(), w(0) {};
+        constexpr Vector4(const Type& x, const Type& y, const Type& z, const Type& w): Vector3<Type>(x, y, z), w(w)
+        {
+        }
+        constexpr Vector4(): Vector3<Type>(), w(0) {};
 
         [[nodiscard]]
         constexpr bool operator==(const Vector4& src) const
@@ -77,29 +78,29 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]] constexpr Type LengthSqr() const
+        [[nodiscard]] constexpr Type length_sqr() const
         {
-            return Vector3<Type>::LengthSqr() + w * w;
+            return Vector3<Type>::length_sqr() + w * w;
         }
 
-        [[nodiscard]] constexpr Type Dot(const Vector4& vOther) const
+        [[nodiscard]] constexpr Type dot(const Vector4& other) const
         {
-            return Vector3<Type>::Dot(vOther) + w * vOther.w;
+            return Vector3<Type>::dot(other) + w * other.w;
         }
 
-        [[nodiscard]] Vector3<Type> Length() const
+        [[nodiscard]] Vector3<Type> length() const
         {
-            return std::sqrt(LengthSqr());
+            return std::sqrt(length_sqr());
         }
 
-        constexpr Vector4& Abs()
+        constexpr Vector4& abs()
         {
-            Vector3<Type>::Abs();
+            Vector3<Type>::abs();
             w = w < 0.f ? -w : w;
 
             return *this;
         }
-        constexpr Vector4& Clamp(const Type& min, const Type& max)
+        constexpr Vector4& clamp(const Type& min, const Type& max)
         {
             this->x = std::clamp(this->x, min, max);
             this->y = std::clamp(this->y, min, max);
@@ -151,23 +152,22 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Type Sum() const
+        constexpr Type sum() const
         {
-            return Vector3<Type>::Sum() + w;
+            return Vector3<Type>::sum() + w;
         }
 
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
         ImVec4 ToImVec4() const
         {
-            return
-            {
-                static_cast<float>(this->x),
-                static_cast<float>(this->y),
-                static_cast<float>(this->z),
-                static_cast<float>(w),
+            return {
+                    static_cast<float>(this->x),
+                    static_cast<float>(this->y),
+                    static_cast<float>(this->z),
+                    static_cast<float>(w),
             };
         }
 #endif
     };
-}
+} // namespace omath

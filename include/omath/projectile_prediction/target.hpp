@@ -10,13 +10,12 @@ namespace omath::projectile_prediction
     class Target final
     {
     public:
-
         [[nodiscard]]
-        constexpr Vector3<float> PredictPosition(const float time, const float gravity) const
+        constexpr Vector3<float> predict_position(const float time, const float gravity) const
         {
             auto predicted = m_origin + m_velocity * time;
 
-            if (m_isAirborne)
+            if (m_is_airborne)
                 predicted.z -= gravity * std::pow(time, 2.f) * 0.5f;
 
             return predicted;
@@ -24,6 +23,6 @@ namespace omath::projectile_prediction
 
         Vector3<float> m_origin;
         Vector3<float> m_velocity;
-        bool m_isAirborne{};
+        bool m_is_airborne{};
     };
-}
+} // namespace omath::projectile_prediction

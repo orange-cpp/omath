@@ -9,69 +9,69 @@
 
 TEST(UnitTestIwEngine, ForwardVector)
 {
-    const auto forward = omath::iw_engine::ForwardVector({});
+    const auto forward = omath::iw_engine::forward_vector({});
 
-    EXPECT_EQ(forward, omath::iw_engine::kAbsForward);
+    EXPECT_EQ(forward, omath::iw_engine::k_abs_forward);
 }
 
 TEST(UnitTestIwEngine, RightVector)
 {
-    const auto right = omath::iw_engine::RightVector({});
+    const auto right = omath::iw_engine::right_vector({});
 
-    EXPECT_EQ(right, omath::iw_engine::kAbsRight);
+    EXPECT_EQ(right, omath::iw_engine::k_abs_right);
 }
 
 TEST(UnitTestIwEngine, UpVector)
 {
-    const auto up = omath::iw_engine::UpVector({});
-    EXPECT_EQ(up, omath::iw_engine::kAbsUp);
+    const auto up = omath::iw_engine::up_vector({});
+    EXPECT_EQ(up, omath::iw_engine::k_abs_up);
 }
 
 TEST(UnitTestIwEngine, ForwardVectorRotationYaw)
 {
     omath::iw_engine::ViewAngles angles;
 
-    angles.yaw = omath::iw_engine::YawAngle::FromDegrees(-90.f);
+    angles.yaw = omath::iw_engine::YawAngle::from_degrees(-90.f);
 
-    const auto forward = omath::iw_engine::ForwardVector(angles);
-    EXPECT_NEAR(forward.x, omath::iw_engine::kAbsRight.x, 0.00001f);
-    EXPECT_NEAR(forward.y, omath::iw_engine::kAbsRight.y, 0.00001f);
-    EXPECT_NEAR(forward.z, omath::iw_engine::kAbsRight.z, 0.00001f);
+    const auto forward = omath::iw_engine::forward_vector(angles);
+    EXPECT_NEAR(forward.x, omath::iw_engine::k_abs_right.x, 0.00001f);
+    EXPECT_NEAR(forward.y, omath::iw_engine::k_abs_right.y, 0.00001f);
+    EXPECT_NEAR(forward.z, omath::iw_engine::k_abs_right.z, 0.00001f);
 }
 
 TEST(UnitTestIwEngine, ForwardVectorRotationPitch)
 {
     omath::iw_engine::ViewAngles angles;
 
-    angles.pitch = omath::iw_engine::PitchAngle::FromDegrees(-89.f);
+    angles.pitch = omath::iw_engine::PitchAngle::from_degrees(-89.f);
 
-    const auto forward = omath::iw_engine::ForwardVector(angles);
-    EXPECT_NEAR(forward.x, omath::iw_engine::kAbsUp.x, 0.02f);
-    EXPECT_NEAR(forward.y, omath::iw_engine::kAbsUp.y, 0.01f);
-    EXPECT_NEAR(forward.z, omath::iw_engine::kAbsUp.z, 0.01f);
+    const auto forward = omath::iw_engine::forward_vector(angles);
+    EXPECT_NEAR(forward.x, omath::iw_engine::k_abs_up.x, 0.02f);
+    EXPECT_NEAR(forward.y, omath::iw_engine::k_abs_up.y, 0.01f);
+    EXPECT_NEAR(forward.z, omath::iw_engine::k_abs_up.z, 0.01f);
 }
 
 TEST(UnitTestIwEngine, ForwardVectorRotationRoll)
 {
     omath::iw_engine::ViewAngles angles;
 
-    angles.roll = omath::iw_engine::RollAngle::FromDegrees(90.f);
+    angles.roll = omath::iw_engine::RollAngle::from_degrees(90.f);
 
-    const auto forward = omath::iw_engine::UpVector(angles);
-    EXPECT_NEAR(forward.x, omath::iw_engine::kAbsRight.x, 0.00001f);
-    EXPECT_NEAR(forward.y, omath::iw_engine::kAbsRight.y, 0.00001f);
-    EXPECT_NEAR(forward.z, omath::iw_engine::kAbsRight.z, 0.00001f);
+    const auto forward = omath::iw_engine::up_vector(angles);
+    EXPECT_NEAR(forward.x, omath::iw_engine::k_abs_right.x, 0.00001f);
+    EXPECT_NEAR(forward.y, omath::iw_engine::k_abs_right.y, 0.00001f);
+    EXPECT_NEAR(forward.z, omath::iw_engine::k_abs_right.z, 0.00001f);
 }
 
 TEST(UnitTestIwEngine, ProjectTargetMovedFromCamera)
 {
-    constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     const auto cam = omath::iw_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
 
     for (float distance = 0.02f; distance < 1000.f; distance += 0.01f)
     {
-        const auto projected = cam.WorldToScreen({distance, 0, 0});
+        const auto projected = cam.world_to_screen({distance, 0, 0});
 
         EXPECT_TRUE(projected.has_value());
 
@@ -85,21 +85,21 @@ TEST(UnitTestIwEngine, ProjectTargetMovedFromCamera)
 
 TEST(UnitTestIwEngine, CameraSetAndGetFov)
 {
-    constexpr auto fov = omath::projection::FieldOfView::FromDegrees(90.f);
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     auto cam = omath::iw_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
-    EXPECT_EQ(cam.GetFieldOfView().AsDegrees(), 90.f);
-    cam.SetFieldOfView(omath::projection::FieldOfView::FromDegrees(50.f));
+    EXPECT_EQ(cam.get_field_of_view().as_degrees(), 90.f);
+    cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(50.f));
 
-    EXPECT_EQ(cam.GetFieldOfView().AsDegrees(), 50.f);
+    EXPECT_EQ(cam.get_field_of_view().as_degrees(), 50.f);
 }
 
 TEST(UnitTestIwEngine, CameraSetAndGetOrigin)
 {
     auto cam = omath::iw_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
 
-    EXPECT_EQ(cam.GetOrigin(), omath::Vector3<float>{});
-    cam.SetFieldOfView(omath::projection::FieldOfView::FromDegrees(50.f));
+    EXPECT_EQ(cam.get_origin(), omath::Vector3<float>{});
+    cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(50.f));
 
-    EXPECT_EQ(cam.GetFieldOfView().AsDegrees(), 50.f);
+    EXPECT_EQ(cam.get_field_of_view().as_degrees(), 50.f);
 }

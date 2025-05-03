@@ -14,7 +14,7 @@ AllowShortBlocksOnASingleLine: Never
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-AlwaysBreakTemplateDeclarations: No
+BreakTemplateDeclarations: Leave
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: true

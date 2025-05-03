@@ -3,10 +3,9 @@
 //
 
 #pragma once
+#include "omath/angles.hpp"
 #include <algorithm>
 #include <utility>
-#include "omath/angles.hpp"
-
 
 namespace omath
 {
@@ -17,14 +16,14 @@ namespace omath
     };
 
     template<class Type = float, Type min = Type(0), Type max = Type(360), AngleFlags flags = AngleFlags::Normalized>
-        requires std::is_arithmetic_v<Type>
+    requires std::is_arithmetic_v<Type>
     class Angle
     {
         Type m_angle;
         constexpr explicit Angle(const Type& degrees)
         {
             if constexpr (flags == AngleFlags::Normalized)
-                m_angle = angles::WrapAngle(degrees, min, max);
+                m_angle = angles::wrap_angle(degrees, min, max);
 
             else if constexpr (flags == AngleFlags::Clamped)
                 m_angle = std::clamp(degrees, min, max);
@@ -37,17 +36,17 @@ namespace omath
 
     public:
         [[nodiscard]]
-        constexpr static Angle FromDegrees(const Type& degrees)
+        constexpr static Angle from_degrees(const Type& degrees)
         {
             return Angle{degrees};
         }
-        constexpr Angle() : m_angle(0)
+        constexpr Angle(): m_angle(0)
         {
         }
         [[nodiscard]]
-        constexpr static Angle FromRadians(const Type& degrees)
+        constexpr static Angle from_radians(const Type& degrees)
         {
-            return Angle{angles::RadiansToDegrees<Type>(degrees)};
+            return Angle{angles::radians_to_degrees<Type>(degrees)};
         }
 
         [[nodiscard]]
@@ -57,51 +56,51 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Type AsDegrees() const
+        constexpr Type as_degrees() const
         {
             return m_angle;
         }
 
         [[nodiscard]]
-        constexpr Type AsRadians() const
+        constexpr Type as_radians() const
         {
-            return angles::DegreesToRadians(m_angle);
+            return angles::degrees_to_radians(m_angle);
         }
 
         [[nodiscard]]
-        Type Sin() const
+        Type sin() const
         {
-            return std::sin(AsRadians());
+            return std::sin(as_radians());
         }
 
         [[nodiscard]]
-        Type Cos() const
+        Type cos() const
         {
-            return std::cos(AsRadians());
+            return std::cos(as_radians());
         }
 
         [[nodiscard]]
-        Type Tan() const
+        Type tan() const
         {
-            return std::tan(AsRadians());
+            return std::tan(as_radians());
         }
 
         [[nodiscard]]
-        Type Atan() const
+        Type atan() const
         {
-            return std::atan(AsRadians());
+            return std::atan(as_radians());
         }
 
         [[nodiscard]]
-        Type Cot() const
+        Type cot() const
         {
-            return Cos() / Sin();
+            return cos() / sin();
         }
 
         constexpr Angle& operator+=(const Angle& other)
         {
             if constexpr (flags == AngleFlags::Normalized)
-                m_angle = angles::WrapAngle(m_angle + other.m_angle, min, max);
+                m_angle = angles::wrap_angle(m_angle + other.m_angle, min, max);
 
             else if constexpr (flags == AngleFlags::Clamped)
                 m_angle = std::clamp(m_angle + other.m_angle, min, max);
@@ -115,7 +114,8 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr std::partial_ordering operator<=>(const Angle& other) const = default;
+        constexpr std::partial_ordering operator<=>(const Angle& other) const
+                = default;
 
         constexpr Angle& operator-=(const Angle& other)
         {
@@ -126,7 +126,7 @@ namespace omath
         constexpr Angle& operator+(const Angle& other)
         {
             if constexpr (flags == AngleFlags::Normalized)
-                return {angles::WrapAngle(m_angle + other.m_angle, min, max)};
+                return {angles::wrap_angle(m_angle + other.m_angle, min, max)};
 
             else if constexpr (flags == AngleFlags::Clamped)
                 return {std::clamp(m_angle + other.m_angle, min, max)};
