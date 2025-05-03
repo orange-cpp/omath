@@ -1,0 +1,57 @@
+name: Omath CI (presets)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        # ------- preset ↔ runner pairs -------------
+        include:
+          - os: ubuntu-latest   # GCC / Ninja (from linux-release preset)
+            preset: linux-release
+          - os: macos-latest    # Clang / Ninja (from darwin-release preset)
+            preset: darwin-release
+          - os: windows-latest  # MSVC / Ninja (from windows-release preset)
+            preset: windows-release
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # 1) checkout (incl. GoogleTest sub-module)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # 2) Ninja (needed only on Windows images)
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v4
+
+      # 3) MSVC environment
+      - name: Set up MSVC developer command-prompt
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # 4) Configure with the selected CMake preset
+      - name: Configure (cmake --preset)
+        run: cmake --preset ${{ matrix.preset }} -DOMATH_BUILD_TESTS=ON
+
+      # 5) Build
+      - name: Build
+        # All configure presets put the binary dir in cmake-build/build/${presetName}
+        run: cmake --build cmake-build/build/${{ matrix.preset }}
+
+      # 6) Run unit-tests
+      - name: Test
+        working-directory: cmake-build/build/${{ matrix.preset }}
+        run: ctest --output-on-failure
