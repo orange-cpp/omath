@@ -6,7 +6,8 @@
 #include <stdexcept>
 namespace omath::pathfinding
 {
-    std::expected<Vector3<float>, std::string> NavigationMesh::get_closest_vertex(const Vector3<float>& point) const
+    std::expected<Vector3<float>, std::string>
+    NavigationMesh::get_closest_vertex(const Vector3<float>& point) const noexcept
     {
         const auto res = std::ranges::min_element(m_vertex_map, [&point](const auto& a, const auto& b)
                                                   { return a.first.distance_to(point) < b.first.distance_to(point); });
@@ -17,7 +18,7 @@ namespace omath::pathfinding
         return res->first;
     }
 
-    const std::vector<Vector3<float>>& NavigationMesh::get_neighbors(const Vector3<float>& vertex) const
+    const std::vector<Vector3<float>>& NavigationMesh::get_neighbors(const Vector3<float>& vertex) const noexcept
     {
         return m_vertex_map.at(vertex);
     }
@@ -27,7 +28,7 @@ namespace omath::pathfinding
         return m_vertex_map.empty();
     }
 
-    std::vector<uint8_t> NavigationMesh::serialize() const
+    std::vector<uint8_t> NavigationMesh::serialize() const noexcept
     {
         auto dump_to_vector = []<typename T>(const T& t, std::vector<uint8_t>& vec)
         {
@@ -50,7 +51,7 @@ namespace omath::pathfinding
         return raw;
     }
 
-    void NavigationMesh::deserialize(const std::vector<uint8_t>& raw)
+    void NavigationMesh::deserialize(const std::vector<uint8_t>& raw) noexcept
     {
         auto load_from_vector = [](const std::vector<uint8_t>& vec, size_t& offset, auto& value)
         {

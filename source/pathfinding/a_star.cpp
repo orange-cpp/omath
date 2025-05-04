@@ -17,7 +17,7 @@ namespace omath::pathfinding
 
     std::vector<Vector3<float>>
     Astar::reconstruct_final_path(const std::unordered_map<Vector3<float>, PathNode>& closed_list,
-                                  const Vector3<float>& current)
+                                  const Vector3<float>& current) noexcept
     {
         std::vector<Vector3<float>> path;
         std::optional current_opt = current;
@@ -38,7 +38,7 @@ namespace omath::pathfinding
         return path;
     }
     auto Astar::get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
-                                 const Vector3<float>& end_vertex)
+                                 const Vector3<float>& end_vertex) noexcept
     {
         return std::ranges::min_element(open_list,
                                         [&end_vertex](const auto& a, const auto& b)
@@ -50,7 +50,7 @@ namespace omath::pathfinding
     }
 
     std::vector<Vector3<float>> Astar::find_path(const Vector3<float>& start, const Vector3<float>& end,
-                                                 const NavigationMesh& nav_mesh)
+                                                 const NavigationMesh& nav_mesh) noexcept
     {
         std::unordered_map<Vector3<float>, PathNode> closed_list;
         std::unordered_map<Vector3<float>, PathNode> open_list;
