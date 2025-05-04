@@ -14,7 +14,6 @@ namespace omath::pathfinding
 
     enum Error
     {
-
     };
 
     class NavigationMesh final

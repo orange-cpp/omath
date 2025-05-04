@@ -451,7 +451,6 @@ namespace omath
             {up.x,      up.y,      up.z,      0},
             {forward.x, forward.y, forward.z, 0},
             {0,         0,         0,         1},
-
         } * mat_translation<Type, St>(-camera_origin);
     }
 
