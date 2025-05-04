@@ -22,12 +22,12 @@ namespace omath::source_engine
         m_view_angles.roll = RollAngle::from_radians(0.f);
     }
 
-    Mat4X4 Camera::calc_view_matrix() const
+    Mat4X4 Camera::calc_view_matrix() const noexcept
     {
         return source_engine::calc_view_matrix(m_view_angles, m_origin);
     }
 
-    Mat4X4 Camera::calc_projection_matrix() const
+    Mat4X4 Camera::calc_projection_matrix() const noexcept
     {
         return calc_perspective_projection_matrix(m_field_of_view.as_degrees(), m_view_port.aspect_ratio(),
                                                   m_near_plane_distance, m_far_plane_distance);

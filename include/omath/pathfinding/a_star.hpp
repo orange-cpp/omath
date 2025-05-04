@@ -15,16 +15,16 @@ namespace omath::pathfinding
     public:
         [[nodiscard]]
         static std::vector<Vector3<float>> find_path(const Vector3<float>& start, const Vector3<float>& end,
-                                                     const NavigationMesh& nav_mesh);
+                                                     const NavigationMesh& nav_mesh) noexcept;
 
     private:
         [[nodiscard]]
         static std::vector<Vector3<float>>
         reconstruct_final_path(const std::unordered_map<Vector3<float>, PathNode>& closed_list,
-                               const Vector3<float>& current);
+                               const Vector3<float>& current) noexcept;
 
         [[nodiscard]]
         static auto get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
-                                     const Vector3<float>& end_vertex);
+                                     const Vector3<float>& end_vertex) noexcept;
     };
 } // namespace omath::pathfinding

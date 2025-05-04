@@ -16,7 +16,7 @@ namespace omath::unity_engine
         void look_at(const Vector3<float>& target) override;
 
     protected:
-        [[nodiscard]] Mat4X4 calc_view_matrix() const override;
-        [[nodiscard]] Mat4X4 calc_projection_matrix() const override;
+        [[nodiscard]] Mat4X4 calc_view_matrix() const noexcept override;
+        [[nodiscard]] Mat4X4 calc_projection_matrix() const noexcept override;
     };
 } // namespace omath::unity_engine

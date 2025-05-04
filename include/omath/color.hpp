@@ -28,20 +28,20 @@ namespace omath
     class Color final : public Vector4<float>
     {
     public:
-        constexpr Color(const float r, const float g, const float b, const float a): Vector4(r, g, b, a)
+        constexpr Color(const float r, const float g, const float b, const float a) noexcept: Vector4(r, g, b, a)
         {
             clamp(0.f, 1.f);
         }
 
-        constexpr explicit Color() = default;
+        constexpr explicit Color() noexcept = default;
         [[nodiscard]]
-        constexpr static Color from_rgba(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a)
+        constexpr static Color from_rgba(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) noexcept
         {
             return Color{Vector4(r, g, b, a) / 255.f};
         }
 
         [[nodiscard]]
-        constexpr static Color from_hsv(float hue, const float saturation, const float value)
+        constexpr static Color from_hsv(float hue, const float saturation, const float value) noexcept
         {
             float r{}, g{}, b{};
 
@@ -82,13 +82,13 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr static Color from_hsv(const Hsv& hsv)
+        constexpr static Color from_hsv(const Hsv& hsv) noexcept
         {
             return from_hsv(hsv.hue, hsv.saturation, hsv.value);
         }
 
         [[nodiscard]]
-        constexpr Hsv to_hsv() const
+        constexpr Hsv to_hsv() const noexcept
         {
             Hsv hsv_data;
 
@@ -120,11 +120,11 @@ namespace omath
             return hsv_data;
         }
 
-        constexpr explicit Color(const Vector4& vec): Vector4(vec)
+        constexpr explicit Color(const Vector4& vec) noexcept: Vector4(vec)
         {
             clamp(0.f, 1.f);
         }
-        constexpr void set_hue(const float hue)
+        constexpr void set_hue(const float hue) noexcept
         {
             auto hsv = to_hsv();
             hsv.hue = hue;
@@ -132,7 +132,7 @@ namespace omath
             *this = from_hsv(hsv);
         }
 
-        constexpr void set_saturation(const float saturation)
+        constexpr void set_saturation(const float saturation) noexcept
         {
             auto hsv = to_hsv();
             hsv.saturation = saturation;
@@ -140,7 +140,7 @@ namespace omath
             *this = from_hsv(hsv);
         }
 
-        constexpr void set_value(const float value)
+        constexpr void set_value(const float value) noexcept
         {
             auto hsv = to_hsv();
             hsv.value = value;
@@ -148,7 +148,7 @@ namespace omath
             *this = from_hsv(hsv);
         }
         [[nodiscard]]
-        constexpr Color blend(const Color& other, float ratio) const
+        constexpr Color blend(const Color& other, float ratio) const noexcept
         {
             ratio = std::clamp(ratio, 0.f, 1.f);
             return Color(*this * (1.f - ratio) + other * ratio);

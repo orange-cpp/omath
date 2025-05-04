@@ -20,17 +20,17 @@ namespace omath::pathfinding
     {
     public:
         [[nodiscard]]
-        std::expected<Vector3<float>, std::string> get_closest_vertex(const Vector3<float>& point) const;
+        std::expected<Vector3<float>, std::string> get_closest_vertex(const Vector3<float>& point) const noexcept;
 
         [[nodiscard]]
-        const std::vector<Vector3<float>>& get_neighbors(const Vector3<float>& vertex) const;
+        const std::vector<Vector3<float>>& get_neighbors(const Vector3<float>& vertex) const noexcept;
 
         [[nodiscard]]
         bool empty() const;
 
-        [[nodiscard]] std::vector<uint8_t> serialize() const;
+        [[nodiscard]] std::vector<uint8_t> serialize() const noexcept;
 
-        void deserialize(const std::vector<uint8_t>& raw);
+        void deserialize(const std::vector<uint8_t>& raw) noexcept;
 
         std::unordered_map<Vector3<float>, std::vector<Vector3<float>>> m_vertex_map;
     };
