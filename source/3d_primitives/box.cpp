@@ -7,7 +7,7 @@ namespace omath::primitives
 {
     std::array<Triangle<Vector3<float>>, 12> create_box(const Vector3<float>& top, const Vector3<float>& bottom,
                                                         const Vector3<float>& dir_forward,
-                                                        const Vector3<float>& dir_right, const float ratio)
+                                                        const Vector3<float>& dir_right, const float ratio) noexcept
     {
         const auto height = top.distance_to(bottom);
         const auto side_size = height / ratio;

@@ -29,11 +29,12 @@ namespace omath::projectile_prediction
         const float m_distance_tolerance;
 
         [[nodiscard]]
-        std::optional<float> maybe_calculate_projectile_launch_pitch_angle(const Projectile& projectile,
-                                                                           const Vector3<float>& target_position) const;
+        std::optional<float>
+        maybe_calculate_projectile_launch_pitch_angle(const Projectile& projectile,
+                                                      const Vector3<float>& target_position) const noexcept;
 
         [[nodiscard]]
         bool is_projectile_reached_target(const Vector3<float>& target_position, const Projectile& projectile,
-                                          float pitch, float time) const;
+                                          float pitch, float time) const noexcept;
     };
 } // namespace omath::projectile_prediction

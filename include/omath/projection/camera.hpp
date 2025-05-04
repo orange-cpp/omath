@@ -41,9 +41,9 @@ namespace omath::projection
     protected:
         virtual void look_at(const Vector3<float>& target) = 0;
 
-        [[nodiscard]] virtual Mat4X4Type calc_view_matrix() const = 0;
+        [[nodiscard]] virtual Mat4X4Type calc_view_matrix() const noexcept = 0;
 
-        [[nodiscard]] virtual Mat4X4Type calc_projection_matrix() const = 0;
+        [[nodiscard]] virtual Mat4X4Type calc_projection_matrix() const noexcept = 0;
 
         [[nodiscard]] Mat4X4Type calc_view_projection_matrix() const noexcept
         {
