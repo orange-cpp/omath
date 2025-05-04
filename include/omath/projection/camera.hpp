@@ -32,7 +32,7 @@ namespace omath::projection
     public:
         virtual ~Camera() = default;
         Camera(const Vector3<float>& position, const ViewAnglesType& view_angles, const ViewPort& view_port,
-               const FieldOfView& fov, const float near, const float far)
+               const FieldOfView& fov, const float near, const float far) noexcept
             : m_view_port(view_port), m_field_of_view(fov), m_far_plane_distance(far), m_near_plane_distance(near),
               m_view_angles(view_angles), m_origin(position)
         {
@@ -45,13 +45,13 @@ namespace omath::projection
 
         [[nodiscard]] virtual Mat4X4Type calc_projection_matrix() const = 0;
 
-        [[nodiscard]] Mat4X4Type calc_view_projection_matrix() const
+        [[nodiscard]] Mat4X4Type calc_view_projection_matrix() const noexcept
         {
             return calc_projection_matrix() * calc_view_matrix();
         }
 
     public:
-        [[nodiscard]] const Mat4X4Type& get_view_projection_matrix() const
+        [[nodiscard]] const Mat4X4Type& get_view_projection_matrix() const noexcept
         {
             if (!m_view_projection_matrix.has_value())
                 m_view_projection_matrix = calc_view_projection_matrix();
@@ -59,68 +59,69 @@ namespace omath::projection
             return m_view_projection_matrix.value();
         }
 
-        void set_field_of_view(const FieldOfView& fov)
+        void set_field_of_view(const FieldOfView& fov) noexcept
         {
             m_field_of_view = fov;
             m_view_projection_matrix = std::nullopt;
         }
 
-        void set_near_plane(const float near)
+        void set_near_plane(const float near) noexcept
         {
             m_near_plane_distance = near;
             m_view_projection_matrix = std::nullopt;
         }
 
-        void set_far_plane(const float far)
+        void set_far_plane(const float far) noexcept
         {
             m_far_plane_distance = far;
             m_view_projection_matrix = std::nullopt;
         }
 
-        void set_view_angles(const ViewAnglesType& view_angles)
+        void set_view_angles(const ViewAnglesType& view_angles) noexcept
         {
             m_view_angles = view_angles;
             m_view_projection_matrix = std::nullopt;
         }
 
-        void set_origin(const Vector3<float>& origin)
+        void set_origin(const Vector3<float>& origin) noexcept
         {
             m_origin = origin;
             m_view_projection_matrix = std::nullopt;
         }
 
-        void set_view_port(const ViewPort& view_port)
+        void set_view_port(const ViewPort& view_port) noexcept
         {
             m_view_port = view_port;
             m_view_projection_matrix = std::nullopt;
         }
 
-        [[nodiscard]] const FieldOfView& get_field_of_view() const
+        [[nodiscard]] const FieldOfView& get_field_of_view() const noexcept
         {
             return m_field_of_view;
         }
 
-        [[nodiscard]] const float& get_near_plane() const
+        [[nodiscard]] const float& get_near_plane() const noexcept
         {
             return m_near_plane_distance;
         }
 
-        [[nodiscard]] const float& get_far_plane() const
+        [[nodiscard]] const float& get_far_plane() const noexcept
         {
             return m_far_plane_distance;
         }
 
-        [[nodiscard]] const ViewAnglesType& get_view_angles() const
+        [[nodiscard]] const ViewAnglesType& get_view_angles() const noexcept
         {
             return m_view_angles;
         }
 
-        [[nodiscard]] const Vector3<float>& get_origin() const
+        [[nodiscard]] const Vector3<float>& get_origin() const noexcept
         {
             return m_origin;
         }
 
-        [[nodiscard]] std::expected<Vector3<float>, Error> world_to_screen(const Vector3<float>& world_position) const
+        [[nodiscard]] std::expected<Vector3<float>, Error>
+        world_to_screen(const Vector3<float>& world_position) const noexcept
         {
             auto normalized_cords = world_to_view_port(world_position);
 
@@ -131,7 +132,7 @@ namespace omath::projection
         }
 
         [[nodiscard]] std::expected<Vector3<float>, Error>
-        world_to_view_port(const Vector3<float>& world_position) const
+        world_to_view_port(const Vector3<float>& world_position) const noexcept
         {
             auto projected = get_view_projection_matrix()
                              * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(world_position);
@@ -160,13 +161,13 @@ namespace omath::projection
         Vector3<float> m_origin;
 
     private:
-        template<class Type> [[nodiscard]]
-        constexpr static bool is_ndc_out_of_bounds(const Type& ndc)
+        template<class Type>
+        [[nodiscard]] constexpr static bool is_ndc_out_of_bounds(const Type& ndc) noexcept
         {
             return std::ranges::any_of(ndc.raw_array(), [](const auto& val) { return val < -1 || val > 1; });
         }
 
-        [[nodiscard]] Vector3<float> ndc_to_screen_position(const Vector3<float>& ndc) const
+        [[nodiscard]] Vector3<float> ndc_to_screen_position(const Vector3<float>& ndc) const noexcept
         {
             return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (1.f - ndc.y) / 2.f * m_view_port.m_height, ndc.z};
         }
