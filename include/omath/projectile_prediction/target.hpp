@@ -16,7 +16,7 @@ namespace omath::projectile_prediction
             auto predicted = m_origin + m_velocity * time;
 
             if (m_is_airborne)
-                predicted.z -= gravity * std::pow(time, 2.f) * 0.5f;
+                predicted.z -= gravity * (time*time) * 0.5f;
 
             return predicted;
         }
