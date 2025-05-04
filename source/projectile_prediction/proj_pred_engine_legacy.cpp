@@ -18,8 +18,8 @@ namespace omath::projectile_prediction
         {
             const auto predicted_target_position = target.predict_position(time, m_gravity_constant);
 
-            const auto projectile_pitch
-                    = maybe_calculate_projectile_launch_pitch_angle(projectile, predicted_target_position);
+            const auto projectile_pitch =
+                    maybe_calculate_projectile_launch_pitch_angle(projectile, predicted_target_position);
 
             if (!projectile_pitch.has_value()) [[unlikely]]
                 continue;
@@ -35,9 +35,8 @@ namespace omath::projectile_prediction
         return std::nullopt;
     }
 
-    std::optional<float>
-    ProjPredEngineLegacy::maybe_calculate_projectile_launch_pitch_angle(const Projectile& projectile,
-                                                                        const Vector3<float>& target_position) const
+    std::optional<float> ProjPredEngineLegacy::maybe_calculate_projectile_launch_pitch_angle(
+            const Projectile& projectile, const Vector3<float>& target_position) const noexcept
     {
         const auto bullet_gravity = m_gravity_constant * projectile.m_gravity_scale;
         const auto delta = target_position - projectile.m_origin;
@@ -60,7 +59,7 @@ namespace omath::projectile_prediction
 
     bool ProjPredEngineLegacy::is_projectile_reached_target(const Vector3<float>& target_position,
                                                             const Projectile& projectile, const float pitch,
-                                                            const float time) const
+                                                            const float time) const noexcept
     {
         const auto yaw = projectile.m_origin.view_angle_to(target_position).y;
         const auto projectile_position = projectile.predict_position(pitch, yaw, time, m_gravity_constant);

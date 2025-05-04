@@ -24,22 +24,22 @@ namespace omath
     {
     public:
         Type z = static_cast<Type>(0);
-        constexpr Vector3(const Type& x, const Type& y, const Type& z): Vector2<Type>(x, y), z(z)
+        constexpr Vector3(const Type& x, const Type& y, const Type& z) noexcept: Vector2<Type>(x, y), z(z)
         {
         }
-        constexpr Vector3(): Vector2<Type>() {};
+        constexpr Vector3() noexcept: Vector2<Type>() {};
 
-        [[nodiscard]] constexpr bool operator==(const Vector3& src) const
+        [[nodiscard]] constexpr bool operator==(const Vector3& src) const noexcept
         {
             return Vector2<Type>::operator==(src) && (src.z == z);
         }
 
-        [[nodiscard]] constexpr bool operator!=(const Vector3& src) const
+        [[nodiscard]] constexpr bool operator!=(const Vector3& src) const noexcept
         {
             return !(*this == src);
         }
 
-        constexpr Vector3& operator+=(const Vector3& v)
+        constexpr Vector3& operator+=(const Vector3& v) noexcept
         {
             Vector2<Type>::operator+=(v);
             z += v.z;
@@ -47,7 +47,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator-=(const Vector3& v)
+        constexpr Vector3& operator-=(const Vector3& v) noexcept
         {
             Vector2<Type>::operator-=(v);
             z -= v.z;
@@ -55,7 +55,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator*=(const float fl)
+        constexpr Vector3& operator*=(const float fl) noexcept
         {
             Vector2<Type>::operator*=(fl);
             z *= fl;
@@ -63,7 +63,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator*=(const Vector3& v)
+        constexpr Vector3& operator*=(const Vector3& v) noexcept
         {
             Vector2<Type>::operator*=(v);
             z *= v.z;
@@ -71,7 +71,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator/=(const Vector3& v)
+        constexpr Vector3& operator/=(const Vector3& v) noexcept
         {
             Vector2<Type>::operator/=(v);
             z /= v.z;
@@ -79,7 +79,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator+=(const float fl)
+        constexpr Vector3& operator+=(const float fl) noexcept
         {
             Vector2<Type>::operator+=(fl);
             z += fl;
@@ -87,7 +87,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator/=(const float fl)
+        constexpr Vector3& operator/=(const float fl) noexcept
         {
             Vector2<Type>::operator/=(fl);
             z /= fl;
@@ -95,7 +95,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& operator-=(const float fl)
+        constexpr Vector3& operator-=(const float fl) noexcept
         {
             Vector2<Type>::operator-=(fl);
             z -= fl;
@@ -103,7 +103,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector3& abs()
+        constexpr Vector3& abs() noexcept
         {
             Vector2<Type>::abs();
             z = z < 0.f ? -z : z;
@@ -111,12 +111,12 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]] constexpr Type distance_to_sqr(const Vector3& other) const
+        [[nodiscard]] constexpr Type distance_to_sqr(const Vector3& other) const noexcept
         {
             return (*this - other).length_sqr();
         }
 
-        [[nodiscard]] constexpr Type dot(const Vector3& other) const
+        [[nodiscard]] constexpr Type dot(const Vector3& other) const noexcept
         {
             return Vector2<Type>::dot(other) + z * other.z;
         }
@@ -142,80 +142,80 @@ namespace omath
             return length_value != 0 ? *this / length_value : *this;
         }
 #else
-        [[nodiscard]] Type length() const
+        [[nodiscard]] Type length() const noexcept
         {
             return std::hypot(this->x, this->y, z);
         }
 
-        [[nodiscard]] Vector3 normalized() const
+        [[nodiscard]] Vector3 normalized() const noexcept
         {
             const Type len = this->length();
 
             return len != 0 ? *this / len : *this;
         }
 
-        [[nodiscard]] Type length_2d() const
+        [[nodiscard]] Type length_2d() const noexcept
         {
             return Vector2<Type>::length();
         }
 
-        [[nodiscard]] Type distance_to(const Vector3& vOther) const
+        [[nodiscard]] Type distance_to(const Vector3& vOther) const noexcept
         {
             return (*this - vOther).length();
         }
 #endif
 
-        [[nodiscard]] constexpr Type length_sqr() const
+        [[nodiscard]] constexpr Type length_sqr() const noexcept
         {
             return Vector2<Type>::length_sqr() + z * z;
         }
 
-        [[nodiscard]] constexpr Vector3 operator-() const
+        [[nodiscard]] constexpr Vector3 operator-() const noexcept
         {
             return {-this->x, -this->y, -z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator+(const Vector3& v) const
+        [[nodiscard]] constexpr Vector3 operator+(const Vector3& v) const noexcept
         {
             return {this->x + v.x, this->y + v.y, z + v.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator-(const Vector3& v) const
+        [[nodiscard]] constexpr Vector3 operator-(const Vector3& v) const noexcept
         {
             return {this->x - v.x, this->y - v.y, z - v.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator*(const float fl) const
+        [[nodiscard]] constexpr Vector3 operator*(const float fl) const noexcept
         {
             return {this->x * fl, this->y * fl, z * fl};
         }
 
-        [[nodiscard]] constexpr Vector3 operator*(const Vector3& v) const
+        [[nodiscard]] constexpr Vector3 operator*(const Vector3& v) const noexcept
         {
             return {this->x * v.x, this->y * v.y, z * v.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator/(const float fl) const
+        [[nodiscard]] constexpr Vector3 operator/(const float fl) const noexcept
         {
             return {this->x / fl, this->y / fl, z / fl};
         }
 
-        [[nodiscard]] constexpr Vector3 operator/(const Vector3& v) const
+        [[nodiscard]] constexpr Vector3 operator/(const Vector3& v) const noexcept
         {
             return {this->x / v.x, this->y / v.y, z / v.z};
         }
 
-        [[nodiscard]] constexpr Vector3 cross(const Vector3& v) const
+        [[nodiscard]] constexpr Vector3 cross(const Vector3& v) const noexcept
         {
             return {this->y * v.z - z * v.y, z * v.x - this->x * v.z, this->x * v.y - this->y * v.x};
         }
-        [[nodiscard]] constexpr Type sum() const
+        [[nodiscard]] constexpr Type sum() const noexcept
         {
             return sum_2d() + z;
         }
 
         [[nodiscard]] std::expected<Angle<float, 0.f, 180.f, AngleFlags::Clamped>, Vector3Error>
-        angle_between(const Vector3& other) const
+        angle_between(const Vector3& other) const noexcept
         {
             const auto bottom = length() * other.length();
 
@@ -225,7 +225,7 @@ namespace omath
             return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(std::acos(dot(other) / bottom));
         }
 
-        [[nodiscard]] bool is_perpendicular(const Vector3& other) const
+        [[nodiscard]] bool is_perpendicular(const Vector3& other) const noexcept
         {
             if (const auto angle = angle_between(other))
                 return angle->as_degrees() == 90.f;
@@ -233,17 +233,17 @@ namespace omath
             return false;
         }
 
-        [[nodiscard]] constexpr Type sum_2d() const
+        [[nodiscard]] constexpr Type sum_2d() const noexcept
         {
             return Vector2<Type>::sum();
         }
 
-        [[nodiscard]] constexpr std::tuple<Type, Type, Type> as_tuple() const
+        [[nodiscard]] constexpr std::tuple<Type, Type, Type> as_tuple() const noexcept
         {
             return std::make_tuple(this->x, this->y, z);
         }
 
-        [[nodiscard]] Vector3 view_angle_to(const Vector3& other) const
+        [[nodiscard]] Vector3 view_angle_to(const Vector3& other) const noexcept
         {
             const float distance = distance_to(other);
             const auto delta = other - *this;

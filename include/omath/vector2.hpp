@@ -24,25 +24,25 @@ namespace omath
         // Constructors
         constexpr Vector2() = default;
 
-        constexpr Vector2(const Type& x, const Type& y): x(x), y(y)
+        constexpr Vector2(const Type& x, const Type& y) noexcept: x(x), y(y)
         {
         }
 
         // Equality operators
         [[nodiscard]]
-        constexpr bool operator==(const Vector2& src) const
+        constexpr bool operator==(const Vector2& src) const noexcept
         {
             return x == src.x && y == src.y;
         }
 
         [[nodiscard]]
-        constexpr bool operator!=(const Vector2& src) const
+        constexpr bool operator!=(const Vector2& src) const noexcept
         {
             return !(*this == src);
         }
 
         // Compound assignment operators
-        constexpr Vector2& operator+=(const Vector2& v)
+        constexpr Vector2& operator+=(const Vector2& v) noexcept
         {
             x += v.x;
             y += v.y;
@@ -50,7 +50,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator-=(const Vector2& v)
+        constexpr Vector2& operator-=(const Vector2& v) noexcept
         {
             x -= v.x;
             y -= v.y;
@@ -58,7 +58,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator*=(const Vector2& v)
+        constexpr Vector2& operator*=(const Vector2& v) noexcept
         {
             x *= v.x;
             y *= v.y;
@@ -66,7 +66,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator/=(const Vector2& v)
+        constexpr Vector2& operator/=(const Vector2& v) noexcept
         {
             x /= v.x;
             y /= v.y;
@@ -74,7 +74,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator*=(const Type& fl)
+        constexpr Vector2& operator*=(const Type& fl) noexcept
         {
             x *= fl;
             y *= fl;
@@ -82,7 +82,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator/=(const Type& fl)
+        constexpr Vector2& operator/=(const Type& fl) noexcept
         {
             x /= fl;
             y /= fl;
@@ -90,7 +90,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator+=(const Type& fl)
+        constexpr Vector2& operator+=(const Type& fl) noexcept
         {
             x += fl;
             y += fl;
@@ -98,7 +98,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector2& operator-=(const Type& fl)
+        constexpr Vector2& operator-=(const Type& fl) noexcept
         {
             x -= fl;
             y -= fl;
@@ -107,50 +107,50 @@ namespace omath
         }
 
         // Basic vector operations
-        [[nodiscard]] Type distance_to(const Vector2& other) const
+        [[nodiscard]] Type distance_to(const Vector2& other) const noexcept
         {
             return std::sqrt(distance_to_sqr(other));
         }
 
-        [[nodiscard]] constexpr Type distance_to_sqr(const Vector2& other) const
+        [[nodiscard]] constexpr Type distance_to_sqr(const Vector2& other) const noexcept
         {
             return (x - other.x) * (x - other.x) + (y - other.y) * (y - other.y);
         }
 
-        [[nodiscard]] constexpr Type dot(const Vector2& other) const
+        [[nodiscard]] constexpr Type dot(const Vector2& other) const noexcept
         {
             return x * other.x + y * other.y;
         }
 
 #ifndef _MSC_VER
-        [[nodiscard]] constexpr Type length() const
+        [[nodiscard]] constexpr Type length() const noexcept
         {
             return std::hypot(this->x, this->y);
         }
 
-        [[nodiscard]] constexpr Vector2 normalized() const
+        [[nodiscard]] constexpr Vector2 normalized() const noexcept
         {
             const Type len = length();
             return len > 0.f ? *this / len : *this;
         }
 #else
-        [[nodiscard]] Type length() const
+        [[nodiscard]] Type length() const noexcept
         {
             return std::hypot(x, y);
         }
 
-        [[nodiscard]] Vector2 normalized() const
+        [[nodiscard]] Vector2 normalized() const noexcept
         {
             const Type len = length();
             return len > 0.f ? *this / len : *this;
         }
 #endif
-        [[nodiscard]] constexpr Type length_sqr() const
+        [[nodiscard]] constexpr Type length_sqr() const noexcept
         {
             return x * x + y * y;
         }
 
-        constexpr Vector2& abs()
+        constexpr Vector2& abs() noexcept
         {
             // FIXME: Replace with std::abs, if it will become constexprable
             x = x < 0 ? -x : x;
@@ -158,47 +158,47 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]] constexpr Vector2 operator-() const
+        [[nodiscard]] constexpr Vector2 operator-() const noexcept
         {
             return {-x, -y};
         }
 
         // Binary arithmetic operators
-        [[nodiscard]] constexpr Vector2 operator+(const Vector2& v) const
+        [[nodiscard]] constexpr Vector2 operator+(const Vector2& v) const noexcept
         {
             return {x + v.x, y + v.y};
         }
 
-        [[nodiscard]] constexpr Vector2 operator-(const Vector2& v) const
+        [[nodiscard]] constexpr Vector2 operator-(const Vector2& v) const noexcept
         {
             return {x - v.x, y - v.y};
         }
 
-        [[nodiscard]] constexpr Vector2 operator*(const float fl) const
+        [[nodiscard]] constexpr Vector2 operator*(const float fl) const noexcept
         {
             return {x * fl, y * fl};
         }
 
-        [[nodiscard]] constexpr Vector2 operator/(const float fl) const
+        [[nodiscard]] constexpr Vector2 operator/(const float fl) const noexcept
         {
             return {x / fl, y / fl};
         }
 
         // Sum of elements
-        [[nodiscard]] constexpr Type sum() const
+        [[nodiscard]] constexpr Type sum() const noexcept
         {
             return x + y;
         }
 
         [[nodiscard]]
-        constexpr std::tuple<Type, Type> as_tuple() const
+        constexpr std::tuple<Type, Type> as_tuple() const noexcept
         {
             return std::make_tuple(x, y);
         }
 
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
-        ImVec2 to_im_vec2() const
+        ImVec2 to_im_vec2() const noexcept
         {
             return {static_cast<float>(this->x), static_cast<float>(this->y)};
         }

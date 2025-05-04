@@ -11,7 +11,7 @@ namespace omath::projectile_prediction
     {
     public:
         [[nodiscard]]
-        Vector3<float> predict_position(float pitch, float yaw, float time, float gravity) const;
+        Vector3<float> predict_position(float pitch, float yaw, float time, float gravity) const noexcept;
 
         Vector3<float> m_origin;
         float m_launch_speed{};

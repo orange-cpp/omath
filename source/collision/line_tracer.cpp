@@ -5,21 +5,21 @@
 
 namespace omath::collision
 {
-    bool LineTracer::can_trace_line(const Ray& ray, const Triangle<Vector3<float>>& triangle)
+    bool LineTracer::can_trace_line(const Ray& ray, const Triangle<Vector3<float>>& triangle) noexcept
     {
         return get_ray_hit_point(ray, triangle) == ray.end;
     }
-    Vector3<float> Ray::direction_vector() const
+    Vector3<float> Ray::direction_vector() const noexcept
     {
         return end - start;
     }
 
-    Vector3<float> Ray::direction_vector_normalized() const
+    Vector3<float> Ray::direction_vector_normalized() const noexcept
     {
         return direction_vector().normalized();
     }
 
-    Vector3<float> LineTracer::get_ray_hit_point(const Ray& ray, const Triangle<Vector3<float>>& triangle)
+    Vector3<float> LineTracer::get_ray_hit_point(const Ray& ray, const Triangle<Vector3<float>>& triangle) noexcept
     {
         constexpr float k_epsilon = std::numeric_limits<float>::epsilon();
 
