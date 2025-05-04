@@ -114,8 +114,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr std::partial_ordering operator<=>(const Angle& other) const
-                = default;
+        constexpr std::partial_ordering operator<=>(const Angle& other) const = default;
 
         constexpr Angle& operator-=(const Angle& other)
         {
