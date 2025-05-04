@@ -33,7 +33,7 @@ BraceWrapping:
   BeforeWhile: true
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
-BreakBeforeBinaryOperators: All
+BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeConceptDeclarations: false
 ColumnLimit: 120
 IncludeBlocks: Merge
