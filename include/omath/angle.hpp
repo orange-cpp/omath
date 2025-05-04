@@ -20,7 +20,7 @@ namespace omath
     class Angle
     {
         Type m_angle;
-        constexpr explicit Angle(const Type& degrees)
+        constexpr explicit Angle(const Type& degrees) noexcept
         {
             if constexpr (flags == AngleFlags::Normalized)
                 m_angle = angles::wrap_angle(degrees, min, max);
@@ -36,68 +36,68 @@ namespace omath
 
     public:
         [[nodiscard]]
-        constexpr static Angle from_degrees(const Type& degrees)
+        constexpr static Angle from_degrees(const Type& degrees) noexcept
         {
             return Angle{degrees};
         }
-        constexpr Angle(): m_angle(0)
+        constexpr Angle() noexcept: m_angle(0)
         {
         }
         [[nodiscard]]
-        constexpr static Angle from_radians(const Type& degrees)
+        constexpr static Angle from_radians(const Type& degrees) noexcept
         {
             return Angle{angles::radians_to_degrees<Type>(degrees)};
         }
 
         [[nodiscard]]
-        constexpr const Type& operator*() const
+        constexpr const Type& operator*() const noexcept
         {
             return m_angle;
         }
 
         [[nodiscard]]
-        constexpr Type as_degrees() const
+        constexpr Type as_degrees() const noexcept
         {
             return m_angle;
         }
 
         [[nodiscard]]
-        constexpr Type as_radians() const
+        constexpr Type as_radians() const noexcept
         {
             return angles::degrees_to_radians(m_angle);
         }
 
         [[nodiscard]]
-        Type sin() const
+        Type sin() const noexcept
         {
             return std::sin(as_radians());
         }
 
         [[nodiscard]]
-        Type cos() const
+        Type cos() const noexcept
         {
             return std::cos(as_radians());
         }
 
         [[nodiscard]]
-        Type tan() const
+        Type tan() const noexcept
         {
             return std::tan(as_radians());
         }
 
         [[nodiscard]]
-        Type atan() const
+        Type atan() const noexcept
         {
             return std::atan(as_radians());
         }
 
         [[nodiscard]]
-        Type cot() const
+        Type cot() const noexcept
         {
             return cos() / sin();
         }
 
-        constexpr Angle& operator+=(const Angle& other)
+        constexpr Angle& operator+=(const Angle& other) noexcept
         {
             if constexpr (flags == AngleFlags::Normalized)
                 m_angle = angles::wrap_angle(m_angle + other.m_angle, min, max);
@@ -114,15 +114,15 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr std::partial_ordering operator<=>(const Angle& other) const = default;
+        constexpr std::partial_ordering operator<=>(const Angle& other) const noexcept = default;
 
-        constexpr Angle& operator-=(const Angle& other)
+        constexpr Angle& operator-=(const Angle& other) noexcept
         {
             return operator+=(-other);
         }
 
         [[nodiscard]]
-        constexpr Angle& operator+(const Angle& other)
+        constexpr Angle& operator+(const Angle& other) noexcept
         {
             if constexpr (flags == AngleFlags::Normalized)
                 return {angles::wrap_angle(m_angle + other.m_angle, min, max)};
@@ -137,13 +137,13 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Angle& operator-(const Angle& other)
+        constexpr Angle& operator-(const Angle& other) noexcept
         {
             return operator+(-other);
         }
 
         [[nodiscard]]
-        constexpr Angle operator-() const
+        constexpr Angle operator-() const noexcept
         {
             return Angle{-m_angle};
         }
