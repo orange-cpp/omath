@@ -29,76 +29,76 @@ namespace omath
         }
         constexpr Vector3() noexcept: Vector2<Type>() {};
 
-        [[nodiscard]] constexpr bool operator==(const Vector3& src) const noexcept
+        [[nodiscard]] constexpr bool operator==(const Vector3& other) const noexcept
         {
-            return Vector2<Type>::operator==(src) && (src.z == z);
+            return Vector2<Type>::operator==(other) && (other.z == z);
         }
 
-        [[nodiscard]] constexpr bool operator!=(const Vector3& src) const noexcept
+        [[nodiscard]] constexpr bool operator!=(const Vector3& other) const noexcept
         {
-            return !(*this == src);
+            return !(*this == other);
         }
 
-        constexpr Vector3& operator+=(const Vector3& v) noexcept
+        constexpr Vector3& operator+=(const Vector3& other) noexcept
         {
-            Vector2<Type>::operator+=(v);
-            z += v.z;
+            Vector2<Type>::operator+=(other);
+            z += other.z;
 
             return *this;
         }
 
-        constexpr Vector3& operator-=(const Vector3& v) noexcept
+        constexpr Vector3& operator-=(const Vector3& other) noexcept
         {
-            Vector2<Type>::operator-=(v);
-            z -= v.z;
+            Vector2<Type>::operator-=(other);
+            z -= other.z;
 
             return *this;
         }
 
-        constexpr Vector3& operator*=(const float fl) noexcept
+        constexpr Vector3& operator*=(const Type& value) noexcept
         {
-            Vector2<Type>::operator*=(fl);
-            z *= fl;
+            Vector2<Type>::operator*=(value);
+            z *= value;
 
             return *this;
         }
 
-        constexpr Vector3& operator*=(const Vector3& v) noexcept
+        constexpr Vector3& operator*=(const Vector3& other) noexcept
         {
-            Vector2<Type>::operator*=(v);
-            z *= v.z;
+            Vector2<Type>::operator*=(other);
+            z *= other.z;
 
             return *this;
         }
 
-        constexpr Vector3& operator/=(const Vector3& v) noexcept
+        constexpr Vector3& operator/=(const Vector3& other) noexcept
         {
-            Vector2<Type>::operator/=(v);
-            z /= v.z;
+            Vector2<Type>::operator/=(other);
+            z /= other.z;
 
             return *this;
         }
 
-        constexpr Vector3& operator+=(const float fl) noexcept
+        constexpr Vector3& operator+=(const Type& value) noexcept
         {
-            Vector2<Type>::operator+=(fl);
-            z += fl;
+            Vector2<Type>::operator+=(value);
+            z += value;
 
             return *this;
         }
 
-        constexpr Vector3& operator/=(const float fl) noexcept
+        constexpr Vector3& operator/=(const Type& value) noexcept
         {
-            Vector2<Type>::operator/=(fl);
-            z /= fl;
+            Vector2<Type>::operator/=(value);
+            z /= value;
 
             return *this;
         }
 
-        constexpr Vector3& operator-=(const float fl) noexcept
+        constexpr Vector3& operator-=(const Type& value) noexcept
         {
-            Vector2<Type>::operator-=(fl);
-            z -= fl;
+            Vector2<Type>::operator-=(value);
+            z -= value;
 
             return *this;
         }
@@ -175,40 +175,42 @@ namespace omath
             return {-this->x, -this->y, -z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator+(const Vector3& v) const noexcept
+        [[nodiscard]] constexpr Vector3 operator+(const Vector3& other) const noexcept
         {
-            return {this->x + v.x, this->y + v.y, z + v.z};
+            return {this->x + other.x, this->y + other.y, z + other.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator-(const Vector3& v) const noexcept
+        [[nodiscard]] constexpr Vector3 operator-(const Vector3& other) const noexcept
         {
-            return {this->x - v.x, this->y - v.y, z - v.z};
+            return {this->x - other.x, this->y - other.y, z - other.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator*(const Type& fl) const noexcept
+        [[nodiscard]] constexpr Vector3 operator*(const Type& value) const noexcept
         {
-            return {this->x * fl, this->y * fl, z * fl};
+            return {this->x * value, this->y * value, z * value};
         }
 
-        [[nodiscard]] constexpr Vector3 operator*(const Vector3& v) const noexcept
+        [[nodiscard]] constexpr Vector3 operator*(const Vector3& other) const noexcept
         {
-            return {this->x * v.x, this->y * v.y, z * v.z};
+            return {this->x * other.x, this->y * other.y, z * other.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator/(const Type& fl) const noexcept
+        [[nodiscard]] constexpr Vector3 operator/(const Type& value) const noexcept
         {
-            return {this->x / fl, this->y / fl, z / fl};
+            return {this->x / value, this->y / value, z / value};
         }
 
-        [[nodiscard]] constexpr Vector3 operator/(const Vector3& v) const noexcept
+        [[nodiscard]] constexpr Vector3 operator/(const Vector3& other) const noexcept
         {
-            return {this->x / v.x, this->y / v.y, z / v.z};
+            return {this->x / other.x, this->y / other.y, z / other.z};
         }
 
-        [[nodiscard]] constexpr Vector3 cross(const Vector3& v) const noexcept
+        [[nodiscard]] constexpr Vector3 cross(const Vector3& other) const noexcept
         {
-            return {this->y * v.z - z * v.y, z * v.x - this->x * v.z, this->x * v.y - this->y * v.x};
+            return {this->y * other.z - z * other.y, z * other.x - this->x * other.z,
+                    this->x * other.y - this->y * other.x};
         }
+
         [[nodiscard]] constexpr Type sum() const noexcept
         {
             return sum_2d() + z;

@@ -9,6 +9,7 @@
 namespace omath
 {
     template<class Type>
+    requires std::is_arithmetic_v<Type>
     class Vector4 : public Vector3<Type>
     {
     public:
@@ -20,61 +21,61 @@ namespace omath
         constexpr Vector4() noexcept : Vector3<Type>(), w(0) {};
 
         [[nodiscard]]
-        constexpr bool operator==(const Vector4& src) const noexcept
+        constexpr bool operator==(const Vector4& other) const noexcept
         {
-            return Vector3<Type>::operator==(src) && w == src.w;
+            return Vector3<Type>::operator==(other) && w == other.w;
         }
 
         [[nodiscard]]
-        constexpr bool operator!=(const Vector4& src) const noexcept
+        constexpr bool operator!=(const Vector4& other) const noexcept
         {
-            return !(*this == src);
+            return !(*this == other);
         }
 
-        constexpr Vector4& operator+=(const Vector4& v) noexcept
+        constexpr Vector4& operator+=(const Vector4& other) noexcept
         {
-            Vector3<Type>::operator+=(v);
-            w += v.w;
+            Vector3<Type>::operator+=(other);
+            w += other.w;
 
             return *this;
         }
 
-        constexpr Vector4& operator-=(const Vector4& v) noexcept
+        constexpr Vector4& operator-=(const Vector4& other) noexcept
         {
-            Vector3<Type>::operator-=(v);
-            w -= v.w;
+            Vector3<Type>::operator-=(other);
+            w -= other.w;
 
             return *this;
         }
 
-        constexpr Vector4& operator*=(const Type& scalar) noexcept
+        constexpr Vector4& operator*=(const Type& value) noexcept
         {
-            Vector3<Type>::operator*=(scalar);
-            w *= scalar;
+            Vector3<Type>::operator*=(value);
+            w *= value;
 
             return *this;
         }
 
-        constexpr Vector4& operator*=(const Vector4& v) noexcept
+        constexpr Vector4& operator*=(const Vector4& other) noexcept
         {
-            Vector3<Type>::operator*=(v);
-            w *= v.w;
+            Vector3<Type>::operator*=(other);
+            w *= other.w;
 
             return *this;
         }
 
-        constexpr Vector4& operator/=(const Type& scalar) noexcept
+        constexpr Vector4& operator/=(const Type& value) noexcept
         {
-            Vector3<Type>::operator/=(scalar);
-            w /= scalar;
+            Vector3<Type>::operator/=(value);
+            w /= value;
 
             return *this;
         }
 
-        constexpr Vector4& operator/=(const Vector4& v) noexcept
+        constexpr Vector4& operator/=(const Vector4& other) noexcept
         {
-            Vector3<Type>::operator/=(v);
-            w /= v.w;
+            Vector3<Type>::operator/=(other);
+            w /= other.w;
             return *this;
         }
 
@@ -116,39 +117,39 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator+(const Vector4& v) const noexcept
+        constexpr Vector4 operator+(const Vector4& other) const noexcept
         {
-            return {this->x + v.x, this->y + v.y, this->z + v.z, w + v.w};
+            return {this->x + other.x, this->y + other.y, this->z + other.z, w + other.w};
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator-(const Vector4& v) const noexcept
+        constexpr Vector4 operator-(const Vector4& other) const noexcept
         {
-            return {this->x - v.x, this->y - v.y, this->z - v.z, w - v.w};
+            return {this->x - other.x, this->y - other.y, this->z - other.z, w - other.w};
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator*(const Type& scalar) const noexcept
+        constexpr Vector4 operator*(const Type& value) const noexcept
         {
-            return {this->x * scalar, this->y * scalar, this->z * scalar, w * scalar};
+            return {this->x * value, this->y * value, this->z * value, w * value};
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator*(const Vector4& v) const noexcept
+        constexpr Vector4 operator*(const Vector4& other) const noexcept
         {
-            return {this->x * v.x, this->y * v.y, this->z * v.z, w * v.w};
+            return {this->x * other.x, this->y * other.y, this->z * other.z, w * other.w};
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator/(const Type& scalar) const noexcept
+        constexpr Vector4 operator/(const Type& value) const noexcept
         {
-            return {this->x / scalar, this->y / scalar, this->z / scalar, w / scalar};
+            return {this->x / value, this->y / value, this->z / value, w / value};
         }
 
         [[nodiscard]]
-        constexpr Vector4 operator/(const Vector4& v) const noexcept
+        constexpr Vector4 operator/(const Vector4& other) const noexcept
         {
-            return {this->x / v.x, this->y / v.y, this->z / v.z, w / v.w};
+            return {this->x / other.x, this->y / other.y, this->z / other.z, w / other.w};
         }
 
         [[nodiscard]]
