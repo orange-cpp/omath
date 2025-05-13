@@ -30,78 +30,78 @@ namespace omath
 
         // Equality operators
         [[nodiscard]]
-        constexpr bool operator==(const Vector2& src) const noexcept
+        constexpr bool operator==(const Vector2& other) const noexcept
         {
-            return x == src.x && y == src.y;
+            return x == other.x && y == other.y;
         }
 
         [[nodiscard]]
-        constexpr bool operator!=(const Vector2& src) const noexcept
+        constexpr bool operator!=(const Vector2& other) const noexcept
         {
-            return !(*this == src);
+            return !(*this == other);
         }
 
         // Compound assignment operators
-        constexpr Vector2& operator+=(const Vector2& v) noexcept
+        constexpr Vector2& operator+=(const Vector2& other) noexcept
         {
-            x += v.x;
-            y += v.y;
+            x += other.x;
+            y += other.y;
 
             return *this;
         }
 
-        constexpr Vector2& operator-=(const Vector2& v) noexcept
+        constexpr Vector2& operator-=(const Vector2& other) noexcept
         {
-            x -= v.x;
-            y -= v.y;
+            x -= other.x;
+            y -= other.y;
 
             return *this;
         }
 
-        constexpr Vector2& operator*=(const Vector2& v) noexcept
+        constexpr Vector2& operator*=(const Vector2& other) noexcept
         {
-            x *= v.x;
-            y *= v.y;
+            x *= other.x;
+            y *= other.y;
 
             return *this;
         }
 
-        constexpr Vector2& operator/=(const Vector2& v) noexcept
+        constexpr Vector2& operator/=(const Vector2& other) noexcept
         {
-            x /= v.x;
-            y /= v.y;
+            x /= other.x;
+            y /= other.y;
 
             return *this;
         }
 
-        constexpr Vector2& operator*=(const Type& fl) noexcept
+        constexpr Vector2& operator*=(const Type& value) noexcept
         {
-            x *= fl;
-            y *= fl;
+            x *= value;
+            y *= value;
 
             return *this;
         }
 
-        constexpr Vector2& operator/=(const Type& fl) noexcept
+        constexpr Vector2& operator/=(const Type& value) noexcept
         {
-            x /= fl;
-            y /= fl;
+            x /= value;
+            y /= value;
 
             return *this;
         }
 
-        constexpr Vector2& operator+=(const Type& fl) noexcept
+        constexpr Vector2& operator+=(const Type& value) noexcept
         {
-            x += fl;
-            y += fl;
+            x += value;
+            y += value;
 
             return *this;
         }
 
-        constexpr Vector2& operator-=(const Type& fl) noexcept
+        constexpr Vector2& operator-=(const Type& value) noexcept
         {
-            x -= fl;
-            y -= fl;
+            x -= value;
+            y -= value;
 
             return *this;
         }
@@ -164,24 +164,24 @@ namespace omath
         }
 
         // Binary arithmetic operators
-        [[nodiscard]] constexpr Vector2 operator+(const Vector2& v) const noexcept
+        [[nodiscard]] constexpr Vector2 operator+(const Vector2& other) const noexcept
         {
-            return {x + v.x, y + v.y};
+            return {x + other.x, y + other.y};
         }
 
-        [[nodiscard]] constexpr Vector2 operator-(const Vector2& v) const noexcept
+        [[nodiscard]] constexpr Vector2 operator-(const Vector2& other) const noexcept
         {
-            return {x - v.x, y - v.y};
+            return {x - other.x, y - other.y};
         }
 
-        [[nodiscard]] constexpr Vector2 operator*(const Type& fl) const noexcept
+        [[nodiscard]] constexpr Vector2 operator*(const Type& value) const noexcept
         {
-            return {x * fl, y * fl};
+            return {x * value, y * value};
         }
 
-        [[nodiscard]] constexpr Vector2 operator/(const Type& fl) const noexcept
+        [[nodiscard]] constexpr Vector2 operator/(const Type& value) const noexcept
         {
-            return {x / fl, y / fl};
+            return {x / value, y / value};
         }
 
         // Sum of elements
