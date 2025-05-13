@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(omath VERSION 1.0.1 LANGUAGES CXX)
+project(omath VERSION 3.0.2 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 
