@@ -185,7 +185,7 @@ namespace omath
             return {this->x - v.x, this->y - v.y, z - v.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator*(const float fl) const noexcept
+        [[nodiscard]] constexpr Vector3 operator*(const Type& fl) const noexcept
         {
             return {this->x * fl, this->y * fl, z * fl};
         }
@@ -195,7 +195,7 @@ namespace omath
             return {this->x * v.x, this->y * v.y, z * v.z};
         }
 
-        [[nodiscard]] constexpr Vector3 operator/(const float fl) const noexcept
+        [[nodiscard]] constexpr Vector3 operator/(const Type& fl) const noexcept
         {
             return {this->x / fl, this->y / fl, z / fl};
         }
@@ -245,7 +245,7 @@ namespace omath
 
         [[nodiscard]] Vector3 view_angle_to(const Vector3& other) const noexcept
         {
-            const float distance = distance_to(other);
+            const auto distance = distance_to(other);
             const auto delta = other - *this;
 
             return {angles::radians_to_degrees(std::asin(delta.z / distance)),

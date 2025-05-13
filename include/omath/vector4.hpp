@@ -47,7 +47,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector4& operator*=(const float scalar) noexcept
+        constexpr Vector4& operator*=(const Type& scalar) noexcept
         {
             Vector3<Type>::operator*=(scalar);
             w *= scalar;
@@ -63,7 +63,7 @@ namespace omath
             return *this;
         }
 
-        constexpr Vector4& operator/=(const float scalar) noexcept
+        constexpr Vector4& operator/=(const Type& scalar) noexcept
         {
             Vector3<Type>::operator/=(scalar);
             w /= scalar;
