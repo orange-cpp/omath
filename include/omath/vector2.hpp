@@ -174,12 +174,12 @@ namespace omath
             return {x - v.x, y - v.y};
         }
 
-        [[nodiscard]] constexpr Vector2 operator*(const float fl) const noexcept
+        [[nodiscard]] constexpr Vector2 operator*(const Type& fl) const noexcept
         {
             return {x * fl, y * fl};
         }
 
-        [[nodiscard]] constexpr Vector2 operator/(const float fl) const noexcept
+        [[nodiscard]] constexpr Vector2 operator/(const Type& fl) const noexcept
         {
             return {x / fl, y / fl};
         }
