@@ -1,8 +1,10 @@
-# Introduction
+# Intro
+
+![banner](https://i.imgur.com/SM9ccP6.png)
 
 Oranges's Math Library (omath) is a comprehensive, open-source library aimed at providing efficient, reliable, and versatile mathematical functions and algorithms. Developed primarily in C++, this library is designed to cater to a wide range of mathematical operations essential in scientific computing, engineering, and academic research.
 
-## Features
+## 👁‍🗨 Features
 - **Efficiency**: Optimized for performance, ensuring quick computations using AVX2.
 - **Versatility**: Includes a wide array of mathematical functions and algorithms.
 - **Ease of Use**: Simplified interface for convenient integration into various projects.
@@ -12,21 +14,54 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 - **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
 - **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
 
-|  ENGINE  | SUPPORT |
-|:--------:|:-------:|
-|  Source  |  ✅YES   |
-|  Unity   |  ✅YES   |
-| IWEngine |  ✅YES   |
-|  Unreal  |   ❌NO   |
+## Supported Render Pipelines
+| ENGINE   | SUPPORT |
+|----------|---------|
+| Source   | ✅YES    |
+| Unity    | ✅YES    |
+| IWEngine | ✅YES    |
+| Unreal   | ❌NO     |
+
+## Supported Operating Systems
+
+| OS             | SUPPORT |
+|----------------|---------|
+| Windows 10/11  | ✅YES    |
+| Linux          | ✅YES    |
+| Darwin (MacOS) | ✅YES    |
+
+## ⏬ Installation
+Please read our [installation guide](https://github.com/orange-cpp/omath/blob/main/INSTALL.md). If this link doesn't work check out INSTALL.md file.
+
+## ❔ Usage
+Simple world to screen function
+```c++
+TEST(UnitTestProjection, IsPointOnScreen)
+{
+    const omath::projection::Camera camera({0.f, 0.f, 0.f}, {0, 0.f, 0.f} , {1920.f, 1080.f}, 110.f, 0.1f, 500.f);
+
+    const auto proj = camera.WorldToScreen({100, 0, 15});
+    EXPECT_TRUE(proj.has_value());
+}
+```
+## Showcase
+
+With `omath/projection` module you can achieve simple ESP hack for powered by Source/Unreal/Unity engine games, like [Apex Legends](https://store.steampowered.com/app/1172470/Apex_Legends/).
+
+![banner](https://i.imgur.com/lcJrfcZ.png)
+Or for InfinityWard Engine based games. Like Call of Duty Black Ops 2!
+![banner](https://i.imgur.com/F8dmdoo.png)
+Or create simple trigger bot with embeded traceline from omath::collision::LineTrace
+![banner](https://i.imgur.com/fxMjRKo.jpeg)
+Or even advanced projectile aimbot
+[Watch Video](https://youtu.be/lM_NJ1yCunw?si=5E87OrQMeypxSJ3E)
 
 
-## Acknowledgments
-We value each person that made pull request to this project! And YOU can become one of them!
+## 🫵🏻 Contributing
+Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
+
+## 📜 License
+This project is licensed under the MIT - see the `LICENSE` file for details.
+
+## 💘 Acknowledgments
 -  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
-<seealso>
-    <category name="Related topics" ref="inf">
-        <a href="https://github.com/orange-cpp/omath">GitHub repository</a>
-        <a href="https://yougame.biz/threads/332534">YouGame thread</a>
-    </category>
-</seealso>
-
