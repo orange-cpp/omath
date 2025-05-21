@@ -8,6 +8,7 @@
 
     <toc-element topic="starter-topic.md"/>
     <toc-element topic="Documentation.md"/>
+    <toc-element topic="Code-Of-Conduct.md"/>
     <toc-element topic="Community.md"/>
     <toc-element topic="License.md"/>
 </instance-profile>
