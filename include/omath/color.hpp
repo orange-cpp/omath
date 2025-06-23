@@ -166,5 +166,12 @@ namespace omath
         {
             return {0.f, 0.f, 1.f, 1.f};
         }
+#ifdef OMATH_IMGUI_INTEGRATION
+        [[nodiscard]]
+        ImColor to_im_color() const noexcept
+        {
+            return {to_im_vec4()};
+        }
+#endif
     };
 } // namespace omath
