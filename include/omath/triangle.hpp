@@ -7,11 +7,12 @@
 namespace omath
 {
     /*
+    v1
     |\
     | \
   a |  \ hypot
     |   \
-    -----
+ v2 ----- v3
       b
     */
 

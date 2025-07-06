@@ -117,10 +117,10 @@ install(TARGETS ${PROJECT_NAME}
 install(DIRECTORY include/ DESTINATION include COMPONENT ${PROJECT_NAME})
 
 # Export omath target for CMake find_package support, also under omath_component
-install(EXPORT omathTargets
-        FILE omathTargets.cmake
+install(EXPORT ${PROJECT_NAME}Targets
+        FILE ${PROJECT_NAME}Targets.cmake
         NAMESPACE ${PROJECT_NAME}::
-        DESTINATION lib/cmake/omath COMPONENT ${PROJECT_NAME}
+        DESTINATION lib/cmake/${PROJECT_NAME} COMPONENT ${PROJECT_NAME}
 )
 
 
