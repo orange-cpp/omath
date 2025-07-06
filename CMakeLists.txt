@@ -20,20 +20,21 @@ file(GLOB_RECURSE OMATH_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/i
 
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
-    add_library(omath SHARED ${OMATH_SOURCES} ${OMATH_HEADERS})
+    add_library(${PROJECT_NAME} SHARED ${OMATH_SOURCES} ${OMATH_HEADERS})
 else ()
-    add_library(omath STATIC ${OMATH_SOURCES} ${OMATH_HEADERS})
+    add_library(${PROJECT_NAME} STATIC ${OMATH_SOURCES} ${OMATH_HEADERS})
 endif ()
 
-message(STATUS "Building on ${CMAKE_HOST_SYSTEM_NAME}")
-add_library(omath::omath ALIAS omath)
+message(STATUS "[OMATH]: Building on ${CMAKE_HOST_SYSTEM_NAME}")
+
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 if (OMATH_IMGUI_INTEGRATION)
-    target_compile_definitions(omath PUBLIC OMATH_IMGUI_INTEGRATION)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_IMGUI_INTEGRATION)
 
     # IMGUI is being linked as submodule
     if (TARGET imgui)
-        target_link_libraries(omath PUBLIC imgui)
+        target_link_libraries(${PROJECT_NAME} PUBLIC imgui)
         install(TARGETS imgui
                 EXPORT omathTargets
                 ARCHIVE DESTINATION lib
@@ -42,42 +43,42 @@ if (OMATH_IMGUI_INTEGRATION)
     else ()
         # Assume that IMGUI linked via VCPKG.
         find_package(imgui CONFIG REQUIRED)
-        target_link_libraries(omath PUBLIC imgui::imgui)
+        target_link_libraries(${PROJECT_NAME} PUBLIC imgui::imgui)
     endif ()
 
 endif ()
 
 if (OMATH_USE_AVX2)
-    target_compile_definitions(omath PUBLIC OMATH_USE_AVX2)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_USE_AVX2)
 endif ()
 
 if (OMATH_SUPRESS_SAFETY_CHECKS)
-    target_compile_definitions(omath PUBLIC OMATH_SUPRESS_SAFETY_CHECKS)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_SUPRESS_SAFETY_CHECKS)
 endif ()
 
-set_target_properties(omath PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON)
 
 if (OMATH_USE_UNITY_BUILD)
-    set_target_properties(omath PROPERTIES
+    set_target_properties(${PROJECT_NAME} PROPERTIES
             UNITY_BUILD ON
             UNITY_BUILD_BATCH_SIZE 20)
 endif ()
 
 if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
-    set_target_properties(omath PROPERTIES
+    set_target_properties(${PROJECT_NAME} PROPERTIES
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
     )
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(omath PRIVATE -mavx2 -mfma)
+    target_compile_options(${PROJECT_NAME} PRIVATE -mavx2 -mfma)
 endif ()
 
-target_compile_features(omath PUBLIC cxx_std_23)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
 
 if (OMATH_BUILD_TESTS)
@@ -90,12 +91,12 @@ if (OMATH_BUILD_EXAMPLES)
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND OMATH_THREAT_WARNING_AS_ERROR)
-    target_compile_options(omath PRIVATE /W4 /WX)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
 elseif (OMATH_THREAT_WARNING_AS_ERROR)
-    target_compile_options(omath PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif ()
 
-target_include_directories(omath
+target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>   # Use this path when building the project
         $<INSTALL_INTERFACE:include>                             # Use this path when the project is installed
@@ -105,21 +106,21 @@ target_include_directories(omath
 # Installation rules
 
 # Install the library
-install(TARGETS omath
-        EXPORT omathTargets
-        ARCHIVE DESTINATION lib COMPONENT omath   # For static libraries
-        LIBRARY DESTINATION lib COMPONENT omath   # For shared libraries
-        RUNTIME DESTINATION bin COMPONENT omath   # For executables (on Windows)
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}Targets
+        ARCHIVE DESTINATION lib COMPONENT ${PROJECT_NAME}   # For static libraries
+        LIBRARY DESTINATION lib COMPONENT ${PROJECT_NAME}   # For shared libraries
+        RUNTIME DESTINATION bin COMPONENT ${PROJECT_NAME}   # For executables (on Windows)
 )
 
 # Install headers as part of omath_component
-install(DIRECTORY include/ DESTINATION include COMPONENT omath)
+install(DIRECTORY include/ DESTINATION include COMPONENT ${PROJECT_NAME})
 
 # Export omath target for CMake find_package support, also under omath_component
 install(EXPORT omathTargets
         FILE omathTargets.cmake
-        NAMESPACE omath::
-        DESTINATION lib/cmake/omath COMPONENT omath
+        NAMESPACE ${PROJECT_NAME}::
+        DESTINATION lib/cmake/omath COMPONENT ${PROJECT_NAME}
 )
 
 
@@ -134,12 +135,12 @@ write_basic_package_version_file(
 configure_package_config_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/omathConfig.cmake.in"  # Path to the .in file
         "${CMAKE_CURRENT_BINARY_DIR}/omathConfig.cmake"           # Output path for the generated file
-        INSTALL_DESTINATION lib/cmake/omath
+        INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
 )
 
 # Install the generated config files
 install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/omathConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/omathConfigVersion.cmake"
-        DESTINATION lib/cmake/omath
+        DESTINATION lib/cmake/${PROJECT_NAME}
 )
