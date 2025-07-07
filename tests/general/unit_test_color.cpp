@@ -7,7 +7,7 @@
 
 using namespace omath;
 
-class UnitTestColor : public ::testing::Test
+class unit_test_color : public ::testing::Test
 {
 protected:
     Color color1;
@@ -21,7 +21,7 @@ protected:
 };
 
 // Test constructors
-TEST_F(UnitTestColor, Constructor_Float)
+TEST_F(unit_test_color, Constructor_Float)
 {
     constexpr Color color(0.5f, 0.5f, 0.5f, 1.0f);
     EXPECT_FLOAT_EQ(color.x, 0.5f);
@@ -30,7 +30,7 @@ TEST_F(UnitTestColor, Constructor_Float)
     EXPECT_FLOAT_EQ(color.w, 1.0f);
 }
 
-TEST_F(UnitTestColor, Constructor_Vector4)
+TEST_F(unit_test_color, Constructor_Vector4)
 {
     constexpr omath::Vector4 vec(0.2f, 0.4f, 0.6f, 0.8f);
     Color color(vec);
@@ -41,7 +41,7 @@ TEST_F(UnitTestColor, Constructor_Vector4)
 }
 
 // Test static methods for color creation
-TEST_F(UnitTestColor, FromRGBA)
+TEST_F(unit_test_color, FromRGBA)
 {
     constexpr Color color = Color::from_rgba(128, 64, 32, 255);
     EXPECT_FLOAT_EQ(color.x, 128.0f / 255.0f);
@@ -50,7 +50,7 @@ TEST_F(UnitTestColor, FromRGBA)
     EXPECT_FLOAT_EQ(color.w, 1.0f);
 }
 
-TEST_F(UnitTestColor, FromHSV)
+TEST_F(unit_test_color, FromHSV)
 {
     constexpr Color color = Color::from_hsv(0.0f, 1.0f, 1.0f); // Red in HSV
     EXPECT_FLOAT_EQ(color.x, 1.0f);
@@ -60,7 +60,7 @@ TEST_F(UnitTestColor, FromHSV)
 }
 
 // Test HSV conversion
-TEST_F(UnitTestColor, ToHSV)
+TEST_F(unit_test_color, ToHSV)
 {
     Hsv hsv = color1.to_hsv(); // Red color
     EXPECT_FLOAT_EQ(hsv.hue, 0.0f);
@@ -69,7 +69,7 @@ TEST_F(UnitTestColor, ToHSV)
 }
 
 // Test color blending
-TEST_F(UnitTestColor, Blend)
+TEST_F(unit_test_color, Blend)
 {
     Color blended = color1.blend(color2, 0.5f);
     EXPECT_FLOAT_EQ(blended.x, 0.5f);
@@ -79,7 +79,7 @@ TEST_F(UnitTestColor, Blend)
 }
 
 // Test predefined colors
-TEST_F(UnitTestColor, PredefinedColors)
+TEST_F(unit_test_color, PredefinedColors)
 {
     constexpr Color red = Color::red();
     constexpr Color green = Color::green();
@@ -102,7 +102,7 @@ TEST_F(UnitTestColor, PredefinedColors)
 }
 
 // Test non-member function: Blend for Vector3
-TEST_F(UnitTestColor, BlendVector3)
+TEST_F(unit_test_color, BlendVector3)
 {
     constexpr Color v1(1.0f, 0.0f, 0.0f, 1.f); // Red
     constexpr Color v2(0.0f, 1.0f, 0.0f, 1.f); // Green

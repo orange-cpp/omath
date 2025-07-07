@@ -31,10 +31,10 @@ namespace
     // -----------------------------------------------------------------------------
     // Fixture with one canonical right‑angled triangle in the XY plane.
     // -----------------------------------------------------------------------------
-    class LineTracerFixture : public ::testing::Test
+    class lline_tracer_fixture : public ::testing::Test
     {
     protected:
-        LineTracerFixture() :
+        lline_tracer_fixture() :
             triangle({0.f, 0.f, 0.f}, {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f})
         {
         }
@@ -51,7 +51,7 @@ namespace
         bool expected_clear; // true => segment does NOT hit the triangle
     };
 
-    class CanTraceLineParam : public LineTracerFixture,
+    class CanTraceLineParam : public lline_tracer_fixture,
                               public ::testing::WithParamInterface<TraceCase>
     {
     };
@@ -79,7 +79,7 @@ namespace
     // -----------------------------------------------------------------------------
     // Validate that the reported hit point is correct for a genuine intersection.
     // -----------------------------------------------------------------------------
-    TEST_F(LineTracerFixture, HitPointCorrect)
+    TEST_F(lline_tracer_fixture, HitPointCorrect)
     {
         constexpr Ray ray{{0.3f, 0.3f, -1.f}, {0.3f, 0.3f, 1.f}};
         constexpr Vec3 expected{0.3f, 0.3f, 0.f};
@@ -92,7 +92,7 @@ namespace
     // -----------------------------------------------------------------------------
     // Triangle far beyond the ray should not block.
     // -----------------------------------------------------------------------------
-    TEST_F(LineTracerFixture, DistantTriangleClear)
+    TEST_F(lline_tracer_fixture, DistantTriangleClear)
     {
         constexpr Ray short_ray{{0.f, 0.f, 0.f}, {0.f, 0.f, 1.f}};
         constexpr Triangle<Vec3> distant{{1000.f, 1000.f, 1000.f},
@@ -102,7 +102,7 @@ namespace
         EXPECT_TRUE(LineTracer::can_trace_line(short_ray, distant));
     }
 
-    TEST(LineTracerTraceRayEdge, CantHit)
+    TEST(unit_test_unity_engine, CantHit)
     {
         constexpr omath::Triangle<Vector3<float>> triangle{{2, 0, 0}, {2, 2, 0}, {2, 2, 2}};
 
@@ -110,7 +110,7 @@ namespace
 
         EXPECT_TRUE(omath::collision::LineTracer::can_trace_line(ray, triangle));
     }
-    TEST(LineTracerTraceRayEdge, CanHit)
+    TEST(unit_test_unity_engine, CanHit)
     {
         constexpr omath::Triangle<Vector3<float>> triangle{{2, 0, 0}, {2, 2, 0}, {2, 2, 2}};
 

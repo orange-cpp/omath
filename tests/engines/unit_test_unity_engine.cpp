@@ -7,14 +7,14 @@
 #include <omath/engines/unity_engine/formulas.hpp>
 #include <print>
 
-TEST(UnitTestUnityEngine, ForwardVector)
+TEST(unit_test_unity_engine, ForwardVector)
 {
     const auto forward = omath::unity_engine::forward_vector({});
 
     EXPECT_EQ(forward, omath::unity_engine::k_abs_forward);
 }
 
-TEST(UnitTestUnityEngine, ForwardVectorRotationYaw)
+TEST(unit_test_unity_engine, ForwardVectorRotationYaw)
 {
     omath::unity_engine::ViewAngles angles;
 
@@ -26,7 +26,7 @@ TEST(UnitTestUnityEngine, ForwardVectorRotationYaw)
     EXPECT_NEAR(forward.z, omath::unity_engine::k_abs_right.z, 0.00001f);
 }
 
-TEST(UnitTestUnityEngine, ForwardVectorRotationPitch)
+TEST(unit_test_unity_engine, ForwardVectorRotationPitch)
 {
     omath::unity_engine::ViewAngles angles;
 
@@ -38,7 +38,7 @@ TEST(UnitTestUnityEngine, ForwardVectorRotationPitch)
     EXPECT_NEAR(forward.z, omath::unity_engine::k_abs_up.z, 0.00001f);
 }
 
-TEST(UnitTestUnityEngine, ForwardVectorRotationRoll)
+TEST(unit_test_unity_engine, ForwardVectorRotationRoll)
 {
     omath::unity_engine::ViewAngles angles;
 
@@ -50,20 +50,20 @@ TEST(UnitTestUnityEngine, ForwardVectorRotationRoll)
     EXPECT_NEAR(forward.z, omath::unity_engine::k_abs_right.z, 0.00001f);
 }
 
-TEST(UnitTestUnityEngine, RightVector)
+TEST(unit_test_unity_engine, RightVector)
 {
     const auto right = omath::unity_engine::right_vector({});
 
     EXPECT_EQ(right, omath::unity_engine::k_abs_right);
 }
 
-TEST(UnitTestUnityEngine, UpVector)
+TEST(unit_test_unity_engine, UpVector)
 {
     const auto up = omath::unity_engine::up_vector({});
     EXPECT_EQ(up, omath::unity_engine::k_abs_up);
 }
 
-TEST(UnitTestUnityEngine, ProjectTargetMovedFromCamera)
+TEST(unit_test_unity_engine, ProjectTargetMovedFromCamera)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
     const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.01f, 1000.f);
@@ -82,7 +82,7 @@ TEST(UnitTestUnityEngine, ProjectTargetMovedFromCamera)
         EXPECT_NEAR(projected->y, 360, 0.00001f);
     }
 }
-TEST(UnitTestUnityEngine, Project)
+TEST(unit_test_unity_engine, Project)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
 
@@ -91,7 +91,7 @@ TEST(UnitTestUnityEngine, Project)
     std::println("{} {}", proj->x, proj->y);
 }
 
-TEST(UnitTestUnityEngine, CameraSetAndGetFov)
+TEST(unit_test_unity_engine, CameraSetAndGetFov)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
@@ -102,7 +102,7 @@ TEST(UnitTestUnityEngine, CameraSetAndGetFov)
     EXPECT_EQ(cam.get_field_of_view().as_degrees(), 50.f);
 }
 
-TEST(UnitTestUnityEngine, CameraSetAndGetOrigin)
+TEST(unit_test_unity_engine, CameraSetAndGetOrigin)
 {
     auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
 
