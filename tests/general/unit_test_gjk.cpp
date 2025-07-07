@@ -47,7 +47,7 @@ namespace  // anonymous – only for this translation unit
 // -------------------------------------------------------------------------------------------------
 //  Test‑fixture: creates a unit cube at the origin for *a*
 // -------------------------------------------------------------------------------------------------
-class UnitTestGJK : public ::testing::Test
+class unit_test_gjk : public ::testing::Test
 {
 protected:
     Box a;
@@ -62,7 +62,7 @@ protected:
 // -------------------------------------------------------------------------------------------------
 //  1. Separated cubes – both intersects() and penetration_vector() must report *no collision*
 // -------------------------------------------------------------------------------------------------
-TEST_F(UnitTestGJK, NoIntersection)
+TEST_F(unit_test_gjk, NoIntersection)
 {
     b = make_box( 5.f, 0.f, 0.f, 1.f, 1.f, 1.f );     // far away along +X
 
@@ -73,7 +73,7 @@ TEST_F(UnitTestGJK, NoIntersection)
 // -------------------------------------------------------------------------------------------------
 //  2. Just‑touching faces – still considered *no* intersection (distance == 0)
 // -------------------------------------------------------------------------------------------------
-TEST_F(UnitTestGJK, TouchingFaces)
+TEST_F(unit_test_gjk, TouchingFaces)
 {
     b = make_box( 2.f, 0.f, 0.f, 1.f, 1.f, 1.f );     // faces touch at X = 1
 
@@ -84,7 +84,7 @@ TEST_F(UnitTestGJK, TouchingFaces)
 // -------------------------------------------------------------------------------------------------
 //  3. Overlapping cubes – intersects() must return true, MTV magnitude along x = 1.5
 // -------------------------------------------------------------------------------------------------
-TEST_F(UnitTestGJK, OverlapWithMTV)
+TEST_F(unit_test_gjk, OverlapWithMTV)
 {
     b = make_box( 0.5f, 0.f, 0.f, 1.f, 1.f, 1.f );    // centres 0.5 apart → 1.5 units penetration on X
 
@@ -110,7 +110,7 @@ TEST_F(UnitTestGJK, OverlapWithMTV)
 // -------------------------------------------------------------------------------------------------
 //  4. Slanted overlap – verify MTV points along shortest axis
 // -------------------------------------------------------------------------------------------------
-TEST_F(UnitTestGJK, OverlapOffAxis)
+TEST_F(unit_test_gjk, OverlapOffAxis)
 {
     // Cube *b* overlaps *a* by 0.5 on X and 0.2 on Y.  The MTV should choose the Y‑axis because
     // it requires the smaller translation (0.2 < 0.5).
@@ -136,7 +136,7 @@ TEST_F(UnitTestGJK, OverlapOffAxis)
 // -------------------------------------------------------------------------------------------------
 //  5. Degenerate case – identical cubes totally overlapping (a == b)
 // -------------------------------------------------------------------------------------------------
-TEST_F(UnitTestGJK, IdenticalVolumes)
+TEST_F(unit_test_gjk, IdenticalVolumes)
 {
     b = a; // perfectly coincident
 
