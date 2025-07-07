@@ -167,8 +167,8 @@ TEST_F(unit_test_mat, StaticMethod_ToScreenMat)
 TEST_F(unit_test_mat, Method_At_OutOfRange)
 {
 #if !defined(NDEBUG) && defined(OMATH_SUPRESS_SAFETY_CHECKS)
-    EXPECT_THROW(std::ignore = m2.At(2, 0), std::out_of_range);
-    EXPECT_THROW(std::ignore = m2.At(0, 2), std::out_of_range);
+    EXPECT_THROW(std::ignore = m2.at(2, 0), std::out_of_range);
+    EXPECT_THROW(std::ignore = m2.at(0, 2), std::out_of_range);
 #endif
 }
 
