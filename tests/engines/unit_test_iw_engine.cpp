@@ -7,27 +7,27 @@
 #include <omath/engines/iw_engine/formulas.hpp>
 
 
-TEST(UnitTestIwEngine, ForwardVector)
+TEST(unit_test_iw_engine, ForwardVector)
 {
     const auto forward = omath::iw_engine::forward_vector({});
 
     EXPECT_EQ(forward, omath::iw_engine::k_abs_forward);
 }
 
-TEST(UnitTestIwEngine, RightVector)
+TEST(unit_test_iw_engine, RightVector)
 {
     const auto right = omath::iw_engine::right_vector({});
 
     EXPECT_EQ(right, omath::iw_engine::k_abs_right);
 }
 
-TEST(UnitTestIwEngine, UpVector)
+TEST(unit_test_iw_engine, UpVector)
 {
     const auto up = omath::iw_engine::up_vector({});
     EXPECT_EQ(up, omath::iw_engine::k_abs_up);
 }
 
-TEST(UnitTestIwEngine, ForwardVectorRotationYaw)
+TEST(unit_test_iw_engine, ForwardVectorRotationYaw)
 {
     omath::iw_engine::ViewAngles angles;
 
@@ -39,7 +39,7 @@ TEST(UnitTestIwEngine, ForwardVectorRotationYaw)
     EXPECT_NEAR(forward.z, omath::iw_engine::k_abs_right.z, 0.00001f);
 }
 
-TEST(UnitTestIwEngine, ForwardVectorRotationPitch)
+TEST(unit_test_iw_engine, ForwardVectorRotationPitch)
 {
     omath::iw_engine::ViewAngles angles;
 
@@ -51,7 +51,7 @@ TEST(UnitTestIwEngine, ForwardVectorRotationPitch)
     EXPECT_NEAR(forward.z, omath::iw_engine::k_abs_up.z, 0.01f);
 }
 
-TEST(UnitTestIwEngine, ForwardVectorRotationRoll)
+TEST(unit_test_iw_engine, ForwardVectorRotationRoll)
 {
     omath::iw_engine::ViewAngles angles;
 
@@ -63,7 +63,7 @@ TEST(UnitTestIwEngine, ForwardVectorRotationRoll)
     EXPECT_NEAR(forward.z, omath::iw_engine::k_abs_right.z, 0.00001f);
 }
 
-TEST(UnitTestIwEngine, ProjectTargetMovedFromCamera)
+TEST(unit_test_iw_engine, ProjectTargetMovedFromCamera)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     const auto cam = omath::iw_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
@@ -83,7 +83,7 @@ TEST(UnitTestIwEngine, ProjectTargetMovedFromCamera)
     }
 }
 
-TEST(UnitTestIwEngine, CameraSetAndGetFov)
+TEST(unit_test_iw_engine, CameraSetAndGetFov)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     auto cam = omath::iw_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
@@ -94,7 +94,7 @@ TEST(UnitTestIwEngine, CameraSetAndGetFov)
     EXPECT_EQ(cam.get_field_of_view().as_degrees(), 50.f);
 }
 
-TEST(UnitTestIwEngine, CameraSetAndGetOrigin)
+TEST(unit_test_iw_engine, CameraSetAndGetOrigin)
 {
     auto cam = omath::iw_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
 
