@@ -8,6 +8,15 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/orange-cpp/omath/badge)](https://www.codefactor.io/repository/github/orange-cpp/omath)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/orange-cpp/omath/cmake-multi-platform.yml)
 ![GitHub forks](https://img.shields.io/github/forks/orange-cpp/omath)
+
+<a href="https://www.star-history.com/#orange-cpp/omath&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=orange-cpp/omath&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=orange-cpp/omath&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=orange-cpp/omath&type=Date" />
+ </picture>
+</a>
+
 </div>
 
 Oranges's Math Library (omath) is a comprehensive, open-source library aimed at providing efficient, reliable, and versatile mathematical functions and algorithms. Developed primarily in C++, this library is designed to cater to a wide range of mathematical operations essential in scientific computing, engineering, and academic research.
@@ -66,16 +75,6 @@ Or create simple trigger bot with embeded traceline from omath::collision::LineT
 Or even advanced projectile aimbot
 [Watch Video](https://youtu.be/lM_NJ1yCunw?si=5E87OrQMeypxSJ3E)
 </details>
-
-## ⭐ Star History
-
-<a href="https://www.star-history.com/#orange-cpp/omath&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=orange-cpp/omath&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=orange-cpp/omath&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=orange-cpp/omath&type=Date" />
- </picture>
-</a>
 
 ## 🫵🏻 Contributing
 Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
