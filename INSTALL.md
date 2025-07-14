@@ -14,6 +14,20 @@ target_link_libraries(main PRIVATE omath::omath)
 ```
 For detailed commands on installing different versions and more information, please refer to Microsoft's [official instructions](https://learn.microsoft.com/en-us/vcpkg/get_started/overview).
 
+## <img width="28px" src="https://xmake.io/assets/img/logo.svg" /> Using xrepo
+**Note**: Support xrepo for package management
+1. Install [xmake](https://xmake.io/)
+2. Run the following command to install the omath package:
+```
+xrepo install omath
+```
+xmake.lua
+```xmake
+add_requires("omath")
+target("...")
+    add_packages("omath")
+```
+
 ## <img width="28px" src="https://upload.wikimedia.org/wikipedia/commons/e/ef/CMake_logo.svg?" /> Build from source using CMake 
 1. **Preparation**
    
