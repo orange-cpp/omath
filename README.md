@@ -10,6 +10,8 @@
 ![GitHub forks](https://img.shields.io/github/forks/orange-cpp/omath)
 </div>
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/orange-math.svg)](https://repology.org/project/orange-math/versions)
+
 Oranges's Math Library (omath) is a comprehensive, open-source library aimed at providing efficient, reliable, and versatile mathematical functions and algorithms. Developed primarily in C++, this library is designed to cater to a wide range of mathematical operations essential in scientific computing, engineering, and academic research.
 
 <div align = center>
