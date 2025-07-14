@@ -82,7 +82,7 @@ Or even advanced projectile aimbot
 Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
 
 ## 📜 License
-This project is licensed under the MIT - see the `LICENSE` file for details.
+This project is licensed under the ZLIB - see the `LICENSE` file for details.
 
 ## 💘 Acknowledgments
 -  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
