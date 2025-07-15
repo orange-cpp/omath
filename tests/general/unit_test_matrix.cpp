@@ -1,6 +1,9 @@
 //
 // Created by vlad on 5/18/2024.
 //
+
+#ifdef OMATH_ENABLE_LEGACY
+
 #include <gtest/gtest.h>
 #include <omath/matrix.hpp>
 #include "omath/vector3.hpp"
@@ -178,3 +181,4 @@ TEST_F(UnitTestMatrix, AssignmentOperator_Move)
     EXPECT_EQ(m2.row_count(), 0);  // m2 should be empty after the move
     EXPECT_EQ(m2.columns_count(), 0);
 }
+#endif
