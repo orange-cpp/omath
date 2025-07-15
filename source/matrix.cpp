@@ -1,3 +1,5 @@
+#ifdef OMATH_ENABLE_LEGACY
+
 #include "omath/matrix.hpp"
 #include "omath/angles.hpp"
 #include "omath/vector3.hpp"
@@ -359,3 +361,4 @@ namespace omath
         m_data = nullptr;
     }
 } // namespace omath
+#endif
