@@ -1,4 +1,7 @@
 #pragma once
+
+#ifdef OMATH_ENABLE_LEGACY
+
 #include "omath/vector3.hpp"
 #include <initializer_list>
 #include <memory>
@@ -106,3 +109,4 @@ namespace omath
         std::unique_ptr<float[]> m_data;
     };
 } // namespace omath
+#endif
