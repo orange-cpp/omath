@@ -14,6 +14,8 @@ option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" O
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OFF)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" ON)
+option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
+
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
 file(GLOB_RECURSE OMATH_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
@@ -54,6 +56,10 @@ endif ()
 
 if (OMATH_SUPRESS_SAFETY_CHECKS)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_SUPRESS_SAFETY_CHECKS)
+endif ()
+
+if (OMATH_ENABLE_LEGACY)
+    target_compile_options(${PROJECT_NAME} PUBLIC OMATH_ENABLE_LEGACY)
 endif ()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
