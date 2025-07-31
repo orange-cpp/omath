@@ -28,6 +28,18 @@ namespace omath::projectile_prediction
         const float m_maximum_simulation_time;
         const float m_distance_tolerance;
 
+        // Realization of this formula:
+        // https://stackoverflow.com/questions/54917375/how-to-calculate-the-angle-to-shoot-a-bullet-in-order-to-hit-a-moving-target
+        /*
+        \[
+        \theta \;=\; \arctan\!\Biggl(
+        \frac{%
+        v^{2}\;\pm\;\sqrt{\,v^{4}-g\!\left(gx^{2}+2yv^{2}\right)\,}
+        }{%
+        gx
+       }\Biggr)
+       \]
+        */
         [[nodiscard]]
         std::optional<float>
         maybe_calculate_projectile_launch_pitch_angle(const Projectile& projectile,
