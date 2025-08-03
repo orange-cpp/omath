@@ -13,9 +13,8 @@
 
 namespace omath::projectile_prediction
 {
-    // ReSharper disable once CppClassCanBeFinal
     template<class EngineTrait = traits::SourceEngineTrait>
-    class ProjPredEngineLegacy : public ProjPredEngineInterface
+    class ProjPredEngineLegacy final : public ProjPredEngineInterface
     {
     public:
         explicit ProjPredEngineLegacy(const float gravity_constant, const float simulation_time_step,
