@@ -37,13 +37,13 @@ namespace omath::projectile_prediction::traits
             return projectile_position.distance_to(target_position) <= tolerance;
         }
         [[nodiscard]]
-        static float calc_vector_2d_distance(const Vector3<float>& delta)
+        static float calc_vector_2d_distance(const Vector3<float>& delta) noexcept
         {
             return std::sqrt(delta.x * delta.x + delta.y * delta.y);
         }
 
         [[nodiscard]]
-        constexpr static float get_vector_height_coordinate(const Vector3<float>& vec)
+        constexpr static float get_vector_height_coordinate(const Vector3<float>& vec) noexcept
         {
             return vec.z;
         }
@@ -51,12 +51,22 @@ namespace omath::projectile_prediction::traits
         [[nodiscard]]
         static Vector3<float> calc_viewpoint_from_angles(const Projectile& projectile,
                                                          Vector3<float> predicted_target_position,
-                                                         const std::optional<float> projectile_pitch)
+                                                         const std::optional<float> projectile_pitch) noexcept
         {
             const auto delta2d = calc_vector_2d_distance(predicted_target_position - projectile.m_origin);
             const auto height = delta2d * std::tan(angles::degrees_to_radians(projectile_pitch.value()));
 
             return {predicted_target_position.x, predicted_target_position.y, projectile.m_origin.z + height};
+        }
+        // Due to specification of maybe_calculate_projectile_launch_pitch_angle, pitch angle must be:
+        // 89 look up, -89 look down
+        [[nodiscard]]
+        static float calc_direct_pitch_angle(const Vector3<float>& origin, const Vector3<float>& view_to) noexcept
+        {
+            const auto distance = origin.distance_to(view_to);
+            const auto delta = view_to - origin;
+
+            return angles::radians_to_degrees(std::asin(delta.z / distance));
         }
     };
 } // namespace omath::projectile_prediction::traits
