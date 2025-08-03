@@ -73,6 +73,11 @@ namespace omath::projectile_prediction
                                                       const Vector3<float>& target_position) const noexcept
         {
             const auto bullet_gravity = m_gravity_constant * projectile.m_gravity_scale;
+
+            if (bullet_gravity == 0.f)
+                return EngineTrait::calc_direct_pitch_angle(projectile.m_origin, target_position);
+
+
             const auto delta = target_position - projectile.m_origin;
 
             const auto distance2d = EngineTrait::calc_vector_2d_distance(delta);
