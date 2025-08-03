@@ -27,10 +27,7 @@ namespace omath::projectile_prediction
             if (!is_projectile_reached_target(predicted_target_position, projectile, projectile_pitch.value(), time))
                 continue;
 
-            const auto delta2d = (predicted_target_position - projectile.m_origin).length_2d();
-            const auto height = delta2d * std::tan(angles::degrees_to_radians(projectile_pitch.value()));
-
-            return Vector3(predicted_target_position.x, predicted_target_position.y, projectile.m_origin.z + height);
+            return calc_viewpoint_from_angles(projectile, predicted_target_position, projectile_pitch);
         }
         return std::nullopt;
     }
@@ -41,12 +38,14 @@ namespace omath::projectile_prediction
         const auto bullet_gravity = m_gravity_constant * projectile.m_gravity_scale;
         const auto delta = target_position - projectile.m_origin;
 
-        const auto distance2d = delta.length_2d();
+        const auto distance2d = calc_vector_2d_distance(delta);
         const auto distance2d_sqr = distance2d * distance2d;
         const auto launch_speed_sqr = projectile.m_launch_speed * projectile.m_launch_speed;
 
         float root = launch_speed_sqr * launch_speed_sqr
-                     - bullet_gravity * (bullet_gravity * distance2d_sqr + 2.0f * delta.z * launch_speed_sqr);
+                     - bullet_gravity
+                               * (bullet_gravity * distance2d_sqr
+                                  + 2.0f * get_vector_height_coordinate(delta) * launch_speed_sqr);
 
         if (root < 0.0f) [[unlikely]]
             return std::nullopt;
@@ -62,8 +61,40 @@ namespace omath::projectile_prediction
                                                             const float time) const noexcept
     {
         const auto yaw = projectile.m_origin.view_angle_to(target_position).y;
-        const auto projectile_position = projectile.predict_position(pitch, yaw, time, m_gravity_constant);
+        const auto projectile_position = predict_projectile_position(projectile, pitch, yaw, time, m_gravity_constant);
 
         return projectile_position.distance_to(target_position) <= m_distance_tolerance;
+    }
+
+    float ProjPredEngineLegacy::calc_vector_2d_distance(const Vector3<float>& delta) const
+    {
+        return std::sqrt(delta.x * delta.x + delta.y * delta.y);
+    }
+
+    float ProjPredEngineLegacy::get_vector_height_coordinate(const Vector3<float>& vec) const
+    {
+        return vec.z;
+    }
+    Vector3<float> ProjPredEngineLegacy::calc_viewpoint_from_angles(const Projectile& projectile,
+                                                                    const Vector3<float> predicted_target_position,
+                                                                    const std::optional<float> projectile_pitch) const
+    {
+        const auto delta2d = calc_vector_2d_distance(predicted_target_position - projectile.m_origin);
+        const auto height = delta2d * std::tan(angles::degrees_to_radians(projectile_pitch.value()));
+
+        return {predicted_target_position.x, predicted_target_position.y, projectile.m_origin.z + height};
+    }
+    Vector3<float> ProjPredEngineLegacy::predict_projectile_position(const Projectile& projectile, const float pitch,
+                                                                     const float yaw, const float time,
+                                                                     const float gravity) const
+    {
+        auto current_pos = projectile.m_origin
+                           + source_engine::forward_vector({source_engine::PitchAngle::from_degrees(-pitch),
+                                                            source_engine::YawAngle::from_degrees(yaw),
+                                                            source_engine::RollAngle::from_degrees(0)})
+                                     * projectile.m_launch_speed * time;
+        current_pos.z -= (gravity * projectile.m_gravity_scale) * (time * time) * 0.5f;
+
+        return current_pos;
     }
 } // namespace omath::projectile_prediction

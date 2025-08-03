@@ -12,7 +12,8 @@
 
 namespace omath::projectile_prediction
 {
-    class ProjPredEngineLegacy final : public ProjPredEngine
+    // ReSharper disable once CppClassCanBeFinal
+    class ProjPredEngineLegacy : public ProjPredEngineInterface
     {
     public:
         explicit ProjPredEngineLegacy(float gravity_constant, float simulation_time_step, float maximum_simulation_time,
@@ -48,5 +49,25 @@ namespace omath::projectile_prediction
         [[nodiscard]]
         bool is_projectile_reached_target(const Vector3<float>& target_position, const Projectile& projectile,
                                           float pitch, float time) const noexcept;
+
+    protected:
+        // NOTE: Override this if you need to use engine with different coordinate system
+        // Like where Z is not height coordinate
+        // ===============================================================================================
+        [[nodiscard]]
+        virtual float calc_vector_2d_distance(const Vector3<float>& delta) const;
+
+        [[nodiscard]]
+        virtual float get_vector_height_coordinate(const Vector3<float>& vec) const;
+
+        [[nodiscard]]
+        virtual Vector3<float> calc_viewpoint_from_angles(const Projectile& projectile,
+                                                          Vector3<float> predicted_target_position,
+                                                          std::optional<float> projectile_pitch) const;
+
+        [[nodiscard]]
+        virtual Vector3<float> predict_projectile_position(const Projectile& projectile, float pitch, float yaw,
+                                                           float time, float gravity) const;
+        // ===============================================================================================
     };
 } // namespace omath::projectile_prediction
