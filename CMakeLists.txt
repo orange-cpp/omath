@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.26)
 
+option(OMATH_VCPKG_AUTO_INSTALL "CMake will automatically install vcpkg and needed libraries" ON)
+
+if (OMATH_VCPKG_AUTO_INSTALL)
+    include(cmake/vcpkg.cmake)
+    vcpkg_install_if_not_found(boost-asio)
+endif()
+
 project(omath VERSION 3.0.4.1 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
