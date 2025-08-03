@@ -5,6 +5,10 @@ option(OMATH_VCPKG_AUTO_INSTALL "CMake will automatically install vcpkg and need
 if (OMATH_VCPKG_AUTO_INSTALL)
     include(cmake/vcpkg.cmake)
     vcpkg_install_if_not_found(boost-asio)
+endif ()
+
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
 endif()
 
 project(omath VERSION 3.0.4.1 LANGUAGES CXX)
@@ -22,7 +26,7 @@ option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OF
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" ON)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
-
+option(OMATH_USE_MODULES_WITH_BOOST_ASIO "Will enable classes and/or function that use Boost.Asio" ON)
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
 file(GLOB_RECURSE OMATH_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
@@ -37,6 +41,11 @@ endif ()
 message(STATUS "[OMATH]: Building on ${CMAKE_HOST_SYSTEM_NAME}")
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+if (OMATH_USE_MODULES_WITH_BOOST_ASIO)
+    find_package(Boost REQUIRED COMPONENTS asio)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Boost::asio)
+endif ()
 
 if (OMATH_IMGUI_INTEGRATION)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_IMGUI_INTEGRATION)
