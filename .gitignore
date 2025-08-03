@@ -2,3 +2,4 @@
 /.idea
 /out
 *.DS_Store
+/extlibs/vcpkg
