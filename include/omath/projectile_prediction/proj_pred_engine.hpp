@@ -8,12 +8,12 @@
 
 namespace omath::projectile_prediction
 {
-    class ProjPredEngine
+    class ProjPredEngineInterface
     {
     public:
         [[nodiscard]]
         virtual std::optional<Vector3<float>> maybe_calculate_aim_point(const Projectile& projectile,
                                                                         const Target& target) const = 0;
-        virtual ~ProjPredEngine() = default;
+        virtual ~ProjPredEngineInterface() = default;
     };
 } // namespace omath::projectile_prediction

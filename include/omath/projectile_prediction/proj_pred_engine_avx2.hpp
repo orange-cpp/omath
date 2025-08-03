@@ -6,7 +6,7 @@
 
 namespace omath::projectile_prediction
 {
-    class ProjPredEngineAvx2 final : public ProjPredEngine
+    class ProjPredEngineAvx2 final : public ProjPredEngineInterface
     {
     public:
         [[nodiscard]] std::optional<Vector3<float>>
