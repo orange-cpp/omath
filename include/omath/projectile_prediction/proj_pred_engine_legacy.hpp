@@ -30,7 +30,8 @@ namespace omath::projectile_prediction
         {
             for (float time = 0.f; time < m_maximum_simulation_time; time += m_simulation_time_step)
             {
-                const auto predicted_target_position = target.predict_position(time, m_gravity_constant);
+                const auto predicted_target_position =
+                        EngineTrait::predict_target_position(target, time, m_gravity_constant);
 
                 const auto projectile_pitch =
                         maybe_calculate_projectile_launch_pitch_angle(projectile, predicted_target_position);
@@ -38,9 +39,8 @@ namespace omath::projectile_prediction
                 if (!projectile_pitch.has_value()) [[unlikely]]
                     continue;
 
-                if (!EngineTrait::is_projectile_reached_target(predicted_target_position, projectile,
-                                                               projectile_pitch.value(), time, m_gravity_constant,
-                                                               m_distance_tolerance))
+                if (!is_projectile_reached_target(predicted_target_position, projectile, projectile_pitch.value(),
+                                                  time))
                     continue;
 
                 return EngineTrait::calc_viewpoint_from_angles(projectile, predicted_target_position, projectile_pitch);
@@ -76,7 +76,6 @@ namespace omath::projectile_prediction
             if (bullet_gravity == 0.f)
                 return EngineTrait::calc_direct_pitch_angle(projectile.m_origin, target_position);
 
-
             const auto delta = target_position - projectile.m_origin;
 
             const auto distance2d = EngineTrait::calc_vector_2d_distance(delta);
@@ -95,6 +94,16 @@ namespace omath::projectile_prediction
             const float angle = std::atan((launch_speed_sqr - root) / (bullet_gravity * distance2d));
 
             return angles::radians_to_degrees(angle);
+        }
+        [[nodiscard]]
+        bool is_projectile_reached_target(const Vector3<float>& target_position, const Projectile& projectile,
+                                          const float pitch, const float time) const noexcept
+        {
+            const auto yaw = EngineTrait::calc_direct_yaw_angle(projectile.m_origin, target_position);
+            const auto projectile_position =
+                    EngineTrait::predict_projectile_position(projectile, pitch, yaw, time, m_gravity_constant);
+
+            return projectile_position.distance_to(target_position) <= m_distance_tolerance;
         }
     };
 } // namespace omath::projectile_prediction
