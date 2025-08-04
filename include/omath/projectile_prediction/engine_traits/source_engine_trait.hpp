@@ -5,6 +5,7 @@
 #pragma once
 #include "omath/engines/source_engine/formulas.hpp"
 #include "omath/projectile_prediction/projectile.hpp"
+#include "omath/projectile_prediction/target.hpp"
 #include <optional>
 
 namespace omath::projectile_prediction::traits
@@ -25,16 +26,16 @@ namespace omath::projectile_prediction::traits
 
             return current_pos;
         }
-
-        static bool is_projectile_reached_target(const Vector3<float>& target_position,
-                                                           const Projectile& projectile, const float pitch,
-                                                           const float time, const float gravity,
-                                                           const float tolerance) noexcept
+        [[nodiscard]]
+        static constexpr Vector3<float> predict_target_position(const Target& target, const float time,
+                                                                const float gravity) noexcept
         {
-            const auto yaw = projectile.m_origin.view_angle_to(target_position).y;
-            const auto projectile_position = predict_projectile_position(projectile, pitch, yaw, time, gravity);
+            auto predicted = target.m_origin + target.m_velocity * time;
 
-            return projectile_position.distance_to(target_position) <= tolerance;
+            if (target.m_is_airborne)
+                predicted.z -= gravity * (time * time) * 0.5f;
+
+            return predicted;
         }
         [[nodiscard]]
         static float calc_vector_2d_distance(const Vector3<float>& delta) noexcept
@@ -68,5 +69,12 @@ namespace omath::projectile_prediction::traits
 
             return angles::radians_to_degrees(std::asin(delta.z / distance));
         }
+        [[nodiscard]]
+        static float calc_direct_yaw_angle(const Vector3<float>& origin, const Vector3<float>& view_to) noexcept
+        {
+            const auto delta = view_to - origin;
+
+            return angles::radians_to_degrees(std::atan2(delta.y, delta.x));
+        };
     };
 } // namespace omath::projectile_prediction::traits
