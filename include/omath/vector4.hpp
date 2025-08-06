@@ -18,7 +18,7 @@ namespace omath
         constexpr Vector4(const Type& x, const Type& y, const Type& z, const Type& w): Vector3<Type>(x, y, z), w(w)
         {
         }
-        constexpr Vector4() noexcept : Vector3<Type>(), w(0) {};
+        constexpr Vector4() noexcept: Vector3<Type>(), w(static_cast<Type>(0)) {};
 
         [[nodiscard]]
         constexpr bool operator==(const Vector4& other) const noexcept
@@ -169,6 +169,12 @@ namespace omath
                     static_cast<float>(w),
             };
         }
+        [[nodiscard]]
+        static Vector4<float> from_im_vec4(const ImVec4& other) noexcept
+        {
+            return {static_cast<Type>(other.x), static_cast<Type>(other.y), static_cast<Type>(other.z)};
+        }
+    }
 #endif
-    };
+};
 } // namespace omath

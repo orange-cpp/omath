@@ -142,7 +142,7 @@ namespace omath
         [[nodiscard]] Vector2 normalized() const noexcept
         {
             const Type len = length();
-            return len > 0.f ? *this / len : *this;
+            return len > static_cast<Type>(0) ? *this / len : *this;
         }
 #endif
         [[nodiscard]] constexpr Type length_sqr() const noexcept
@@ -153,8 +153,8 @@ namespace omath
         constexpr Vector2& abs() noexcept
         {
             // FIXME: Replace with std::abs, if it will become constexprable
-            x = x < 0 ? -x : x;
-            y = y < 0 ? -y : y;
+            x = x < static_cast<Type>(0) ? -x : x;
+            y = y < static_cast<Type>(0) ? -y : y;
             return *this;
         }
 
@@ -201,6 +201,11 @@ namespace omath
         ImVec2 to_im_vec2() const noexcept
         {
             return {static_cast<float>(this->x), static_cast<float>(this->y)};
+        }
+        [[nodiscard]]
+        static Vector3<float> from_im_vec2(const ImVec2& other) noexcept
+        {
+            return {static_cast<Type>(other.x), static_cast<Type>(other.y)};
         }
 #endif
     };
