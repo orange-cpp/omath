@@ -45,7 +45,7 @@ namespace omath::projectile_prediction::traits
         [[nodiscard]]
         constexpr static float get_vector_height_coordinate(const Vector3<float>& vec) noexcept
         {
-            return vec.z;
+            return vec.y;
         }
 
         [[nodiscard]]
