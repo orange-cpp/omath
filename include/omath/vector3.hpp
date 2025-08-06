@@ -151,7 +151,7 @@ namespace omath
         {
             const Type len = this->length();
 
-            return len != 0 ? *this / len : *this;
+            return len != static_cast<Type>(0) ? *this / len : *this;
         }
 
         [[nodiscard]] Type length_2d() const noexcept
@@ -221,7 +221,7 @@ namespace omath
         {
             const auto bottom = length() * other.length();
 
-            if (bottom == 0.f)
+            if (bottom == static_cast<Type>(0))
                 return std::unexpected(Vector3Error::IMPOSSIBLE_BETWEEN_ANGLE);
 
             return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(std::acos(dot(other) / bottom));
@@ -230,7 +230,7 @@ namespace omath
         [[nodiscard]] bool is_perpendicular(const Vector3& other) const noexcept
         {
             if (const auto angle = angle_between(other))
-                return angle->as_degrees() == 90.f;
+                return angle->as_degrees() == static_cast<Type>(90);
 
             return false;
         }
