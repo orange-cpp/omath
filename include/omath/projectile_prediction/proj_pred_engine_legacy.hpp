@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "engine_traits/source_engine_trait.hpp"
+#include "omath/engines/source_engine/traits/pred_engine_trait.hpp"
 #include "omath/projectile_prediction/proj_pred_engine.hpp"
 #include "omath/projectile_prediction/projectile.hpp"
 #include "omath/projectile_prediction/target.hpp"
@@ -13,7 +13,7 @@
 
 namespace omath::projectile_prediction
 {
-    template<class EngineTrait = traits::SourceEngineTrait>
+    template<class EngineTrait = source_engine::PredEngineTrait>
     class ProjPredEngineLegacy final : public ProjPredEngineInterface
     {
     public:
