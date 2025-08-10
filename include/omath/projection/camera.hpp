@@ -27,7 +27,7 @@ namespace omath::projection
     using FieldOfView = Angle<float, 0.f, 180.f, AngleFlags::Clamped>;
 
     template<class Mat4X4Type, class ViewAnglesType, class TraitClass>
-    class Camera
+    class Camera final
     {
     public:
         virtual ~Camera() = default;
