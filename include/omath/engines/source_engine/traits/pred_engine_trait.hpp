@@ -8,27 +8,26 @@
 #include "omath/projectile_prediction/target.hpp"
 #include <optional>
 
-namespace omath::projectile_prediction::traits
+namespace omath::source_engine
 {
-    class SourceEngineTrait final
+    class PredEngineTrait final
     {
     public:
-        constexpr static Vector3<float> predict_projectile_position(const Projectile& projectile, const float pitch,
-                                                                    const float yaw, const float time,
-                                                                    const float gravity) noexcept
+        constexpr static Vector3<float> predict_projectile_position(const projectile_prediction::Projectile& projectile,
+                                                                    const float pitch, const float yaw,
+                                                                    const float time, const float gravity) noexcept
         {
             auto current_pos = projectile.m_origin
-                               + source_engine::forward_vector({source_engine::PitchAngle::from_degrees(-pitch),
-                                                                source_engine::YawAngle::from_degrees(yaw),
-                                                                source_engine::RollAngle::from_degrees(0)})
+                               + forward_vector({PitchAngle::from_degrees(-pitch), YawAngle::from_degrees(yaw),
+                                                 RollAngle::from_degrees(0)})
                                          * projectile.m_launch_speed * time;
             current_pos.z -= (gravity * projectile.m_gravity_scale) * (time * time) * 0.5f;
 
             return current_pos;
         }
         [[nodiscard]]
-        static constexpr Vector3<float> predict_target_position(const Target& target, const float time,
-                                                                const float gravity) noexcept
+        static constexpr Vector3<float> predict_target_position(const projectile_prediction::Target& target,
+                                                                const float time, const float gravity) noexcept
         {
             auto predicted = target.m_origin + target.m_velocity * time;
 
@@ -50,7 +49,7 @@ namespace omath::projectile_prediction::traits
         }
 
         [[nodiscard]]
-        static Vector3<float> calc_viewpoint_from_angles(const Projectile& projectile,
+        static Vector3<float> calc_viewpoint_from_angles(const projectile_prediction::Projectile& projectile,
                                                          Vector3<float> predicted_target_position,
                                                          const std::optional<float> projectile_pitch) noexcept
         {
@@ -77,4 +76,4 @@ namespace omath::projectile_prediction::traits
             return angles::radians_to_degrees(std::atan2(delta.y, delta.x));
         };
     };
-} // namespace omath::projectile_prediction::traits
+} // namespace omath::source_engine
