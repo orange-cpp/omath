@@ -26,7 +26,7 @@ namespace omath::projection
     };
     using FieldOfView = Angle<float, 0.f, 180.f, AngleFlags::Clamped>;
 
-    template<class Mat4X4Type, class ViewAnglesType>
+    template<class Mat4X4Type, class ViewAnglesType, class TraitClass>
     class Camera
     {
     public:
@@ -39,15 +39,16 @@ namespace omath::projection
         }
 
     protected:
-        virtual void look_at(const Vector3<float>& target) = 0;
-
-        [[nodiscard]] virtual Mat4X4Type calc_view_matrix() const noexcept = 0;
-
-        [[nodiscard]] virtual Mat4X4Type calc_projection_matrix() const noexcept = 0;
+        void look_at(const Vector3<float>& target)
+        {
+            m_view_angles = TraitClass::calc_look_at_angle(m_origin, target);
+        }
 
         [[nodiscard]] Mat4X4Type calc_view_projection_matrix() const noexcept
         {
-            return calc_projection_matrix() * calc_view_matrix();
+            return TraitClass::calc_projection_matrix(m_field_of_view, m_view_port, m_near_plane_distance,
+                                                      m_far_plane_distance)
+                   * TraitClass::calc_view_matrix(m_view_angles, m_origin);
         }
 
     public:
