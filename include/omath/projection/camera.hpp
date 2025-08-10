@@ -30,7 +30,7 @@ namespace omath::projection
     class Camera final
     {
     public:
-        virtual ~Camera() = default;
+        ~Camera() = default;
         Camera(const Vector3<float>& position, const ViewAnglesType& view_angles, const ViewPort& view_port,
                const FieldOfView& fov, const float near, const float far) noexcept
             : m_view_port(view_port), m_field_of_view(fov), m_far_plane_distance(far), m_near_plane_distance(near),
