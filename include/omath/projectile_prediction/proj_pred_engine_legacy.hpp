@@ -13,7 +13,32 @@
 
 namespace omath::projectile_prediction
 {
+    template<class T>
+    concept PredEngineConcept =
+            requires(const Projectile& projectile, const Target& target, const Vector3<float>& vec_a,
+                     const Vector3<float>& vec_b,
+                     Vector3<float> v3, // by-value for calc_viewpoint_from_angles
+                     float pitch, float yaw, float time, float gravity, std::optional<float> maybe_pitch) {
+                // Presence + return types
+                { T::predict_projectile_position(projectile, pitch, yaw, time, gravity) } -> std::same_as<Vec3>;
+                { T::predict_target_position(target, time, gravity) } -> std::same_as<Vec3>;
+                { T::calc_vector_2d_distance(vec_a) } -> std::same_as<float>;
+                { T::get_vector_height_coordinate(vec_b) } -> std::same_as<float>;
+                { T::calc_viewpoint_from_angles(projectile, v3, maybe_pitch) } -> std::same_as<Vec3>;
+                { T::calc_direct_pitch_angle(vec_a, vec_b) } -> std::same_as<float>;
+                { T::calc_direct_yaw_angle(vec_a, vec_b) } -> std::same_as<float>;
+
+                // Enforce noexcept as in PredEngineTrait
+                requires noexcept(T::predict_projectile_position(projectile, pitch, yaw, time, gravity));
+                requires noexcept(T::predict_target_position(target, time, gravity));
+                requires noexcept(T::calc_vector_2d_distance(vec_a));
+                requires noexcept(T::get_vector_height_coordinate(vec_b));
+                requires noexcept(T::calc_viewpoint_from_angles(projectile, v3, maybe_pitch));
+                requires noexcept(T::calc_direct_pitch_angle(vec_a, vec_b));
+                requires noexcept(T::calc_direct_yaw_angle(vec_a, vec_b));
+            };
     template<class EngineTrait = source_engine::PredEngineTrait>
+    requires PredEngineConcept<EngineTrait>
     class ProjPredEngineLegacy final : public ProjPredEngineInterface
     {
     public:
