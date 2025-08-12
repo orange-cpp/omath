@@ -198,7 +198,6 @@ namespace omath
         {
             return {static_cast<Type>(other.x), static_cast<Type>(other.y), static_cast<Type>(other.z)};
         }
-    }
 #endif
 };
 } // namespace omath
