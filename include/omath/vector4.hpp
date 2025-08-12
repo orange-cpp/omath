@@ -89,7 +89,7 @@ namespace omath
             return Vector3<Type>::dot(other) + w * other.w;
         }
 
-        [[nodiscard]] Vector3<Type> length() const noexcept
+        [[nodiscard]] Type length() const noexcept
         {
             return std::sqrt(length_sqr());
         }
@@ -156,6 +156,30 @@ namespace omath
         constexpr Type sum() const noexcept
         {
             return Vector3<Type>::sum() + w;
+        }
+
+        [[nodiscard]]
+        bool operator<(const Vector4& other) const noexcept
+        {
+            return length() < other.length();
+        }
+
+        [[nodiscard]]
+        bool operator>(const Vector4& other) const noexcept
+        {
+            return length() > other.length();
+        }
+
+        [[nodiscard]]
+        bool operator<=(const Vector4& other) const noexcept
+        {
+            return length() <= other.length();
+        }
+
+        [[nodiscard]]
+        bool operator>=(const Vector4& other) const noexcept
+        {
+            return length() >= other.length();
         }
 
 #ifdef OMATH_IMGUI_INTEGRATION
