@@ -226,7 +226,7 @@ namespace omath
             return {static_cast<float>(this->x), static_cast<float>(this->y)};
         }
         [[nodiscard]]
-        static Vector3<float> from_im_vec2(const ImVec2& other) noexcept
+        static Vector2 from_im_vec2(const ImVec2& other) noexcept
         {
             return {static_cast<Type>(other.x), static_cast<Type>(other.y)};
         }
