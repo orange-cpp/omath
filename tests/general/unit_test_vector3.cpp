@@ -402,6 +402,27 @@ TEST_F(UnitTestVector3, IsPerpendicular)
     EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).is_perpendicular({0.0f, 0.0f, 1.0f}));
 }
 
+TEST_F(UnitTestVector3, LessOperator)
+{
+    EXPECT_TRUE(v1 < v2);
+}
+
+TEST_F(UnitTestVector3, GreaterOperator)
+{
+    EXPECT_TRUE(v2 > v1);
+}
+TEST_F(UnitTestVector3, LessEqualOperator)
+{
+    EXPECT_TRUE(omath::Vector3<float>{} <= omath::Vector3<float>{});
+    EXPECT_TRUE(omath::Vector3<float>{} <= omath::Vector3(1.f, 1.f, 1.f));
+}
+
+TEST_F(UnitTestVector3, GreaterEqualOperator)
+{
+    EXPECT_TRUE(omath::Vector3<float>{} >= omath::Vector3<float>{});
+    EXPECT_TRUE(omath::Vector3(1.f, 1.f, 1.f) >= omath::Vector3<float>{});
+}
+
 // Static assertions (compile-time checks)
 static_assert(Vector3(1.0f, 2.0f, 3.0f).length_sqr() == 14.0f, "LengthSqr should be 14");
 static_assert(Vector3(1.0f, 2.0f, 3.0f).dot(Vector3(4.0f, 5.0f, 6.0f)) == 32.0f, "Dot product should be 32");
