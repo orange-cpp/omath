@@ -215,3 +215,23 @@ TEST_F(UnitTestVector4, Clamp)
     EXPECT_FLOAT_EQ(v3.z, 2.5f);
     EXPECT_FLOAT_EQ(v3.w, 4.0f); // w is not clamped in this method
 }
+TEST_F(UnitTestVector4, LessOperator)
+{
+    EXPECT_TRUE(v1 < v2);
+}
+
+TEST_F(UnitTestVector4, GreaterOperator)
+{
+    EXPECT_TRUE(v2 > v1);
+}
+TEST_F(UnitTestVector4, LessEqualOperator)
+{
+    EXPECT_TRUE(omath::Vector4<float>{} <= omath::Vector4<float>{});
+    EXPECT_TRUE(omath::Vector4<float>{} <= omath::Vector4(1.f, 1.f, 1.f, 1.f));
+}
+
+TEST_F(UnitTestVector4, GreaterEqualOperator)
+{
+    EXPECT_TRUE(omath::Vector4<float>{} >= omath::Vector4<float>{});
+    EXPECT_TRUE(omath::Vector4(1.f, 1.f, 1.f, 1.f) >= omath::Vector4<float>{});
+}

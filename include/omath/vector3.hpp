@@ -253,6 +253,30 @@ namespace omath
             return {angles::radians_to_degrees(std::asin(delta.z / distance)),
                     angles::radians_to_degrees(std::atan2(delta.y, delta.x)), 0};
         }
+
+        [[nodiscard]]
+        bool operator<(const Vector3& other) const noexcept
+        {
+            return length() < other.length();
+        }
+
+        [[nodiscard]]
+        bool operator>(const Vector3& other) const noexcept
+        {
+            return length() > other.length();
+        }
+
+        [[nodiscard]]
+        bool operator<=(const Vector3& other) const noexcept
+        {
+            return length() <= other.length();
+        }
+
+        [[nodiscard]]
+        bool operator>=(const Vector3& other) const noexcept
+        {
+            return length() >= other.length();
+        }
     };
 } // namespace omath
 // ReSharper disable once CppRedundantNamespaceDefinition

@@ -191,6 +191,29 @@ namespace omath
         }
 
         [[nodiscard]]
+        bool operator<(const Vector2& other) const noexcept
+        {
+            return length() < other.length();
+        }
+        [[nodiscard]]
+        bool operator>(const Vector2& other) const noexcept
+        {
+            return length() > other.length();
+        }
+
+        [[nodiscard]]
+        bool operator<=(const Vector2& other) const noexcept
+        {
+            return length() <= other.length();
+        }
+
+        [[nodiscard]]
+        bool operator>=(const Vector2& other) const noexcept
+        {
+            return length() >= other.length();
+        }
+
+        [[nodiscard]]
         constexpr std::tuple<Type, Type> as_tuple() const noexcept
         {
             return std::make_tuple(x, y);

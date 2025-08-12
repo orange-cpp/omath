@@ -346,6 +346,28 @@ TEST_F(UnitTestVector2, NegationOperator_ZeroVector)
     EXPECT_FLOAT_EQ(result.y, -0.0f);
 }
 
+TEST_F(UnitTestVector2, LessOperator)
+{
+    EXPECT_TRUE(v1 < v2);
+}
+
+TEST_F(UnitTestVector2, GreaterOperator)
+{
+    EXPECT_TRUE(v2 > v1);
+}
+TEST_F(UnitTestVector2, LessEqualOperator)
+{
+    EXPECT_TRUE(omath::Vector2<float>{} <= omath::Vector2<float>{});
+    EXPECT_TRUE(omath::Vector2<float>{} <= omath::Vector2(1.f, 1.f));
+}
+
+TEST_F(UnitTestVector2, GreaterEqualOperator)
+{
+    EXPECT_TRUE(omath::Vector2<float>{} >= omath::Vector2<float>{});
+    EXPECT_TRUE(omath::Vector2(1.f, 1.f) >= omath::Vector2<float>{});
+}
+
+
 // Static assertions (compile-time checks)
 static_assert(Vector2(1.0f, 2.0f).length_sqr() == 5.0f, "LengthSqr should be 5");
 static_assert(Vector2(1.0f, 2.0f).dot(Vector2(4.0f, 5.0f)) == 14.0f, "Dot product should be 14");
