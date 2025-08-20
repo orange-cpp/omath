@@ -5,7 +5,7 @@
 
 using namespace omath;
 
-class unit_test_mat : public ::testing::Test
+class UnitTestMat : public ::testing::Test
 {
 protected:
     Mat<2, 2> m1;
@@ -19,7 +19,7 @@ protected:
 };
 
 // Test constructors
-TEST_F(unit_test_mat, Constructor_Default)
+TEST_F(UnitTestMat, Constructor_Default)
 {
     Mat<3, 3> m;
     EXPECT_EQ(m.row_count(), 3);
@@ -29,7 +29,7 @@ TEST_F(unit_test_mat, Constructor_Default)
             EXPECT_FLOAT_EQ(m.at(i, j), 0.0f);
 }
 
-TEST_F(unit_test_mat, Constructor_InitializerList)
+TEST_F(UnitTestMat, Constructor_InitializerList)
 {
     constexpr Mat<2, 2> m{{1.0f, 2.0f}, {3.0f, 4.0f}};
     EXPECT_EQ(m.row_count(), 2);
@@ -40,7 +40,7 @@ TEST_F(unit_test_mat, Constructor_InitializerList)
     EXPECT_FLOAT_EQ(m.at(1, 1), 4.0f);
 }
 
-TEST_F(unit_test_mat, Operator_SquareBrackets)
+TEST_F(UnitTestMat, Operator_SquareBrackets)
 {
     EXPECT_EQ((m2[0, 0]), 1.0f);
     EXPECT_EQ((m2[0, 1]), 2.0f);
@@ -48,7 +48,7 @@ TEST_F(unit_test_mat, Operator_SquareBrackets)
     EXPECT_EQ((m2[1, 1]), 4.0f);
 }
 
-TEST_F(unit_test_mat, Constructor_Copy)
+TEST_F(UnitTestMat, Constructor_Copy)
 {
     Mat<2, 2> m3 = m2;
     EXPECT_EQ(m3.row_count(), m2.row_count());
@@ -57,7 +57,7 @@ TEST_F(unit_test_mat, Constructor_Copy)
     EXPECT_FLOAT_EQ(m3.at(1, 1), m2.at(1, 1));
 }
 
-TEST_F(unit_test_mat, Constructor_Move)
+TEST_F(UnitTestMat, Constructor_Move)
 {
     Mat<2, 2> m3 = std::move(m2);
     EXPECT_EQ(m3.row_count(), 2);
@@ -68,7 +68,7 @@ TEST_F(unit_test_mat, Constructor_Move)
 }
 
 // Test matrix operations
-TEST_F(unit_test_mat, Operator_Multiplication_Matrix)
+TEST_F(UnitTestMat, Operator_Multiplication_Matrix)
 {
     Mat<2, 2> m3 = m2 * m2;
     EXPECT_EQ(m3.row_count(), 2);
@@ -79,14 +79,14 @@ TEST_F(unit_test_mat, Operator_Multiplication_Matrix)
     EXPECT_FLOAT_EQ(m3.at(1, 1), 22.0f);
 }
 
-TEST_F(unit_test_mat, Operator_Multiplication_Scalar)
+TEST_F(UnitTestMat, Operator_Multiplication_Scalar)
 {
     Mat<2, 2> m3 = m2 * 2.0f;
     EXPECT_FLOAT_EQ(m3.at(0, 0), 2.0f);
     EXPECT_FLOAT_EQ(m3.at(1, 1), 8.0f);
 }
 
-TEST_F(unit_test_mat, Operator_Division_Scalar)
+TEST_F(UnitTestMat, Operator_Division_Scalar)
 {
     Mat<2, 2> m3 = m2 / 2.0f;
     EXPECT_FLOAT_EQ(m3.at(0, 0), 0.5f);
@@ -94,7 +94,7 @@ TEST_F(unit_test_mat, Operator_Division_Scalar)
 }
 
 // Test matrix functions
-TEST_F(unit_test_mat, Transpose)
+TEST_F(UnitTestMat, Transpose)
 {
     Mat<2, 2> m3 = m2.transposed();
     EXPECT_FLOAT_EQ(m3.at(0, 0), m2.at(0, 0));
@@ -103,19 +103,19 @@ TEST_F(unit_test_mat, Transpose)
     EXPECT_FLOAT_EQ(m3.at(1, 1), m2.at(1, 1));
 }
 
-TEST_F(unit_test_mat, Determinant)
+TEST_F(UnitTestMat, Determinant)
 {
     const float det = m2.determinant();
     EXPECT_FLOAT_EQ(det, -2.0f);
 }
 
-TEST_F(unit_test_mat, Sum)
+TEST_F(UnitTestMat, Sum)
 {
     const float sum = m2.sum();
     EXPECT_FLOAT_EQ(sum, 10.0f);
 }
 
-TEST_F(unit_test_mat, Clear)
+TEST_F(UnitTestMat, Clear)
 {
     m2.clear();
     for (size_t i = 0; i < m2.row_count(); ++i)
@@ -123,7 +123,7 @@ TEST_F(unit_test_mat, Clear)
             EXPECT_FLOAT_EQ(m2.at(i, j), 0.0f);
 }
 
-TEST_F(unit_test_mat, ToString)
+TEST_F(UnitTestMat, ToString)
 {
     const std::string str = m2.to_string();
     EXPECT_FALSE(str.empty());
@@ -131,7 +131,7 @@ TEST_F(unit_test_mat, ToString)
 }
 
 // Test assignment operators
-TEST_F(unit_test_mat, AssignmentOperator_Copy)
+TEST_F(UnitTestMat, AssignmentOperator_Copy)
 {
     Mat<2, 2> m3;
     m3 = m2;
@@ -140,7 +140,7 @@ TEST_F(unit_test_mat, AssignmentOperator_Copy)
     EXPECT_FLOAT_EQ(m3.at(0, 0), m2.at(0, 0));
 }
 
-TEST_F(unit_test_mat, AssignmentOperator_Move)
+TEST_F(UnitTestMat, AssignmentOperator_Move)
 {
     Mat<2, 2> m3;
     m3 = std::move(m2);
@@ -152,7 +152,7 @@ TEST_F(unit_test_mat, AssignmentOperator_Move)
 }
 
 // Test static methods
-TEST_F(unit_test_mat, StaticMethod_ToScreenMat)
+TEST_F(UnitTestMat, StaticMethod_ToScreenMat)
 {
     Mat<4, 4> screenMat = Mat<4, 4>::to_screen_mat(800.0f, 600.0f);
     EXPECT_FLOAT_EQ(screenMat.at(0, 0), 400.0f);
@@ -164,7 +164,7 @@ TEST_F(unit_test_mat, StaticMethod_ToScreenMat)
 
 
 // Test exception handling in At() method
-TEST_F(unit_test_mat, Method_At_OutOfRange)
+TEST_F(UnitTestMat, Method_At_OutOfRange)
 {
 #if !defined(NDEBUG) && defined(OMATH_SUPRESS_SAFETY_CHECKS)
     EXPECT_THROW(std::ignore = m2.at(2, 0), std::out_of_range);

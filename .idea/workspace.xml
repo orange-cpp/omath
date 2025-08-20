@@ -39,9 +39,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="24dcf302-ac9d-40e6-8317-7203a956ad63" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/omath/color.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/omath/color.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/engines/unit_test_unity_engine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/engines/unit_test_unity_engine.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/general/unit_test_projection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/general/unit_test_projection.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -238,7 +239,7 @@
       <workItem from="1752302256186" duration="714000" />
       <workItem from="1753455801202" duration="1091000" />
       <workItem from="1755627102717" duration="301000" />
-      <workItem from="1755723773366" duration="852000" />
+      <workItem from="1755723773366" duration="1560000" />
     </task>
     <servers />
   </component>

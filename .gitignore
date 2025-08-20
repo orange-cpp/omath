@@ -2,3 +2,4 @@
 /out
 *.DS_Store
 /extlibs/vcpkg
+.idea/workspace.xml
