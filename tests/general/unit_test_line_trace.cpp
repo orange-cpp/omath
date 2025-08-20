@@ -31,10 +31,10 @@ namespace
     // -----------------------------------------------------------------------------
     // Fixture with one canonical right‑angled triangle in the XY plane.
     // -----------------------------------------------------------------------------
-    class line_tracer_fixture : public ::testing::Test
+    class LineTracerFixture : public ::testing::Test
     {
     protected:
-        line_tracer_fixture() :
+        LineTracerFixture() :
             triangle({0.f, 0.f, 0.f}, {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f})
         {
         }
@@ -51,7 +51,7 @@ namespace
         bool expected_clear; // true => segment does NOT hit the triangle
     };
 
-    class CanTraceLineParam : public line_tracer_fixture,
+    class CanTraceLineParam : public LineTracerFixture,
                               public ::testing::WithParamInterface<TraceCase>
     {
     };
@@ -79,7 +79,7 @@ namespace
     // -----------------------------------------------------------------------------
     // Validate that the reported hit point is correct for a genuine intersection.
     // -----------------------------------------------------------------------------
-    TEST_F(line_tracer_fixture, HitPointCorrect)
+    TEST_F(LineTracerFixture, HitPointCorrect)
     {
         constexpr Ray ray{{0.3f, 0.3f, -1.f}, {0.3f, 0.3f, 1.f}};
         constexpr Vec3 expected{0.3f, 0.3f, 0.f};
@@ -92,7 +92,7 @@ namespace
     // -----------------------------------------------------------------------------
     // Triangle far beyond the ray should not block.
     // -----------------------------------------------------------------------------
-    TEST_F(line_tracer_fixture, DistantTriangleClear)
+    TEST_F(LineTracerFixture, DistantTriangleClear)
     {
         constexpr Ray short_ray{{0.f, 0.f, 0.f}, {0.f, 0.f, 1.f}};
         constexpr Triangle<Vec3> distant{{1000.f, 1000.f, 1000.f},
