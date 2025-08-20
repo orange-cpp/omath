@@ -102,6 +102,11 @@ elseif (OMATH_THREAT_WARNING_AS_ERROR)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif ()
 
+# Windows SDK redefine min/max via preprocessor and break std::min and std::max
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_definitions(${PROJECT_NAME} INTERFACE NOMINMAX)
+endif ()
+
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>   # Use this path when building the project
