@@ -33,7 +33,7 @@ TEST_F(unit_test_color, Constructor_Float)
 TEST_F(unit_test_color, Constructor_Vector4)
 {
     constexpr omath::Vector4 vec(0.2f, 0.4f, 0.6f, 0.8f);
-    Color color(vec);
+    constexpr Color color(vec);
     EXPECT_FLOAT_EQ(color.x, 0.2f);
     EXPECT_FLOAT_EQ(color.y, 0.4f);
     EXPECT_FLOAT_EQ(color.z, 0.6f);
@@ -62,16 +62,16 @@ TEST_F(unit_test_color, FromHSV)
 // Test HSV conversion
 TEST_F(unit_test_color, ToHSV)
 {
-    Hsv hsv = color1.to_hsv(); // Red color
-    EXPECT_FLOAT_EQ(hsv.hue, 0.0f);
-    EXPECT_FLOAT_EQ(hsv.saturation, 1.0f);
-    EXPECT_FLOAT_EQ(hsv.value, 1.0f);
+    const auto [hue, saturation, value] = color1.to_hsv(); // Red color
+    EXPECT_FLOAT_EQ(hue, 0.0f);
+    EXPECT_FLOAT_EQ(saturation, 1.0f);
+    EXPECT_FLOAT_EQ(value, 1.0f);
 }
 
 // Test color blending
 TEST_F(unit_test_color, Blend)
 {
-    Color blended = color1.blend(color2, 0.5f);
+    const Color blended = color1.blend(color2, 0.5f);
     EXPECT_FLOAT_EQ(blended.x, 0.5f);
     EXPECT_FLOAT_EQ(blended.y, 0.5f);
     EXPECT_FLOAT_EQ(blended.z, 0.0f);
