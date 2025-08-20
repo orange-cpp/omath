@@ -20,20 +20,20 @@ TEST(unit_test_angles, degrees_to_radians)
 
 TEST(unit_test_angles, horizontal_fov_to_verical)
 {
-    constexpr float hFov = 90;
-    constexpr float aspectRation = 16.0f / 9.0f;
-    const auto verticalFov = omath::angles::horizontal_fov_to_vertical(hFov, aspectRation);
+    constexpr float h_fov = 90;
+    constexpr float aspect_ration = 16.0f / 9.0f;
+    const auto vertical_fov = omath::angles::horizontal_fov_to_vertical(h_fov, aspect_ration);
 
-    EXPECT_NEAR(verticalFov, 58.71f, 0.01f);
+    EXPECT_NEAR(vertical_fov, 58.71f, 0.01f);
 }
 
 TEST(unit_test_angles, vertical_to_horizontal)
 {
-    constexpr float vFov = 58.71;
-    constexpr float aspectRation = 16.0f / 9.0f;
-    const auto horizontalFov = omath::angles::vertical_fov_to_horizontal(vFov, aspectRation);
+    constexpr float v_fov = 58.71;
+    constexpr float aspect_ration = 16.0f / 9.0f;
+    const auto horizontal_fov = omath::angles::vertical_fov_to_horizontal(v_fov, aspect_ration);
 
-    EXPECT_NEAR(horizontalFov, 89.99f, 0.01f);
+    EXPECT_NEAR(horizontal_fov, 89.99f, 0.01f);
 }
 TEST(unit_test_angles, wrap_angle)
 {
