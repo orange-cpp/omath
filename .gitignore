@@ -1,4 +1,5 @@
 /cmake-build/
+/build/
 /out
 *.DS_Store
 /extlibs/vcpkg

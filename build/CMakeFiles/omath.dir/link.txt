@@ -1,2 +1,0 @@
-/usr/bin/ar qc /home/runner/work/omath/omath/out/libomath.a CMakeFiles/omath.dir/Unity/unity_0_cxx.cxx.o
-/usr/bin/ranlib /home/runner/work/omath/omath/out/libomath.a

@@ -1,7 +1,0 @@
-/home/runner/work/omath/omath/build/CMakeFiles/omath.dir
-/home/runner/work/omath/omath/build/CMakeFiles/edit_cache.dir
-/home/runner/work/omath/omath/build/CMakeFiles/rebuild_cache.dir
-/home/runner/work/omath/omath/build/CMakeFiles/list_install_components.dir
-/home/runner/work/omath/omath/build/CMakeFiles/install.dir
-/home/runner/work/omath/omath/build/CMakeFiles/install/local.dir
-/home/runner/work/omath/omath/build/CMakeFiles/install/strip.dir
