@@ -56,14 +56,25 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 Please read our [installation guide](https://github.com/orange-cpp/omath/blob/main/INSTALL.md). If this link doesn't work check out INSTALL.md file.
 
 ## ❔ Usage
-Simple world to screen function
+ESP example
 ```c++
-TEST(UnitTestProjection, IsPointOnScreen)
-{
-    const omath::projection::Camera camera({0.f, 0.f, 0.f}, {0, 0.f, 0.f} , {1920.f, 1080.f}, 110.f, 0.1f, 500.f);
+omath::source_engine::Camera cam{localPlayer.GetCameraOrigin(),
+                                 localPlayer.GetAimPunch(),
+                                 {1920.f, 1080.f},
+                                 localPlayer.GetFieldOfView(),
+                                 0.01.f, 30000.f};
 
-    const auto proj = camera.WorldToScreen({100, 0, 15});
-    EXPECT_TRUE(proj.has_value());
+std::optional<omath::Vector2<float>> target_to_aim = std::nullopt;
+for (auto ent: apex_sdk::EntityList::GetAllEntities())
+{
+    const auto bottom = cam.world_to_screen(ent.GetOrigin());
+    const auto top = cam.world_to_screen(ent.GetBonePosition(8) + omath::Vector3<float>{0, 0, 10});
+
+    const auto ent_health = ent.GetHealth();
+
+    if (!top || !bottom || ent_health <= 0)
+        continue;
+    // esp rendering...
 }
 ```
 ## Showcase
