@@ -20,11 +20,11 @@ namespace omath::projectile_prediction
                      Vector3<float> v3, // by-value for calc_viewpoint_from_angles
                      float pitch, float yaw, float time, float gravity, std::optional<float> maybe_pitch) {
                 // Presence + return types
-                { T::predict_projectile_position(projectile, pitch, yaw, time, gravity) } -> std::same_as<Vec3>;
-                { T::predict_target_position(target, time, gravity) } -> std::same_as<Vec3>;
+                { T::predict_projectile_position(projectile, pitch, yaw, time, gravity) } -> std::same_as<Vector3<float>>;
+                { T::predict_target_position(target, time, gravity) } -> std::same_as<Vector3<float>>;
                 { T::calc_vector_2d_distance(vec_a) } -> std::same_as<float>;
                 { T::get_vector_height_coordinate(vec_b) } -> std::same_as<float>;
-                { T::calc_viewpoint_from_angles(projectile, v3, maybe_pitch) } -> std::same_as<Vec3>;
+                { T::calc_viewpoint_from_angles(projectile, v3, maybe_pitch) } -> std::same_as<Vector3<float>>;
                 { T::calc_direct_pitch_angle(vec_a, vec_b) } -> std::same_as<float>;
                 { T::calc_direct_yaw_angle(vec_a, vec_b) } -> std::same_as<float>;
 
