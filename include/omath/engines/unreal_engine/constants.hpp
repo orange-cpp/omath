@@ -23,4 +23,4 @@ namespace omath::unreal_engine
     using RollAngle = Angle<float, -180.f, 180.f, AngleFlags::Normalized>;
 
     using ViewAngles = omath::ViewAngles<PitchAngle, YawAngle, RollAngle>;
-} // namespace omath::unity_engine
+} // namespace omath::unreal_engine

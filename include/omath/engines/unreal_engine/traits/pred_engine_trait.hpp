@@ -55,7 +55,7 @@ namespace omath::unreal_engine
             const auto delta2d = calc_vector_2d_distance(predicted_target_position - projectile.m_origin);
             const auto height = delta2d * std::tan(angles::degrees_to_radians(projectile_pitch.value()));
 
-            return {predicted_target_position.x, predicted_target_position.y + height, projectile.m_origin.z};
+            return {predicted_target_position.x, predicted_target_position.y, projectile.m_origin.z + height};
         }
         // Due to specification of maybe_calculate_projectile_launch_pitch_angle, pitch angle must be:
         // 89 look up, -89 look down
@@ -65,14 +65,14 @@ namespace omath::unreal_engine
             const auto distance = origin.distance_to(view_to);
             const auto delta = view_to - origin;
 
-            return angles::radians_to_degrees(std::asin(delta.y / distance));
+            return angles::radians_to_degrees(std::asin(delta.z / distance));
         }
         [[nodiscard]]
         static float calc_direct_yaw_angle(const Vector3<float>& origin, const Vector3<float>& view_to) noexcept
         {
             const auto delta = view_to - origin;
 
-            return angles::radians_to_degrees(std::atan2(delta.z, delta.x));
+            return angles::radians_to_degrees(std::atan2(delta.y, delta.x));
         };
     };
-} // namespace omath::unity_engine
+} // namespace omath::unreal_engine
