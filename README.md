@@ -64,7 +64,6 @@ omath::source_engine::Camera cam{localPlayer.GetCameraOrigin(),
                                  localPlayer.GetFieldOfView(),
                                  0.01.f, 30000.f};
 
-std::optional<omath::Vector2<float>> target_to_aim = std::nullopt;
 for (auto ent: apex_sdk::EntityList::GetAllEntities())
 {
     const auto bottom = cam.world_to_screen(ent.GetOrigin());
