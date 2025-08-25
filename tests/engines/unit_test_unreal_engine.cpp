@@ -1,7 +1,4 @@
 //
-// Created by Vlad on 8/25/2025.
-//
-//
 // Created by Orange on 11/27/2024.
 //
 #include <gtest/gtest.h>
