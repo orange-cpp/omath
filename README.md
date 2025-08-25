@@ -42,7 +42,8 @@ Oranges's Math Library (omath) is a comprehensive, open-source library aimed at 
 | Source   | ✅YES    |
 | Unity    | ✅YES    |
 | IWEngine | ✅YES    |
-| Unreal   | ❌NO     |
+| OpenGL   | ✅YES    |
+| Unreal   | ✅YES    |
 
 ## Supported Operating Systems
 
