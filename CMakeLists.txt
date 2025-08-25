@@ -27,7 +27,7 @@ else ()
     add_library(${PROJECT_NAME} STATIC ${OMATH_SOURCES} ${OMATH_HEADERS})
 endif ()
 
-message(STATUS "[OMATH]: Building on ${CMAKE_HOST_SYSTEM_NAME}")
+message(STATUS "[${PROJECT_NAME}]: Building on ${CMAKE_HOST_SYSTEM_NAME}")
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
