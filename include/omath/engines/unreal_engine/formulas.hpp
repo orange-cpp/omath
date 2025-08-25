@@ -23,4 +23,4 @@ namespace omath::unreal_engine
 
     [[nodiscard]]
     Mat4X4 calc_perspective_projection_matrix(float field_of_view, float aspect_ratio, float near, float far) noexcept;
-} // namespace omath::unity_engine
+} // namespace omath::unreal_engine
