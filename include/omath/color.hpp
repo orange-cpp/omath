@@ -167,3 +167,21 @@ namespace omath
 #endif
     };
 } // namespace omath
+template<>
+struct std::formatter<omath::Color> // NOLINT(*-dcl58-cpp)
+{
+    [[nodiscard]]
+    static constexpr auto parse(std::format_parse_context& ctx)
+    {
+        return ctx.begin();
+    }
+    [[nodiscard]]
+    static auto format(const omath::Color& col, std::format_context& ctx)
+    {
+        return std::format_to(ctx.out(), "[r:{}, g:{}, b:{}, a:{}]",
+            static_cast<int>(col.x * 255.f),
+            static_cast<int>(col.y * 255.f),
+            static_cast<int>(col.z * 255.f),
+            static_cast<int>(col.w * 255.f));
+    }
+};
