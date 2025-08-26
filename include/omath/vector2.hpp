@@ -3,7 +3,9 @@
 //
 
 #pragma once
+#include "vector3.hpp"
 #include <cmath>
+#include <format>
 #include <tuple>
 
 #ifdef OMATH_IMGUI_INTEGRATION
@@ -218,7 +220,6 @@ namespace omath
         {
             return std::make_tuple(x, y);
         }
-
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
         ImVec2 to_im_vec2() const noexcept
@@ -233,3 +234,18 @@ namespace omath
 #endif
     };
 } // namespace omath
+
+template<class Type>
+struct std::formatter<omath::Vector2<Type>> // NOLINT(*-dcl58-cpp)
+{
+    [[nodiscard]]
+    static constexpr auto parse(std::format_parse_context& ctx)
+    {
+        return ctx.begin();
+    }
+    [[nodiscard]]
+    static auto format(const omath::Vector2<Type>& vec, std::format_context& ctx)
+    {
+        return std::format_to(ctx.out(), "[{}, {}]", vec.x, vec.y);
+    }
+};
