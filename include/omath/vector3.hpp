@@ -159,9 +159,9 @@ namespace omath
             return Vector2<Type>::length();
         }
 
-        [[nodiscard]] Type distance_to(const Vector3& vOther) const noexcept
+        [[nodiscard]] Type distance_to(const Vector3& v_other) const noexcept
         {
-            return (*this - vOther).length();
+            return (*this - v_other).length();
         }
 #endif
 
@@ -279,21 +279,33 @@ namespace omath
         }
     };
 } // namespace omath
-// ReSharper disable once CppRedundantNamespaceDefinition
-namespace std
+
+template<> struct std::hash<omath::Vector3<float>>
 {
-    template<> struct hash<omath::Vector3<float>>
+    std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
     {
-        std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
-        {
-            std::size_t hash = 0;
-            constexpr std::hash<float> hasher;
+        std::size_t hash = 0;
+        constexpr std::hash<float> hasher;
 
-            hash ^= hasher(vec.x) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-            hash ^= hasher(vec.y) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-            hash ^= hasher(vec.z) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        hash ^= hasher(vec.x) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        hash ^= hasher(vec.y) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        hash ^= hasher(vec.z) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 
-            return hash;
-        }
-    };
-} // namespace std
+        return hash;
+    }
+};
+
+template<class Type>
+struct std::formatter<omath::Vector3<Type>> // NOLINT(*-dcl58-cpp)
+{
+    [[nodiscard]]
+    static constexpr auto parse(std::format_parse_context& ctx)
+    {
+        return ctx.begin();
+    }
+    [[nodiscard]]
+    static auto format(const omath::Vector3<Type>& vec, std::format_context& ctx)
+    {
+        return std::format_to(ctx.out(), "[{}, {}, {}]", vec.x, vec.y, vec.z);
+    }
+};

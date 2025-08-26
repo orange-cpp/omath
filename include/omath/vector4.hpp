@@ -201,3 +201,18 @@ namespace omath
 #endif
 };
 } // namespace omath
+
+template<class Type>
+struct std::formatter<omath::Vector4<Type>> // NOLINT(*-dcl58-cpp)
+{
+    [[nodiscard]]
+    static constexpr auto parse(std::format_parse_context& ctx)
+    {
+        return ctx.begin();
+    }
+    [[nodiscard]]
+    static auto format(const omath::Vector4<Type>& vec, std::format_context& ctx)
+    {
+        return std::format_to(ctx.out(), "[{}, {}, {}, {}]", vec.x, vec.y, vec.z, vec.w);
+    }
+};
