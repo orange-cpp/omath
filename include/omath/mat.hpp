@@ -480,3 +480,19 @@ namespace omath
                 {0.f, 0.f, -1.f, 0.f}};
     }
 } // namespace omath
+
+template<size_t Rows, size_t Columns, class Type, omath::MatStoreType StoreType>
+struct std::formatter<omath::Mat<Rows, Columns, Type, StoreType>> // NOLINT(*-dcl58-cpp)
+{
+    using MatType = omath::Mat<Rows, Columns, Type, StoreType>;
+    [[nodiscard]]
+    static constexpr auto parse(std::format_parse_context& ctx)
+    {
+        return ctx.begin();
+    }
+    [[nodiscard]]
+    static auto format(const MatType& mat, std::format_context& ctx)
+    {
+        return std::format_to(ctx.out(), "{}", mat.to_string());
+    }
+};
