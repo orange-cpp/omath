@@ -6,6 +6,7 @@
 #include "omath/angles.hpp"
 #include <algorithm>
 #include <utility>
+#include <format>
 
 namespace omath
 {
@@ -149,3 +150,17 @@ namespace omath
         }
     };
 } // namespace omath
+template<class Type, Type min, Type max, omath::AngleFlags flags>
+struct std::formatter<omath::Angle<Type, min, max, flags>> // NOLINT(*-dcl58-cpp)
+{
+    [[nodiscard]]
+    static constexpr auto parse(std::format_parse_context& ctx)
+    {
+        return ctx.begin();
+    }
+    [[nodiscard]]
+    static auto format(const omath::Angle<Type, min, max, flags>& deg, std::format_context& ctx)
+    {
+        return std::format_to(ctx.out(), "{}deg", deg.as_degrees());
+    }
+};

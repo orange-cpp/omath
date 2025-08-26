@@ -125,7 +125,7 @@ TEST_F(UnitTestMat, Clear)
 
 TEST_F(UnitTestMat, ToString)
 {
-    const std::string str = m2.to_string();
+    const std::string str = std::format("{}", m2);
     EXPECT_FALSE(str.empty());
     EXPECT_EQ(str, "[[    1.000,     2.000]\n [    3.000,     4.000]]");
 }
