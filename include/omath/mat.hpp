@@ -479,6 +479,35 @@ namespace omath
                 {0.f, 0.f, -(far + near) / (far - near), -(2.f * near * far) / (far - near)},
                 {0.f, 0.f, -1.f, 0.f}};
     }
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    Mat<4, 4, Type, St> mat_ortho_left_handed(const Type left, const Type right,
+                                              const Type bottom, const Type top,
+                                              const Type near, const Type far) noexcept
+    {
+        return
+        {
+            { static_cast<Type>(2) / (right - left), 0.f,       0.f,    -(right + left) / (right - left)},
+            { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,    -(top + bottom) / (top - bottom)},
+            { 0.f,      0.f,       static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
+            { 0.f,      0.f,       0.f,                                 1.f                             }
+        };
+    }
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    Mat<4, 4, Type, St> mat_ortho_right_handed(const Type left, const Type right,
+                                              const Type bottom, const Type top,
+                                              const Type near, const Type far) noexcept
+    {
+        return
+        {
+                { static_cast<Type>(2) / (right - left), 0.f,       0.f,     -(right + left) / (right - left)},
+                { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,     -(top + bottom) / (top - bottom)},
+                { 0.f,      0.f,       -static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
+                { 0.f,      0.f,       0.f,                                  1.f                             }
+        };
+    }
+
 } // namespace omath
 
 template<size_t Rows, size_t Columns, class Type, omath::MatStoreType StoreType>
