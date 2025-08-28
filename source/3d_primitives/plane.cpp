@@ -9,10 +9,11 @@ namespace omath::primitives
                                                           const Vector3<float>& vertex_b,
                                                           const Vector3<float>& direction, const float size) noexcept
     {
+        const auto second_vertex_a = vertex_a + direction * size;
         return std::array
         {
-            Triangle{vertex_a + direction * size, vertex_a, vertex_b},
-            Triangle{vertex_b + direction * size, vertex_b, vertex_a}
+            Triangle{second_vertex_a, vertex_a, vertex_b},
+            Triangle{second_vertex_a, vertex_b + direction * size, vertex_b}
         };
     }
 } // namespace omath::primitives
