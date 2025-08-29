@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(omath VERSION 3.3.0 LANGUAGES CXX)
+project(omath VERSION 3.4.0 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 
@@ -38,6 +38,8 @@ else ()
 endif ()
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_VERSION="${PROJECT_VERSION}")
 
 if (OMATH_IMGUI_INTEGRATION)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_IMGUI_INTEGRATION)
