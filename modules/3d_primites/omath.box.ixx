@@ -1,13 +1,18 @@
 //
-// Created by Vlad on 4/18/2025.
+// Created by Vlad on 9/1/2025.
 //
-#include "omath/3d_primitives/box.hpp"
+module;
+#include <array>
 
-namespace omath::primitives
+export module omath.box;
+export import omath.triangle;
+
+export namespace omath::primitives
 {
-    std::array<Triangle<Vector3<float>>, 12> create_box(const Vector3<float>& top, const Vector3<float>& bottom,
-                                                        const Vector3<float>& dir_forward,
-                                                        const Vector3<float>& dir_right, const float ratio) noexcept
+    [[nodiscard]]
+    std::array<Triangle<>, 12> create_box(const Vector3<float>& top, const Vector3<float>& bottom,
+                                                    const Vector3<float>& dir_forward, const Vector3<float>& dir_right,
+                                                    const float ratio = 4.f) noexcept
     {
         const auto height = top.distance_to(bottom);
         const auto side_size = height / ratio;

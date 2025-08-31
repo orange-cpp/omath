@@ -3,14 +3,18 @@
 //
 module;
 
-#include "omath/angle.hpp"
 #include <cstdint>
 #include <expected>
 #include <functional>
+#include <format>
+
+#ifdef OMATH_IMGUI_INTEGRATION
+#include <imgui.h>
+#endif
 
 export module omath.vector3;
 import omath.vector2;
-
+import omath.angle;
 
 export namespace omath
 {
@@ -251,8 +255,8 @@ export namespace omath
             const auto distance = distance_to(other);
             const auto delta = other - *this;
 
-            return {angles::radians_to_degrees(std::asin(delta.z / distance)),
-                    angles::radians_to_degrees(std::atan2(delta.y, delta.x)), 0};
+            return {radians_to_degrees(std::asin(delta.z / distance)),
+                    radians_to_degrees(std::atan2(delta.y, delta.x)), 0};
         }
 
         [[nodiscard]]

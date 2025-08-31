@@ -5,6 +5,9 @@ module;
 #include <algorithm>
 #include <format>
 
+#ifdef OMATH_IMGUI_INTEGRATION
+#include <imgui.h>
+#endif
 
 export module omath.vector4;
 
