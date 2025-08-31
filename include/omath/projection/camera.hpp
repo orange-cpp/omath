@@ -5,10 +5,10 @@
 #pragma once
 
 #include "omath/projection/error_codes.hpp"
+#include "omath/linear_algebra/mat.hpp"
+#include "omath/linear_algebra/vector3.hpp"
 #include <expected>
 #include <omath/angle.hpp>
-#include <omath/mat.hpp>
-#include <omath/vector3.hpp>
 #include <type_traits>
 
 namespace omath::projection

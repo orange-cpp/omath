@@ -2,11 +2,11 @@
 // Created by Vlad on 01.09.2024.
 //
 
+#include <omath/linear_algebra/vector3.hpp>
 #include <cfloat> // For FLT_MAX, FLT_MIN
 #include <cmath>
 #include <gtest/gtest.h>
 #include <limits> // For std::numeric_limits
-#include <omath/vector3.hpp>
 
 using namespace omath;
 

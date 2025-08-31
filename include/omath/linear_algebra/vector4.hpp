@@ -4,7 +4,7 @@
 #pragma once
 
 #include <algorithm>
-#include <omath/vector3.hpp>
+#include "omath/linear_algebra/vector3.hpp"
 
 namespace omath
 {
