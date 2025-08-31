@@ -3,10 +3,9 @@
 //
 
 #pragma once
-#include <array>
+#include "omath/linear_algebra/vector3.hpp"
 #include "omath/triangle.hpp"
-#include "omath/vector3.hpp"
-
+#include <array>
 
 namespace omath::primitives
 {

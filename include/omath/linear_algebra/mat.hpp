@@ -2,7 +2,7 @@
 // Created by vlad on 9/29/2024.
 //
 #pragma once
-#include "omath/vector3.hpp"
+#include "vector3.hpp"
 #include <algorithm>
 #include <array>
 #include <iomanip>
