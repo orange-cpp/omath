@@ -10,13 +10,13 @@
 #include "omath/angle.hpp"
 
 // Vector classes (in dependency order)
-#include "omath/vector2.hpp"
-#include "omath/vector3.hpp"
-#include "omath/vector4.hpp"
+#include "linear_algebra/vector2.hpp"
+#include "linear_algebra/vector4.hpp"
+#include "omath/linear_algebra/vector3.hpp"
 
 // Matrix classes
-#include "omath/mat.hpp"
-#include "omath/matrix.hpp"
+#include "linear_algebra/matrix.hpp"
+#include "omath/linear_algebra/mat.hpp"
 
 // Color functionality
 #include "omath/color.hpp"

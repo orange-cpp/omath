@@ -1,11 +1,10 @@
 //
 // Created by Orange on 1/6/2025.
 //
+#include "omath/triangle.hpp"
+#include "omath/linear_algebra/vector3.hpp"
 #include <cmath> // For std::sqrt, std::isinf, std::isnan
 #include <gtest/gtest.h>
-#include <omath/vector3.hpp>
-#include "omath/triangle.hpp"
-
 
 using namespace omath;
 

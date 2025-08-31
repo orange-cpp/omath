@@ -5,9 +5,9 @@
 // Vector4Test.cpp
 //
 
+#include <omath/linear_algebra/vector4.hpp>
 #include <gtest/gtest.h>
 #include <limits> // For std::numeric_limits
-#include <omath/vector4.hpp>
 
 using namespace omath;
 

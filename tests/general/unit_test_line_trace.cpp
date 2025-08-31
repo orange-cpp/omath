@@ -2,10 +2,10 @@
 // Revised unit‑test suite for LineTracer (segment‑based Möller–Trumbore)
 // Pure ASCII: avoids non‑standard characters that MSVC rejects.
 //
-#include "gtest/gtest.h"
+#include "omath/linear_algebra/vector3.hpp"
 #include "omath/collision/line_tracer.hpp"
 #include "omath/triangle.hpp"
-#include "omath/vector3.hpp"
+#include "gtest/gtest.h"
 #include <cmath>
 
 using namespace omath;
