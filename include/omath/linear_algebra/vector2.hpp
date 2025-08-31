@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include "vector3.hpp"
 #include <cmath>
 #include <format>
 #include <tuple>

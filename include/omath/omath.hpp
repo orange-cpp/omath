@@ -10,8 +10,8 @@
 #include "omath/angle.hpp"
 
 // Vector classes (in dependency order)
-#include "linear_algebra/vector2.hpp"
-#include "linear_algebra/vector4.hpp"
+#include "omath/linear_algebra/vector2.hpp"
+#include "omath/linear_algebra/vector4.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 
 // Matrix classes
