@@ -2,7 +2,8 @@
 // Created by Vlad on 02.09.2024.
 //
 
-#include <omath/linear_algebra/vector2.hpp>
+import omath.vector2;
+
 #include <cfloat> // For FLT_MAX and FLT_MIN
 #include <cmath> // For std::isinf and std::isnan
 #include <gtest/gtest.h>
