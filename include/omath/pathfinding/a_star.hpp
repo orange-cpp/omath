@@ -3,8 +3,8 @@
 //
 
 #pragma once
+#include "omath/linear_algebra/vector3.hpp"
 #include "omath/pathfinding/navigation_mesh.hpp"
-#include "omath/vector3.hpp"
 #include <vector>
 
 namespace omath::pathfinding

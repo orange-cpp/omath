@@ -5,7 +5,7 @@
 #pragma once
 
 #include "omath/angle.hpp"
-#include "omath/vector2.hpp"
+#include "omath/linear_algebra/vector2.hpp"
 #include <cstdint>
 #include <expected>
 #include <functional>

@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "omath/linear_algebra/mat.hpp"
+#include "omath/linear_algebra/vector3.hpp"
 #include <omath/angle.hpp>
-#include <omath/mat.hpp>
-#include <omath/vector3.hpp>
 #include <omath/view_angles.hpp>
 
 namespace omath::unreal_engine

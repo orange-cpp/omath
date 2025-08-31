@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include "omath/linear_algebra/vector3.hpp"
 #include "omath/engines/source_engine/traits/pred_engine_trait.hpp"
 #include "omath/projectile_prediction/proj_pred_engine.hpp"
 #include "omath/projectile_prediction/projectile.hpp"
 #include "omath/projectile_prediction/target.hpp"
-#include "omath/vector3.hpp"
 #include <optional>
 
 namespace omath::projectile_prediction
