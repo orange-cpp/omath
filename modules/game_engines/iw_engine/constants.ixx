@@ -2,7 +2,7 @@
 // Created by Vlad on 9/1/2025.
 //
 
-export module constants;
+export module omath.iw_engine.constants;
 import omath.vector3;
 import omath.mat;
 import omath.angle;

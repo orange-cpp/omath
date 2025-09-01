@@ -2,6 +2,7 @@
 // Created by Vlad on 01.09.2024.
 //
 
+#include <format>
 #include <cfloat> // For FLT_MAX, FLT_MIN
 #include <cmath>
 #include <gtest/gtest.h>

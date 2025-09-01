@@ -4,6 +4,7 @@
 module;
 #include <algorithm>
 #include <cmath>
+#include <compare>
 #include <format>
 #include <numbers>
 #include <utility>
@@ -169,9 +170,6 @@ export namespace omath
 
             return *this;
         }
-
-        [[nodiscard]]
-        constexpr std::partial_ordering operator<=>(const Angle& other) const noexcept = default;
 
         constexpr Angle& operator-=(const Angle& other) noexcept
         {
