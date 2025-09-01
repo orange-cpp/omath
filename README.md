@@ -1,6 +1,6 @@
 <div align = center>
 
-![banner](https://github.com/orange-cpp/omath/blob/main/.github/images/banner.png?raw=true)
+![banner](.github/images/logos/omath_logo_macro.png)
 
 ![GitHub License](https://img.shields.io/github/license/orange-cpp/omath)
 ![GitHub contributors](https://img.shields.io/github/contributors/orange-cpp/omath)
