@@ -2,10 +2,10 @@
 // Created by Orange on 11/27/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/engines/unreal_engine/camera.hpp>
-#include <omath/engines/unreal_engine/constants.hpp>
-#include <omath/engines/unreal_engine/formulas.hpp>
 #include <print>
+import omath.unreal_engine.formulas;
+import omath.unreal_engine.constants;
+import omath.unreal_engine.camera;
 
 TEST(unit_test_unreal_engine, ForwardVector)
 {

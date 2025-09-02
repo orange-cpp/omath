@@ -5,10 +5,10 @@
 // Vector4Test.cpp
 //
 
-#include <omath/linear_algebra/vector4.hpp>
 #include <gtest/gtest.h>
 #include <limits> // For std::numeric_limits
 
+import omath.vector4;
 using namespace omath;
 
 class UnitTestVector4 : public ::testing::Test

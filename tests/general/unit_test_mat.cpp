@@ -1,8 +1,9 @@
 // UnitTestMat.cpp
-#include "omath/linear_algebra/mat.hpp"
-#include "omath/linear_algebra/vector3.hpp"
+
 #include <gtest/gtest.h>
 
+import omath.mat;
+import omath.vector3;
 using namespace omath;
 
 class UnitTestMat : public ::testing::Test

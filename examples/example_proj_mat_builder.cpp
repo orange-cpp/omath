@@ -5,7 +5,8 @@
 
 #include <iostream>
 #include <print>
-#include <omath/engines/opengl_engine/formulas.hpp>
+#include <sstream>
+import omath.opengl_engine.formulas;
 
 
 int main()
@@ -36,5 +37,5 @@ int main()
     const auto mat =
             omath::opengl_engine::calc_perspective_projection_matrix(fov, view_port_width / view_port_height, near, far);
 
-    std::print("{}", mat.to_string());
+    std::print("{}", mat);
 };

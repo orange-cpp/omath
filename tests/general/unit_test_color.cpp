@@ -2,8 +2,9 @@
 // Created by Vlad on 01.09.2024.
 //
 #include <gtest/gtest.h>
-#include <omath/color.hpp>
 
+import omath.color;
+import omath.vector4;
 
 using namespace omath;
 
