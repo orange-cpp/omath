@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.31)
 
 project(omath VERSION 3.5.0 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
-
+include(GNUInstallDirs)
 
 option(OMATH_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
@@ -13,7 +13,7 @@ option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types 
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OFF)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
-option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" ON)
+option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
 
 message(STATUS "[${PROJECT_NAME}]: Building on ${CMAKE_HOST_SYSTEM_NAME}")
@@ -27,16 +27,21 @@ message(STATUS "[${PROJECT_NAME}]: AVX2 feature status ${OMATH_USE_AVX2}")
 message(STATUS "[${PROJECT_NAME}]: ImGUI integration feature status ${OMATH_IMGUI_INTEGRATION}")
 message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY}")
 
-file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
-file(GLOB_RECURSE OMATH_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
+file(GLOB_RECURSE OMATH_MODULES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.ixx")
 
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
-    add_library(${PROJECT_NAME} SHARED ${OMATH_SOURCES} ${OMATH_HEADERS})
+    add_library(${PROJECT_NAME} SHARED)
 else ()
-    add_library(${PROJECT_NAME} STATIC ${OMATH_SOURCES} ${OMATH_HEADERS})
+    add_library(${PROJECT_NAME} STATIC)
 endif ()
 
+target_sources(${PROJECT_NAME}
+        PUBLIC
+        FILE_SET cxx_modules TYPE CXX_MODULES
+        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/modules
+        FILES ${OMATH_MODULES}
+)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_VERSION="${PROJECT_VERSION}")
@@ -132,6 +137,8 @@ install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib COMPONENT ${PROJECT_NAME}   # For static libraries
         LIBRARY DESTINATION lib COMPONENT ${PROJECT_NAME}   # For shared libraries
         RUNTIME DESTINATION bin COMPONENT ${PROJECT_NAME}   # For executables (on Windows)
+        FILE_SET cxx_modules DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/modules
+        CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}/cxx/bmi
 )
 
 # Install headers as part of omath_component
@@ -142,6 +149,7 @@ install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
         NAMESPACE ${PROJECT_NAME}::
         DESTINATION lib/cmake/${PROJECT_NAME} COMPONENT ${PROJECT_NAME}
+        CXX_MODULES_DIRECTORY ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/cxx-modules
 )
 
 

@@ -2,11 +2,12 @@
 // Created by Vlad on 02.09.2024.
 //
 
-#include <omath/linear_algebra/vector2.hpp>
+#include <format>
 #include <cfloat> // For FLT_MAX and FLT_MIN
 #include <cmath> // For std::isinf and std::isnan
 #include <gtest/gtest.h>
 
+import omath.vector2;
 using namespace omath;
 
 class UnitTestVector2 : public ::testing::Test
