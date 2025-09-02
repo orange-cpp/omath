@@ -1,16 +1,15 @@
 //
-// Created by Vlad on 9/1/2025.
+// Created by Vlad on 9/2/2025.
 //
 
-export module omath.iw_engine.constants;
+export module omath.source_engine.constants;
 
 import omath.vector3;
 import omath.mat;
 import omath.angle;
 import omath.view_angles;
 
-
-export namespace omath::iw_engine
+export namespace omath::source_engine
 {
     constexpr Vector3<float> k_abs_up = {0, 0, 1};
     constexpr Vector3<float> k_abs_right = {0, -1, 0};
@@ -24,4 +23,4 @@ export namespace omath::iw_engine
     using RollAngle = Angle<float, -180.f, 180.f, AngleFlags::Normalized>;
 
     using ViewAngles = omath::ViewAngles<PitchAngle, YawAngle, RollAngle>;
-} // namespace omath::iw_engine
+}

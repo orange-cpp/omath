@@ -86,7 +86,7 @@ export namespace omath
         }
 
         [[nodiscard]]
-        constexpr Type& operator[](const size_t row, const size_t col) const
+        constexpr const Type& operator[](const size_t row, const size_t col) const
         {
             return at(row, col);
         }
@@ -329,7 +329,12 @@ export namespace omath
         [[nodiscard]]
         bool operator==(const Mat& mat) const
         {
-            return m_data == mat.m_data;
+            for (size_t i = 0; i < Rows * Columns; ++i)
+            {
+                if (m_data[i] != mat.m_data[i])
+                    return false;
+            }
+            return true;
         }
 
         [[nodiscard]]

@@ -13,7 +13,7 @@ export import omath.projectile_prediction.projectile;
 export import omath.projectile_prediction.target;
 
 import omath.projectile_prediction.proj_pred_engine;
-import omath.iw_engine.pred_engine_trait;
+import omath.source_engine.pred_engine_trait;
 import omath.angle;
 
 export namespace omath::projectile_prediction
@@ -44,7 +44,7 @@ export namespace omath::projectile_prediction
                 requires noexcept(T::calc_direct_pitch_angle(vec_a, vec_b));
                 requires noexcept(T::calc_direct_yaw_angle(vec_a, vec_b));
             };
-    template<class EngineTrait = iw_engine::PredEngineTrait>
+    template<class EngineTrait = source_engine::PredEngineTrait>
     requires PredEngineConcept<EngineTrait>
     class ProjPredEngineLegacy final : public ProjPredEngineInterface
     {
