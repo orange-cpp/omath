@@ -9,7 +9,7 @@ export module omath.projectile_prediction.proj_pred_engine;
 import omath.projectile_prediction.target;
 import omath.projectile_prediction.projectile;
 
-namespace omath::projectile_prediction
+export namespace omath::projectile_prediction
 {
     class ProjPredEngineInterface
     {

@@ -2,7 +2,7 @@
 // Created by Vlad on 9/1/2025.
 //
 
-export module omath.projectile_prediction.projectile;
+export module omath.projectile_prediction.       projectile;
 export import omath.vector3;
 
 export namespace omath::projectile_prediction
