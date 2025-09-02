@@ -4,6 +4,7 @@
 module;
 #include <algorithm>
 #include <format>
+#include <cmath>
 
 #ifdef OMATH_IMGUI_INTEGRATION
 #include <imgui.h>

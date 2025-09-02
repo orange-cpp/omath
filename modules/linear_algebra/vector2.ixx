@@ -6,13 +6,14 @@ module;
 #include <cmath>
 #include <format>
 #include <tuple>
-
-export module omath.vector2;
-
+#include <cmath>
 
 #ifdef OMATH_IMGUI_INTEGRATION
 #include <imgui.h>
 #endif
+
+export module omath.vector2;
+
 
 export namespace omath
 {
