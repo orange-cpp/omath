@@ -88,7 +88,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Type& operator[](const size_t row, const size_t col) const
+        constexpr const Type& operator[](const size_t row, const size_t col) const
         {
             return at(row, col);
         }
