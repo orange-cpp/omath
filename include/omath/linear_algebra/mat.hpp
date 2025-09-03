@@ -11,13 +11,6 @@
 #include <stdexcept>
 #include <utility>
 
-#ifdef near
-#undef near
-#endif
-
-#ifdef far
-#undef far
-#endif
 
 namespace omath
 {
