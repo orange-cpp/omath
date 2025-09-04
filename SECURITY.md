@@ -2,4 +2,4 @@
 
 ## Reporting a Vulnerability
 
-Please report security issues to `orange-cpp@yandex.ru`
+Please report security issues to `orange_github@proton.me`
