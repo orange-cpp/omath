@@ -123,13 +123,13 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Angle& operator+(const Angle& other) noexcept
+        constexpr Angle operator+(const Angle& other) noexcept
         {
             if constexpr (flags == AngleFlags::Normalized)
-                return {angles::wrap_angle(m_angle + other.m_angle, min, max)};
+                return Angle{angles::wrap_angle(m_angle + other.m_angle, min, max)};
 
             else if constexpr (flags == AngleFlags::Clamped)
-                return {std::clamp(m_angle + other.m_angle, min, max)};
+                return Angle{std::clamp(m_angle + other.m_angle, min, max)};
 
             else
                 static_assert(false);
@@ -138,7 +138,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Angle& operator-(const Angle& other) noexcept
+        constexpr Angle operator-(const Angle& other) noexcept
         {
             return operator+(-other);
         }
