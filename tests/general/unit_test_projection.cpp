@@ -13,7 +13,7 @@ TEST(UnitTestProjection, Projection)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto projected = cam.world_to_screen({1000, 0, 50.f});
+    const auto projected = cam.world_to_screen({1000.f, 0, 50.f});
     const auto result = cam.screen_to_world(projected.value());
     const auto result2 = cam.world_to_screen(result.value());
 
