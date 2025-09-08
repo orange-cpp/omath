@@ -50,12 +50,10 @@ namespace omath::collision
 
         const auto t_hit = side_b.dot(q) * inv_det;
 
-        if (ray.infinite_length)
-        {
-            if (t_hit <= k_epsilon)
-                return ray.end;
-        }
-        else if (t_hit <= k_epsilon || t_hit > 1.0f - k_epsilon)
+        if (ray.infinite_length && t_hit <= k_epsilon)
+            return ray.end;
+
+        if (t_hit <= k_epsilon || t_hit > 1.0f - k_epsilon)
             return ray.end;
 
         return ray.start + ray_dir * t_hit;
