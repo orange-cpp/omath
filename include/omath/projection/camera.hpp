@@ -10,9 +10,12 @@
 #include <expected>
 #include <omath/angle.hpp>
 #include <type_traits>
+
 #ifdef OMATH_BUILD_TESTS
+// ReSharper disable once CppInconsistentNaming
 class UnitTestProjection_Projection_Test;
 #endif
+
 namespace omath::projection
 {
     class ViewPort final
@@ -47,8 +50,9 @@ namespace omath::projection
     requires CameraEngineConcept<TraitClass, Mat4X4Type, ViewAnglesType>
     class Camera final
     {
+#ifdef OMATH_BUILD_TESTS
         friend UnitTestProjection_Projection_Test;
-
+#endif
     public:
         ~Camera() = default;
         Camera(const Vector3<float>& position, const ViewAnglesType& view_angles, const ViewPort& view_port,
