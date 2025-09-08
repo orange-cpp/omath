@@ -100,6 +100,7 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 if (OMATH_BUILD_TESTS)
     add_subdirectory(extlibs)
     add_subdirectory(tests)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_BUILD_TESTS)
 endif ()
 
 if (OMATH_BUILD_EXAMPLES)
