@@ -14,7 +14,16 @@
 
 </div>
 
-Oranges's Math Library (omath) is a comprehensive, open-source library aimed at providing efficient, reliable, and versatile mathematical functions and algorithms. Developed primarily in C++, this library is designed to cater to a wide range of mathematical operations essential in scientific computing, engineering, and academic research.
+You're trying to build something. Something great. Something that matters. You have a smart team and they want to go fast. Fast means beating your competitors to market. 
+Fast means attracting the best talent to your team. Today fast is no longer optional. It's essential to surviving and thriving.
+
+But you also know that moving fast can break things. You could be just one bug away from everything coming to a standstill. What if you want to deliver quality and be fast?
+
+That's where OMath comes in. OMath helps teams work better together through high code quality and game engine compatibility. This allows you to find problems quickly, so when you do break things, they break small, making for quick and easy fixes before your users see them.
+
+And every member of your team can work independently because OMath is built to scale. No more waiting in line to get valuable updates out to your customers or developers fighting through reverse engineering to develop a basic feature or tweak a cheat setting. OMath eliminates the bottlenecks that slow down your delivery schedule and frustrate your team.
+
+OMath helps your team focus on what matters: building great things and not waiting for great things to build. Find out more about how OMath can help your team work smarter and faster.
 
 <div align = center>
  <a href="https://www.star-history.com/#orange-cpp/omath&Date">
