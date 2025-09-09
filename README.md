@@ -14,6 +14,8 @@
 
 </div>
 
+## 📢Intro
+
 You're trying to build something. Something great. Something that matters. You have a smart team and they want to go fast. Fast means beating your competitors to market. 
 Fast means attracting the best talent to your team. Today fast is no longer optional. It's essential to surviving and thriving.
 
