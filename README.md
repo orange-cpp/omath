@@ -15,6 +15,17 @@
 OMath is a 100% independent, constexpr template blazingly fast math library that doesn't have legacy C++ code.
 
 It provides the latest features, is highly customizable, has all for cheat development, DirectX/OpenGL/Vulkan support, premade support for different game engines, much more constexpr stuff than in other libraries and more...
+<br>
+<br>
+
+---
+
+**[<kbd><br>Install<br></kbd>][INSTALL]**
+**[<kbd><br>Examples<br></kbd>][EXAMPLES]**
+**[<kbd><br>Contribute<br></kbd>][CONTRIBUTING]**
+---
+
+<br>
 
 </div>
 
@@ -39,6 +50,27 @@ It provides the latest features, is highly customizable, has all for cheat devel
 - **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
 - **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
 
+# Gallery
+
+<br>
+
+![APEX Preview]
+
+<br>
+
+![BO2 Preview]
+
+<br>
+
+![CS2 Preview]
+
+[![Youtube Video](.github/images/yt_previews/img.png)](https://youtu.be/lM_NJ1yCunw?si=-Qf5yzDcWbaxAXGQ)
+<br>
+<br>
+
+</div>
+
+
 ## Supported Render Pipelines
 | ENGINE   | SUPPORT |
 |----------|---------|
@@ -55,9 +87,6 @@ It provides the latest features, is highly customizable, has all for cheat devel
 | Windows 10/11  | ✅YES    |
 | Linux          | ✅YES    |
 | Darwin (MacOS) | ✅YES    |
-
-## ⏬ Installation
-Please read our [installation guide](https://github.com/orange-cpp/omath/blob/main/INSTALL.md). If this link doesn't work check out INSTALL.md file.
 
 ## ❔ Usage
 ESP example
@@ -80,24 +109,16 @@ for (auto ent: apex_sdk::EntityList::GetAllEntities())
     // esp rendering...
 }
 ```
-## Showcase
-
-With `omath/projection` module you can achieve simple ESP hack for powered by Source/Unreal/Unity engine games, like [Apex Legends](https://store.steampowered.com/app/1172470/Apex_Legends/).
-
-![banner](.github/images/showcase/apex.png)
-Or for InfinityWard Engine based games. Like Call of Duty Black Ops 2!
-![banner](.github/images/showcase/cod_bo2.png)
-Or create simple trigger bot with embeded traceline from omath::collision::LineTrace
-![banner](.github/images/showcase/cs2.jpeg)
-Or even advanced projectile aimbot
-[Watch Video](https://youtu.be/lM_NJ1yCunw?si=5E87OrQMeypxSJ3E)
-
-
-## 🫵🏻 Contributing
-Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
-
-## 📜 License
-This project is licensed under the ZLIB - see the `LICENSE` file for details.
 
 ## 💘 Acknowledgments
 -  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
+
+<!----------------------------------{ Images }--------------------------------->
+[APEX Preview]: .github/images/showcase/apex.png
+[BO2 Preview]: .github/images/showcase/cod_bo2.png
+[CS2 Preview]: .github/images/showcase/cs2.jpeg
+
+<!----------------------------------{ Buttons }--------------------------------->
+[INSTALL]: INSTALL.md
+[CONTRIBUTING]: CONTRIBUTING.md
+[EXAMPLES]: examples
