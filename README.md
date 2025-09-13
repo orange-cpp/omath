@@ -20,9 +20,9 @@ It provides the latest features, is highly customizable, has all for cheat devel
 
 ---
 
-**[<kbd><br>Install<br></kbd>][INSTALL]**
-**[<kbd><br>Examples<br></kbd>][EXAMPLES]**
-**[<kbd><br>Contribute<br></kbd>][CONTRIBUTING]**
+**[<kbd> <br> Install <br> </kbd>][INSTALL]**
+**[<kbd> <br> Examples <br> </kbd>][EXAMPLES]**
+**[<kbd> <br> Contribute <br> </kbd>][CONTRIBUTING]**
 ---
 
 <br>
