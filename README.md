@@ -72,7 +72,6 @@ It provides the latest features, is highly customizable, has all for cheat devel
 <br>
 <br>
 
-</div>
 
 
 ## Supported Render Pipelines
