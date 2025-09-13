@@ -55,6 +55,10 @@ It provides the latest features, is highly customizable, has all for cheat devel
 
 <br>
 
+[![Youtube Video](.github/images/yt_previews/img.png)](https://youtu.be/lM_NJ1yCunw?si=-Qf5yzDcWbaxAXGQ)
+
+<br>
+
 ![APEX Preview]
 
 <br>
@@ -65,7 +69,6 @@ It provides the latest features, is highly customizable, has all for cheat devel
 
 ![CS2 Preview]
 
-[![Youtube Video](.github/images/yt_previews/img.png)](https://youtu.be/lM_NJ1yCunw?si=-Qf5yzDcWbaxAXGQ)
 <br>
 <br>
 
