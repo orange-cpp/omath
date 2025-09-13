@@ -81,8 +81,6 @@ for (auto ent: apex_sdk::EntityList::GetAllEntities())
 }
 ```
 ## Showcase
-<details>
-  <summary>OMATH for making cheats (click to open)</summary>
 
 With `omath/projection` module you can achieve simple ESP hack for powered by Source/Unreal/Unity engine games, like [Apex Legends](https://store.steampowered.com/app/1172470/Apex_Legends/).
 
@@ -93,7 +91,7 @@ Or create simple trigger bot with embeded traceline from omath::collision::LineT
 ![banner](.github/images/showcase/cs2.jpeg)
 Or even advanced projectile aimbot
 [Watch Video](https://youtu.be/lM_NJ1yCunw?si=5E87OrQMeypxSJ3E)
-</details>
+
 
 ## 🫵🏻 Contributing
 Contributions to `omath` are welcome! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
