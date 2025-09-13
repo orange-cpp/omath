@@ -12,20 +12,12 @@
 [![discord badge](https://dcbadge.limes.pink/api/server/https://discord.gg/eDgdaWbqwZ?style=flat)](https://discord.gg/eDgdaWbqwZ)
 [![telegram badge](https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white)](https://t.me/orangennotes)
 
+OMath is a 100% independent, constexpr template blazingly fast math library that doesn't have legacy C++ code.
+
+It provides the latest features, is highly customizable, has all for cheat development, DirectX/OpenGL/Vulkan support, premade support for different game engines, much more constexpr stuff than in other libraries and more...
+
 </div>
 
-## 📢Intro
-
-You're trying to build something. Something great. Something that matters. You have a smart team and they want to go fast. Fast means beating your competitors to market. 
-Fast means attracting the best talent to your team. Today fast is no longer optional. It's essential to surviving and thriving.
-
-But you also know that moving fast can break things. You could be just one bug away from everything coming to a standstill. What if you want to deliver quality and be fast?
-
-That's where OMath comes in. OMath helps teams work better together through high code quality and game engine compatibility. This allows you to find problems quickly, so when you do break things, they break small, making for quick and easy fixes before your users see them.
-
-And every member of your team can work independently because OMath is built to scale. No more waiting in line to get valuable updates out to your customers or developers fighting through reverse engineering to develop a basic feature or tweak a cheat setting. OMath eliminates the bottlenecks that slow down your delivery schedule and frustrate your team.
-
-OMath helps your team focus on what matters: building great things and not waiting for great things to build. Find out more about how OMath can help your team work smarter and faster.
 
 <div align = center>
  <a href="https://www.star-history.com/#orange-cpp/omath&Date">
