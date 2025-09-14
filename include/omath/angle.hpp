@@ -150,23 +150,17 @@ namespace omath
         }
     };
 } // namespace omath
-// partial specialization of std::formatter for omath::Angle
+
 template<class T, T MinV, T MaxV, omath::AngleFlags F, class CharT>
 struct std::formatter<omath::Angle<T, MinV, MaxV, F>, CharT>
 {
     using AngleT = omath::Angle<T, MinV, MaxV, F>;
-
-    // required: default ctor is implicitly OK
-
-    // parse with the correct CharT-aware context
     [[nodiscard]]
     static constexpr auto parse(std::basic_format_parse_context<CharT>& ctx)
             -> std::basic_format_parse_context<CharT>::iterator
     {
-        return ctx.begin(); // no custom format specifiers
+        return ctx.begin();
     }
-
-    // format; here we only implement for narrow char to keep it simple
     template<class FormatContext>
     auto format(const AngleT& deg, FormatContext& ctx) const
     {
