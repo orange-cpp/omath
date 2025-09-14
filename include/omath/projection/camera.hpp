@@ -195,7 +195,14 @@ namespace omath::projection
         [[nodiscard]]
         std::expected<Vector3<float>, Error> screen_to_world(const Vector3<float>& screen_pos) const noexcept
         {
-            return view_port_to_screen(screen_to_dnc(screen_pos));
+            return view_port_to_screen(screen_to_ndc(screen_pos));
+        }
+
+        [[nodiscard]]
+        std::expected<Vector3<float>, Error> screen_to_world(const Vector2<float>& screen_pos) const noexcept
+        {
+            const auto& [x, y] = screen_pos;
+            return screen_to_world({x, y, 1.f});
         }
 
     protected:
@@ -234,7 +241,7 @@ namespace omath::projection
             return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (1.f - ndc.y) / 2.f * m_view_port.m_height, ndc.z};
         }
 
-        [[nodiscard]] Vector3<float> screen_to_dnc(const Vector3<float>& screen_pos) const noexcept
+        [[nodiscard]] Vector3<float> screen_to_ndc(const Vector3<float>& screen_pos) const noexcept
         {
             return {screen_pos.x / m_view_port.m_width * 2.f - 1.f, 1.f - screen_pos.y / m_view_port.m_height * 2.f,
                     screen_pos.z};
