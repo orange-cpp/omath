@@ -5,8 +5,8 @@
 #pragma once
 #include "omath/angles.hpp"
 #include <algorithm>
-#include <utility>
 #include <format>
+#include <utility>
 
 namespace omath
 {
@@ -150,17 +150,28 @@ namespace omath
         }
     };
 } // namespace omath
-template<class Type, Type min, Type max, omath::AngleFlags flags>
-struct std::formatter<omath::Angle<Type, min, max, flags>> // NOLINT(*-dcl58-cpp)
+// partial specialization of std::formatter for omath::Angle
+template<class T, T MinV, T MaxV, omath::AngleFlags F, class CharT>
+struct std::formatter<omath::Angle<T, MinV, MaxV, F>, CharT>
 {
+    using AngleT = omath::Angle<T, MinV, MaxV, F>;
+
+    // required: default ctor is implicitly OK
+
+    // parse with the correct CharT-aware context
     [[nodiscard]]
-    static constexpr auto parse(std::format_parse_context& ctx)
+    static constexpr auto parse(std::basic_format_parse_context<CharT>& ctx)
+            -> std::basic_format_parse_context<CharT>::iterator
     {
-        return ctx.begin();
+        return ctx.begin(); // no custom format specifiers
     }
-    [[nodiscard]]
-    static auto format(const omath::Angle<Type, min, max, flags>& deg, std::format_context& ctx)
+
+    // format; here we only implement for narrow char to keep it simple
+    template<class FormatContext>
+    auto format(const AngleT& deg, FormatContext& ctx) const
     {
-        return std::format_to(ctx.out(), "{}deg", deg.as_degrees());
+        if constexpr (std::is_same_v<typename FormatContext::char_type, char>)
+            return std::format_to(ctx.out(), "{}deg", deg.as_degrees());
+        return std::format_to(ctx.out(), L"{}deg", deg.as_degrees());
     }
 };
