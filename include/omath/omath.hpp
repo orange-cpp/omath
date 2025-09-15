@@ -15,7 +15,6 @@
 #include "omath/linear_algebra/vector3.hpp"
 
 // Matrix classes
-#include "linear_algebra/matrix.hpp"
 #include "omath/linear_algebra/mat.hpp"
 
 // Color functionality
