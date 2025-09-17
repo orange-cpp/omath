@@ -6,6 +6,7 @@ include(CMakePackageConfigHelpers)
 
 
 option(OMATH_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
+option(OMATH_BUILD_BENCHMARK "Build benchmarks" ${PROJECT_IS_TOP_LEVEL})
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
@@ -16,9 +17,10 @@ option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build 
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
 
-message(STATUS "[${PROJECT_NAME}]: Building on ${CMAKE_HOST_SYSTEM_NAME}")
+message(STATUS "[${PROJECT_NAME}]: Building on ${CMAKE_HOST_SYSTEM_NAME}, compiler ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "[${PROJECT_NAME}]: Warnings as errors ${OMATH_THREAT_WARNING_AS_ERROR}")
 message(STATUS "[${PROJECT_NAME}]: Build unit tests ${OMATH_BUILD_TESTS}")
+message(STATUS "[${PROJECT_NAME}]: Build benchmark ${OMATH_BUILD_BENCHMARK}")
 message(STATUS "[${PROJECT_NAME}]: As dynamic library ${OMATH_BUILD_AS_SHARED_LIBRARY}")
 message(STATUS "[${PROJECT_NAME}]: Static C++ runtime ${OMATH_STATIC_MSVC_RUNTIME_LIBRARY}")
 message(STATUS "[${PROJECT_NAME}]: CMake unity build ${OMATH_USE_UNITY_BUILD}")
@@ -90,17 +92,23 @@ if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
     )
 endif ()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(${PROJECT_NAME} PRIVATE -mavx2 -mfma)
+if (OMATH_USE_AVX2 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(${PROJECT_NAME} PUBLIC -mavx2 -mavx -mfma)
 endif ()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
+if (OMATH_BUILD_TESTS OR OMATH_BUILD_BENCHMARK)
+    add_subdirectory(extlibs)
+endif ()
 
 if (OMATH_BUILD_TESTS)
-    add_subdirectory(extlibs)
     add_subdirectory(tests)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_BUILD_TESTS)
+endif ()
+
+if (OMATH_BUILD_BENCHMARK)
+    add_subdirectory(benchmark)
 endif ()
 
 if (OMATH_BUILD_EXAMPLES)
