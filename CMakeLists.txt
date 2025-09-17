@@ -20,6 +20,7 @@ option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY fo
 message(STATUS "[${PROJECT_NAME}]: Building on ${CMAKE_HOST_SYSTEM_NAME}")
 message(STATUS "[${PROJECT_NAME}]: Warnings as errors ${OMATH_THREAT_WARNING_AS_ERROR}")
 message(STATUS "[${PROJECT_NAME}]: Build unit tests ${OMATH_BUILD_TESTS}")
+message(STATUS "[${PROJECT_NAME}]: Build benchmark ${OMATH_BUILD_BENCHMARK}")
 message(STATUS "[${PROJECT_NAME}]: As dynamic library ${OMATH_BUILD_AS_SHARED_LIBRARY}")
 message(STATUS "[${PROJECT_NAME}]: Static C++ runtime ${OMATH_STATIC_MSVC_RUNTIME_LIBRARY}")
 message(STATUS "[${PROJECT_NAME}]: CMake unity build ${OMATH_USE_UNITY_BUILD}")
@@ -97,9 +98,11 @@ endif ()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
+if (OMATH_BUILD_TESTS OR OMATH_BUILD_BENCHMARK)
+    add_subdirectory(extlibs)
+endif ()
 
 if (OMATH_BUILD_TESTS)
-    add_subdirectory(extlibs)
     add_subdirectory(tests)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_BUILD_TESTS)
 endif ()
