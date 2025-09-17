@@ -158,25 +158,10 @@ namespace omath
             Mat<Rows, OtherColumns, Type, StoreType> result;
 
             if constexpr (StoreType == MatStoreType::ROW_MAJOR)
-                for (std::size_t i = 0; i < Rows; ++i)
-                    for (std::size_t k = 0; k < Columns; ++k)
-                    {
-                        const Type aik = at(i, k);
-                        for (std::size_t j = 0; j < OtherColumns; ++j)
-                            result.at(i, j) += aik * other.at(k, j);
-                    }
-            else if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
-                for (std::size_t j = 0; j < OtherColumns; ++j)
-                    for (std::size_t k = 0; k < Columns; ++k)
-                    {
-                        const Type bkj = other.at(k, j);
-                        for (std::size_t i = 0; i < Rows; ++i)
-                            result.at(i, j) += at(i, k) * bkj;
-                    }
-            else
-                std::unreachable();
-
-            return result;
+                return cache_friendly_multiply_row_major(other);
+            if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
+                return cache_friendly_multiply_col_major(other);
+            std::unreachable();
         }
 
         constexpr Mat& operator*=(const Type& f) noexcept
@@ -378,6 +363,35 @@ namespace omath
 
     private:
         std::array<Type, Rows * Columns> m_data;
+
+        template<size_t OtherColumns> [[nodiscard]]
+        constexpr Mat<Rows, OtherColumns, Type, MatStoreType::ROW_MAJOR>
+        cache_friendly_multiply_row_major(const Mat<Columns, OtherColumns, Type, MatStoreType::ROW_MAJOR>& other) const
+        {
+            Mat<Rows, OtherColumns, Type, MatStoreType::ROW_MAJOR> result;
+            for (std::size_t i = 0; i < Rows; ++i)
+                for (std::size_t k = 0; k < Columns; ++k)
+                {
+                    const Type aik = at(i, k);
+                    for (std::size_t j = 0; j < OtherColumns; ++j)
+                        result.at(i, j) += aik * other.at(k, j);
+                }
+            return result;
+        }
+        template<size_t OtherColumns> [[nodiscard]]
+        constexpr Mat<Rows, OtherColumns, Type, MatStoreType::COLUMN_MAJOR> cache_friendly_multiply_col_major(
+                const Mat<Columns, OtherColumns, Type, MatStoreType::COLUMN_MAJOR>& other) const
+        {
+            Mat<Rows, OtherColumns, Type, MatStoreType::COLUMN_MAJOR> result;
+            for (std::size_t j = 0; j < OtherColumns; ++j)
+                for (std::size_t k = 0; k < Columns; ++k)
+                {
+                    const Type bkj = other.at(k, j);
+                    for (std::size_t i = 0; i < Rows; ++i)
+                        result.at(i, j) += at(i, k) * bkj;
+                }
+            return result;
+        }
     };
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR> [[nodiscard]]
