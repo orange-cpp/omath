@@ -6,6 +6,7 @@ include(CMakePackageConfigHelpers)
 
 
 option(OMATH_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
+option(OMATH_BUILD_BENCHMARK "Build benchmarks" ${PROJECT_IS_TOP_LEVEL})
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
@@ -101,6 +102,10 @@ if (OMATH_BUILD_TESTS)
     add_subdirectory(extlibs)
     add_subdirectory(tests)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_BUILD_TESTS)
+endif ()
+
+if (OMATH_BUILD_BENCHMARK)
+    add_subdirectory(benchmark)
 endif ()
 
 if (OMATH_BUILD_EXAMPLES)
