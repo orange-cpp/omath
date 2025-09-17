@@ -5,12 +5,10 @@
 
 #include <omath/omath.hpp>
 #include <chrono>
-#include <print>
-
 using namespace omath;
 
 
-void mat_multiplication(benchmark::State& state)
+void mat_float_multiplication_col_major(benchmark::State& state)
 {
     using MatType = Mat<128, 128, float, MatStoreType::COLUMN_MAJOR>;
     MatType a;
@@ -20,10 +18,49 @@ void mat_multiplication(benchmark::State& state)
 
 
     for (auto _ : state)
-    {
         std::ignore = a * b;
-    }
+}
+void mat_float_multiplication_row_major(benchmark::State& state)
+{
+    using MatType = Mat<128, 128, float, MatStoreType::ROW_MAJOR>;
+    MatType a;
+    MatType b;
+    a.set(3.f);
+    b.set(7.f);
+
+
+    for (auto _ : state)
+        std::ignore = a * b;
 }
 
-BENCHMARK(mat_multiplication);
-BENCHMARK_MAIN();
+void mat_double_multiplication_row_major(benchmark::State& state)
+{
+    using MatType = Mat<128, 128, double, MatStoreType::ROW_MAJOR>;
+    MatType a;
+    MatType b;
+    a.set(3.f);
+    b.set(7.f);
+
+
+    for (auto _ : state)
+        std::ignore = a * b;
+}
+
+void mat_double_multiplication_col_major(benchmark::State& state)
+{
+    using MatType = Mat<128, 128, double, MatStoreType::COLUMN_MAJOR>;
+    MatType a;
+    MatType b;
+    a.set(3.f);
+    b.set(7.f);
+
+
+    for (auto _ : state)
+        std::ignore = a * b;
+}
+
+BENCHMARK(mat_float_multiplication_col_major)->Iterations(5000);
+BENCHMARK(mat_float_multiplication_row_major)->Iterations(5000);
+
+BENCHMARK(mat_double_multiplication_col_major)->Iterations(5000);
+BENCHMARK(mat_double_multiplication_row_major)->Iterations(5000);
