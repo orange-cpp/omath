@@ -378,6 +378,7 @@ namespace omath
                 }
             return result;
         }
+
         template<size_t OtherColumns> [[nodiscard]]
         constexpr Mat<Rows, OtherColumns, Type, MatStoreType::COLUMN_MAJOR> cache_friendly_multiply_col_major(
                 const Mat<Columns, OtherColumns, Type, MatStoreType::COLUMN_MAJOR>& other) const
