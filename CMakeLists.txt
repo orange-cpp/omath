@@ -17,7 +17,7 @@ option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build 
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
 
-message(STATUS "[${PROJECT_NAME}]: Building on ${CMAKE_HOST_SYSTEM_NAME}")
+message(STATUS "[${PROJECT_NAME}]: Building on ${CMAKE_HOST_SYSTEM_NAME}, compiler ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "[${PROJECT_NAME}]: Warnings as errors ${OMATH_THREAT_WARNING_AS_ERROR}")
 message(STATUS "[${PROJECT_NAME}]: Build unit tests ${OMATH_BUILD_TESTS}")
 message(STATUS "[${PROJECT_NAME}]: Build benchmark ${OMATH_BUILD_BENCHMARK}")
@@ -93,7 +93,7 @@ if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
 endif ()
 
 if (OMATH_USE_AVX2 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(${PROJECT_NAME} PRIVATE -mavx2 -mavx -mfma)
+    target_compile_options(${PROJECT_NAME} PUBLIC -mavx2 -mavx -mfma)
 endif ()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
