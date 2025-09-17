@@ -92,8 +92,8 @@ if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
     )
 endif ()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(${PROJECT_NAME} PRIVATE -mavx2 -mfma)
+if (OMATH_USE_AVX2 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(${PROJECT_NAME} PRIVATE -mavx2 -mavx -mfma)
 endif ()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
