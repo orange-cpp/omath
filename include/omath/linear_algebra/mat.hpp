@@ -157,14 +157,25 @@ namespace omath
         {
             Mat<Rows, OtherColumns, Type, StoreType> result;
 
-            for (size_t i = 0; i < Rows; ++i)
-                for (size_t j = 0; j < OtherColumns; ++j)
-                {
-                    Type sum = 0;
+            if constexpr (StoreType == MatStoreType::ROW_MAJOR)
+                for (size_t i = 0; i < Rows; ++i)
                     for (size_t k = 0; k < Columns; ++k)
-                        sum += at(i, k) * other.at(k, j);
-                    result.at(i, j) = sum;
-                }
+                    {
+                        const Type aik = at(i, k);
+                        for (size_t j = 0; j < OtherColumns; ++j)
+                            result.at(i, j) += aik * other.at(k, j);
+                    }
+            else if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
+                for (size_t j = 0; j < OtherColumns; ++j)
+                    for (size_t k = 0; k < Columns; ++k)
+                    {
+                        const Type bkj = other.at(k, j);
+                        for (size_t i = 0; i < Rows; ++i)
+                            result.at(i, j) += at(i, k) * bkj;
+                    }
+            else
+                std::unreachable();
+
             return result;
         }
 
