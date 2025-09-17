@@ -155,8 +155,6 @@ namespace omath
         constexpr Mat<Rows, OtherColumns, Type, StoreType>
         operator*(const Mat<Columns, OtherColumns, Type, StoreType>& other) const
         {
-            Mat<Rows, OtherColumns, Type, StoreType> result;
-
             if constexpr (StoreType == MatStoreType::ROW_MAJOR)
                 return cache_friendly_multiply_row_major(other);
             if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
