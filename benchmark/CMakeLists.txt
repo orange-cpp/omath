@@ -1,13 +1,10 @@
-enable_testing()
+project(omath_benchmark)
 
-project(benchmark)
 
-include(GoogleTest)
+file(GLOB_RECURSE OMATH_BENCHMARK_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+add_executable(${PROJECT_NAME} ${OMATH_BENCHMARK_SOURCES})
 
-file(GLOB_RECURSE UNIT_TESTS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-add_executable(${PROJECT_NAME} ${UNIT_TESTS_SOURCES})
-
-set_target_properties(benchmark PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
@@ -17,6 +14,4 @@ set_target_properties(benchmark PROPERTIES
         CXX_STANDARD_REQUIRED ON)
 
 
-target_link_libraries(${PROJECT_NAME} PRIVATE gtest gtest_main omath::omath)
-
-gtest_discover_tests(${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME} PRIVATE benchmark::benchmark omath)
