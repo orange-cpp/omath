@@ -11,9 +11,9 @@ using namespace omath;
 
 static void BM_MatMutiplication(benchmark::State& state)
 {
-    using mat_type = Mat<128, 128, float, MatStoreType::COLUMN_MAJOR>;
-    mat_type a;
-    mat_type b;
+    using MatType = Mat<128, 128, float, MatStoreType::COLUMN_MAJOR>;
+    MatType a;
+    MatType b;
     a.set(3.f);
     b.set(7.f);
 
