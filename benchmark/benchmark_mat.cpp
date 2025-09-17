@@ -9,7 +9,8 @@
 
 using namespace omath;
 
-static void BM_MatMutiplication(benchmark::State& state)
+
+void mat_multiplication(benchmark::State& state)
 {
     using MatType = Mat<128, 128, float, MatStoreType::COLUMN_MAJOR>;
     MatType a;
@@ -24,5 +25,5 @@ static void BM_MatMutiplication(benchmark::State& state)
     }
 }
 
-BENCHMARK(BM_MatMutiplication);
+BENCHMARK(mat_multiplication);
 BENCHMARK_MAIN();
