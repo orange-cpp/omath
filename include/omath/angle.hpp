@@ -151,21 +151,39 @@ namespace omath
     };
 } // namespace omath
 
-template<class T, T MinV, T MaxV, omath::AngleFlags F, class CharT>
-struct std::formatter<omath::Angle<T, MinV, MaxV, F>, CharT>
+template<class T, T MinV, T MaxV, omath::AngleFlags F>
+struct std::formatter<omath::Angle<T, MinV, MaxV, F>, char> // NOLINT(*-dcl58-cpp)
 {
     using AngleT = omath::Angle<T, MinV, MaxV, F>;
-    [[nodiscard]]
-    static constexpr auto parse(std::basic_format_parse_context<CharT>& ctx)
-            -> std::basic_format_parse_context<CharT>::iterator
+
+    static constexpr auto parse(std::format_parse_context& ctx)
     {
         return ctx.begin();
     }
+
     template<class FormatContext>
-    auto format(const AngleT& deg, FormatContext& ctx) const
+    auto format(const AngleT& a, FormatContext& ctx) const
     {
-        if constexpr (std::is_same_v<typename FormatContext::char_type, char>)
-            return std::format_to(ctx.out(), "{}deg", deg.as_degrees());
-        return std::format_to(ctx.out(), L"{}deg", deg.as_degrees());
+        static_assert(std::is_same_v<typename FormatContext::char_type, char>);
+        return std::format_to(ctx.out(), "{}deg", a.as_degrees());
+    }
+};
+
+// wchar_t formatter
+template<class T, T MinV, T MaxV, omath::AngleFlags F>
+struct std::formatter<omath::Angle<T, MinV, MaxV, F>, wchar_t> // NOLINT(*-dcl58-cpp)
+{
+    using AngleT = omath::Angle<T, MinV, MaxV, F>;
+
+    static constexpr auto parse(std::wformat_parse_context& ctx)
+    {
+        return ctx.begin();
+    }
+
+    template<class FormatContext>
+    auto format(const AngleT& a, FormatContext& ctx) const
+    {
+        static_assert(std::is_same_v<typename FormatContext::char_type, wchar_t>);
+        return std::format_to(ctx.out(), L"{}deg", a.as_degrees());
     }
 };
