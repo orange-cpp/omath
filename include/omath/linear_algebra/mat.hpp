@@ -161,15 +161,16 @@ namespace omath
 #ifdef OMATH_USE_AVX2
             if constexpr (StoreType == MatStoreType::ROW_MAJOR)
                 return avx_multiply_row_major(other);
-            if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
+            else if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
                 return avx_multiply_col_major(other);
 #else
             if constexpr (StoreType == MatStoreType::ROW_MAJOR)
                 return cache_friendly_multiply_row_major(other);
-            if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
+            else if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
                 return cache_friendly_multiply_col_major(other);
 #endif
-            std::unreachable();
+            else
+                std::unreachable();
         }
 
         constexpr Mat& operator*=(const Type& f) noexcept
