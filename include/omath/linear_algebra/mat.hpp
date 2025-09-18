@@ -380,7 +380,7 @@ namespace omath
             for (std::size_t row_index = 0; row_index < Rows; ++row_index)
                 for (std::size_t column_index = 0; column_index < Columns; ++column_index)
                 {
-                    const Type current_number = at(row_index, column_index);
+                    const Type& current_number = at(row_index, column_index);
                     for (std::size_t other_column = 0; other_column < OtherColumns; ++other_column)
                         result.at(row_index, other_column) += current_number * other.at(column_index, other_column);
                 }
@@ -395,7 +395,7 @@ namespace omath
             for (std::size_t other_column = 0; other_column < OtherColumns; ++other_column)
                 for (std::size_t column_index = 0; column_index < Columns; ++column_index)
                 {
-                    const Type current_number = other.at(column_index, other_column);
+                    const Type& current_number = other.at(column_index, other_column);
                     for (std::size_t row_index = 0; row_index < Rows; ++row_index)
                         result.at(row_index, other_column) += at(row_index, column_index) * current_number;
                 }
