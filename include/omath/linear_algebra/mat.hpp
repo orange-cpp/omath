@@ -431,11 +431,7 @@ namespace omath
                         {
                             __m256 cvec = _mm256_loadu_ps(c_col + i);
                             __m256 avec = _mm256_loadu_ps(a_col_k + i);
-#if defined(__FMA__)
                             cvec = _mm256_fmadd_ps(avec, bkjv, cvec);
-#else
-                            cvec = _mm256_add_ps(cvec, _mm256_mul_ps(avec, bkjv));
-#endif
                             _mm256_storeu_ps(c_col + i, cvec);
                         }
                         for (; i < Rows; ++i)
@@ -462,11 +458,7 @@ namespace omath
                         {
                             __m256d cvec = _mm256_loadu_pd(c_col + i);
                             __m256d avec = _mm256_loadu_pd(a_col_k + i);
-#if defined(__FMA__)
                             cvec = _mm256_fmadd_pd(avec, bkjv, cvec);
-#else
-                            cvec = _mm256_add_pd(cvec, _mm256_mul_pd(avec, bkjv));
-#endif
                             _mm256_storeu_pd(c_col + i, cvec);
                         }
                         for (; i < Rows; ++i)
@@ -508,11 +500,8 @@ namespace omath
                         {
                             __m256 cvec = _mm256_loadu_ps(c_row + j);
                             __m256 bvec = _mm256_loadu_ps(b_row + j);
-#if defined(__FMA__)
                             cvec = _mm256_fmadd_ps(bvec, aikv, cvec);
-#else
-                            cvec = _mm256_add_ps(cvec, _mm256_mul_ps(bvec, aikv));
-#endif
+
                             _mm256_storeu_ps(c_row + j, cvec);
                         }
                         for (; j < OtherColumns; ++j)
@@ -538,11 +527,8 @@ namespace omath
                         {
                             __m256d cvec = _mm256_loadu_pd(c_row + j);
                             __m256d bvec = _mm256_loadu_pd(b_row + j);
-#if defined(__FMA__)
                             cvec = _mm256_fmadd_pd(bvec, aikv, cvec);
-#else
-                            cvec = _mm256_add_pd(cvec, _mm256_mul_pd(bvec, aikv));
-#endif
+
                             _mm256_storeu_pd(c_row + j, cvec);
                         }
                         for (; j < OtherColumns; ++j)
