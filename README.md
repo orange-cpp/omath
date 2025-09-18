@@ -20,9 +20,10 @@ It provides the latest features, is highly customizable, has all for cheat devel
 
 ---
 
-**[<kbd> <br> Install <br> </kbd>][INSTALL]**
-**[<kbd> <br> Examples <br> </kbd>][EXAMPLES]**
-**[<kbd> <br> Contribute <br> </kbd>][CONTRIBUTING]**
+**[<kbd> <br> Install <br> </kbd>][INSTALL]** 
+**[<kbd> <br> Examples <br> </kbd>][EXAMPLES]** 
+**[<kbd> <br> Contribute <br> </kbd>][CONTRIBUTING]** 
+**[<kbd> <br> Donate <br> </kbd>][SPONSOR]** 
 
 ---
 
@@ -125,3 +126,4 @@ for (auto ent: apex_sdk::EntityList::GetAllEntities())
 [INSTALL]: INSTALL.md
 [CONTRIBUTING]: CONTRIBUTING.md
 [EXAMPLES]: examples
+[SPONSOR]: https://boosty.to/orangecpp/purchase/3568644?ssource=DIRECT&share=subscription_link
