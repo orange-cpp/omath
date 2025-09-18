@@ -10,7 +10,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <utility>
+
+#ifdef OMATH_USE_AVX2
 #include <immintrin.h>
+#endif
 
 namespace omath
 {
