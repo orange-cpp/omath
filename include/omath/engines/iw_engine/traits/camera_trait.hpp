@@ -12,7 +12,7 @@ namespace omath::iw_engine
     {
     public:
         [[nodiscard]]
-        static ViewAngles calc_look_at_angle(const Vector3<float>& cam_origin, const Vector3<float>& look_at) noexcept;
+        static Mat4X4 calc_look_at_mat(const Vector3<float>& cam_origin, const Vector3<float>& look_at) noexcept;
 
         [[nodiscard]]
         static Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept;

@@ -36,12 +36,12 @@ namespace omath::projection
             requires(const Vector3<float>& cam_origin, const Vector3<float>& look_at, const ViewAnglesType& angles,
                      const FieldOfView& fov, const ViewPort& viewport, float znear, float zfar) {
                 // Presence + return types
-                { T::calc_look_at_angle(cam_origin, look_at) } -> std::same_as<ViewAnglesType>;
+                { T::calc_look_at_mat(cam_origin, look_at) } -> std::same_as<MatType>;
                 { T::calc_view_matrix(angles, cam_origin) } -> std::same_as<MatType>;
                 { T::calc_projection_matrix(fov, viewport, znear, zfar) } -> std::same_as<MatType>;
 
                 // Enforce noexcept as in the trait declaration
-                requires noexcept(T::calc_look_at_angle(cam_origin, look_at));
+                requires noexcept(T::calc_look_at_mat(cam_origin, look_at));
                 requires noexcept(T::calc_view_matrix(angles, cam_origin));
                 requires noexcept(T::calc_projection_matrix(fov, viewport, znear, zfar));
             };
@@ -64,8 +64,9 @@ namespace omath::projection
 
         void look_at(const Vector3<float>& target)
         {
-            m_view_angles = TraitClass::calc_look_at_angle(m_origin, target);
-            m_view_projection_matrix = std::nullopt;
+            m_view_projection_matrix = TraitClass::calc_projection_matrix(m_field_of_view, m_view_port,
+                                                                          m_near_plane_distance, m_far_plane_distance)
+                                       * TraitClass::calc_look_at_mat(m_origin, target);
         }
 
     protected:
