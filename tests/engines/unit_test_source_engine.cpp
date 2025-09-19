@@ -5,7 +5,7 @@
 #include <omath/engines/source_engine/camera.hpp>
 #include <omath/engines/source_engine/constants.hpp>
 #include <omath/engines/source_engine/formulas.hpp>
-
+#include <random>
 
 TEST(unit_test_source_engine, ForwardVector)
 {
@@ -122,4 +122,112 @@ TEST(unit_test_source_engine, CameraSetAndGetOrigin)
     cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(50.f));
 
     EXPECT_EQ(cam.get_field_of_view().as_degrees(), 50.f);
+}
+
+TEST(unit_test_source_engine, loook_at_random_all_axis)
+{
+    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    std::uniform_real_distribution<float> dist(-500.f, 500.f);
+
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({dist(gen), dist(gen), dist(gen)}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+
+
+
+    for (int i = 0; i < 100; i++)
+    {
+        const auto position_to_look = omath::Vector3<float>{dist(gen), dist(gen), dist(gen)};
+        cam.look_at(position_to_look);
+
+        auto projected_pos = cam.world_to_view_port(position_to_look);
+
+        EXPECT_TRUE(projected_pos.has_value());
+
+        if (!projected_pos)
+            continue;
+
+        EXPECT_NEAR(projected_pos->x, 0.f, 0.00001f);
+        EXPECT_NEAR(projected_pos->y, 0.f, 0.00001f);
+    }
+}
+
+TEST(unit_test_source_engine, loook_at_random_x_axis)
+{
+    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    std::uniform_real_distribution<float> dist(-500.f, 500.f);
+
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({dist(gen), dist(gen), dist(gen)}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+
+
+
+    for (int i = 0; i < 1000; i++)
+    {
+        const auto position_to_look = omath::Vector3<float>{dist(gen), 0.f, 0.f};
+        cam.look_at(position_to_look);
+
+        auto projected_pos = cam.world_to_view_port(position_to_look);
+
+        EXPECT_TRUE(projected_pos.has_value());
+
+        if (!projected_pos)
+            continue;
+
+        EXPECT_NEAR(projected_pos->x, 0.f, 0.00001f);
+        EXPECT_NEAR(projected_pos->y, 0.f, 0.00001f);
+    }
+}
+
+TEST(unit_test_source_engine, loook_at_random_y_axis)
+{
+    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    std::uniform_real_distribution<float> dist(-500.f, 500.f);
+
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({dist(gen), dist(gen), dist(gen)}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+
+
+
+    for (int i = 0; i < 1000; i++)
+    {
+        const auto position_to_look = omath::Vector3<float>{0.f, dist(gen), 0.f};
+        cam.look_at(position_to_look);
+
+        auto projected_pos = cam.world_to_view_port(position_to_look);
+
+        EXPECT_TRUE(projected_pos.has_value());
+
+        if (!projected_pos)
+            continue;
+
+        EXPECT_NEAR(projected_pos->x, 0.f, 0.00001f);
+        EXPECT_NEAR(projected_pos->y, 0.f, 0.00001f);
+    }
+}
+
+TEST(unit_test_source_engine, loook_at_random_z_axis)
+{
+    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    std::uniform_real_distribution<float> dist(-500.f, 500.f);
+
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({dist(gen), dist(gen), dist(gen)}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+
+
+
+    for (int i = 0; i < 1000; i++)
+    {
+        const auto position_to_look = omath::Vector3<float>{0.f, 0.f, dist(gen)};
+        cam.look_at(position_to_look);
+
+        auto projected_pos = cam.world_to_view_port(position_to_look);
+
+        EXPECT_TRUE(projected_pos.has_value());
+
+        if (!projected_pos)
+            continue;
+
+        EXPECT_NEAR(projected_pos->x, 0.f, 0.00001f);
+        EXPECT_NEAR(projected_pos->y, 0.f, 0.00001f);
+    }
 }
