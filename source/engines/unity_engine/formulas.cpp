@@ -30,9 +30,9 @@ namespace omath::unity_engine
     }
     Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
-        return mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(angles.pitch)
+        return mat_rotation_axis_z<float, MatStoreType::ROW_MAJOR>(angles.roll)
                * mat_rotation_axis_y<float, MatStoreType::ROW_MAJOR>(angles.yaw)
-               * mat_rotation_axis_z<float, MatStoreType::ROW_MAJOR>(angles.roll);
+               * mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(angles.pitch);
     }
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
                                               const float far) noexcept
