@@ -113,7 +113,7 @@ TEST(unit_test_opengl_engine, loook_at_random_all_axis)
 
 
 
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 1000; i++)
     {
         const auto position_to_look = omath::Vector3<float>{dist(gen), dist(gen), dist(gen)};
         cam.look_at(position_to_look);
