@@ -113,7 +113,6 @@ TEST(unit_test_unity_engine, CameraSetAndGetOrigin)
     cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(50.f));
 
     EXPECT_EQ(cam.get_field_of_view().as_degrees(), 50.f);
-
 }
 TEST(unit_test_unity_engine, loook_at_random_all_axis)
 {
