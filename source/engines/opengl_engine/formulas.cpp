@@ -28,14 +28,13 @@ namespace omath::opengl_engine
     }
     Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
     {
-        return mat_camera_view<float, MatStoreType::COLUMN_MAJOR>(-forward_vector(angles), right_vector(angles),
-                                                                  up_vector(angles), cam_origin);
+        return mat_look_at_right_handed(cam_origin, cam_origin+forward_vector(angles), up_vector(angles));
     }
     Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
-        return mat_rotation_axis_x<float, MatStoreType::COLUMN_MAJOR>(-angles.pitch)
-               * mat_rotation_axis_y<float, MatStoreType::COLUMN_MAJOR>(-angles.yaw)
-               * mat_rotation_axis_z<float, MatStoreType::COLUMN_MAJOR>(angles.roll);
+        return mat_rotation_axis_z<float, MatStoreType::COLUMN_MAJOR>(angles.roll)
+               * mat_rotation_axis_y<float, MatStoreType::COLUMN_MAJOR>(angles.yaw)
+               * mat_rotation_axis_x<float, MatStoreType::COLUMN_MAJOR>(angles.pitch);
     }
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
                                               const float far) noexcept

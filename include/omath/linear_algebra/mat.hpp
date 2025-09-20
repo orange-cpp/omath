@@ -15,6 +15,8 @@
 #include <immintrin.h>
 #endif
 
+#undef near
+#undef far
 namespace omath
 {
     struct MatSize
