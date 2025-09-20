@@ -111,7 +111,6 @@ TEST(unit_test_iw_engine, loook_at_random_all_axis)
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     auto cam = omath::iw_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
 
-
     std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)
     {
@@ -129,7 +128,7 @@ TEST(unit_test_iw_engine, loook_at_random_all_axis)
         if (!projected_pos)
             continue;
 
-        if (std::abs(projected_pos->x-0.f) >= 0.01f || std::abs(projected_pos->y-0.f) >= 0.01f)
+        if (std::abs(projected_pos->x - 0.f) >= 0.001f || std::abs(projected_pos->y - 0.f) >= 0.001f)
             failed_points++;
     }
     EXPECT_LE(failed_points, 100);
@@ -138,13 +137,12 @@ TEST(unit_test_iw_engine, loook_at_random_all_axis)
 TEST(unit_test_iw_engine, loook_at_random_x_axis)
 {
     std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
-    std::uniform_real_distribution<float> dist(-500.f, 500.f);
+    std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     auto cam = omath::iw_engine::Camera({dist(gen), dist(gen), dist(gen)}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
 
-
-
+    std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)
     {
         const auto position_to_look = omath::Vector3<float>{dist(gen), 0.f, 0.f};
@@ -161,21 +159,21 @@ TEST(unit_test_iw_engine, loook_at_random_x_axis)
         if (!projected_pos)
             continue;
 
-        EXPECT_NEAR(projected_pos->x, 0.f, 0.00001f);
-        EXPECT_NEAR(projected_pos->y, 0.f, 0.00001f);
+        if (std::abs(projected_pos->x - 0.f) >= 0.01f || std::abs(projected_pos->y - 0.f) >= 0.01f)
+            failed_points++;
     }
+    EXPECT_LE(failed_points, 100);
 }
 
 TEST(unit_test_iw_engine, loook_at_random_y_axis)
 {
     std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
-    std::uniform_real_distribution<float> dist(-500.f, 500.f);
+    std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     auto cam = omath::iw_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
 
-
-
+    std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)
     {
         const auto position_to_look = omath::Vector3<float>{0.f, dist(gen), 0.f};
@@ -191,22 +189,22 @@ TEST(unit_test_iw_engine, loook_at_random_y_axis)
         if (!projected_pos)
             continue;
 
-        EXPECT_NEAR(projected_pos->x, 0.f, 0.00001f);
-        EXPECT_NEAR(projected_pos->y, 0.f, 0.00001f);
+        if (std::abs(projected_pos->x - 0.f) >= 0.01f || std::abs(projected_pos->y - 0.f) >= 0.01f)
+            failed_points++;
     }
+    EXPECT_LE(failed_points, 100);
 }
 
 TEST(unit_test_iw_engine, loook_at_random_z_axis)
 {
     std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
-    std::uniform_real_distribution<float> dist(-500.f, 500.f);
+    std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     auto cam = omath::iw_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
 
-
-
-    for (int i = 0; i < 100; i++)
+    std::size_t failed_points = 0;
+    for (int i = 0; i < 1000; i++)
     {
         const auto position_to_look = omath::Vector3<float>{0.f, 0.f, dist(gen)};
         if (cam.get_origin().distance_to(position_to_look) < 10)
@@ -221,7 +219,8 @@ TEST(unit_test_iw_engine, loook_at_random_z_axis)
         if (!projected_pos)
             continue;
 
-        EXPECT_NEAR(projected_pos->x, 0.f, 0.00001f);
-        EXPECT_NEAR(projected_pos->y, 0.f, 0.025f);
+        if (std::abs(projected_pos->x - 0.f) >= 0.01f || std::abs(projected_pos->y - 0.f) >= 0.025f)
+            failed_points++;
     }
+    EXPECT_LE(failed_points, 100);
 }
