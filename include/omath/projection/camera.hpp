@@ -62,12 +62,13 @@ namespace omath::projection
         {
         }
 
-    protected:
         void look_at(const Vector3<float>& target)
         {
             m_view_angles = TraitClass::calc_look_at_angle(m_origin, target);
+            m_view_projection_matrix = std::nullopt;
         }
 
+    protected:
         [[nodiscard]] Mat4X4Type calc_view_projection_matrix() const noexcept
         {
             return TraitClass::calc_projection_matrix(m_field_of_view, m_view_port, m_near_plane_distance,

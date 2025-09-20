@@ -15,6 +15,8 @@
 #include <immintrin.h>
 #endif
 
+#undef near
+#undef far
 namespace omath
 {
     struct MatSize
@@ -674,6 +676,23 @@ namespace omath
                 { 0.f,      0.f,       -static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
                 { 0.f,      0.f,       0.f,                                  1.f                             }
         };
+    }
+    template<class T = float, MatStoreType St = MatStoreType::COLUMN_MAJOR>
+   Mat<4, 4, T, St> mat_look_at_left_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)
+    {
+        const Vector3<T> f = (center - eye).normalized();
+        const Vector3<T> s = f.cross(up).normalized();
+        const Vector3<T> u = s.cross(f);
+        return mat_camera_view<T, St>(f, s, u, eye);
+    }
+
+    template<class T = float, MatStoreType St = MatStoreType::COLUMN_MAJOR>
+    Mat<4, 4, T, St>mat_look_at_right_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)
+    {
+        const Vector3<T> f = (center - eye).normalized();
+        const Vector3<T> s = f.cross(up).normalized();
+        const Vector3<T> u = s.cross(f);
+        return mat_camera_view<T, St>(-f, s, u, eye);
     }
 
 } // namespace omath
