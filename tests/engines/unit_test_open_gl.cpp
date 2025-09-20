@@ -29,7 +29,7 @@ TEST(unit_test_opengl, ForwardVectorRotationYaw)
 {
     omath::opengl_engine::ViewAngles angles;
 
-    angles.yaw = omath::opengl_engine::YawAngle::from_degrees(90.f);
+    angles.yaw = omath::opengl_engine::YawAngle::from_degrees(-90.f);
 
     const auto forward = omath::opengl_engine::forward_vector(angles);
     EXPECT_NEAR(forward.x, omath::opengl_engine::k_abs_right.x, 0.00001f);
@@ -43,7 +43,7 @@ TEST(unit_test_opengl, ForwardVectorRotationPitch)
 {
     omath::opengl_engine::ViewAngles angles;
 
-    angles.pitch = omath::opengl_engine::PitchAngle::from_degrees(-90.f);
+    angles.pitch = omath::opengl_engine::PitchAngle::from_degrees(90.f);
 
     const auto forward = omath::opengl_engine::forward_vector(angles);
     EXPECT_NEAR(forward.x, omath::opengl_engine::k_abs_up.x, 0.00001f);
