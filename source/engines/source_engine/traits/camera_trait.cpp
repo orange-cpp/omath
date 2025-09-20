@@ -8,11 +8,11 @@ namespace omath::source_engine
 
     ViewAngles CameraTrait::calc_look_at_angle(const Vector3<float>& cam_origin, const Vector3<float>& look_at) noexcept
     {
-        const auto distance = cam_origin.distance_to(look_at);
-        const auto delta = cam_origin - look_at;
+        const auto direction = (look_at - cam_origin).normalized();
 
-        return {PitchAngle::from_radians(-std::asin(delta.z / distance)),
-                YawAngle::from_radians(std::atan2(delta.y, delta.x)), RollAngle::from_radians(0.f)};
+
+        return {PitchAngle::from_radians(-std::asin(direction.z)),
+                YawAngle::from_radians(std::atan2(direction.y, direction.x)), RollAngle::from_radians(0.f)};
     }
     Mat4X4 CameraTrait::calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
     {
