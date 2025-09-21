@@ -35,11 +35,11 @@ jobs:
 
       - name: Configure (cmake --preset)
         shell: bash
-        run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON
+        run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF
 
       - name: Build
         shell: bash
-        run: cmake --build cmake-build/build/linux-release --target all
+        run: cmake --build cmake-build/build/linux-release --target unit_tests omath
 
       - name: Run unit_tests
         shell: bash
@@ -68,11 +68,11 @@ jobs:
 
       - name: Configure (cmake --preset)
         shell: bash
-        run: cmake --preset windows-release -DOMATH_BUILD_TESTS=ON
+        run: cmake --preset windows-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF
 
       - name: Build
         shell: bash
-        run: cmake --build cmake-build/build/windows-release --target all
+        run: cmake --build cmake-build/build/windows-release --target unit_tests omath
 
       - name: Run unit_tests.exe
         shell: bash

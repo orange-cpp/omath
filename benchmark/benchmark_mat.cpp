@@ -4,7 +4,6 @@
 #include <benchmark/benchmark.h>
 
 #include <omath/omath.hpp>
-#include <chrono>
 using namespace omath;
 
 
@@ -17,7 +16,7 @@ void mat_float_multiplication_col_major(benchmark::State& state)
     b.set(7.f);
 
 
-    for (auto _ : state)
+    for ([[maybe_unused]] const auto _ : state)
         std::ignore = a * b;
 }
 void mat_float_multiplication_row_major(benchmark::State& state)
@@ -29,7 +28,7 @@ void mat_float_multiplication_row_major(benchmark::State& state)
     b.set(7.f);
 
 
-    for (auto _ : state)
+    for ([[maybe_unused]] const auto _ : state)
         std::ignore = a * b;
 }
 
@@ -42,7 +41,7 @@ void mat_double_multiplication_row_major(benchmark::State& state)
     b.set(7.f);
 
 
-    for (auto _ : state)
+    for ([[maybe_unused]] const auto _ : state)
         std::ignore = a * b;
 }
 
@@ -55,7 +54,7 @@ void mat_double_multiplication_col_major(benchmark::State& state)
     b.set(7.f);
 
 
-    for (auto _ : state)
+    for ([[maybe_unused]] const auto _ : state)
         std::ignore = a * b;
 }
 
