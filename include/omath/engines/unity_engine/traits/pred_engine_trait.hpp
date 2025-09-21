@@ -62,17 +62,15 @@ namespace omath::unity_engine
         [[nodiscard]]
         static float calc_direct_pitch_angle(const Vector3<float>& origin, const Vector3<float>& view_to) noexcept
         {
-            const auto distance = origin.distance_to(view_to);
-            const auto delta = view_to - origin;
-
-            return angles::radians_to_degrees(std::asin(delta.y / distance));
+            const auto direction = (view_to - origin).normalized();
+            return angles::radians_to_degrees(std::asin(direction.y));
         }
         [[nodiscard]]
         static float calc_direct_yaw_angle(const Vector3<float>& origin, const Vector3<float>& view_to) noexcept
         {
-            const auto delta = view_to - origin;
+            const auto direction = (view_to - origin).normalized();
 
-            return angles::radians_to_degrees(std::atan2(delta.z, delta.x));
+            return angles::radians_to_degrees(std::atan2(direction.x, direction.z));
         };
     };
 } // namespace omath::unity_engine
