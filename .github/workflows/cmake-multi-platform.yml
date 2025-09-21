@@ -39,7 +39,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: cmake --build cmake-build/build/linux-release --target all
+        run: cmake --build cmake-build/build/linux-release --target unit_test omath
 
       - name: Run unit_tests
         shell: bash
@@ -72,7 +72,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: cmake --build cmake-build/build/windows-release --target all
+        run: cmake --build cmake-build/build/windows-release --target unit_test omath
 
       - name: Run unit_tests.exe
         shell: bash
