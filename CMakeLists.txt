@@ -98,9 +98,8 @@ endif ()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
-if (OMATH_BUILD_TESTS OR OMATH_BUILD_BENCHMARK)
-    add_subdirectory(extlibs)
-endif ()
+add_subdirectory(extlibs)
+
 
 if (OMATH_BUILD_TESTS)
     add_subdirectory(tests)
