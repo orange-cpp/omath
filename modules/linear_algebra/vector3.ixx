@@ -286,7 +286,7 @@ export namespace omath
     };
 } // namespace omath
 
-export template<> struct std::hash<omath::Vector3<float>>
+export template<Ц> struct std::hash<omath::Vector3<float>>
 {
     std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
     {

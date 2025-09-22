@@ -2,11 +2,15 @@
 // Created by Vlad on 9/3/2025.
 //
 module;
-#include <vector>
-#include <unordered_map>
+#include <algorithm>
+#include <cstdint>
 #include <expected>
-#include <string>
+#include <ranges>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 export module omath.pathfinding.navigation_mesh;
 export import omath.vector3;
 
@@ -67,7 +71,7 @@ export namespace omath::pathfinding
             return raw;
         }
 
-        void deserialize(const std::vector<uint8_t>& raw) noexcept
+        void deserialize(const std::vector<std::uint8_t>& raw) noexcept
         {
             auto load_from_vector = [](const std::vector<uint8_t>& vec, size_t& offset, auto& value)
             {

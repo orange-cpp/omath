@@ -11,6 +11,7 @@ module;
 #include <stdexcept>
 #include <utility>
 #include <format>
+#include <cmath>
 
 export module omath.mat;
 

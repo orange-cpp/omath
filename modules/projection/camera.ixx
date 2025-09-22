@@ -12,6 +12,7 @@ export module omath.camera;
 export import omath.vector3;
 export import omath.angle;
 export import omath.error_codes;
+export import omath.mat;
 
 export namespace omath::projection
 {

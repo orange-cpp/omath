@@ -45,7 +45,7 @@ export namespace omath::pathfinding
 
             while (!open_list.empty())
             {
-                auto current_it = get_perfect_node(open_list, end_vertex);
+                const auto current_it = get_perfect_node(open_list, end_vertex);
 
                 const auto current = current_it->first;
                 const auto current_node = current_it->second;
@@ -98,9 +98,9 @@ export namespace omath::pathfinding
             std::ranges::reverse(path);
             return path;
         }
-
+        using MapType = std::unordered_map<Vector3<float>, PathNode>;
         [[nodiscard]]
-        static auto get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
+        static MapType::const_iterator get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
                                      const Vector3<float>& end_vertex) noexcept
         {
             return std::ranges::min_element(open_list,

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 4.1)
 
 project(omath VERSION 3.5.0 LANGUAGES CXX)
 
@@ -95,9 +95,10 @@ if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
     )
 endif ()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(${PROJECT_NAME} PRIVATE -mavx2 -mfma)
-endif ()
+target_compile_options(omath PUBLIC
+        $<$<CXX_COMPILER_ID:Clang>:-mavx2 -mfma>
+        $<$<CXX_COMPILER_ID:GNU>:-mavx2 -mfma>
+)
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
