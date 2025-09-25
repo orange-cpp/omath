@@ -4,5 +4,6 @@ if (OMATH_BUILD_TESTS)
 endif ()
 
 if (OMATH_BUILD_BENCHMARK)
-add_subdirectory(benchmark)
-endif()
+    set(BENCHMARK_ENABLE_TESTING OFF)
+    add_subdirectory(benchmark)
+endif ()
