@@ -26,6 +26,7 @@
 
 // 3D primitives
 #include "omath/3d_primitives/box.hpp"
+#include "omath/3d_primitives/plane.hpp"
 
 // Collision detection
 #include "omath/collision/line_tracer.hpp"
