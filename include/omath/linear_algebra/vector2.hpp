@@ -242,9 +242,18 @@ struct std::formatter<omath::Vector2<Type>> // NOLINT(*-dcl58-cpp)
     {
         return ctx.begin();
     }
+
+    template<class FormatContext>
     [[nodiscard]]
-    static auto format(const omath::Vector2<Type>& vec, std::format_context& ctx)
+    static auto format(const omath::Vector2<Type>& vec, FormatContext& ctx)
     {
-        return std::format_to(ctx.out(), "[{}, {}]", vec.x, vec.y);
+        if constexpr (std::is_same_v<typename FormatContext::char_type, char>)
+            return std::format_to(ctx.out(), "[{}, {}]", vec.x, vec.y);
+
+        if constexpr (std::is_same_v<typename FormatContext::char_type, wchar_t>)
+            return std::format_to(ctx.out(), L"[{}, {}]", vec.x, vec.y);
+
+        if constexpr (std::is_same_v<typename FormatContext::char_type, char8_t>)
+            return std::format_to(ctx.out(), u8"[{}, {}]", vec.x, vec.y);
     }
 };
