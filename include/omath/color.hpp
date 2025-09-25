@@ -179,20 +179,20 @@ struct std::formatter<omath::Color> // NOLINT(*-dcl58-cpp)
     [[nodiscard]]
     static auto format(const omath::Color& col, FormatContext& ctx)
     {
-        if constexpr  (std::is_same_v<std::format_context::char_type, char>)
+        if constexpr  (std::is_same_v<typename FormatContext::char_type, char>)
             return std::format_to(ctx.out(), "[r:{}, g:{}, b:{}, a:{}]",
                 static_cast<int>(col.x * 255.f),
                 static_cast<int>(col.y * 255.f),
                 static_cast<int>(col.z * 255.f),
                 static_cast<int>(col.w * 255.f));
-        if constexpr  (std::is_same_v<std::format_context::char_type, wchar_t>)
+        if constexpr  (std::is_same_v<typename FormatContext::char_type, wchar_t>)
             return std::format_to(ctx.out(), L"[r:{}, g:{}, b:{}, a:{}]",
                 static_cast<int>(col.x * 255.f),
                 static_cast<int>(col.y * 255.f),
                 static_cast<int>(col.z * 255.f),
                 static_cast<int>(col.w * 255.f));
 
-        if constexpr  (std::is_same_v<std::format_context::char_type, char8_t>)
+        if constexpr  (std::is_same_v<typename FormatContext::char_type, char8_t>)
             return std::format_to(ctx.out(), u8"[r:{}, g:{}, b:{}, a:{}]",
                 static_cast<int>(col.x * 255.f),
                 static_cast<int>(col.y * 255.f),
