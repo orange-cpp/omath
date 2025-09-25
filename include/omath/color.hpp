@@ -164,6 +164,26 @@ namespace omath
             return {to_im_vec4()};
         }
 #endif
+        [[nodiscard]] std::string to_string() const noexcept
+        {
+            return std::format("[r:{}, g:{}, b:{}, a:{}]",
+                            static_cast<int>(x * 255.f),
+                            static_cast<int>(y * 255.f),
+                            static_cast<int>(z * 255.f),
+                            static_cast<int>(w * 255.f));
+        }
+        [[nodiscard]] std::wstring to_wstring() const noexcept
+        {
+            const auto ascii_string = to_string();
+            return {ascii_string.cbegin(), ascii_string.cend()};
+        }
+
+        // ReSharper disable once CppInconsistentNaming
+        [[nodiscard]] std::u8string to_u8string() const noexcept
+        {
+            const auto ascii_string = to_string();
+            return {ascii_string.cbegin(), ascii_string.cend()};
+        }
     };
 } // namespace omath
 template<>
@@ -179,25 +199,14 @@ struct std::formatter<omath::Color> // NOLINT(*-dcl58-cpp)
     [[nodiscard]]
     static auto format(const omath::Color& col, FormatContext& ctx)
     {
-        if constexpr  (std::is_same_v<std::format_context::char_type, char>)
-            return std::format_to(ctx.out(), "[r:{}, g:{}, b:{}, a:{}]",
-                static_cast<int>(col.x * 255.f),
-                static_cast<int>(col.y * 255.f),
-                static_cast<int>(col.z * 255.f),
-                static_cast<int>(col.w * 255.f));
-        if constexpr  (std::is_same_v<std::format_context::char_type, wchar_t>)
-            return std::format_to(ctx.out(), L"[r:{}, g:{}, b:{}, a:{}]",
-                static_cast<int>(col.x * 255.f),
-                static_cast<int>(col.y * 255.f),
-                static_cast<int>(col.z * 255.f),
-                static_cast<int>(col.w * 255.f));
+        if constexpr (std::is_same_v<typename FormatContext::char_type, char>)
+            return std::format_to(ctx.out(), "{}", col.to_string());
+        if constexpr (std::is_same_v<typename FormatContext::char_type, wchar_t>)
+            return std::format_to(ctx.out(), L"{}", col.to_wstring());
 
-        if constexpr  (std::is_same_v<std::format_context::char_type, char8_t>)
-            return std::format_to(ctx.out(), u8"[r:{}, g:{}, b:{}, a:{}]",
-                static_cast<int>(col.x * 255.f),
-                static_cast<int>(col.y * 255.f),
-                static_cast<int>(col.z * 255.f),
-                static_cast<int>(col.w * 255.f));
-        std::unreachable();
+        if constexpr (std::is_same_v<typename FormatContext::char_type, char8_t>)
+            return std::format_to(ctx.out(), u8"{}", col.to_u8string());
+
+        return std::unreachable();
     }
 };

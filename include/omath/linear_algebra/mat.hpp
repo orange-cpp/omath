@@ -329,6 +329,21 @@ namespace omath
         }
 
         [[nodiscard]]
+        std::wstring to_wstring() const noexcept
+        {
+            const auto ascii_string = to_string();
+            return {ascii_string.cbegin(), ascii_string.cend()};
+        }
+
+        [[nodiscard]]
+        // ReSharper disable once CppInconsistentNaming
+        std::u8string to_u8string() const noexcept
+        {
+            const auto ascii_string = to_string();
+            return {ascii_string.cbegin(), ascii_string.cend()};
+        }
+
+        [[nodiscard]]
         bool operator==(const Mat& mat) const
         {
             return m_data == mat.m_data;
@@ -706,9 +721,18 @@ struct std::formatter<omath::Mat<Rows, Columns, Type, StoreType>> // NOLINT(*-dc
     {
         return ctx.begin();
     }
+
+    template<class FormatContext>
     [[nodiscard]]
-    static auto format(const MatType& mat, std::format_context& ctx)
+    static auto format(const MatType& mat, FormatContext& ctx)
     {
-        return std::format_to(ctx.out(), "{}", mat.to_string());
+        if constexpr (std::is_same_v<typename FormatContext::char_type, char>)
+            return std::format_to(ctx.out(), "{}", mat.to_string());
+
+        if constexpr (std::is_same_v<typename FormatContext::char_type, wchar_t>)
+            return std::format_to(ctx.out(), L"{}", mat.to_wstring());
+
+        if constexpr (std::is_same_v<typename FormatContext::char_type, char8_t>)
+            return std::format_to(ctx.out(), u8"{}", mat.to_u8string());
     }
 };
