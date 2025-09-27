@@ -42,7 +42,7 @@ It provides the latest features, is highly customizable, has all for cheat devel
  </a>
 </div>
 
-## 👁‍🗨 Features
+# Features
 - **Efficiency**: Optimized for performance, ensuring quick computations using AVX2.
 - **Versatility**: Includes a wide array of mathematical functions and algorithms.
 - **Ease of Use**: Simplified interface for convenient integration into various projects.
@@ -51,7 +51,10 @@ It provides the latest features, is highly customizable, has all for cheat devel
 - **Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
 - **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
 - **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
-
+- **Engine support**: Supports coordinate systems of Source, Unity, Unreal, IWEngine and canonical OpenGL.
+- **Cross platform**: Supports Windows, MacOS and Linux.
+<div align = center>
+ 
 # Gallery
 
 <br>
@@ -73,48 +76,9 @@ It provides the latest features, is highly customizable, has all for cheat devel
 <br>
 <br>
 
+</div>
 
-
-## Supported Render Pipelines
-| ENGINE   | SUPPORT |
-|----------|---------|
-| Source   | ✅YES    |
-| Unity    | ✅YES    |
-| IWEngine | ✅YES    |
-| OpenGL   | ✅YES    |
-| Unreal   | ✅YES    |
-
-## Supported Operating Systems
-
-| OS             | SUPPORT |
-|----------------|---------|
-| Windows 10/11  | ✅YES    |
-| Linux          | ✅YES    |
-| Darwin (MacOS) | ✅YES    |
-
-## ❔ Usage
-ESP example
-```c++
-omath::source_engine::Camera cam{localPlayer.GetCameraOrigin(),
-                                 localPlayer.GetAimPunch(),
-                                 {1920.f, 1080.f},
-                                 localPlayer.GetFieldOfView(),
-                                 0.01.f, 30000.f};
-
-for (auto ent: apex_sdk::EntityList::GetAllEntities())
-{
-    const auto bottom = cam.world_to_screen(ent.GetOrigin());
-    const auto top = cam.world_to_screen(ent.GetBonePosition(8) + omath::Vector3<float>{0, 0, 10});
-
-    const auto ent_health = ent.GetHealth();
-
-    if (!top || !bottom || ent_health <= 0)
-        continue;
-    // esp rendering...
-}
-```
-
-## 💘 Acknowledgments
+# 💘 Acknowledgments
 -  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
 
 <!----------------------------------{ Images }--------------------------------->
