@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 4.1)
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 project(omath VERSION 3.5.0 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
@@ -11,7 +12,7 @@ option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
 option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types to imgui types" OFF)
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
-option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OFF)
+option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" ON)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
@@ -89,14 +90,12 @@ if (OMATH_USE_UNITY_BUILD)
             UNITY_BUILD_BATCH_SIZE 20)
 endif ()
 
-if (MSVC)
-    if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
-        set_target_properties(${PROJECT_NAME} PROPERTIES
-                MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    elseif(DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
-        set_target_properties(${PROJECT_NAME} PROPERTIES
-                MSVC_RUNTIME_LIBRARY "${CMAKE_MSVC_RUNTIME_LIBRARY}")
-    endif()
+if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+elseif(DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+            MSVC_RUNTIME_LIBRARY "${CMAKE_MSVC_RUNTIME_LIBRARY}")
 endif()
 
 
