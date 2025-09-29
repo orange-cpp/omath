@@ -128,19 +128,19 @@ endif ()
 # Install the library
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}Targets
-        ARCHIVE DESTINATION lib COMPONENT ${PROJECT_NAME}   # For static libraries
-        LIBRARY DESTINATION lib COMPONENT ${PROJECT_NAME}   # For shared libraries
-        RUNTIME DESTINATION bin COMPONENT ${PROJECT_NAME}   # For executables (on Windows)
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
         FILE_SET cxx_modules DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/modules
-        CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}/cxx/bmi
+        CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}/cxx/bmi/$<CONFIG>
 )
 
-# Export omath target for CMake find_package support, also under omath_component
+# Export metadata next to your package config; give CMake a *relative* subdir
 install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
         NAMESPACE ${PROJECT_NAME}::
-        DESTINATION lib/cmake/${PROJECT_NAME} COMPONENT ${PROJECT_NAME}
-        CXX_MODULES_DIRECTORY ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/cxx-modules
+        DESTINATION lib/cmake/${PROJECT_NAME}
+        CXX_MODULES_DIRECTORY cxx-modules
 )
 
 
