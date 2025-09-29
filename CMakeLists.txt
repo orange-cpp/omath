@@ -30,7 +30,6 @@ message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY
 message(STATUS "[${PROJECT_NAME}]: MSVC Runtime ${CMAKE_MSVC_RUNTIME_LIBRARY}")
 file(GLOB_RECURSE OMATH_MODULES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.ixx")
 
-add_compile_options(/MT)
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(${PROJECT_NAME} SHARED)
 else ()
