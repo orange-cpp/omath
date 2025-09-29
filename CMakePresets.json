@@ -39,7 +39,6 @@
       "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
       "installDir": "${sourceDir}/cmake-build/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++"
       },
       "condition": {
@@ -71,7 +70,6 @@
       "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
       "installDir": "${sourceDir}/cmake-build/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++"
       },
       "condition": {
