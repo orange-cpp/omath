@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.1)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 project(omath VERSION 3.5.0 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
