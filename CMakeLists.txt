@@ -89,11 +89,16 @@ if (OMATH_USE_UNITY_BUILD)
             UNITY_BUILD_BATCH_SIZE 20)
 endif ()
 
-if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-    )
-endif ()
+if (MSVC)
+    if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+                MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    elseif(DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+                MSVC_RUNTIME_LIBRARY "${CMAKE_MSVC_RUNTIME_LIBRARY}")
+    endif()
+endif()
+
 
 target_compile_options(omath PUBLIC
         $<$<CXX_COMPILER_ID:Clang>:-mavx2 -mfma>
@@ -132,17 +137,16 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin
         FILE_SET cxx_modules DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/modules
-        CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}/cxx/bmi/$<CONFIG>
+        CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}/cxx/bmi/$<CONFIG>  # <— config-split
 )
 
-# Export metadata next to your package config; give CMake a *relative* subdir
+# Use a RELATIVE directory for module metadata beside the config files
 install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
         NAMESPACE ${PROJECT_NAME}::
         DESTINATION lib/cmake/${PROJECT_NAME}
         CXX_MODULES_DIRECTORY cxx-modules
 )
-
 
 # Generate the omathConfigVersion.cmake file
 write_basic_package_version_file(
