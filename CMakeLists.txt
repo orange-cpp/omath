@@ -123,13 +123,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_definitions(${PROJECT_NAME} INTERFACE NOMINMAX)
 endif ()
 
-target_include_directories(${PROJECT_NAME}
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>   # Use this path when building the project
-        $<INSTALL_INTERFACE:include>                             # Use this path when the project is installed
-)
-
-
 # Installation rules
 
 # Install the library
@@ -141,9 +134,6 @@ install(TARGETS ${PROJECT_NAME}
         FILE_SET cxx_modules DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/modules
         CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}/cxx/bmi
 )
-
-# Install headers as part of omath_component
-install(DIRECTORY include/ DESTINATION include COMPONENT ${PROJECT_NAME})
 
 # Export omath target for CMake find_package support, also under omath_component
 install(EXPORT ${PROJECT_NAME}Targets
