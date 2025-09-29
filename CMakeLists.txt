@@ -27,7 +27,7 @@ message(STATUS "[${PROJECT_NAME}]: Example projects ${OMATH_BUILD_EXAMPLES}")
 message(STATUS "[${PROJECT_NAME}]: AVX2 feature status ${OMATH_USE_AVX2}")
 message(STATUS "[${PROJECT_NAME}]: ImGUI integration feature status ${OMATH_IMGUI_INTEGRATION}")
 message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY}")
-message(STATUS "[${PROJECT_NAME}]: MSVC Runtime MultiThreaded")
+message(STATUS "[${PROJECT_NAME}]: MSVC Runtime ${CMAKE_MSVC_RUNTIME_LIBRARY}")
 file(GLOB_RECURSE OMATH_MODULES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.ixx")
 
 
@@ -92,7 +92,7 @@ endif ()
 
 if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
     set_target_properties(${PROJECT_NAME} PROPERTIES
-            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+            MSVC_RUNTIME_LIBRARY "MultiThreaded")
 elseif(DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
     set_target_properties(${PROJECT_NAME} PROPERTIES
             MSVC_RUNTIME_LIBRARY "${CMAKE_MSVC_RUNTIME_LIBRARY}")
