@@ -64,7 +64,7 @@ if (OMATH_IMGUI_INTEGRATION)
     endif ()
 
 endif ()
-
+target_compile_definitions(${PROJECT_NAME} PUBLIC /MT)
 if (OMATH_USE_AVX2)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_USE_AVX2)
 endif ()
