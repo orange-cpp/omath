@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 4.1)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+
 project(omath VERSION 3.5.0 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
-
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 option(OMATH_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
@@ -30,7 +30,7 @@ message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY
 message(STATUS "[${PROJECT_NAME}]: MSVC Runtime ${CMAKE_MSVC_RUNTIME_LIBRARY}")
 file(GLOB_RECURSE OMATH_MODULES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.ixx")
 
-
+add_compile_options(/MT)
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(${PROJECT_NAME} SHARED)
 else ()
