@@ -2,14 +2,13 @@
 // Created by Vlad on 3/22/2025.
 //
 
-#pragma once
+export module omath.unreal_engine.constants;
+export import omath.linear_algebra.vector3;
+export import omath.linear_algebra.mat;
+export import omath.trigonometry.angle;
+export import omath.trigonometry.view_angles;
 
-#include "omath/linear_algebra/mat.hpp"
-#include "omath/linear_algebra/vector3.hpp"
-#include <omath/angle.hpp>
-#include <omath/view_angles.hpp>
-
-namespace omath::unreal_engine
+export namespace omath::unreal_engine
 {
     constexpr Vector3<float> k_abs_up = {0, 0, 1};
     constexpr Vector3<float> k_abs_right = {0, 1, 0};

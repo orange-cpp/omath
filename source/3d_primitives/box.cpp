@@ -6,8 +6,8 @@ module;
 
 module omath.primitives_3d.box;
 
-export import omath.collision.triangle;
-export import omath.linear_algebra.vector3;
+import omath.collision.triangle;
+import omath.linear_algebra.vector3;
 
 namespace omath::primitives
 {

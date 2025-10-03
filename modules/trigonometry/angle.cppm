@@ -174,8 +174,6 @@ export namespace omath
             return *this;
         }
 
-        [[nodiscard]]
-        constexpr std::partial_ordering operator<=>(const Angle& other) const noexcept = default;
 
         constexpr Angle& operator-=(const Angle& other) noexcept
         {

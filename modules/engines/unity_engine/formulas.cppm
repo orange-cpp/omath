@@ -2,10 +2,10 @@
 // Created by Vlad on 3/22/2025.
 //
 
-#pragma once
-#include "omath/engines/unity_engine/constants.hpp"
+export module omath.unity_egnine.formulas;
+export import omath.unity_egnine.constants;
 
-namespace omath::unity_engine
+export namespace omath::unity_engine
 {
     [[nodiscard]]
     Vector3<float> forward_vector(const ViewAngles& angles) noexcept;

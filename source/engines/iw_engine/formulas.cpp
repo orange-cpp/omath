@@ -1,6 +1,7 @@
 //
 // Created by Vlad on 3/19/2025.
 //
+module;
 #include <cmath>
 module omath.iw_engine.formulas;
 namespace omath::iw_engine

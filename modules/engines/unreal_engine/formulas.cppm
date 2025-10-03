@@ -2,10 +2,10 @@
 // Created by Vlad on 3/22/2025.
 //
 
-#pragma once
-#include "omath/engines/unreal_engine/constants.hpp"
+export module omath.unreal_engine.formulas;
+export import omath.unreal_engine.constants;
 
-namespace omath::unreal_engine
+export namespace omath::unreal_engine
 {
     [[nodiscard]]
     Vector3<float> forward_vector(const ViewAngles& angles) noexcept;

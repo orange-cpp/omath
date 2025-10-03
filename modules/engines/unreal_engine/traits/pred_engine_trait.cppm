@@ -1,13 +1,15 @@
 //
 // Created by Vlad on 8/6/2025.
 //
-#pragma once
-#include "omath/engines/unity_engine/formulas.hpp"
-#include "omath/projectile_prediction/projectile.hpp"
-#include "omath/projectile_prediction/target.hpp"
+module;
+#include <cmath>
 #include <optional>
+export module omath.unreal_engine.pred_engine_trait;
+export import omath.unreal_engine.formulas;
+export import omath.projectile_prediction.target;
+export import omath.projectile_prediction.projectile;
 
-namespace omath::unity_engine
+export namespace omath::unreal_engine
 {
     class PredEngineTrait final
     {
@@ -55,7 +57,7 @@ namespace omath::unity_engine
             const auto delta2d = calc_vector_2d_distance(predicted_target_position - projectile.m_origin);
             const auto height = delta2d * std::tan(angles::degrees_to_radians(projectile_pitch.value()));
 
-            return {predicted_target_position.x, predicted_target_position.y + height, projectile.m_origin.z};
+            return {predicted_target_position.x, predicted_target_position.y, projectile.m_origin.z + height};
         }
         // Due to specification of maybe_calculate_projectile_launch_pitch_angle, pitch angle must be:
         // 89 look up, -89 look down
@@ -63,14 +65,15 @@ namespace omath::unity_engine
         static float calc_direct_pitch_angle(const Vector3<float>& origin, const Vector3<float>& view_to) noexcept
         {
             const auto direction = (view_to - origin).normalized();
-            return angles::radians_to_degrees(std::asin(direction.y));
+
+            return angles::radians_to_degrees(std::asin(direction.z));
         }
         [[nodiscard]]
         static float calc_direct_yaw_angle(const Vector3<float>& origin, const Vector3<float>& view_to) noexcept
         {
             const auto direction = (view_to - origin).normalized();
 
-            return angles::radians_to_degrees(std::atan2(direction.x, direction.z));
+            return angles::radians_to_degrees(std::atan2(direction.y, direction.x));
         };
     };
-} // namespace omath::unity_engine
+} // namespace omath::unreal_engine

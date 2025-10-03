@@ -2,11 +2,11 @@
 // Created by Vlad on 8/10/2025.
 //
 
-#pragma once
-#include "omath/engines/unity_engine/formulas.hpp"
-#include "omath/projection/camera.hpp"
+export module omath.unity_engine.camera_trait;
+export import omath.unity_egnine.constants;
+export import omath.projection.camera;
 
-namespace omath::unity_engine
+export namespace omath::unity_engine
 {
     class CameraTrait final
     {

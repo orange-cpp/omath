@@ -1,12 +1,14 @@
 //
 // Created by Vlad on 8/10/2025.
 //
+module;
 
-#pragma once
-#include "omath/engines/unreal_engine/formulas.hpp"
-#include "omath/projection/camera.hpp"
+export module omath.unreal_engine.camera_trait;
+export import omath.unreal_engine.constants;
+export import omath.projection.camera;
 
-namespace omath::unreal_engine
+
+export namespace omath::unreal_engine
 {
     class CameraTrait final
     {

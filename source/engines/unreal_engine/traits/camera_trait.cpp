@@ -1,7 +1,11 @@
 //
 // Created by Vlad on 8/11/2025.
 //
-#include "omath/engines/unreal_engine/traits/camera_trait.hpp"
+module;
+#include <cmath>
+
+module omath.unreal_engine.camera_trait;
+import omath.unreal_engine.formulas;
 
 namespace omath::unreal_engine
 {

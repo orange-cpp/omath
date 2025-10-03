@@ -1,7 +1,11 @@
 //
 // Created by Vlad on 8/11/2025.
 //
-#include "omath/engines/unity_engine/traits/camera_trait.hpp"
+module;
+#include <cmath>
+
+module omath.unity_engine.camera_trait;
+import omath.unity_egnine.formulas;
 
 namespace omath::unity_engine
 {
