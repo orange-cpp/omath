@@ -3,7 +3,7 @@
 //
 #include <gtest/gtest.h>
 import omath.utility.color;
-
+import omath.linear_algebra.vector4;
 
 using namespace omath;
 
