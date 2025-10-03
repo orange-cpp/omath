@@ -13,7 +13,7 @@ export module omath.utility.color;
 import omath.linear_algebra.vector4;
 
 
-namespace omath
+export namespace omath
 {
     struct Hsv
     {

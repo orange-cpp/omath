@@ -1,7 +1,7 @@
 //
 // Created by Vlad on 3/22/2025.
 //
-export module omath.unity_egnine.constants;
+export module omath.unity_engine.constants;
 export import omath.linear_algebra.vector3;
 export import omath.linear_algebra.mat;
 export import omath.trigonometry.angle;

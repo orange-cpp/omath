@@ -10,6 +10,7 @@ export module omath.projectile_prediction.engine_legacy;
 export import omath.projectile_prediction.projectile;
 export import omath.projectile_prediction.target;
 export import omath.projectile_prediction.engine_interface;
+export import omath.source_engine.pred_engine_trait;
 import omath.trigonometry.angle;
 
 export namespace omath::projectile_prediction

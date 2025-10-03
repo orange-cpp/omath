@@ -5,7 +5,7 @@ module;
 #include <cmath>
 #include <optional>
 export module omath.unity_engine.pred_engine_trait;
-export import omath.unity_egnine.formulas;
+export import omath.unity_engine.formulas;
 export import omath.projectile_prediction.target;
 export import omath.projectile_prediction.projectile;
 

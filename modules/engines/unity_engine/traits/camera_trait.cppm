@@ -3,7 +3,7 @@
 //
 
 export module omath.unity_engine.camera_trait;
-export import omath.unity_egnine.constants;
+export import omath.unity_engine.constants;
 export import omath.projection.camera;
 
 export namespace omath::unity_engine

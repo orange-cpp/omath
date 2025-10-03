@@ -174,6 +174,28 @@ export namespace omath
             return *this;
         }
 
+        [[nodiscard]]
+        constexpr bool operator<(const Angle& other) const
+        {
+            return m_angle < other.m_angle;
+        }
+
+        [[nodiscard]]
+        constexpr bool operator>(const Angle& other) const
+        {
+            return m_angle > other.m_angle;
+        }
+
+        [[nodiscard]]
+        constexpr bool operator<=(const Angle& other) const
+        {
+            return m_angle <= other.m_angle;
+        }
+        [[nodiscard]]
+        constexpr bool operator>=(const Angle& other) const
+        {
+            return m_angle >= other.m_angle;
+        }
 
         constexpr Angle& operator-=(const Angle& other) noexcept
         {

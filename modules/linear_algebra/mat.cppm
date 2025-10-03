@@ -351,7 +351,11 @@ export namespace omath
         [[nodiscard]]
         bool operator==(const Mat& mat) const
         {
-            return m_data == mat.m_data;
+            for (size_t i = 0; i < Rows; ++i)
+                for (size_t j = 0; j < Columns; ++j)
+                    if (at(i, j) != mat.at(i, j))
+                        return false;
+            return true;
         }
 
         [[nodiscard]]

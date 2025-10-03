@@ -6,7 +6,7 @@ export import omath.projection.camera;
 export import omath.iw_engine.constants;
 export import omath.iw_engine.camera_trait;
 
-namespace omath::iw_engine
+export namespace omath::iw_engine
 {
     using Camera =  projection::Camera<Mat4X4, ViewAngles, CameraTrait>;
 } // namespace omath::iw_engine

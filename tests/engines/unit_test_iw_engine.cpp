@@ -2,9 +2,11 @@
 // Created by Vlad on 3/17/2025.
 //
 #include <gtest/gtest.h>
-#include <omath/engines/iw_engine/camera.hpp>
-#include <omath/engines/iw_engine/constants.hpp>
-#include <omath/engines/iw_engine/formulas.hpp>
+import omath.iw_engine.constants;
+import omath.iw_engine.formulas;
+import omath.iw_engine.camera;
+
+
 #include <random>
 
 TEST(unit_test_iw_engine, ForwardVector)

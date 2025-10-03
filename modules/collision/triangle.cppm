@@ -5,7 +5,7 @@ module;
 #include <cmath>
 
 export module omath.collision.triangle;
-import omath.linear_algebra.vector3;
+export import omath.linear_algebra.vector3;
 
 export namespace omath
 {

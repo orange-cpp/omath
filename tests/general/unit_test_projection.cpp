@@ -3,8 +3,9 @@
 //
 #include <complex>
 #include <gtest/gtest.h>
-#include <omath/engines/source_engine/camera.hpp>
-#include <omath/projection/camera.hpp>
+import omath.trigonometry.angle;
+import omath.source_engine.camera;
+
 #include <print>
 
 TEST(UnitTestProjection, Projection)

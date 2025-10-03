@@ -3,7 +3,7 @@
 //
 module;
 #include <cmath>
-module omath.unity_egnine.formulas;
+module omath.unity_engine.formulas;
 
 namespace omath::unity_engine
 {

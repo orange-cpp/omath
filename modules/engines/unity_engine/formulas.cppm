@@ -2,8 +2,8 @@
 // Created by Vlad on 3/22/2025.
 //
 
-export module omath.unity_egnine.formulas;
-export import omath.unity_egnine.constants;
+export module omath.unity_engine.formulas;
+export import omath.unity_engine.constants;
 
 export namespace omath::unity_engine
 {

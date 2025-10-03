@@ -5,7 +5,7 @@ module;
 #include <cmath>
 
 module omath.unity_engine.camera_trait;
-import omath.unity_egnine.formulas;
+import omath.unity_engine.formulas;
 
 namespace omath::unity_engine
 {
