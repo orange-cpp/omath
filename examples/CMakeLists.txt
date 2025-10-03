@@ -2,3 +2,5 @@ project(examples)
 
 add_executable(ExampleProjectionMatrixBuilder example_proj_mat_builder.cpp)
 target_link_libraries(ExampleProjectionMatrixBuilder PRIVATE omath::omath)
+
+set_target_properties(ExampleProjectionMatrixBuilder PROPERTIES CXX_SCAN_FOR_MODULES ON)

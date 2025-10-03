@@ -17,11 +17,12 @@ option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force co
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ${COMPILER_SUPPORTS_AVX2})
 option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types to imgui types" OFF)
-option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
+option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" ON)
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OFF)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
+
 
 if (OMATH_USE_AVX2 AND NOT COMPILER_SUPPORTS_AVX2)
     message(WARNING "OMATH_USE_AVX2 requested, but compiler/target does not support AVX2. Disabling.")
@@ -42,14 +43,20 @@ message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
 file(GLOB_RECURSE OMATH_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
-
+file(GLOB_RECURSE OMATH_MODULES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.cppm")
 
 if (OMATH_BUILD_AS_SHARED_LIBRARY)
-    add_library(${PROJECT_NAME} SHARED ${OMATH_SOURCES} ${OMATH_HEADERS})
+    add_library(${PROJECT_NAME} SHARED)
 else ()
-    add_library(${PROJECT_NAME} STATIC ${OMATH_SOURCES} ${OMATH_HEADERS})
+    add_library(${PROJECT_NAME} STATIC)
 endif ()
 
+target_sources(${PROJECT_NAME}
+        PUBLIC
+        FILE_SET cxx_modules TYPE CXX_MODULES
+        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/modules
+        FILES ${OMATH_MODULES}
+)
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
@@ -90,7 +97,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         CXX_STANDARD 23
-        CXX_STANDARD_REQUIRED ON)
+        CXX_STANDARD_REQUIRED ON
+        CXX_SCAN_FOR_MODULES ON
+)
 
 if (OMATH_USE_UNITY_BUILD)
     set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -106,7 +115,7 @@ endif ()
 
 if (OMATH_USE_AVX2)
     if (MSVC)
-        target_compile_options(${PROJECT_NAME} PUBLIC /ARCH:AVX2)
+        target_compile_options(${PROJECT_NAME} PUBLIC /arch:AVX2)
     elseif (EMSCRIPTEN)
         target_compile_options(${PROJECT_NAME} PUBLIC -msimd128 -mavx2)
     elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
@@ -158,6 +167,8 @@ install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib COMPONENT ${PROJECT_NAME}   # For static libraries
         LIBRARY DESTINATION lib COMPONENT ${PROJECT_NAME}   # For shared libraries
         RUNTIME DESTINATION bin COMPONENT ${PROJECT_NAME}   # For executables (on Windows)
+        FILE_SET cxx_modules DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/modules
+        CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}/cxx/bmi/$<CONFIG>
 )
 
 # Install headers as part of omath_component
@@ -168,7 +179,9 @@ install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
         NAMESPACE ${PROJECT_NAME}::
         DESTINATION lib/cmake/${PROJECT_NAME} COMPONENT ${PROJECT_NAME}
+        CXX_MODULES_DIRECTORY cxx-modules
 )
+
 
 
 # Generate the omathConfigVersion.cmake file
