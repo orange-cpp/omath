@@ -3,7 +3,7 @@
 //
 #include <benchmark/benchmark.h>
 
-#include <omath/omath.hpp>
+import omath.linear_algebra.mat;
 using namespace omath;
 
 
