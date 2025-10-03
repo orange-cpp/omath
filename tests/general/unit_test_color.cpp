@@ -1,9 +1,8 @@
 //
 // Created by Vlad on 01.09.2024.
 //
+#include <omath/utility/color.hpp>
 #include <gtest/gtest.h>
-#include <omath/color.hpp>
-
 
 using namespace omath;
 

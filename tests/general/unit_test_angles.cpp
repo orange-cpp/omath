@@ -1,8 +1,8 @@
 //
 // Created by Orange on 11/30/2024.
 //
+#include <omath/trigonometry/angles.hpp>
 #include <gtest/gtest.h>
-#include <omath/angles.hpp>
 
 TEST(unit_test_angles, radians_to_deg)
 {
