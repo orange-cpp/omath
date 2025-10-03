@@ -6,7 +6,7 @@ module;
 #include <expected>
 #include <functional>
 #include <format>
-
+#include <cmath>
 export module omath.linear_algebra.vector3;
 
 import omath.linear_algebra.vector2;

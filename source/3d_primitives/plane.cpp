@@ -1,6 +1,8 @@
 //
 // Created by Vlad on 8/28/2025.
 //
+module;
+#include <array>
 module omath.primitives_3d.plane;
 
 import omath.collision.triangle;
