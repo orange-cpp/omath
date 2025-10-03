@@ -1,10 +1,10 @@
 //
 // Created by Orange on 12/23/2024.
 //
-#pragma once
-#include "omath/engines/opengl_engine/constants.hpp"
-#include "omath/projection/camera.hpp"
-#include "traits/camera_trait.cppm"
+export module omath.opengl_egnine.camera;
+export import omath.projection.camera;
+export import omath.opengl_engine.constants;
+export import omath.opengl_engine.camera_trait;
 
 namespace omath::opengl_engine
 {

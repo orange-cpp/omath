@@ -1,14 +1,18 @@
 //
 // Created by Vlad on 8/3/2025.
 //
-
-#pragma once
-#include "omath/engines/source_engine/formulas.hpp"
-#include "omath/projectile_prediction/projectile.hpp"
-#include "omath/projectile_prediction/target.hpp"
+module;
+#include <cmath>
 #include <optional>
 
-namespace omath::source_engine
+export module omath.source_engine.pred_engine_trait;
+
+export import omath.source_engine.constants;
+export import omath.source_engine.formulas;
+export import omath.projectile_prediction.projectile;
+export import omath.projectile_prediction.target;
+
+export namespace omath::source_engine
 {
     class PredEngineTrait final
     {

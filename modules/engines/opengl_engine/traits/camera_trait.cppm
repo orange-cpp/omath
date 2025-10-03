@@ -2,11 +2,11 @@
 // Created by Vlad on 8/10/2025.
 //
 
-#pragma once
-#include "omath/engines/opengl_engine/constants.hpp"
-#include "omath/projection/camera.hpp"
+export module omath.opengl_engine.camera_trait;
+export import omath.opengl_engine.constants;
+export import omath.projection.camera;
 
-namespace omath::opengl_engine
+export namespace omath::opengl_engine
 {
     class CameraTrait final
     {

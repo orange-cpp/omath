@@ -1,14 +1,14 @@
 //
 // Created by Orange on 12/23/2024.
 //
-#pragma once
+export module omath.opengl_engine.constants;
 
-#include "omath/linear_algebra/mat.hpp"
-#include "omath/linear_algebra/vector3.hpp"
-#include <omath/angle.hpp>
-#include <omath/view_angles.hpp>
+export import omath.linear_algebra.vector3;
+export import omath.linear_algebra.mat;
+export import omath.trigonometry.angle;
+export import omath.trigonometry.view_angles;
 
-namespace omath::opengl_engine
+export namespace omath::opengl_engine
 {
     constexpr Vector3<float> k_abs_up = {0, 1, 0};
     constexpr Vector3<float> k_abs_right = {1, 0, 0};

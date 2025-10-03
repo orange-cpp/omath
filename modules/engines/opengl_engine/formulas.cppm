@@ -1,11 +1,11 @@
 //
 // Created by Orange on 12/23/2024.
 //
-#pragma once
-#include "omath/engines/opengl_engine/constants.hpp"
+export module omath.opengl_engine.formulas;
+export import omath.opengl_engine.constants;
 
 
-namespace omath::opengl_engine
+export namespace omath::opengl_engine
 {
     [[nodiscard]]
     Vector3<float> forward_vector(const ViewAngles& angles) noexcept;

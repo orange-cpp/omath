@@ -1,8 +1,10 @@
 //
 // Created by Vlad on 3/19/2025.
 //
-#include <omath/engines/source_engine/formulas.hpp>
+module;
+#include <cmath>
 
+module omath.source_engine.formulas;
 namespace omath::source_engine
 {
     Vector3<float> forward_vector(const ViewAngles& angles) noexcept

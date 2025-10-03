@@ -1,10 +1,12 @@
 //
 // Created by Orange on 12/4/2024.
 //
-#pragma once
-#include "omath/engines/source_engine/constants.hpp"
-#include "omath/projection/camera.hpp"
-#include "traits/camera_trait.hpp"
+export module omath.source_engine.camera;
+
+export import omath.projection.camera;
+export import omath.source_engine.constants;
+export import omath.source_engine.camera_trait;
+
 namespace omath::source_engine
 {
     using Camera =  projection::Camera<Mat4X4, ViewAngles, CameraTrait>;

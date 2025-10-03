@@ -1,12 +1,13 @@
 //
-// Created by Vlad on 8/6/2025.
-//
-#pragma once
-#include "omath/engines/opengl_engine/formulas.hpp"
-#include "omath/projectile_prediction/projectile.hpp"
-#include "omath/projectile_prediction/target.hpp"
+// Created by Vlad o
+module;
+#include <cmath>
 #include <optional>
-
+export module omath.opengl_engine.pred_engine_trait;
+export import omath.projectile_prediction.projectile;
+export import omath.projectile_prediction.target;
+export import omath.opengl_engine.constants;
+export import omath.opengl_engine.formulas;
 namespace omath::opengl_engine
 {
     class PredEngineTrait final
