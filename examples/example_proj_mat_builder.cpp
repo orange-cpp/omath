@@ -5,9 +5,8 @@
 
 #include <iostream>
 #include <print>
-#include <omath/engines/opengl_engine/formulas.hpp>
 
-
+import omath;
 int main()
 {
     std::println("OMATH Projection Matrix Builder");
@@ -33,8 +32,4 @@ int main()
     std::print("Enter camera screen height: ");
     std::cin >> view_port_height;
 
-    const auto mat =
-            omath::opengl_engine::calc_perspective_projection_matrix(fov, view_port_width / view_port_height, near, far);
-
-    std::print("{}", mat.to_string());
 };

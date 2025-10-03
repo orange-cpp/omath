@@ -567,13 +567,13 @@ export namespace omath
     };
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR> [[nodiscard]]
-    constexpr static Mat<1, 4, Type, St> mat_row_from_vector(const Vector3<Type>& vector) noexcept
+    constexpr Mat<1, 4, Type, St> mat_row_from_vector(const Vector3<Type>& vector) noexcept
     {
         return {{vector.x, vector.y, vector.z, 1}};
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR> [[nodiscard]]
-    constexpr static Mat<4, 1, Type, St> mat_column_from_vector(const Vector3<Type>& vector) noexcept
+    constexpr Mat<4, 1, Type, St> mat_column_from_vector(const Vector3<Type>& vector) noexcept
     {
         return {{vector.x}, {vector.y}, {vector.z}, {1}};
     }
@@ -632,7 +632,7 @@ export namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    static Mat<4, 4, Type, St> mat_camera_view(const Vector3<Type>& forward, const Vector3<Type>& right,
+    Mat<4, 4, Type, St> mat_camera_view(const Vector3<Type>& forward, const Vector3<Type>& right,
                                                const Vector3<Type>& up, const Vector3<Type>& camera_origin) noexcept
     {
         return  Mat<4, 4, Type, St>
