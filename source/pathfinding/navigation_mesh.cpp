@@ -6,6 +6,8 @@ module;
 #include <stdexcept>
 #include <expected>
 #include <vector>
+#include <cmath>
+
 module omath.pathfining.navigation_mesh;
 namespace omath::pathfinding
 {
