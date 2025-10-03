@@ -31,9 +31,9 @@ export namespace omath::pathfinding
         [[nodiscard]]
         bool empty() const;
 
-        [[nodiscard]] std::vector<uint8_t> serialize() const noexcept;
+        [[nodiscard]] std::vector<std::uint8_t> serialize() const noexcept;
 
-        void deserialize(const std::vector<uint8_t>& raw) noexcept;
+        void deserialize(const std::vector<std::uint8_t>& raw) noexcept;
 
         std::unordered_map<Vector3<float>, std::vector<Vector3<float>>> m_vertex_map;
     };

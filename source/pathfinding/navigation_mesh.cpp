@@ -6,8 +6,7 @@ module;
 #include <stdexcept>
 #include <expected>
 #include <vector>
-#include <cmath>
-
+#include <cstdint>
 module omath.pathfining.navigation_mesh;
 namespace omath::pathfinding
 {
@@ -37,11 +36,11 @@ namespace omath::pathfinding
     {
         auto dump_to_vector = []<typename T>(const T& t, std::vector<uint8_t>& vec)
         {
-            for (size_t i = 0; i < sizeof(t); i++)
+            for (std::size_t i = 0; i < sizeof(t); i++)
                 vec.push_back(*(reinterpret_cast<const uint8_t*>(&t) + i));
         };
 
-        std::vector<uint8_t> raw;
+        std::vector<std::uint8_t> raw;
 
         for (const auto& [vertex, neighbors]: m_vertex_map)
         {
@@ -56,9 +55,9 @@ namespace omath::pathfinding
         return raw;
     }
 
-    void NavigationMesh::deserialize(const std::vector<uint8_t>& raw) noexcept
+    void NavigationMesh::deserialize(const std::vector<std::uint8_t>& raw) noexcept
     {
-        auto load_from_vector = [](const std::vector<uint8_t>& vec, size_t& offset, auto& value)
+        auto load_from_vector = [](const std::vector<std::uint8_t>& vec, size_t& offset, auto& value)
         {
             if (offset + sizeof(value) > vec.size())
             {
@@ -77,13 +76,13 @@ namespace omath::pathfinding
             Vector3<float> vertex;
             load_from_vector(raw, offset, vertex);
 
-            uint16_t neighbors_count;
+            std::uint16_t neighbors_count;
             load_from_vector(raw, offset, neighbors_count);
 
             std::vector<Vector3<float>> neighbors;
             neighbors.reserve(neighbors_count);
 
-            for (size_t i = 0; i < neighbors_count; ++i)
+            for (std::size_t i = 0; i < neighbors_count; ++i)
             {
                 Vector3<float> neighbor;
                 load_from_vector(raw, offset, neighbor);
