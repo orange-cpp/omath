@@ -7,7 +7,7 @@ module;
 #include <string>
 #include <unordered_map>
 #include <vector>
-
+#include <cstdint>
 export module omath.pathfining.navigation_mesh;
 
 export import omath.linear_algebra.vector3;

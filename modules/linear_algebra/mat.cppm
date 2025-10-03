@@ -10,6 +10,7 @@ module;
 #include <stdexcept>
 #include <utility>
 #include <format>
+#include <cmath>
 
 #ifdef OMATH_USE_AVX2
 #include <immintrin.h>
