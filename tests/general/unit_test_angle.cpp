@@ -2,10 +2,10 @@
 // Created by Orange on 11/30/2024.
 //
 
+#include <omath/trigonometry/angle.hpp>
 #include <cmath>
 #include <gtest/gtest.h>
 #include <numbers>
-#include <omath/angle.hpp>
 
 using namespace omath;
 
