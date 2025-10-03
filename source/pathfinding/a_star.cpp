@@ -6,6 +6,8 @@ module;
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
+
 module omath.pathfinding.a_star;
 namespace omath::pathfinding
 {
