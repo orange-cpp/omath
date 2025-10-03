@@ -197,9 +197,9 @@
         <pair source="cpp" header="hpp" fileNamingConvention="SNAKE_CASE" />
         <pair source="c" header="h" fileNamingConvention="NONE" />
         <pair source="cu" header="cuh" fileNamingConvention="NONE" />
+        <pair source="cppm" header="" fileNamingConvention="NONE" />
         <pair source="ixx" header="" fileNamingConvention="NONE" />
         <pair source="mxx" header="" fileNamingConvention="NONE" />
-        <pair source="cppm" header="" fileNamingConvention="NONE" />
         <pair source="ccm" header="" fileNamingConvention="NONE" />
         <pair source="cxxm" header="" fileNamingConvention="NONE" />
         <pair source="c++m" header="" fileNamingConvention="NONE" />

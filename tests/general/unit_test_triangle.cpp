@@ -1,11 +1,11 @@
 //
 // Created by Orange on 1/6/2025.
 //
-#include "omath/triangle.hpp"
-#include "omath/linear_algebra/vector3.hpp"
+
 #include <cmath> // For std::sqrt, std::isinf, std::isnan
 #include <gtest/gtest.h>
-
+#include <vector>
+import omath.collision.triangle;
 using namespace omath;
 
 class UnitTestTriangle : public ::testing::Test
@@ -44,7 +44,7 @@ protected:
 // Test constructor and vertices
 TEST_F(UnitTestTriangle, Constructor)
 {
-    constexpr Triangle<Vector3<float>> t(
+    constexpr Triangle t(
         Vector3(1.0f, 2.0f, 3.0f),
         Vector3(4.0f, 5.0f, 6.0f),
         Vector3(7.0f, 8.0f, 9.0f)

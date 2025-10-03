@@ -1,15 +1,19 @@
 //
 // Created by Vlad on 2/23/2025.
 //
-#include "omath/projectile_prediction/proj_pred_engine_avx2.hpp"
+
+module;
 #include <source_location>
 #include <stdexcept>
-
+#include <optional>
 #if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
 #include <immintrin.h>
 #else
 #include <format>
 #endif
+
+module omath.projectile_prediction.engine_avx;
+
 
 namespace omath::projectile_prediction
 {

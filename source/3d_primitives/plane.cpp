@@ -1,7 +1,12 @@
 //
 // Created by Vlad on 8/28/2025.
 //
-#include "omath/3d_primitives/plane.hpp"
+module;
+#include <array>
+module omath.primitives_3d.plane;
+
+import omath.collision.triangle;
+import omath.linear_algebra.vector3;
 
 namespace omath::primitives
 {

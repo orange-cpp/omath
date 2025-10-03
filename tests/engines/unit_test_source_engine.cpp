@@ -2,10 +2,12 @@
 // Created by Orange on 11/23/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/engines/source_engine/camera.hpp>
-#include <omath/engines/source_engine/constants.hpp>
-#include <omath/engines/source_engine/formulas.hpp>
 #include <random>
+
+import omath.source_engine.constants;
+import omath.source_engine.formulas;
+import omath.source_engine.camera;
+
 
 TEST(unit_test_source_engine, ForwardVector)
 {

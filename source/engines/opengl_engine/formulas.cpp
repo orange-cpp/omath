@@ -1,8 +1,9 @@
 //
 // Created by Vlad on 3/19/2025.
 //
-#include "omath/engines/opengl_engine/formulas.hpp"
-
+module;
+#include <cmath>
+module omath.opengl_engine.formulas;
 namespace omath::opengl_engine
 {
 

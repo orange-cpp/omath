@@ -2,7 +2,7 @@
 // Created by Vlad on 9/18/2025.
 //
 #include <benchmark/benchmark.h>
-#include <omath/omath.hpp>
+import omath.projectile_prediction.engine_legacy;
 using namespace omath;
 
 using namespace omath::projectile_prediction;

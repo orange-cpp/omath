@@ -1,7 +1,10 @@
 //
 // Created by Vlad on 3/22/2025.
 //
-#include "omath/engines/unreal_engine/formulas.hpp"
+module;
+#include <cmath>
+module omath.unreal_engine.formulas;
+import omath.unreal_engine.constants;
 
 namespace omath::unreal_engine
 {

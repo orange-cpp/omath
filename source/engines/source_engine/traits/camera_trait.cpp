@@ -1,8 +1,11 @@
 //
 // Created by Vlad on 8/11/2025.
 //
-#include "omath/engines/source_engine/traits/camera_trait.hpp"
-#include "omath/engines/source_engine/formulas.hpp"
+module;
+#include <cmath>
+
+module omath.source_engine.camera_trait;
+import omath.source_engine.formulas;
 namespace omath::source_engine
 {
 

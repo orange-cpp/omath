@@ -2,9 +2,10 @@
 // Created by Orange on 11/23/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/engines/opengl_engine/camera.hpp>
-#include <omath/engines/opengl_engine/constants.hpp>
-#include <omath/engines/opengl_engine/formulas.hpp>
+import omath.opengl_engine.constants;
+import omath.opengl_engine.formulas;
+import omath.opengl_engine.camera;
+
 #include <random>
 
 TEST(unit_test_opengl, ForwardVector)

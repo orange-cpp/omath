@@ -5,7 +5,7 @@
 #include <cmath>
 #include <gtest/gtest.h>
 #include <numbers>
-#include <omath/angle.hpp>
+import omath.trigonometry.angle;
 
 using namespace omath;
 

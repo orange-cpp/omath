@@ -2,7 +2,7 @@
 // Created by Orange on 11/30/2024.
 //
 #include <gtest/gtest.h>
-#include <omath/angles.hpp>
+import omath.trigonometry.angle;
 
 TEST(unit_test_angles, radians_to_deg)
 {

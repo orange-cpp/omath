@@ -2,8 +2,8 @@
 // Created by Vlad on 01.09.2024.
 //
 #include <gtest/gtest.h>
-#include <omath/color.hpp>
-
+import omath.utility.color;
+import omath.linear_algebra.vector4;
 
 using namespace omath;
 
