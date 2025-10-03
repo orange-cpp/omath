@@ -211,7 +211,7 @@ export namespace omath
     };
 } // namespace omath
 
-template<class T, T MinV, T MaxV, omath::AngleFlags F>
+export template<class T, T MinV, T MaxV, omath::AngleFlags F>
 struct std::formatter<omath::Angle<T, MinV, MaxV, F>, char> // NOLINT(*-dcl58-cpp)
 {
     using AngleT = omath::Angle<T, MinV, MaxV, F>;
@@ -231,7 +231,7 @@ struct std::formatter<omath::Angle<T, MinV, MaxV, F>, char> // NOLINT(*-dcl58-cp
 };
 
 // wchar_t formatter
-template<class T, T MinV, T MaxV, omath::AngleFlags F>
+export template<class T, T MinV, T MaxV, omath::AngleFlags F>
 struct std::formatter<omath::Angle<T, MinV, MaxV, F>, wchar_t> // NOLINT(*-dcl58-cpp)
 {
     using AngleT = omath::Angle<T, MinV, MaxV, F>;
@@ -251,7 +251,7 @@ struct std::formatter<omath::Angle<T, MinV, MaxV, F>, wchar_t> // NOLINT(*-dcl58
 };
 
 // wchar_t formatter
-template<class T, T MinV, T MaxV, omath::AngleFlags F>
+export template<class T, T MinV, T MaxV, omath::AngleFlags F>
 struct std::formatter<omath::Angle<T, MinV, MaxV, F>, char8_t> // NOLINT(*-dcl58-cpp)
 {
     using AngleT = omath::Angle<T, MinV, MaxV, F>;

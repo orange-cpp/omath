@@ -1,7 +1,10 @@
 //
 // Created by Orange on 11/13/2024.
 //
-#include "omath/collision/line_tracer.hpp"
+module;
+#include <cmath>
+#include <limits>
+module omath.collision.line_trace;
 
 namespace omath::collision
 {

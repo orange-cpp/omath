@@ -1,7 +1,8 @@
 //
 // Created by Vlad on 2/23/2025.
 //
-#include "omath/projectile_prediction/proj_pred_engine_avx2.hpp"
+
+module;
 #include <source_location>
 #include <stdexcept>
 
@@ -10,6 +11,9 @@
 #else
 #include <format>
 #endif
+
+module omath.projectile_prediction.engine_avx;
+
 
 namespace omath::projectile_prediction
 {

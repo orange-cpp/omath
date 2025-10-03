@@ -1,9 +1,10 @@
 //
 // Created by Vlad on 28.07.2024.
 //
-#include "omath/pathfinding/navigation_mesh.hpp"
+module;
 #include <algorithm>
 #include <stdexcept>
+module omath.pathfining.navigation_mesh;
 namespace omath::pathfinding
 {
     std::expected<Vector3<float>, std::string>

@@ -1,7 +1,13 @@
 //
 // Created by Vlad on 4/18/2025.
 //
-#include "omath/3d_primitives/box.hpp"
+module;
+#include <array>
+
+module omath.primitives_3d.box;
+
+export import omath.collision.triangle;
+export import omath.linear_algebra.vector3;
 
 namespace omath::primitives
 {

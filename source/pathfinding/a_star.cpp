@@ -1,12 +1,12 @@
 //
 // Created by Vlad on 28.07.2024.
 //
-#include "omath/pathfinding/a_star.hpp"
+module;
 #include <algorithm>
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
-
+module omath.pathfinding.a_star;
 namespace omath::pathfinding
 {
     struct PathNode final
