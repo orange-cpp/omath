@@ -106,7 +106,7 @@ endif ()
 
 if (OMATH_USE_AVX2)
     if (MSVC)
-        target_compile_options(${PROJECT_NAME} PUBLIC /ARCH:AVX2)
+        target_compile_options(${PROJECT_NAME} PUBLIC /arch:AVX2)
     elseif (EMSCRIPTEN)
         target_compile_options(${PROJECT_NAME} PUBLIC -msimd128 -mavx2)
     elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
