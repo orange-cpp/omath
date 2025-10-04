@@ -24,8 +24,10 @@ namespace omath
             const std::string_view byte_str = pattern_string.substr(sting_view_start, sting_view_end);
 
             if (byte_str.empty())
+            {
+                start = end != pattern_string.end() ? std::next(end) : end;
                 continue;
-
+            }
             if (byte_str == "?" || byte_str == "??")
             {
                 pattern.emplace_back(std::nullopt);
