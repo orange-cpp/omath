@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "omath/angles.hpp"
+#include "omath/trigonometry/angles.hpp"
 #include <algorithm>
 #include <format>
 #include <utility>

@@ -6,8 +6,8 @@
 #pragma once
 
 // Basic math utilities
-#include "omath/angles.hpp"
-#include "omath/angle.hpp"
+#include "omath/trigonometry/angles.hpp"
+#include "omath/trigonometry/angle.hpp"
 
 // Vector classes (in dependency order)
 #include "omath/linear_algebra/vector2.hpp"
@@ -18,11 +18,11 @@
 #include "omath/linear_algebra/mat.hpp"
 
 // Color functionality
-#include "omath/color.hpp"
+#include "omath/utility/color.hpp"
 
 // Geometric primitives
-#include "omath/triangle.hpp"
-#include "omath/view_angles.hpp"
+#include "omath/linear_algebra/triangle.hpp"
+#include "omath/trigonometry/view_angles.hpp"
 
 // 3D primitives
 #include "omath/3d_primitives/box.hpp"
@@ -82,3 +82,7 @@
 #include "omath/engines/unreal_engine/camera.hpp"
 #include "omath/engines/unreal_engine/traits/camera_trait.hpp"
 #include "omath/engines/unreal_engine/traits/pred_engine_trait.hpp"
+
+// Reverse Engineering
+#include "omath/rev_eng/external_rev_object.hpp"
+#include "omath/rev_eng/internal_rev_object.hpp"

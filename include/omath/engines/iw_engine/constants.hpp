@@ -5,8 +5,8 @@
 #pragma once
 #include "omath/linear_algebra/mat.hpp"
 #include "omath/linear_algebra/vector3.hpp"
-#include <omath/angle.hpp>
-#include <omath/view_angles.hpp>
+#include <omath/trigonometry/angle.hpp>
+#include <omath/trigonometry/view_angles.hpp>
 
 namespace omath::iw_engine
 {
