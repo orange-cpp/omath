@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "omath/angle.hpp"
+#include "omath/trigonometry/angle.hpp"
 #include "omath/linear_algebra/vector2.hpp"
 #include <cstdint>
 #include <expected>

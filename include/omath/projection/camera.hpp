@@ -7,8 +7,8 @@
 #include "omath/linear_algebra/mat.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 #include "omath/projection/error_codes.hpp"
+#include <omath/trigonometry/angle.hpp>
 #include <expected>
-#include <omath/angle.hpp>
 #include <type_traits>
 
 #ifdef OMATH_BUILD_TESTS
