@@ -82,3 +82,7 @@
 #include "omath/engines/unreal_engine/camera.hpp"
 #include "omath/engines/unreal_engine/traits/camera_trait.hpp"
 #include "omath/engines/unreal_engine/traits/pred_engine_trait.hpp"
+
+// Reverse Engineering
+#include "omath/rev_eng/external_rev_object.hpp"
+#include "omath/rev_eng/internal_rev_object.hpp"
