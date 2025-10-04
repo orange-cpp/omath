@@ -28,6 +28,7 @@ namespace omath
                 start = end != pattern_string.end() ? std::next(end) : end;
                 continue;
             }
+
             if (byte_str == "?" || byte_str == "??")
             {
                 pattern.emplace_back(std::nullopt);
