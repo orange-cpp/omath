@@ -5,7 +5,43 @@
 #include <omath/utility/pattern_scan.hpp>
 #include <source_location>
 
+
 TEST(unit_test_pattern_scan, read_test)
 {
-    std::ignore = omath::PatternScanner::parse_pattern("FF ? ?? E9");
+    const auto result = omath::PatternScanner::parse_pattern("FF ? ?? E9");
+
+    EXPECT_EQ(result->at(0), static_cast<std::byte>(0xFF));
+    EXPECT_EQ(result->at(1), std::nullopt);
+    EXPECT_EQ(result->at(2), std::nullopt);
+    EXPECT_EQ(result->at(3), static_cast<std::byte>(0xE9));
+}
+
+TEST(unit_test_pattern_scan, corner_case_1)
+{
+    const auto result = omath::PatternScanner::parse_pattern("     FF ? ?? E9");
+
+    EXPECT_EQ(result->at(0), static_cast<std::byte>(0xFF));
+    EXPECT_EQ(result->at(1), std::nullopt);
+    EXPECT_EQ(result->at(2), std::nullopt);
+    EXPECT_EQ(result->at(3), static_cast<std::byte>(0xE9));
+}
+
+TEST(unit_test_pattern_scan, corner_case_2)
+{
+    const auto result = omath::PatternScanner::parse_pattern("     FF ? ?? E9       ");
+
+    EXPECT_EQ(result->at(0), static_cast<std::byte>(0xFF));
+    EXPECT_EQ(result->at(1), std::nullopt);
+    EXPECT_EQ(result->at(2), std::nullopt);
+    EXPECT_EQ(result->at(3), static_cast<std::byte>(0xE9));
+}
+
+TEST(unit_test_pattern_scan, corner_case_3)
+{
+    const auto result = omath::PatternScanner::parse_pattern("     FF ?       ??      E9       ");
+
+    EXPECT_EQ(result->at(0), static_cast<std::byte>(0xFF));
+    EXPECT_EQ(result->at(1), std::nullopt);
+    EXPECT_EQ(result->at(2), std::nullopt);
+    EXPECT_EQ(result->at(3), static_cast<std::byte>(0xE9));
 }

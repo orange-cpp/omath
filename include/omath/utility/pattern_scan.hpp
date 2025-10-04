@@ -10,6 +10,9 @@
 
 // ReSharper disable once CppInconsistentNaming
 class unit_test_pattern_scan_read_test_Test;
+class unit_test_pattern_scan_corner_case_1_Test;
+class unit_test_pattern_scan_corner_case_2_Test;
+class unit_test_pattern_scan_corner_case_3_Test;
 namespace omath
 {
     enum class PatternScanError
@@ -19,6 +22,9 @@ namespace omath
     class PatternScanner
     {
         friend unit_test_pattern_scan_read_test_Test;
+        friend unit_test_pattern_scan_corner_case_1_Test;
+        friend unit_test_pattern_scan_corner_case_2_Test;
+        friend unit_test_pattern_scan_corner_case_3_Test;
     public:
     private:
         [[nodiscard]]
