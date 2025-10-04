@@ -24,10 +24,10 @@ namespace omath::rev_eng
         }
 
         template<std::size_t id, class ReturnType>
-        ReturnType call_virtual_method(auto&&... arg_list)
+        ReturnType call_virtual_method(auto... arg_list)
         {
             using VirtualMethodType = ReturnType(__thiscall*)(void*, decltype(arg_list)...);
-            return (*static_cast<VirtualMethodType**>(this))[id](this, arg_list...);
+            return (*reinterpret_cast<VirtualMethodType**>(this))[id](this, arg_list...);
         }
     };
 } // namespace omath::rev_eng
