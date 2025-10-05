@@ -43,7 +43,7 @@ namespace omath
 
         while (start != pattern_string.cend())
         {
-            const auto end = std::find(start, pattern_string.cend(), ' ');
+            const auto end = std::ranges::find(start, pattern_string.cend(), ' ');
 
             const auto sting_view_start = std::distance(pattern_string.cbegin(), start);
             const auto sting_view_end = std::distance(start, end);
