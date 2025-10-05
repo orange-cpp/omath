@@ -22,7 +22,7 @@ namespace omath
         {
             bool found = true;
 
-            for (std::ptrdiff_t j = 0; j < static_cast<std::ptrdiff_t>(pattern.size()); j++)
+            for (std::ptrdiff_t j = 0; j < static_cast<std::ptrdiff_t>(parsed_pattern->size()); j++)
             {
                 found = parsed_pattern->at(j) == std::nullopt || parsed_pattern->at(j) == *(range.data() + i + j);
 
