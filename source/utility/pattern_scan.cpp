@@ -3,7 +3,7 @@
 //
 #include "omath/utility/pattern_scan.hpp"
 #include <charconv>
-
+#include <cstdint>
 namespace omath
 {
 
