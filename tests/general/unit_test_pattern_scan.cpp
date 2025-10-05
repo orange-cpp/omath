@@ -45,3 +45,10 @@ TEST(unit_test_pattern_scan, corner_case_3)
     EXPECT_EQ(result->at(2), std::nullopt);
     EXPECT_EQ(result->at(3), static_cast<std::byte>(0xE9));
 }
+
+TEST(unit_test_pattern_scan, corner_case_4)
+{
+    const auto result = omath::PatternScanner::parse_pattern("X ? ?? E9 ");
+
+    EXPECT_FALSE(result.has_value());
+}
