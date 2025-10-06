@@ -59,7 +59,7 @@ target("...")
    cmake --preset windows-release -S .
    cmake --build cmake-build/build/windows-release --target omath -j 6
    ```
-   Use **\<platform\>-\<build configuration\>** preset to build siutable version for yourself. Like **windows-release** or **linux-release**.
+   Use **\<platform\>-\<build configuration\>** preset to build suitable version for yourself. Like **windows-release** or **linux-release**.
 
     | Platform Name | Build Config  |
     |---------------|---------------|
