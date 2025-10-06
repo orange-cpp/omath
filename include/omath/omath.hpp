@@ -86,3 +86,6 @@
 // Reverse Engineering
 #include "omath/rev_eng/external_rev_object.hpp"
 #include "omath/rev_eng/internal_rev_object.hpp"
+
+// Utility
+#include "omath/utility/pattern_scan.hpp"
