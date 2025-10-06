@@ -12,7 +12,7 @@ namespace omath
     {
         const auto parsed_pattern = parse_pattern(pattern);
 
-        if (!parsed_pattern)
+        if (!parsed_pattern) [[unlikely]]
             return std::nullopt;
 
         const std::ptrdiff_t scan_size =
@@ -50,7 +50,7 @@ namespace omath
 
             const std::string_view byte_str = pattern_string.substr(sting_view_start, sting_view_end);
 
-            if (byte_str.empty())
+            if (byte_str.empty()) [[unlikely]]
             {
                 start = end != pattern_string.end() ? std::next(end) : end;
                 continue;
@@ -68,7 +68,7 @@ namespace omath
             // ReSharper disable once CppTooWideScopeInitStatement
             const auto [_, error_code] = std::from_chars(byte_str.data(), byte_str.data() + byte_str.size(), value, 16);
 
-            if (error_code != std::errc{})
+            if (error_code != std::errc{}) [[unlikely]]
                 return std::unexpected(PatternScanError::INVALID_PATTERN_STRING);
 
             pattern.emplace_back(static_cast<std::byte>(value));
