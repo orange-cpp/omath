@@ -7,15 +7,10 @@
 namespace omath
 {
 
-    std::optional<std::span<std::byte>::const_iterator>
+    std::span<std::byte>::const_iterator
     PatternScanner::scan_for_pattern(const std::span<std::byte>& range, const std::string_view& pattern)
     {
-        auto result = scan_for_pattern(range.begin(), range.end(), pattern);
-
-        if (result == range.end())
-            return std::nullopt;
-
-        return result;
+        return scan_for_pattern(range.begin(), range.end(), pattern);
     }
     std::expected<std::vector<std::optional<std::byte>>, PatternScanError>
     PatternScanner::parse_pattern(const std::string_view& pattern_string)

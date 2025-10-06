@@ -36,10 +36,11 @@ namespace omath
 
     public:
         [[nodiscard]]
-        static std::optional<std::span<std::byte>::const_iterator> scan_for_pattern(const std::span<std::byte>& range,
+        static std::span<std::byte>::const_iterator scan_for_pattern(const std::span<std::byte>& range,
                                                                                     const std::string_view& pattern);
 
         template<class IteratorType>
+        requires std::input_or_output_iterator<std::remove_cvref_t<IteratorType>>
         static IteratorType scan_for_pattern(const IteratorType& begin, const IteratorType& end,
                                              const std::string_view& pattern)
         {
