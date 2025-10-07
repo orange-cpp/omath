@@ -26,7 +26,7 @@ namespace omath
     {
         INVALID_PATTERN_STRING
     };
-    class PatternScanner
+    class PatternScanner final
     {
         friend unit_test_pattern_scan_read_test_Test;
         friend unit_test_pattern_scan_corner_case_1_Test;
