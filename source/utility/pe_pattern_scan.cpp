@@ -41,4 +41,7 @@ namespace omath
         throw std::runtime_error("Pattern scan for loaded modules is only for windows platform");
 #endif
     }
+    std::optional<std::uintptr_t> PePatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file)
+    {
+    }
 } // namespace omath
