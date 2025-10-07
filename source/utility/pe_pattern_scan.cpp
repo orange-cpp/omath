@@ -62,7 +62,7 @@ namespace omath
     PePatternScanner::extract_section_from_pe_file(const std::filesystem::path& path_to_file,
                                                    const std::string_view& section_name)
     {
-        std::ifstream file(path_to_file, std::ios::binary);
+        std::fstream file(path_to_file, std::ios::binary | std::ios::in);
 
         if (!file.is_open()) [[unlikely]]
             return std::nullopt;
