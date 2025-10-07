@@ -3,8 +3,10 @@
 //
 #include "omath/utility/pe_pattern_scan.hpp"
 #include "omath/utility/pattern_scan.hpp"
+#include <fstream>
 #include <span>
 #include <stdexcept>
+
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -41,7 +43,65 @@ namespace omath
         throw std::runtime_error("Pattern scan for loaded modules is only for windows platform");
 #endif
     }
-    std::optional<std::uintptr_t> PePatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file)
+    std::optional<std::uintptr_t> PePatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
+                                                                             const std::string_view& pattern)
     {
+        const auto pe_section = extract_section_from_pe_file(path_to_file, ".text");
+
+        if (!pe_section.has_value())
+            return std::nullopt;
+
+        const auto scan_result = PatternScanner::scan_for_pattern(pe_section->cbegin(), pe_section->cend(), pattern);
+
+        if (scan_result == pe_section->cend())
+            return std::nullopt;
+
+        return std::distance(pe_section->begin(), pe_section->end());
+    }
+    std::optional<std::vector<std::byte>>
+    PePatternScanner::extract_section_from_pe_file(const std::filesystem::path& path_to_file,
+                                                   const std::string_view& section_name)
+    {
+        std::ifstream file(path_to_file, std::ios::binary);
+
+        if (!file.is_open()) [[unlikely]]
+            return std::nullopt;
+
+        IMAGE_DOS_HEADER dos_header{};
+        file.read(reinterpret_cast<char*>(&dos_header), sizeof(dos_header));
+
+        if (dos_header.e_magic != 0x5A4D) [[unlikely]]
+            return std::nullopt;
+
+        file.seekg(dos_header.e_lfanew, std::ios::beg);
+
+        IMAGE_NT_HEADERS32 nt_headers{};
+        file.read(reinterpret_cast<char*>(&nt_headers), sizeof(nt_headers));
+
+        if (nt_headers.Signature != 0x00004550) [[unlikely]]
+            return std::nullopt;
+
+        constexpr size_t size_of_signature = 4;
+        const auto offset_to_segment_table = dos_header.e_lfanew + nt_headers.FileHeader.SizeOfOptionalHeader
+                                             + sizeof(IMAGE_FILE_HEADER) + size_of_signature;
+
+        file.seekg(offset_to_segment_table, std::ios::beg);
+
+        for (size_t i = 0; i < nt_headers.FileHeader.NumberOfSections; i++)
+        {
+            IMAGE_SECTION_HEADER current_section{};
+            file.read(reinterpret_cast<char*>(&current_section), sizeof(IMAGE_SECTION_HEADER));
+
+            if (std::string_view(reinterpret_cast<char*>(current_section.Name)) != section_name)
+                continue;
+
+            std::vector<std::byte> section_data(current_section.SizeOfRawData);
+
+            file.seekg(current_section.PointerToRawData, std::ios::beg);
+            file.read(reinterpret_cast<char*>(section_data.data()), section_data.size());
+
+            return section_data;
+        }
+        return std::nullopt;
     }
 } // namespace omath

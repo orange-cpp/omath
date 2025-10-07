@@ -4,9 +4,9 @@
 
 #pragma once
 #include <cstdint>
+#include <filesystem>
 #include <optional>
 #include <string_view>
-#include <filesystem>
 namespace omath
 {
     class PePatternScanner final
@@ -17,6 +17,11 @@ namespace omath
                                                                                const std::string_view& pattern);
 
         [[nodiscard]]
-        static std::optional<std::uintptr_t> scan_for_pattern_in_file(const std::filesystem::path& path_to_file);
+        static std::optional<std::uintptr_t> scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
+                                                                      const std::string_view& pattern);
+
+        [[nodiscard]]
+        static std::optional<std::vector<std::byte>>
+        extract_section_from_pe_file(const std::filesystem::path& path_to_file, const std::string_view& section_name);
     };
 } // namespace omath
