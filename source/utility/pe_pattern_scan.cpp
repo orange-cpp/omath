@@ -15,8 +15,8 @@ namespace omath
 {
 
     std::optional<std::uintptr_t>
-    PePatternScanner::scan_for_pattern_in_loaded_module(const std::string_view& module_name,
-                                                        const std::string_view& pattern)
+    PePatternScanner::scan_for_pattern_in_loaded_module([[maybe_unused]] const std::string_view& module_name,
+                                                        [[maybe_unused]] const std::string_view& pattern)
     {
 #ifdef _WIN32
         const auto base_address = reinterpret_cast<std::uintptr_t>(GetModuleHandleA(module_name.data()));
@@ -59,9 +59,10 @@ namespace omath
         return std::distance(pe_section->begin(), pe_section->end());
     }
     std::optional<std::vector<std::byte>>
-    PePatternScanner::extract_section_from_pe_file(const std::filesystem::path& path_to_file,
-                                                   const std::string_view& section_name)
+    PePatternScanner::extract_section_from_pe_file([[maybe_unused]] const std::filesystem::path& path_to_file,
+                                                   [[maybe_unused]] const std::string_view& section_name)
     {
+#ifdef _WIN32
         std::fstream file(path_to_file, std::ios::binary | std::ios::in);
 
         if (!file.is_open()) [[unlikely]]
@@ -103,5 +104,8 @@ namespace omath
             return section_data;
         }
         return std::nullopt;
+#else
+        throw std::runtime_error("Pattern scan for loaded modules is only for windows platform");
+#endif
     }
 } // namespace omath

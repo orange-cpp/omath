@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <optional>
 #include <string_view>
+#include <vector>
+
 namespace omath
 {
     class PePatternScanner final
