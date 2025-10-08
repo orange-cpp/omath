@@ -2,11 +2,12 @@
 // Created by Vlad on 10/7/2025.
 //
 #include "omath/utility/pe_pattern_scan.hpp"
+#include "omath/system/pe/section_header.hpp"
 #include "omath/utility/pattern_scan.hpp"
 #include <fstream>
+#include <omath/system/pe/dos_header.hpp>
 #include <span>
 #include <stdexcept>
-
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -68,7 +69,7 @@ namespace omath
         if (!file.is_open()) [[unlikely]]
             return std::nullopt;
 
-        IMAGE_DOS_HEADER dos_header{};
+        system::pe::DosHeader dos_header{};
         file.read(reinterpret_cast<char*>(&dos_header), sizeof(dos_header));
 
         if (dos_header.e_magic != 0x5A4D) [[unlikely]]
@@ -86,20 +87,20 @@ namespace omath
         const auto offset_to_segment_table = dos_header.e_lfanew + nt_headers.FileHeader.SizeOfOptionalHeader
                                              + sizeof(IMAGE_FILE_HEADER) + size_of_signature;
 
-        file.seekg(offset_to_segment_table, std::ios::beg);
+        file.seekg(static_cast<std::fstream::off_type>(offset_to_segment_table), std::ios::beg);
 
-        for (size_t i = 0; i < nt_headers.FileHeader.NumberOfSections; i++)
+        for (std::size_t i = 0; i < nt_headers.FileHeader.NumberOfSections; i++)
         {
-            IMAGE_SECTION_HEADER current_section{};
+            section_header_t current_section{};
             file.read(reinterpret_cast<char*>(&current_section), sizeof(IMAGE_SECTION_HEADER));
 
-            if (std::string_view(reinterpret_cast<char*>(current_section.Name)) != section_name)
+            if (std::string_view(current_section.name) != section_name)
                 continue;
 
-            std::vector<std::byte> section_data(current_section.SizeOfRawData);
+            std::vector<std::byte> section_data(current_section.size_raw_data);
 
-            file.seekg(current_section.PointerToRawData, std::ios::beg);
-            file.read(reinterpret_cast<char*>(section_data.data()), section_data.size());
+            file.seekg(current_section.ptr_raw_data, std::ios::beg);
+            file.read(reinterpret_cast<char*>(section_data.data()), static_cast<std::streamsize>(section_data.size()));
 
             return section_data;
         }
