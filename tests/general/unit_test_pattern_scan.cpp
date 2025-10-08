@@ -48,10 +48,7 @@ TEST(unit_test_pattern_scan, corner_case_3)
 
 TEST(unit_test_pattern_scan, corner_case_4)
 {
-    const auto result = omath::PatternScanner::parse_pattern("X ? ?? E9 ");
-    const auto result2 = omath::PePatternScanner::scan_for_pattern_in_file(
-            std::filesystem::path{
-                    "C:\\Users\\Vlad\\CLionProjects\\l4bhop\\cmake-build\\build\\windows-release\\l4bhop.dll"},
-            "4C 8B D1 B8 ? ? ? ? F6 04 25 ? ? ? ? ? 75 ? 0F 05 C3");
+    const auto result = omath::PatternScanner::parse_pattern("XZ");
+
     EXPECT_FALSE(result.has_value());
 }
