@@ -26,7 +26,11 @@ namespace omath::rev_eng
         template<std::size_t id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list)
         {
+#ifdef _MSC_VER
             using VirtualMethodType = ReturnType(__thiscall*)(void*, decltype(arg_list)...);
+#else
+            using VirtualMethodType = ReturnType(__fastcall*)(void*, decltype(arg_list)...);
+#endif
             return (*reinterpret_cast<VirtualMethodType**>(this))[id](this, arg_list...);
         }
     };
