@@ -84,9 +84,10 @@ namespace omath
     }
     std::optional<PeSectionScanResult>
     PePatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
-                                               const std::string_view& pattern)
+                                               const std::string_view& pattern,
+                                               const std::string_view& target_section_name)
     {
-        const auto pe_section = extract_section_from_pe_file(path_to_file, ".text");
+        const auto pe_section = extract_section_from_pe_file(path_to_file, target_section_name);
 
         if (!pe_section.has_value())
             return std::nullopt;

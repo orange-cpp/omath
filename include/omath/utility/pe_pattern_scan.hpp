@@ -25,17 +25,19 @@ namespace omath
             std::uint64_t raw_base_addr;
             std::vector<std::byte> data;
         };
+
     public:
         [[nodiscard]]
         static std::optional<std::uintptr_t> scan_for_pattern_in_loaded_module(const std::string_view& module_name,
                                                                                const std::string_view& pattern);
 
         [[nodiscard]]
-        static std::optional<PeSectionScanResult> scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
-                                                                      const std::string_view& pattern);
+        static std::optional<PeSectionScanResult>
+        scan_for_pattern_in_file(const std::filesystem::path& path_to_file, const std::string_view& pattern,
+                                 const std::string_view& target_section_name = ".text");
 
         [[nodiscard]]
-        static std::optional<Section>
-        extract_section_from_pe_file(const std::filesystem::path& path_to_file, const std::string_view& section_name);
+        static std::optional<Section> extract_section_from_pe_file(const std::filesystem::path& path_to_file,
+                                                                   const std::string_view& section_name);
     };
 } // namespace omath
