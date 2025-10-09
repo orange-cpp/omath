@@ -4,13 +4,30 @@
 #include "omath/utility/pattern_scan.hpp"
 #include <charconv>
 #include <cstdint>
+#include <algorithm>
+
+namespace
+{
+    [[nodiscard]]
+    constexpr bool is_wildcard(const std::string_view& byte_str)
+    {
+        return byte_str == "?" || byte_str == "??";
+    }
+
+    [[nodiscard]]
+    constexpr bool invalid_byte_str_size(const std::string_view& byte_str)
+    {
+        return byte_str.empty() || byte_str.size() >= 3;
+    }
+}
+
 namespace omath
 {
 
-    std::span<std::byte>::const_iterator
+    std::span<std::byte>::iterator
     PatternScanner::scan_for_pattern(const std::span<std::byte>& range, const std::string_view& pattern)
     {
-        return scan_for_pattern(range.cbegin(), range.cend(), pattern);
+        return scan_for_pattern(range.begin(), range.end(), pattern);
     }
     std::expected<std::vector<std::optional<std::byte>>, PatternScanError>
     PatternScanner::parse_pattern(const std::string_view& pattern_string)
@@ -28,13 +45,13 @@ namespace omath
 
             const std::string_view byte_str = pattern_string.substr(sting_view_start, sting_view_end);
 
-            if (byte_str.empty()) [[unlikely]]
+            if (invalid_byte_str_size(byte_str)) [[unlikely]]
             {
                 start = end != pattern_string.end() ? std::next(end) : end;
                 continue;
             }
 
-            if (byte_str == "?" || byte_str == "??")
+            if (is_wildcard(byte_str))
             {
                 pattern.emplace_back(std::nullopt);
 
