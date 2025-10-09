@@ -14,6 +14,42 @@
 #include <Windows.h>
 #endif
 
+using namespace omath::system::pe;
+using NtHeaderVariant = std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>>;
+
+namespace
+{
+    [[nodiscard]]
+    NtHeaderVariant get_nt_header_from_file(std::fstream& file, const DosHeader& dos_header)
+    {
+        ImageNtHeaders<NtArchitecture::x32_bit> x86_headers;
+        file.seekg(dos_header.e_lfanew, std::ios::beg);
+        file.read(reinterpret_cast<char*>(&x86_headers), sizeof(x86_headers));
+
+        if (x86_headers.optional_header.magic == opt_hdr32_magic)
+            return x86_headers;
+
+        ImageNtHeaders<NtArchitecture::x64_bit> x64_headers;
+        file.seekg(dos_header.e_lfanew, std::ios::beg);
+        file.read(reinterpret_cast<char*>(&x64_headers), sizeof(x64_headers));
+
+        return x64_headers;
+    }
+
+    [[nodiscard]]
+    constexpr bool invalid_dos_header_file(const DosHeader& dos_header)
+    {
+        constexpr std::uint16_t dos_hdr_magic = 0x5A4D;
+        return dos_header.e_magic != dos_hdr_magic;
+    }
+    [[nodiscard]]
+    constexpr bool invalid_nt_header_file(const NtHeaderVariant& variant)
+    {
+        constexpr std::uint32_t nt_hdr_magic = 0x4550;
+        return std::visit([](const auto& header) -> bool { return header.signature != nt_hdr_magic; }, variant);
+    }
+} // namespace
+
 namespace omath
 {
 
@@ -70,7 +106,6 @@ namespace omath
     PePatternScanner::extract_section_from_pe_file([[maybe_unused]] const std::filesystem::path& path_to_file,
                                                    [[maybe_unused]] const std::string_view& section_name)
     {
-        using namespace system::pe;
         std::fstream file(path_to_file, std::ios::binary | std::ios::in);
 
         if (!file.is_open()) [[unlikely]]
@@ -79,35 +114,18 @@ namespace omath
         DosHeader dos_header{};
         file.read(reinterpret_cast<char*>(&dos_header), sizeof(dos_header));
 
-        if (dos_header.e_magic != 0x5A4D) [[unlikely]]
+        if (invalid_dos_header_file(dos_header)) [[unlikely]]
             return std::nullopt;
 
-        file.seekg(dos_header.e_lfanew, std::ios::beg);
+        const auto nt_headers = get_nt_header_from_file(file, dos_header);
 
-        std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>> nt_headers;
+        if (invalid_nt_header_file(nt_headers)) [[unlikely]]
+            return std::nullopt;
 
-        {
-            ImageNtHeaders<NtArchitecture::x32_bit> x86_headers;
-            file.seekg(dos_header.e_lfanew, std::ios::beg);
-            file.read(reinterpret_cast<char*>(&x86_headers), sizeof(x86_headers));
-
-            if (x86_headers.optional_header.magic == opt_hdr32_magic)
-                nt_headers = x86_headers;
-            else
-            {
-                ImageNtHeaders<NtArchitecture::x64_bit> x64_headers;
-                file.seekg(dos_header.e_lfanew, std::ios::beg);
-                file.read(reinterpret_cast<char*>(&x64_headers), sizeof(x64_headers));
-                nt_headers = x64_headers;
-            }
-        }
         return std::visit(
                 [&file, &dos_header, &section_name](auto& concrete_headers) -> std::optional<Section>
                 {
-                    if (concrete_headers.signature != 0x00004550) [[unlikely]]
-                        return std::nullopt;
-
-                    constexpr std::size_t size_of_signature = 4;
+                    constexpr std::size_t size_of_signature = sizeof(concrete_headers.signature);
                     const auto offset_to_segment_table = dos_header.e_lfanew
                                                          + concrete_headers.file_header.size_optional_header
                                                          + sizeof(FileHeader) + size_of_signature;
