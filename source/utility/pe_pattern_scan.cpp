@@ -70,7 +70,6 @@ namespace omath
     PePatternScanner::extract_section_from_pe_file([[maybe_unused]] const std::filesystem::path& path_to_file,
                                                    [[maybe_unused]] const std::string_view& section_name)
     {
-#ifdef _WIN32
         using namespace system::pe;
         std::fstream file(path_to_file, std::ios::binary | std::ios::in);
 
@@ -136,8 +135,5 @@ namespace omath
                     return std::nullopt;
                 },
                 nt_headers);
-#else
-        throw std::runtime_error("Pattern scan for loaded modules is only for windows platform");
-#endif
     }
 } // namespace omath
