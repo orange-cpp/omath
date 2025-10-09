@@ -49,11 +49,5 @@ TEST(unit_test_pattern_scan, corner_case_3)
 TEST(unit_test_pattern_scan, corner_case_4)
 {
     const auto result = omath::PatternScanner::parse_pattern("X ? ?? E9 ");
-    const auto result2 = omath::PePatternScanner::scan_for_pattern_in_file(
-            std::filesystem::path{
-                    R"(C:\Users\Vlad\CLionProjects\aether\out\Release\aether.dll)"},
-            "48 89 5C 24 ? 57 48 83 EC ? 8B DA 48 8B F9 FF 15 ? ? ? ? 83 FB ? 75 ? B9 ? ? ? ? E8 ? ? ? ? 33 DB 48 85 C0 74 ? 48 8D 0D ? ? ? ? 48 89 38 48 89 48 ? EB");
-
-    std::println("{:x}", result2->virtual_base_addr + result2->target_offset);
     EXPECT_FALSE(result.has_value());
 }
