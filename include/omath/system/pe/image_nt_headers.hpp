@@ -14,7 +14,7 @@ namespace omath::system::pe
         x64_bit,
     };
     template<NtArchitecture architecture>
-    struct ImageNtHeaders
+    struct ImageNtHeaders final
     {
         std::uint32_t signature;
         FileHeader file_header;
