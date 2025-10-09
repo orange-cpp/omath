@@ -7,7 +7,7 @@
 
 namespace omath::system::pe
 {
-    struct DosHeader
+    struct DosHeader final
     {
         std::uint16_t e_magic;
         std::uint16_t e_cblp;

@@ -43,7 +43,7 @@ namespace omath::system::pe
         CEE = 0xC0EE,
     };
 
-    struct FileHeader
+    struct FileHeader final
     {
         MachineId machine;
         uint16_t num_sections;

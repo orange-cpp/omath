@@ -9,7 +9,7 @@
 //
 namespace omath::system::pe
 {
-    struct SectionHeader
+    struct SectionHeader final
     {
         char name[8];
         union
