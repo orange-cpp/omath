@@ -103,8 +103,8 @@ namespace omath
                                    .target_offset = offset};
     }
     std::optional<PePatternScanner::Section>
-    PePatternScanner::extract_section_from_pe_file([[maybe_unused]] const std::filesystem::path& path_to_file,
-                                                   [[maybe_unused]] const std::string_view& section_name)
+    PePatternScanner::extract_section_from_pe_file(const std::filesystem::path& path_to_file,
+                                                   const std::string_view& section_name)
     {
         std::fstream file(path_to_file, std::ios::binary | std::ios::in);
 
