@@ -29,7 +29,7 @@ namespace omath::rev_eng
 #ifdef _MSC_VER
             using VirtualMethodType = ReturnType(__thiscall*)(void*, decltype(arg_list)...);
 #else
-            using VirtualMethodType = ReturnType(__fastcall*)(void*, decltype(arg_list)...);
+            using VirtualMethodType = ReturnType(*)(void*, decltype(arg_list)...);
 #endif
             return (*reinterpret_cast<VirtualMethodType**>(this))[id](this, arg_list...);
         }
