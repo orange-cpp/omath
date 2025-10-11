@@ -245,15 +245,6 @@ namespace omath
             return std::make_tuple(this->x, this->y, z);
         }
 
-        [[nodiscard]] Vector3 view_angle_to(const Vector3& other) const noexcept
-        {
-            const auto distance = distance_to(other);
-            const auto delta = other - *this;
-
-            return {angles::radians_to_degrees(std::asin(delta.z / distance)),
-                    angles::radians_to_degrees(std::atan2(delta.y, delta.x)), 0};
-        }
-
         [[nodiscard]]
         bool operator<(const Vector3& other) const noexcept
         {
