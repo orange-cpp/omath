@@ -17,7 +17,6 @@ namespace omath
     };
     class PePatternScanner final
     {
-
     public:
         [[nodiscard]]
         static std::optional<std::uintptr_t> scan_for_pattern_in_loaded_module(const std::string_view& module_name,
