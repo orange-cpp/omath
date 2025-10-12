@@ -25,7 +25,6 @@ namespace
     };
     struct OptionalHeaderX64 final
     {
-
         std::uint16_t magic;
 
         std::uint16_t linker_version;
@@ -170,14 +169,15 @@ namespace
 
         std::uint32_t ptr_relocs;
         std::uint32_t ptr_line_numbers;
-        std::uint32_t  num_relocs;
-        std::uint32_t  num_line_numbers;
+        std::uint32_t num_relocs;
+        std::uint32_t num_line_numbers;
 
-       std::uint32_t characteristics;
+        std::uint32_t characteristics;
     };
     // ReSharper restore CppDeclaratorNeverUsed
 
-    using NtHeaderVariant = std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>>;
+    using NtHeaderVariant =
+            std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>>;
 
     [[nodiscard]]
     std::optional<NtHeaderVariant> get_nt_header_from_file(std::fstream& file, const DosHeader& dos_header)
