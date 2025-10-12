@@ -11,6 +11,9 @@
 #include <Windows.h>
 #endif
 
+// Internal PE shit defines
+// Big thx for linuxpe sources as ref
+// Link: https://github.com/can1357/linux-pe
 namespace
 {
     constexpr std::uint16_t opt_hdr32_magic = 0x010B;
@@ -178,7 +181,11 @@ namespace
 
     using NtHeaderVariant =
             std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>>;
+}
 
+// Internal PE scanner functions
+namespace
+{
     [[nodiscard]]
     std::optional<NtHeaderVariant> get_nt_header_from_file(std::fstream& file, const DosHeader& dos_header)
     {
