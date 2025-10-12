@@ -181,7 +181,7 @@ namespace
 
     using NtHeaderVariant =
             std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>>;
-}
+} // namespace
 
 // Internal PE scanner functions
 namespace
