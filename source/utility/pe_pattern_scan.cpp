@@ -176,11 +176,9 @@ namespace
        std::uint32_t characteristics;
     };
     // ReSharper restore CppDeclaratorNeverUsed
-}
-using NtHeaderVariant = std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>>;
 
-namespace
-{
+    using NtHeaderVariant = std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>>;
+
     [[nodiscard]]
     std::optional<NtHeaderVariant> get_nt_header_from_file(std::fstream& file, const DosHeader& dos_header)
     {
