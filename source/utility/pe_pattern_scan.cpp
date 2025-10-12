@@ -2,11 +2,8 @@
 // Created by Vlad on 10/7/2025.
 //
 #include "omath/utility/pe_pattern_scan.hpp"
-#include "omath/system/pe/image_nt_headers.hpp"
-#include "omath/system/pe/section_header.hpp"
 #include "omath/utility/pattern_scan.hpp"
 #include <fstream>
-#include <omath/system/pe/dos_header.hpp>
 #include <span>
 #include <stdexcept>
 #include <variant>
@@ -14,22 +11,188 @@
 #include <Windows.h>
 #endif
 
-using namespace omath::system::pe;
-using NtHeaderVariant = std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>>;
-
 namespace
 {
-    [[nodiscard]]
-    NtHeaderVariant get_nt_header_from_file(std::fstream& file, const DosHeader& dos_header)
+    constexpr std::uint16_t opt_hdr32_magic = 0x010B;
+    constexpr std::uint16_t opt_hdr64_magic = 0x020B;
+
+    // Standard fields.
+    // ReSharper disable CppDeclaratorNeverUsed
+    struct DataDirectory final
     {
-        ImageNtHeaders<NtArchitecture::x32_bit> x86_headers;
+        std::uint32_t rva;
+        std::uint32_t size;
+    };
+    struct OptionalHeaderX64 final
+    {
+        std::uint16_t magic;
+
+        std::uint16_t linker_version;
+
+        std::uint32_t size_code;
+        std::uint32_t size_init_data;
+        std::uint32_t size_uninit_data;
+
+        std::uint32_t entry_point;
+        std::uint32_t base_of_code;
+
+        // NT additional fields.
+        std::uint64_t image_base;
+        std::uint32_t section_alignment;
+        std::uint32_t file_alignment;
+
+        std::uint32_t os_version;
+        std::uint32_t img_version;
+        std::uint32_t subsystem_version;
+        std::uint32_t win32_version_value;
+
+        std::uint32_t size_image;
+        std::uint32_t size_headers;
+
+        std::uint32_t checksum;
+        std::uint16_t subsystem;
+        std::uint16_t characteristics;
+
+        std::uint64_t size_stack_reserve;
+        std::uint64_t size_stack_commit;
+        std::uint64_t size_heap_reserve;
+        std::uint64_t size_heap_commit;
+
+        std::uint32_t ldr_flags;
+
+        std::uint32_t num_data_directories;
+        DataDirectory data_directories[16];
+    };
+    struct OptionalHeaderX86 final
+    {
+        // Standard fields.
+        std::uint16_t magic{};
+        std::uint16_t linker_version{};
+
+        std::uint32_t size_code{};
+        std::uint32_t size_init_data{};
+        std::uint32_t size_uninit_data{};
+
+        std::uint32_t entry_point{};
+        std::uint32_t base_of_code{};
+        std::uint32_t base_of_data{};
+
+        // NT additional fields.
+        std::uint32_t image_base{};
+        std::uint32_t section_alignment{};
+        std::uint32_t file_alignment{};
+
+        std::uint32_t os_version{};
+        std::uint32_t img_version{};
+        std::uint32_t subsystem_version{};
+        std::uint32_t win32_version_value{};
+
+        std::uint32_t size_image{};
+        std::uint32_t size_headers{};
+
+        std::uint32_t checksum{};
+        std::uint16_t subsystem{};
+        std::uint16_t characteristics{};
+
+        std::uint32_t size_stack_reserve{};
+        std::uint32_t size_stack_commit{};
+        std::uint32_t size_heap_reserve{};
+        std::uint32_t size_heap_commit{};
+
+        std::uint32_t ldr_flags{};
+
+        std::uint32_t num_data_directories{};
+        DataDirectory data_directories[16]{};
+    };
+    template<bool x64 = true>
+    using OptionalHeader = std::conditional_t<x64, OptionalHeaderX64, OptionalHeaderX86>;
+
+    struct FileHeader final
+    {
+        std::uint16_t machine;
+        std::uint16_t num_sections;
+        std::uint32_t timedate_stamp;
+        std::uint32_t ptr_symbols;
+        std::uint32_t num_symbols;
+        std::uint16_t size_optional_header;
+        std::uint16_t characteristics;
+    };
+
+    struct DosHeader final
+    {
+        std::uint16_t e_magic;
+        std::uint16_t e_cblp;
+        std::uint16_t e_cp;
+        std::uint16_t e_crlc;
+        std::uint16_t e_cparhdr;
+        std::uint16_t e_minalloc;
+        std::uint16_t e_maxalloc;
+        std::uint16_t e_ss;
+        std::uint16_t e_sp;
+        std::uint16_t e_csum;
+        std::uint16_t e_ip;
+        std::uint16_t e_cs;
+        std::uint16_t e_lfarlc;
+        std::uint16_t e_ovno;
+        std::uint16_t e_res[4];
+        std::uint16_t e_oemid;
+        std::uint16_t e_oeminfo;
+        std::uint16_t e_res2[10];
+        std::uint32_t e_lfanew;
+    };
+
+    enum class NtArchitecture
+    {
+        x32_bit,
+        x64_bit,
+    };
+    template<NtArchitecture architecture>
+    struct ImageNtHeaders final
+    {
+        std::uint32_t signature;
+        FileHeader file_header;
+        OptionalHeader<architecture == NtArchitecture::x64_bit> optional_header;
+    };
+
+    struct SectionHeader final
+    {
+        char name[8];
+        union
+        {
+            std::uint32_t physical_address;
+            std::uint32_t virtual_size;
+        };
+        std::uint32_t virtual_address;
+
+        std::uint32_t size_raw_data;
+        std::uint32_t ptr_raw_data;
+
+        std::uint32_t ptr_relocs;
+        std::uint32_t ptr_line_numbers;
+        std::uint32_t num_relocs;
+        std::uint32_t num_line_numbers;
+
+        std::uint32_t characteristics;
+    };
+    // ReSharper restore CppDeclaratorNeverUsed
+
+    using NtHeaderVariant =
+            std::variant<ImageNtHeaders<NtArchitecture::x64_bit>, ImageNtHeaders<NtArchitecture::x32_bit>>;
+
+    [[nodiscard]]
+    std::optional<NtHeaderVariant> get_nt_header_from_file(std::fstream& file, const DosHeader& dos_header)
+    {
+        ImageNtHeaders<NtArchitecture::x32_bit> x86_headers{};
         file.seekg(dos_header.e_lfanew, std::ios::beg);
         file.read(reinterpret_cast<char*>(&x86_headers), sizeof(x86_headers));
 
         if (x86_headers.optional_header.magic == opt_hdr32_magic)
             return x86_headers;
 
-        ImageNtHeaders<NtArchitecture::x64_bit> x64_headers;
+        if (x86_headers.optional_header.magic != opt_hdr64_magic)
+            return std::nullopt;
+
+        ImageNtHeaders<NtArchitecture::x64_bit> x64_headers{};
         file.seekg(dos_header.e_lfanew, std::ios::beg);
         file.read(reinterpret_cast<char*>(&x64_headers), sizeof(x64_headers));
 
@@ -72,6 +235,7 @@ namespace omath
 
         const auto scan_range = std::span{reinterpret_cast<std::byte*>(base_address) + start, scan_size};
 
+        // ReSharper disable once CppTooWideScopeInitStatement
         const auto result = PatternScanner::scan_for_pattern(scan_range, pattern);
 
         if (result != scan_range.cend())
@@ -120,7 +284,10 @@ namespace omath
 
         const auto nt_headers = get_nt_header_from_file(file, dos_header);
 
-        if (invalid_nt_header_file(nt_headers)) [[unlikely]]
+        if (!nt_headers)
+            return std::nullopt;
+
+        if (invalid_nt_header_file(nt_headers.value())) [[unlikely]]
             return std::nullopt;
 
         return std::visit(
@@ -153,6 +320,6 @@ namespace omath
                     }
                     return std::nullopt;
                 },
-                nt_headers);
+                nt_headers.value());
     }
 } // namespace omath
