@@ -7,9 +7,6 @@
 #include <span>
 #include <stdexcept>
 #include <variant>
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 
 // Internal PE shit defines
 // Big thx for linuxpe sources as ref
@@ -207,6 +204,26 @@ namespace
     }
 
     [[nodiscard]]
+    std::optional<NtHeaderVariant> get_nt_header_from_loaded_module(const void* module_base_address)
+    {
+        const auto module_byte_ptr = static_cast<const std::byte*>(module_base_address);
+        ImageNtHeaders<NtArchitecture::x32_bit> x86_headers{};
+        const auto dos_header = static_cast<const DosHeader*>(module_base_address);
+
+        x86_headers = *reinterpret_cast<const ImageNtHeaders<NtArchitecture::x32_bit>*>(module_byte_ptr
+                                                                                        + dos_header->e_lfanew);
+
+        if (x86_headers.optional_header.magic == opt_hdr32_magic)
+            return x86_headers;
+
+        if (x86_headers.optional_header.magic != opt_hdr64_magic)
+            return std::nullopt;
+
+        return *reinterpret_cast<const ImageNtHeaders<NtArchitecture::x64_bit>*>(module_byte_ptr
+                                                                                 + dos_header->e_lfanew);
+    }
+
+    [[nodiscard]]
     constexpr bool invalid_dos_header_file(const DosHeader& dos_header)
     {
         constexpr std::uint16_t dos_hdr_magic = 0x5A4D;
@@ -286,35 +303,37 @@ namespace
 namespace omath
 {
 
-    std::optional<std::uintptr_t>
-    PePatternScanner::scan_for_pattern_in_loaded_module([[maybe_unused]] const std::string_view& module_name,
-                                                        [[maybe_unused]] const std::string_view& pattern)
+    std::optional<std::uintptr_t> PePatternScanner::scan_for_pattern_in_loaded_module(const void* module_base_address,
+                                                                                      const std::string_view& pattern)
     {
-#ifdef _WIN32
-        const auto base_address = reinterpret_cast<std::uintptr_t>(GetModuleHandleA(module_name.data()));
+        const auto base_address = reinterpret_cast<std::uintptr_t>(module_base_address);
 
         if (!base_address)
             return std::nullopt;
 
-        const auto dos_headers = reinterpret_cast<PIMAGE_DOS_HEADER>(base_address);
-        const auto image_nt_headers = reinterpret_cast<PIMAGE_NT_HEADERS>(base_address + dos_headers->e_lfanew);
+        auto nt_header_variant = get_nt_header_from_loaded_module(module_base_address);
 
-        // Define .code segment as scan area
-        const auto start = image_nt_headers->OptionalHeader.BaseOfCode;
-        const auto scan_size = image_nt_headers->OptionalHeader.SizeOfCode;
+        if (!nt_header_variant)
+            return std::nullopt;
 
-        const auto scan_range = std::span{reinterpret_cast<std::byte*>(base_address) + start, scan_size};
+        return std::visit(
+                [base_address, &pattern](const auto& nt_header) -> std::optional<std::uintptr_t>
+                {
+                    // Define .code segment as scan area
+                    const auto start = nt_header.optional_header.base_of_code;
+                    const auto scan_size = nt_header.optional_header.size_code;
 
-        // ReSharper disable once CppTooWideScopeInitStatement
-        const auto result = PatternScanner::scan_for_pattern(scan_range, pattern);
+                    const auto scan_range = std::span{reinterpret_cast<std::byte*>(base_address) + start, scan_size};
 
-        if (result != scan_range.cend())
-            return reinterpret_cast<std::uintptr_t>(&*result);
+                    // ReSharper disable once CppTooWideScopeInitStatement
+                    const auto result = PatternScanner::scan_for_pattern(scan_range, pattern);
 
-        return std::nullopt;
-#else
-        throw std::runtime_error("Pattern scan for loaded modules is only for windows platform");
-#endif
+                    if (result != scan_range.cend())
+                        return reinterpret_cast<std::uintptr_t>(&*result);
+
+                    return std::nullopt;
+                },
+                nt_header_variant.value());
     }
     std::optional<PeSectionScanResult>
     PePatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,

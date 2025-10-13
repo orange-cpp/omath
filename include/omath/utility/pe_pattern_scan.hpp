@@ -19,7 +19,7 @@ namespace omath
     {
     public:
         [[nodiscard]]
-        static std::optional<std::uintptr_t> scan_for_pattern_in_loaded_module(const std::string_view& module_name,
+        static std::optional<std::uintptr_t> scan_for_pattern_in_loaded_module(const void* module_base_address,
                                                                                const std::string_view& pattern);
 
         [[nodiscard]]
