@@ -89,3 +89,4 @@
 
 // Utility
 #include "omath/utility/pattern_scan.hpp"
+#include "omath/utility/pe_pattern_scan.hpp"
