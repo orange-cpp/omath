@@ -666,8 +666,7 @@ namespace omath
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_ortho_left_handed(const Type left, const Type right,
-                                              const Type bottom, const Type top,
+    Mat<4, 4, Type, St> mat_ortho_left_handed(const Type left, const Type right, const Type bottom, const Type top,
                                               const Type near, const Type far) noexcept
     {
         return
@@ -680,9 +679,8 @@ namespace omath
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_ortho_right_handed(const Type left, const Type right,
-                                              const Type bottom, const Type top,
-                                              const Type near, const Type far) noexcept
+    Mat<4, 4, Type, St> mat_ortho_right_handed(const Type left, const Type right, const Type bottom, const Type top,
+                                               const Type near, const Type far) noexcept
     {
         return
         {
