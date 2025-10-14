@@ -202,6 +202,22 @@ namespace omath
 };
 } // namespace omath
 
+template<> struct std::hash<omath::Vector4<float>>
+{
+    [[nodiscard]]
+    std::size_t operator()(const omath::Vector4<float>& vec) const noexcept
+    {
+        std::size_t hash = 0;
+        constexpr std::hash<float> hasher;
+
+        hash ^= hasher(vec.x) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        hash ^= hasher(vec.y) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        hash ^= hasher(vec.z) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        hash ^= hasher(vec.w) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        return hash;
+    }
+};
+
 template<class Type>
 struct std::formatter<omath::Vector4<Type>> // NOLINT(*-dcl58-cpp)
 {
