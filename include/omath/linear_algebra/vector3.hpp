@@ -273,6 +273,7 @@ namespace omath
 
 template<> struct std::hash<omath::Vector3<float>>
 {
+    [[nodiscard]]
     std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
     {
         std::size_t hash = 0;
