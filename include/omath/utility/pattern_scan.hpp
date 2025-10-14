@@ -9,17 +9,13 @@
 #include <string_view>
 #include <vector>
 
-// ReSharper disable once CppInconsistentNaming
+// ReSharper disable CppInconsistentNaming
 class unit_test_pattern_scan_read_test_Test;
-// ReSharper disable once CppInconsistentNaming
 class unit_test_pattern_scan_corner_case_1_Test;
-// ReSharper disable once CppInconsistentNaming
 class unit_test_pattern_scan_corner_case_2_Test;
-// ReSharper disable once CppInconsistentNaming
 class unit_test_pattern_scan_corner_case_3_Test;
-// ReSharper disable once CppInconsistentNaming
 class unit_test_pattern_scan_corner_case_4_Test;
-
+// ReSharper restore CppInconsistentNaming
 namespace omath
 {
     enum class PatternScanError
@@ -37,11 +33,11 @@ namespace omath
     public:
         [[nodiscard]]
         static std::span<std::byte>::iterator scan_for_pattern(const std::span<std::byte>& range,
-                                                                     const std::string_view& pattern);
+                                                               const std::string_view& pattern);
 
         [[nodiscard]]
         static std::span<std::byte>::iterator scan_for_pattern(std::span<std::byte>&& range,
-                                                                     const std::string_view& pattern) = delete;
+                                                               const std::string_view& pattern) = delete;
 
         template<class IteratorType>
         requires std::input_or_output_iterator<std::remove_cvref_t<IteratorType>>
