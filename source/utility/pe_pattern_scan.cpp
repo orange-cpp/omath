@@ -328,7 +328,7 @@ namespace omath
                     // ReSharper disable once CppTooWideScopeInitStatement
                     const auto result = PatternScanner::scan_for_pattern(scan_range, pattern);
 
-                    if (result != scan_range.cend())
+                    if (result != scan_range.end())
                         return reinterpret_cast<std::uintptr_t>(&*result);
 
                     return std::nullopt;
