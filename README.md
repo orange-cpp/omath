@@ -76,6 +76,10 @@ It provides the latest features, is highly customizable, has all for cheat devel
 ![CS2 Preview]
 
 <br>
+
+![TF2 Preview]
+
+<br>
 <br>
 
 </div>
@@ -87,7 +91,7 @@ It provides the latest features, is highly customizable, has all for cheat devel
 [APEX Preview]: .github/images/showcase/apex.png
 [BO2 Preview]: .github/images/showcase/cod_bo2.png
 [CS2 Preview]: .github/images/showcase/cs2.jpeg
-
+[TF2 Preview]: .github/images/showcase/tf2.jpg
 <!----------------------------------{ Buttons }--------------------------------->
 [INSTALL]: INSTALL.md
 [DOCUMENTATION]: http://libomath.org
