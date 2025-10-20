@@ -239,7 +239,8 @@ namespace omath::projection
                            -1   |
                                 v
             */
-            return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (1.f - ndc.y) / 2.f * m_view_port.m_height, ndc.z};
+
+            return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (ndc.y / 2.f + 0.5f) * m_view_port.m_height, ndc.z};
         }
 
         [[nodiscard]] Vector3<float> screen_to_ndc(const Vector3<float>& screen_pos) const noexcept
