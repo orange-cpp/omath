@@ -234,18 +234,3 @@ TEST(unit_test_unity_engine, loook_at_random_z_axis)
     }
     EXPECT_LE(failed_points, 100);
 }
-
-TEST(unit_test_unity_engine, to_camera_coordiante_syste)
-{
-    omath::Vector3<float> point = {10, 3, 10};
-    auto result = omath::unity_engine::calc_view_matrix({}, {}) * omath::mat_column_from_vector(point);
-    auto perspective = omath::unity_engine::calc_perspective_projection_matrix(60, 1280 / 720.f, 0.3, 1000);
-
-    constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
-
-    const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
-
-    std::println("View matrix: \n{}", cam.get_view_matrix());
-    std::println("Projection: \n{}", cam.get_projection_matrix());
-    std::print("NDC: projection {} -> {}", point, cam.world_to_screen(point).value());
-}
