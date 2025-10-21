@@ -87,9 +87,9 @@ TEST(unit_test_unity_engine, Project)
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
 
     const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
-    const auto proj = cam.world_to_screen({5.f, 3, 10.f});
+    const auto proj = cam.world_to_screen<omath::unity_engine::Camera::ScreenStart::BOTTOM_LEFT_CORNER>({10.f, 3, 10.f});
 
-    EXPECT_NEAR(proj->x, 951.769f, 0.001f);
+    EXPECT_NEAR(proj->x, 1263.538, 0.001f);
     EXPECT_NEAR(proj->y, 547.061f, 0.001f);
 }
 
