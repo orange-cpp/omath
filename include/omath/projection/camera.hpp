@@ -54,6 +54,12 @@ namespace omath::projection
         friend UnitTestProjection_Projection_Test;
 #endif
     public:
+        enum class ScreenStart
+        {
+            TOP_LEFT_CORNER,
+            BOTTOM_LEFT_CORNER,
+        };
+
         ~Camera() = default;
         Camera(const Vector3<float>& position, const ViewAnglesType& view_angles, const ViewPort& view_port,
                const FieldOfView& fov, const float near, const float far) noexcept
@@ -146,15 +152,22 @@ namespace omath::projection
             return m_origin;
         }
 
+
+        template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]] std::expected<Vector3<float>, Error>
         world_to_screen(const Vector3<float>& world_position) const noexcept
         {
-            auto normalized_cords = world_to_view_port(world_position);
+            const auto normalized_cords = world_to_view_port(world_position);
 
             if (!normalized_cords.has_value())
                 return std::unexpected{normalized_cords.error()};
 
-            return ndc_to_screen_position(*normalized_cords);
+            if constexpr (screen_start == ScreenStart::TOP_LEFT_CORNER)
+                return ndc_to_screen_position_from_top_left_corner(*normalized_cords);
+            else if constexpr (screen_start == ScreenStart::BOTTOM_LEFT_CORNER)
+                return ndc_to_screen_position_from_bottom_left_corner(*normalized_cords);
+            else
+                std::unreachable();
         }
 
         [[nodiscard]] std::expected<Vector3<float>, Error>
@@ -225,7 +238,27 @@ namespace omath::projection
             return std::ranges::any_of(ndc.raw_array(), [](const auto& val) { return val < -1 || val > 1; });
         }
 
-        [[nodiscard]] Vector3<float> ndc_to_screen_position(const Vector3<float>& ndc) const noexcept
+        [[nodiscard]] Vector3<float>
+        ndc_to_screen_position_from_top_left_corner(const Vector3<float>& ndc) const noexcept
+        {
+            /*
+                                ^
+                                |        y
+                            1   |
+                                |
+                                |
+                    -1 ---------0--------- 1  --> x
+                                |
+                                |
+                           -1   |
+                                v
+            */
+
+            return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (ndc.y / -2.f + 0.5f) * m_view_port.m_height, ndc.z};
+        }
+
+        [[nodiscard]] Vector3<float>
+        ndc_to_screen_position_from_bottom_left_corner(const Vector3<float>& ndc) const noexcept
         {
             /*
                                 ^
