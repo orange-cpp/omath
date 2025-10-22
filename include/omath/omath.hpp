@@ -76,6 +76,14 @@
 #include "omath/engines/unity_engine/traits/camera_trait.hpp"
 #include "omath/engines/unity_engine/traits/pred_engine_trait.hpp"
 
+//Frostbite Engine
+#include "omath/engines/frostbite_engine/constants.hpp"
+#include "omath/engines/frostbite_engine/formulas.hpp"
+#include "omath/engines/frostbite_engine/camera.hpp"
+#include "omath/engines/frostbite_engine/traits/camera_trait.hpp"
+#include "omath/engines/frostbite_engine/traits/pred_engine_trait.hpp"
+
+
 // Unreal Engine
 #include "omath/engines/unreal_engine/constants.hpp"
 #include "omath/engines/unreal_engine/formulas.hpp"
