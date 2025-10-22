@@ -238,10 +238,8 @@ namespace omath::projection
             return std::ranges::any_of(ndc.raw_array(), [](const auto& val) { return val < -1 || val > 1; });
         }
 
-        [[nodiscard]] Vector3<float>
-        ndc_to_screen_position_from_top_left_corner(const Vector3<float>& ndc) const noexcept
-        {
-            /*
+        // NDC REPRESENTATION:
+        /*
                                 ^
                                 |        y
                             1   |
@@ -254,6 +252,20 @@ namespace omath::projection
                                 v
             */
 
+        [[nodiscard]] Vector3<float>
+        ndc_to_screen_position_from_top_left_corner(const Vector3<float>& ndc) const noexcept
+        {
+            /*
+            +------------------------>
+            | (0, 0)
+            |
+            |
+            |
+            |
+            |
+            |
+            ⌄
+            */
             return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (ndc.y / -2.f + 0.5f) * m_view_port.m_height, ndc.z};
         }
 
@@ -261,18 +273,16 @@ namespace omath::projection
         ndc_to_screen_position_from_bottom_left_corner(const Vector3<float>& ndc) const noexcept
         {
             /*
-                                ^
-                                |        y
-                            1   |
-                                |
-                                |
-                    -1 ---------0--------- 1  --> x
-                                |
-                                |
-                           -1   |
-                                v
-            */
-
+             ^
+             |
+             |
+             |
+             |
+             |
+             |
+             | (0, 0)
+             +------------------------>
+             */
             return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (ndc.y / 2.f + 0.5f) * m_view_port.m_height, ndc.z};
         }
 
