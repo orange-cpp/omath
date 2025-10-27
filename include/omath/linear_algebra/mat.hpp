@@ -459,7 +459,7 @@ namespace omath
                 }
             }
             else if (std::is_same_v<Type, double>)
-            { // double
+            {
                 // ReSharper disable once CppTooWideScopeInitStatement
                 constexpr std::size_t vector_size = 4;
                 for (std::size_t j = 0; j < OtherColumns; ++j)
@@ -492,71 +492,75 @@ namespace omath
         }
 
         template<size_t OtherColumns> [[nodiscard]]
-        constexpr Mat<Rows, OtherColumns, Type, MatStoreType::ROW_MAJOR>
-        avx_multiply_row_major(const Mat<Columns, OtherColumns, Type, MatStoreType::ROW_MAJOR>& other) const
+        constexpr Mat<Rows, OtherColumns, float, MatStoreType::ROW_MAJOR>
+        avx_multiply_row_major(const Mat<Columns, OtherColumns, float, MatStoreType::ROW_MAJOR>& other) const
         {
-            Mat<Rows, OtherColumns, Type, MatStoreType::ROW_MAJOR> result;
+            Mat<Rows, OtherColumns, float, MatStoreType::ROW_MAJOR> result;
 
-            const Type* this_mat_data = this->raw_array().data();
-            const Type* other_mat_data = other.raw_array().data();
-            Type* result_mat_data = result.raw_array().data();
+            const auto* this_mat_data = this->raw_array().data();
+            const auto* other_mat_data = other.raw_array().data();
+            auto result_mat_data = result.raw_array().data();
 
-            if constexpr (std::is_same_v<Type, float>)
+            // ReSharper disable once CppTooWideScopeInitStatement
+            constexpr std::size_t vector_size = 8;
+            for (std::size_t i = 0; i < Rows; ++i)
             {
-                // ReSharper disable once CppTooWideScopeInitStatement
-                constexpr std::size_t vector_size = 8;
-                for (std::size_t i = 0; i < Rows; ++i)
+                auto* c_row = result_mat_data + i * OtherColumns;
+                for (std::size_t k = 0; k < Columns; ++k)
                 {
-                    Type* c_row = result_mat_data + i * OtherColumns;
-                    for (std::size_t k = 0; k < Columns; ++k)
+                    const auto aik = static_cast<float>(this_mat_data[i * Columns + k]);
+                    const __m256 aik_vec = _mm256_set1_ps(aik);
+                    const auto* b_row = reinterpret_cast<const float*>(other_mat_data + k * OtherColumns);
+
+                    std::size_t j = 0;
+                    for (; j + vector_size <= OtherColumns; j += vector_size)
                     {
-                        const auto aik = static_cast<float>(this_mat_data[i * Columns + k]);
-                        const __m256 aik_vec = _mm256_set1_ps(aik);
-                        const auto* b_row = reinterpret_cast<const float*>(other_mat_data + k * OtherColumns);
+                        __m256 cvec = _mm256_loadu_ps(c_row + j);
+                        const __m256 b_vec = _mm256_loadu_ps(b_row + j);
+                        cvec = _mm256_fmadd_ps(b_vec, aik_vec, cvec);
 
-                        std::size_t j = 0;
-                        for (; j + vector_size <= OtherColumns; j += vector_size)
-                        {
-                            __m256 cvec = _mm256_loadu_ps(c_row + j);
-                            const __m256 b_vec = _mm256_loadu_ps(b_row + j);
-                            cvec = _mm256_fmadd_ps(b_vec, aik_vec, cvec);
-
-                            _mm256_storeu_ps(c_row + j, cvec);
-                        }
-                        for (; j < OtherColumns; ++j)
-                            c_row[j] += aik * b_row[j];
+                        _mm256_storeu_ps(c_row + j, cvec);
                     }
+                    for (; j < OtherColumns; ++j)
+                        c_row[j] += aik * b_row[j];
                 }
             }
-            else if (std::is_same_v<Type, double>)
-            { // double
-                // ReSharper disable once CppTooWideScopeInitStatement
-                constexpr std::size_t vector_size = 4;
-                for (std::size_t i = 0; i < Rows; ++i)
+
+            return result;
+        }
+        template<size_t OtherColumns> [[nodiscard]]
+        constexpr Mat<Rows, OtherColumns, double, MatStoreType::ROW_MAJOR>
+        avx_multiply_row_major(const Mat<Columns, OtherColumns, double, MatStoreType::ROW_MAJOR>& other) const
+        {
+            Mat<Rows, OtherColumns, double, MatStoreType::ROW_MAJOR> result;
+
+            const auto* this_mat_data = this->raw_array().data();
+            const auto* other_mat_data = other.raw_array().data();
+            auto result_mat_data = result.raw_array().data();
+            // ReSharper disable once CppTooWideScopeInitStatement
+            constexpr std::size_t vector_size = 4;
+            for (std::size_t i = 0; i < Rows; ++i)
+            {
+                auto* c_row = result_mat_data + i * OtherColumns;
+                for (std::size_t k = 0; k < Columns; ++k)
                 {
-                    Type* c_row = result_mat_data + i * OtherColumns;
-                    for (std::size_t k = 0; k < Columns; ++k)
+                    const auto aik = static_cast<double>(this_mat_data[i * Columns + k]);
+                    const __m256d aik_vec = _mm256_set1_pd(aik);
+                    const auto* b_row = reinterpret_cast<const double*>(other_mat_data + k * OtherColumns);
+
+                    std::size_t j = 0;
+                    for (; j + vector_size <= OtherColumns; j += vector_size)
                     {
-                        const auto aik = static_cast<double>(this_mat_data[i * Columns + k]);
-                        const __m256d aik_vec = _mm256_set1_pd(aik);
-                        const auto* b_row = reinterpret_cast<const double*>(other_mat_data + k * OtherColumns);
+                        __m256d cvec = _mm256_loadu_pd(c_row + j);
+                        const __m256d b_vec = _mm256_loadu_pd(b_row + j);
+                        cvec = _mm256_fmadd_pd(b_vec, aik_vec, cvec);
 
-                        std::size_t j = 0;
-                        for (; j + vector_size <= OtherColumns; j += vector_size)
-                        {
-                            __m256d cvec = _mm256_loadu_pd(c_row + j);
-                            const __m256d b_vec = _mm256_loadu_pd(b_row + j);
-                            cvec = _mm256_fmadd_pd(b_vec, aik_vec, cvec);
-
-                            _mm256_storeu_pd(c_row + j, cvec);
-                        }
-                        for (; j < OtherColumns; ++j)
-                            c_row[j] += aik * b_row[j];
+                        _mm256_storeu_pd(c_row + j, cvec);
                     }
+                    for (; j < OtherColumns; ++j)
+                        c_row[j] += aik * b_row[j];
                 }
             }
-            else
-                std::unreachable();
             return result;
         }
 #endif
