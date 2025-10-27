@@ -37,7 +37,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone --depth 1 https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
       - name: Configure (cmake --preset)
         shell: bash
         run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DOMATH_BUILD_VIA_VCPKG=ON -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
