@@ -40,11 +40,11 @@ jobs:
           git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
       - name: Configure (cmake --preset)
         shell: bash
-        run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DOMATH_BUILD_VIA_VCPKG=ON -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+        run: cmake --preset linux-release-vcpkg -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
 
       - name: Build
         shell: bash
-        run: cmake --build cmake-build/build/linux-release --target unit_tests omath
+        run: cmake --build cmake-build/build/linux-release-vcpkg --target unit_tests omath
 
       - name: Run unit_tests
         shell: bash
@@ -75,11 +75,11 @@ jobs:
 
       - name: Configure (cmake --preset)
         shell: bash
-        run: cmake --preset windows-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DOMATH_BUILD_VIA_VCPKG=ON -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+        run: cmake --preset windows-release-vcpkg -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
 
       - name: Build
         shell: bash
-        run: cmake --build cmake-build/build/windows-release --target unit_tests omath
+        run: cmake --build cmake-build/build/windows-release-vcpkg --target unit_tests omath
 
       - name: Run unit_tests.exe
         shell: bash
