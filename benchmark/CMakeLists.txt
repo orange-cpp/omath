@@ -11,5 +11,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON)
 
-
-target_link_libraries(${PROJECT_NAME} PRIVATE benchmark::benchmark omath)
+if (TARGET benchmark::benchmark)
+    target_link_libraries(${PROJECT_NAME} PRIVATE benchmark::benchmark omath)
+else()
+    find_package(benchmark CONFIG REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE benchmark::benchmark omath)
+endif ()

@@ -21,9 +21,9 @@ option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" O
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OFF)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
-option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
+option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" ON)
 
-option(OMATH_BUILD_VIA_VCPKG "Will enable building using vcpkg, vcpkg will override some options that were set in vcpkg.json file, and search for dependencies using vcpkg" OFF)
+option(OMATH_BUILD_VIA_VCPKG "Will enable building using vcpkg, vcpkg will override some options that were set in vcpkg.json file, and search for dependencies using vcpkg" ON)
 
 if (OMATH_BUILD_VIA_VCPKG AND NOT CMAKE_TOOLCHAIN_FILE)
     message(FATAL_ERROR "[${PROJECT_NAME}] CMAKE_TOOLCHAIN_FILE IS EMPTY! Please set env variable called 'VCPKG_ROOT' to vcpkg root folder here is an example: 'C:/vcpkg' or '/home/user/vcpkg' ")
@@ -107,7 +107,7 @@ if (OMATH_SUPRESS_SAFETY_CHECKS)
 endif ()
 
 if (OMATH_ENABLE_LEGACY)
-    target_compile_options(${PROJECT_NAME} PUBLIC OMATH_ENABLE_LEGACY)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_ENABLE_LEGACY)
 endif ()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -139,9 +139,6 @@ if (OMATH_USE_AVX2)
 endif ()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
-
-add_subdirectory(extlibs)
-
 
 if (OMATH_BUILD_TESTS)
     add_subdirectory(tests)
