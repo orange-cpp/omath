@@ -8,7 +8,11 @@
       "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
       "installDir": "${sourceDir}/cmake-build/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "cl.exe"
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_MANIFEST_FEATURES": "imgui;avx2;tests",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "CMAKE_MAKE_PROGRAM": "Ninja"
       },
       "condition": {
         "type": "equals",
