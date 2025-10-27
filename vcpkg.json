@@ -4,6 +4,7 @@
   "description": "General purpose math library",
   "homepage": "https://github.com/orange-cpp/omath",
   "license": "Zlib",
+  "builtin-baseline": "b1b19307e2d2ec1eefbdb7ea069de7d4bcd31f01",
   "supports": "windows | linux",
   "dependencies": [
     {
@@ -20,6 +21,12 @@
       "description": "Omath will use AVX2 to boost performance",
       "supports": "!arm"
     },
+    "benchmark": {
+      "description": "Build benchmarks",
+      "dependencies": [
+        "benchmark"
+      ]
+    },
     "imgui": {
       "description": "Omath will define method to convert omath types to imgui types",
       "dependencies": [
@@ -30,12 +37,6 @@
       "description": "Build unit-tests using GTest",
       "dependencies": [
         "gtest"
-      ]
-    },
-    "benchmark": {
-      "description": "Build benchmarks",
-      "dependencies": [
-        "benchmark"
       ]
     }
   }

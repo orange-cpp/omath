@@ -23,7 +23,13 @@ option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build 
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
 
-if (CMAKE_TOOLCHAIN_FILE AND VCPKG_MANIFEST_FEATURES)
+option(OMATH_BUILD_VIA_VCPKG "Will enable building using vcpkg, vcpkg will override some options that were set in vcpkg.json file, and search for dependencies using vcpkg" OFF)
+
+if (OMATH_BUILD_VIA_VCPKG AND NOT CMAKE_TOOLCHAIN_FILE)
+    message(FATAL_ERROR "[${PROJECT_NAME}] CMAKE_TOOLCHAIN_FILE IS EMPTY! Please set env variable called 'VCPKG_ROOT' to vcpkg root folder here is an example: 'C:/vcpkg' or '/home/user/vcpkg' ")
+endif ()
+
+if (OMATH_BUILD_VIA_VCPKG AND VCPKG_MANIFEST_FEATURES)
     foreach (omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
         if (omath_feature STREQUAL "imgui")
             set(OMATH_IMGUI_INTEGRATION ON)
@@ -56,6 +62,7 @@ if (${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: AVX2 feature status ${OMATH_USE_AVX2}")
     message(STATUS "[${PROJECT_NAME}]: ImGUI integration feature status ${OMATH_IMGUI_INTEGRATION}")
     message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY}")
+    message(STATUS "[${PROJECT_NAME}]: Building using vcpkg ${OMATH_BUILD_VIA_VCPKG}")
 endif ()
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
