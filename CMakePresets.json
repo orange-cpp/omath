@@ -28,6 +28,25 @@
       }
     },
     {
+      "name": "windows-debug-vcpkg",
+      "displayName": "Debug",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2"
+      }
+    },
+    {
+      "name": "windows-release-vcpkg",
+      "displayName": "Release",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
+      }
+    },
+    {
       "name": "windows-release",
       "displayName": "Release",
       "inherits": "windows-base",
@@ -62,11 +81,29 @@
       }
     },
     {
+      "name": "linux-debug-vcpkg",
+      "displayName": "Linux Debug",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
+      }
+    },
+    {
       "name": "linux-release",
       "displayName": "Linux Release",
       "inherits": "linux-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-release-vcpkg",
+      "displayName": "Linux Release",
+      "inherits": "linux-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
       }
     },
     {
