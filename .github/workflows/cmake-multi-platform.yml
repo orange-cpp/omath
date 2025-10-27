@@ -21,8 +21,6 @@ jobs:
     container: archlinux:latest
     env:
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
-      OMATH_BUILD_VIA_VCPKG: ON
-
     steps:
       - name: Install basic tool-chain with pacman
         shell: bash
@@ -42,7 +40,7 @@ jobs:
           git clone --depth 1 https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
       - name: Configure (cmake --preset)
         shell: bash
-        run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF
+        run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DOMATH_BUILD_VIA_VCPKG=ON
 
       - name: Build
         shell: bash
@@ -61,7 +59,6 @@ jobs:
     name: Windows (MSVC)
     runs-on: windows-latest
     env:
-      VCPKG_ROOT: ${{ github.workspace }}\vcpkg
       OMATH_BUILD_VIA_VCPKG: ON
 
     steps:
@@ -76,14 +73,9 @@ jobs:
       - name: Set up MSVC developer command-prompt
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Set up vcpkg
-        shell: pwsh
-        run: |
-          git clone --depth 1 https://github.com/microsoft/vcpkg $env:VCPKG_ROOT
-
       - name: Configure (cmake --preset)
         shell: bash
-        run: cmake --preset windows-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF
+        run: cmake --preset windows-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DOMATH_BUILD_VIA_VCPKG=ON
 
       - name: Build
         shell: bash
