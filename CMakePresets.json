@@ -130,11 +130,29 @@
       }
     },
     {
+      "name": "darwin-debug-vcpkg",
+      "displayName": "Darwin Debug",
+      "inherits": "darwin-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
+      }
+    },
+    {
       "name": "darwin-release",
       "displayName": "Darwin Release",
       "inherits": "darwin-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "darwin-release-vcpkg",
+      "displayName": "Darwin Release",
+      "inherits": "darwin-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
       }
     }
   ]
