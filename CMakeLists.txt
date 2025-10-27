@@ -11,7 +11,7 @@ else ()
     check_cxx_compiler_flag("-mavx2" COMPILER_SUPPORTS_AVX2)
 endif ()
 
-option(OMATH_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
+option(OMATH_BUILD_TESTS "Build unit tests" OFF)
 option(OMATH_BUILD_BENCHMARK "Build benchmarks" OFF)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
