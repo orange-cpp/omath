@@ -1,6 +1,0 @@
-[submodule "extlibs/googletest"]
-	path = extlibs/googletest
-	url = https://github.com/google/googletest.git
-[submodule "extlibs/benchmark"]
-	path = extlibs/benchmark
-	url = https://github.com/google/benchmark.git

@@ -15,5 +15,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD_REQUIRED ON)
 
 
-target_link_libraries(${PROJECT_NAME} PRIVATE gtest gtest_main omath::omath)
+
+if (TARGET gtest)
+    target_link_libraries(${PROJECT_NAME} PRIVATE gtest gtest_main omath::omath)
+else()
+    find_package(GTest CONFIG REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main omath::omath)
+endif()
 gtest_discover_tests(${PROJECT_NAME})

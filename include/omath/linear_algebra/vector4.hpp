@@ -184,7 +184,7 @@ namespace omath
 
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
-        ImVec4 to_im_vec4() const noexcept
+        constexpr ImVec4 to_im_vec4() const noexcept
         {
             return {
                     static_cast<float>(this->x),

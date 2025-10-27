@@ -8,7 +8,10 @@
       "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
       "installDir": "${sourceDir}/cmake-build/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "cl.exe"
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "CMAKE_MAKE_PROGRAM": "Ninja"
       },
       "condition": {
         "type": "equals",
@@ -22,6 +25,25 @@
       "inherits": "windows-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-debug-vcpkg",
+      "displayName": "Debug",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2"
+      }
+    },
+    {
+      "name": "windows-release-vcpkg",
+      "displayName": "Release",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
       }
     },
     {
@@ -39,7 +61,10 @@
       "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
       "installDir": "${sourceDir}/cmake-build/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "CMAKE_MAKE_PROGRAM": "ninja"
       },
       "condition": {
         "type": "equals",
@@ -56,11 +81,29 @@
       }
     },
     {
+      "name": "linux-debug-vcpkg",
+      "displayName": "Linux Debug",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
+      }
+    },
+    {
       "name": "linux-release",
       "displayName": "Linux Release",
       "inherits": "linux-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-release-vcpkg",
+      "displayName": "Linux Release",
+      "inherits": "linux-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
       }
     },
     {
@@ -87,11 +130,29 @@
       }
     },
     {
+      "name": "darwin-debug-vcpkg",
+      "displayName": "Darwin Debug",
+      "inherits": "darwin-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
+      }
+    },
+    {
       "name": "darwin-release",
       "displayName": "Darwin Release",
       "inherits": "darwin-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "darwin-release-vcpkg",
+      "displayName": "Darwin Release",
+      "inherits": "darwin-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
       }
     }
   ]

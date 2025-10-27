@@ -19,23 +19,28 @@ jobs:
     name: Arch Linux (Clang)
     runs-on: ubuntu-latest
     container: archlinux:latest
-
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
     steps:
       - name: Install basic tool-chain with pacman
         shell: bash
         run: |
           pacman -Sy --noconfirm archlinux-keyring
           pacman -Syu --noconfirm --needed \
-                 git base-devel clang cmake ninja
+                 git base-devel clang cmake ninja zip unzip fmt
 
       - name: Checkout repository (with sub-modules)
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
       - name: Configure (cmake --preset)
         shell: bash
-        run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF
+        run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DOMATH_BUILD_VIA_VCPKG=ON -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
 
       - name: Build
         shell: bash
@@ -47,12 +52,14 @@ jobs:
 
 
 
-##############################################################################
-# 2)  Windows  –  MSVC / Ninja
-##############################################################################
+  ##############################################################################
+  # 2)  Windows  –  MSVC / Ninja
+  ##############################################################################
   windows-build-and-test:
     name: Windows (MSVC)
     runs-on: windows-latest
+    env:
+      OMATH_BUILD_VIA_VCPKG: ON
 
     steps:
       - name: Checkout repository (with sub-modules)
@@ -68,7 +75,7 @@ jobs:
 
       - name: Configure (cmake --preset)
         shell: bash
-        run: cmake --preset windows-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF
+        run: cmake --preset windows-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DOMATH_BUILD_VIA_VCPKG=ON -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
 
       - name: Build
         shell: bash
