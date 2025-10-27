@@ -27,7 +27,7 @@ jobs:
         run: |
           pacman -Sy --noconfirm archlinux-keyring
           pacman -Syu --noconfirm --needed \
-                 git base-devel clang cmake ninja
+                 git base-devel clang cmake ninja zip unzip fmt
 
       - name: Checkout repository (with sub-modules)
         uses: actions/checkout@v4
