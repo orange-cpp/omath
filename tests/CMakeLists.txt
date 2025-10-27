@@ -16,9 +16,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 
-if (TARGET gtest)
+if (TARGET gtest) # GTest is being linked as submodule
     target_link_libraries(${PROJECT_NAME} PRIVATE gtest gtest_main omath::omath)
-else()
+else() # GTest is being linked as vcpkg package
     find_package(GTest CONFIG REQUIRED)
     target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main omath::omath)
 endif()

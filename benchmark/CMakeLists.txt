@@ -11,9 +11,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON)
 
-if (TARGET benchmark::benchmark)
+if (TARGET benchmark::benchmark) # Benchmark is being linked as submodule
     target_link_libraries(${PROJECT_NAME} PRIVATE benchmark::benchmark omath)
 else()
-    find_package(benchmark CONFIG REQUIRED)
+    find_package(benchmark CONFIG REQUIRED) # Benchmark is being linked as vcpkg package
     target_link_libraries(${PROJECT_NAME} PRIVATE benchmark::benchmark omath)
 endif ()
