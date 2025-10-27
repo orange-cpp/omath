@@ -44,7 +44,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: cmake --build cmake-build/build/linux-release --target unit_tests omath
+        run: cmake --build cmake-build/build/linux-release-vcpkg --target unit_tests omath
 
       - name: Run unit_tests
         shell: bash
@@ -79,7 +79,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: cmake --build cmake-build/build/windows-release --target unit_tests omath
+        run: cmake --build cmake-build/build/windows-release-vcpkg --target unit_tests omath
 
       - name: Run unit_tests.exe
         shell: bash
