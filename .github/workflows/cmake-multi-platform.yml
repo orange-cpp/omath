@@ -40,8 +40,6 @@ jobs:
         shell: bash
         run: |
           git clone --depth 1 https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
-          "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics
-
       - name: Configure (cmake --preset)
         shell: bash
         run: cmake --preset linux-release -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF
@@ -82,7 +80,6 @@ jobs:
         shell: pwsh
         run: |
           git clone --depth 1 https://github.com/microsoft/vcpkg $env:VCPKG_ROOT
-          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
 
       - name: Configure (cmake --preset)
         shell: bash
