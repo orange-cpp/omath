@@ -16,7 +16,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 
-if (NOT OMATH_BUILD_VIA_VCPKG)
+if (TARGET gtest)
     target_link_libraries(${PROJECT_NAME} PRIVATE gtest gtest_main omath::omath)
 else()
     find_package(GTest CONFIG REQUIRED)
