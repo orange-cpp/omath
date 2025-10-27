@@ -14,7 +14,6 @@
       "name": "vcpkg-cmake-config",
       "host": true
     }
-
   ],
   "features": {
     "avx2": {
@@ -25,6 +24,18 @@
       "description": "Omath will define method to convert omath types to imgui types",
       "dependencies": [
         "imgui"
+      ]
+    },
+    "tests": {
+      "description": "Build unit-tests using GTest",
+      "dependencies": [
+        "gtest"
+      ]
+    },
+    "benchmark": {
+      "description": "Build benchmarks",
+      "dependencies": [
+        "benchmark"
       ]
     }
   }
