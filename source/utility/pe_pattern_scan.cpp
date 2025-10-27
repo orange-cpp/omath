@@ -233,7 +233,8 @@ namespace
     constexpr bool invalid_nt_header_file(const NtHeaderVariant& variant)
     {
         constexpr std::uint32_t nt_hdr_magic = 0x4550;
-        return std::visit([](const auto& header) -> bool { return header.signature != nt_hdr_magic; }, variant);
+        return std::visit([&nt_hdr_magic](const auto& header) -> bool { return header.signature != nt_hdr_magic; },
+                          variant);
     }
 
     struct ExtractedSection
