@@ -18,7 +18,7 @@ In order to send code back to the official OMath repository, you must first crea
 account ([fork](https://help.github.com/articles/creating-a-pull-request-from-a-fork/)) and
 then [create a pull request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/) back to OMath.
 
-OMath developement is performed on multiple branches. Changes are then pull requested into master. By default, changes
+OMath development is performed on multiple branches. Changes are then pull requested into master. By default, changes
 merged into master will not roll out to stable build users unless the `stable` tag is updated.
 
 ### 📜 Code-Style
