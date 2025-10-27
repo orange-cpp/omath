@@ -45,7 +45,7 @@
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
-        "CMAKE_MAKE_PROGRAM": "Ninja"
+        "CMAKE_MAKE_PROGRAM": "ninja"
       },
       "condition": {
         "type": "equals",
