@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(omath VERSION 3.9.2 LANGUAGES CXX)
+project(omath VERSION 4.0.0 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 include(CheckCXXCompilerFlag)
@@ -12,7 +12,7 @@ else ()
 endif ()
 
 option(OMATH_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
-option(OMATH_BUILD_BENCHMARK "Build benchmarks" ${PROJECT_IS_TOP_LEVEL})
+option(OMATH_BUILD_BENCHMARK "Build benchmarks" OFF)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
 option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ${COMPILER_SUPPORTS_AVX2})
@@ -21,7 +21,28 @@ option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" O
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OFF)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
-option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" OFF)
+option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" ON)
+
+option(OMATH_BUILD_VIA_VCPKG "Will enable building using vcpkg, vcpkg will override some options that were set in vcpkg.json file, and search for dependencies using vcpkg" OFF)
+
+if (OMATH_BUILD_VIA_VCPKG AND NOT CMAKE_TOOLCHAIN_FILE)
+    message(FATAL_ERROR "[${PROJECT_NAME}] CMAKE_TOOLCHAIN_FILE IS EMPTY! Please set env variable called 'VCPKG_ROOT' to vcpkg root folder here is an example: 'C:/vcpkg' or '/home/user/vcpkg' ")
+endif ()
+
+if (OMATH_BUILD_VIA_VCPKG AND VCPKG_MANIFEST_FEATURES)
+    foreach (omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
+        if (omath_feature STREQUAL "imgui")
+            set(OMATH_IMGUI_INTEGRATION ON)
+        elseif (omath_feature STREQUAL "avx2")
+            set(OMATH_USE_AVX2 ${COMPILER_SUPPORTS_AVX2})
+        elseif (omath_feature STREQUAL "tests")
+            set(OMATH_BUILD_TESTS ON)
+        elseif (omath_feature STREQUAL "benchmark")
+            set(OMATH_BUILD_BENCHMARK ON)
+        endif ()
+
+    endforeach ()
+endif ()
 
 if (OMATH_USE_AVX2 AND NOT COMPILER_SUPPORTS_AVX2)
     message(WARNING "OMATH_USE_AVX2 requested, but compiler/target does not support AVX2. Disabling.")
@@ -40,6 +61,7 @@ if (${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: AVX2 feature status ${OMATH_USE_AVX2}")
     message(STATUS "[${PROJECT_NAME}]: ImGUI integration feature status ${OMATH_IMGUI_INTEGRATION}")
     message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY}")
+    message(STATUS "[${PROJECT_NAME}]: Building using vcpkg ${OMATH_BUILD_VIA_VCPKG}")
 endif ()
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
@@ -84,7 +106,7 @@ if (OMATH_SUPRESS_SAFETY_CHECKS)
 endif ()
 
 if (OMATH_ENABLE_LEGACY)
-    target_compile_options(${PROJECT_NAME} PUBLIC OMATH_ENABLE_LEGACY)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_ENABLE_LEGACY)
 endif ()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -116,9 +138,6 @@ if (OMATH_USE_AVX2)
 endif ()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
-
-add_subdirectory(extlibs)
-
 
 if (OMATH_BUILD_TESTS)
     add_subdirectory(tests)

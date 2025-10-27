@@ -221,7 +221,7 @@ namespace omath
         }
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
-        ImVec2 to_im_vec2() const noexcept
+        constexpr ImVec2 to_im_vec2() const noexcept
         {
             return {static_cast<float>(this->x), static_cast<float>(this->y)};
         }

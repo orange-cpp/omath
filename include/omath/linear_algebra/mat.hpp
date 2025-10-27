@@ -39,6 +39,7 @@ namespace omath
     class Mat final
     {
     public:
+        using ContainedType = Type;
         constexpr Mat() noexcept
         {
             clear();
