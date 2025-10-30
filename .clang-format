@@ -56,7 +56,7 @@ SpaceBeforeParensOptions:
   AfterIfMacros: true
   AfterOverloadedOperator: false
   BeforeNonEmptyParentheses: false
-SpaceBeforeRangeBasedForLoopColon: false
+SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false
 SpacesInConditionalStatement: false

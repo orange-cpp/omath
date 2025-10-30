@@ -18,97 +18,104 @@ namespace omath::projectile_prediction
                                                   [[maybe_unused]] const Target& target) const
     {
 #if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
-        const float bulletGravity = m_gravityConstant * projectile.m_gravityScale;
-        const float v0 = projectile.m_launchSpeed;
-        const float v0Sqr = v0 * v0;
-        const Vector3 projOrigin = projectile.m_origin;
+        const float bullet_gravity = m_gravity_constant * projectile.m_gravity_scale;
+        const float v0 = projectile.m_launch_speed;
+        const float v0_sqr = v0 * v0;
+        const Vector3 proj_origin = projectile.m_origin;
 
         constexpr int SIMD_FACTOR = 8;
-        float currentTime = m_simulationTimeStep;
+        float current_time = m_simulation_time_step;
 
-        for (; currentTime <= m_maximumSimulationTime; currentTime += m_simulationTimeStep * SIMD_FACTOR)
+        for (; current_time <= m_maximum_simulation_time; current_time += m_simulation_time_step * SIMD_FACTOR)
         {
             const __m256 times
-                    = _mm256_setr_ps(currentTime, currentTime + m_simulationTimeStep,
-                                     currentTime + m_simulationTimeStep * 2, currentTime + m_simulationTimeStep * 3,
-                                     currentTime + m_simulationTimeStep * 4, currentTime + m_simulationTimeStep * 5,
-                                     currentTime + m_simulationTimeStep * 6, currentTime + m_simulationTimeStep * 7);
+                    = _mm256_setr_ps(current_time, current_time + m_simulation_time_step,
+                                     current_time + m_simulation_time_step * 2, current_time + m_simulation_time_step * 3,
+                                     current_time + m_simulation_time_step * 4, current_time + m_simulation_time_step * 5,
+                                     current_time + m_simulation_time_step * 6, current_time + m_simulation_time_step * 7);
 
-            const __m256 targetX
+            const __m256 target_x
                     = _mm256_fmadd_ps(_mm256_set1_ps(target.m_velocity.x), times, _mm256_set1_ps(target.m_origin.x));
-            const __m256 targetY
+            const __m256 target_y
                     = _mm256_fmadd_ps(_mm256_set1_ps(target.m_velocity.y), times, _mm256_set1_ps(target.m_origin.y));
-            const __m256 timesSq = _mm256_mul_ps(times, times);
-            const __m256 targetZ = _mm256_fmadd_ps(_mm256_set1_ps(target.m_velocity.z), times,
-                                                   _mm256_fnmadd_ps(_mm256_set1_ps(0.5f * m_gravityConstant), timesSq,
+            const __m256 times_sq = _mm256_mul_ps(times, times);
+            const __m256 target_z = _mm256_fmadd_ps(_mm256_set1_ps(target.m_velocity.z), times,
+                                                   _mm256_fnmadd_ps(_mm256_set1_ps(0.5f * m_gravity_constant), times_sq,
                                                                     _mm256_set1_ps(target.m_origin.z)));
 
-            const __m256 deltaX = _mm256_sub_ps(targetX, _mm256_set1_ps(projOrigin.x));
-            const __m256 deltaY = _mm256_sub_ps(targetY, _mm256_set1_ps(projOrigin.y));
-            const __m256 deltaZ = _mm256_sub_ps(targetZ, _mm256_set1_ps(projOrigin.z));
+            const __m256 delta_x = _mm256_sub_ps(target_x, _mm256_set1_ps(proj_origin.x));
+            const __m256 delta_y = _mm256_sub_ps(target_y, _mm256_set1_ps(proj_origin.y));
+            const __m256 delta_z = _mm256_sub_ps(target_z, _mm256_set1_ps(proj_origin.z));
 
-            const __m256 dSqr = _mm256_add_ps(_mm256_mul_ps(deltaX, deltaX), _mm256_mul_ps(deltaY, deltaY));
+            const __m256 d_sqr = _mm256_add_ps(_mm256_mul_ps(delta_x, delta_x), _mm256_mul_ps(delta_y, delta_y));
 
-            const __m256 bgTimesSq = _mm256_mul_ps(_mm256_set1_ps(bulletGravity), timesSq);
-            const __m256 term = _mm256_add_ps(deltaZ, _mm256_mul_ps(_mm256_set1_ps(0.5f), bgTimesSq));
-            const __m256 termSq = _mm256_mul_ps(term, term);
-            const __m256 numerator = _mm256_add_ps(dSqr, termSq);
-            const __m256 denominator = _mm256_add_ps(timesSq, _mm256_set1_ps(1e-8f)); // Avoid division by zero
-            const __m256 requiredV0Sqr = _mm256_div_ps(numerator, denominator);
+            const __m256 bg_times_sq = _mm256_mul_ps(_mm256_set1_ps(bullet_gravity), times_sq);
+            const __m256 term = _mm256_add_ps(delta_z, _mm256_mul_ps(_mm256_set1_ps(0.5f), bg_times_sq));
+            const __m256 term_sq = _mm256_mul_ps(term, term);
+            const __m256 numerator = _mm256_add_ps(d_sqr, term_sq);
+            const __m256 denominator = _mm256_add_ps(times_sq, _mm256_set1_ps(1e-8f)); // Avoid division by zero
+            const __m256 required_v0_sqr = _mm256_div_ps(numerator, denominator);
 
-            const __m256 v0SqrVec = _mm256_set1_ps(v0Sqr + 1e-3f);
-            const __m256 mask = _mm256_cmp_ps(requiredV0Sqr, v0SqrVec, _CMP_LE_OQ);
+            const __m256 v0_sqr_vec = _mm256_set1_ps(v0_sqr + 1e-3f);
+            const __m256 mask = _mm256_cmp_ps(required_v0_sqr, v0_sqr_vec, _CMP_LE_OQ);
 
-            const unsigned validMask = _mm256_movemask_ps(mask);
+            const unsigned valid_mask = _mm256_movemask_ps(mask);
 
-            if (!validMask)
+            if (!valid_mask)
                 continue;
 
-            alignas(32) float validTimes[SIMD_FACTOR];
-            _mm256_store_ps(validTimes, times);
+            alignas(32) float valid_times[SIMD_FACTOR];
+            _mm256_store_ps(valid_times, times);
 
             for (int i = 0; i < SIMD_FACTOR; ++i)
             {
-                if (!(validMask & (1 << i)))
+                if (!(valid_mask & (1 << i)))
                     continue;
 
-                const float candidateTime = validTimes[i];
+                const float candidate_time = valid_times[i];
 
-                if (candidateTime > m_maximumSimulationTime)
+                if (candidate_time > m_maximum_simulation_time)
                     continue;
 
                 // Fine search around candidate time
-                for (float fineTime = candidateTime - m_simulationTimeStep * 2;
-                     fineTime <= candidateTime + m_simulationTimeStep * 2; fineTime += m_simulationTimeStep)
+                for (float fine_time = candidate_time - m_simulation_time_step * 2;
+                     fine_time <= candidate_time + m_simulation_time_step * 2; fine_time += m_simulation_time_step)
                 {
-                    if (fineTime < 0)
+                    if (fine_time < 0)
                         continue;
 
-                    const Vector3 targetPos = target.PredictPosition(fineTime, m_gravityConstant);
-                    const auto pitch = CalculatePitch(projOrigin, targetPos, bulletGravity, v0, fineTime);
+                    // Manually compute predicted target position to avoid adding method to Target
+                    Vector3 target_pos = target.m_origin + target.m_velocity * fine_time;
+                    if (target.m_is_airborne)
+                        target_pos.z -= 0.5f * m_gravity_constant * fine_time * fine_time;
+
+                    const auto pitch = calculate_pitch(proj_origin, target_pos, bullet_gravity, v0, fine_time);
                     if (!pitch)
                         continue;
 
-                    const Vector3 delta = targetPos - projOrigin;
+                    const Vector3 delta = target_pos - proj_origin;
                     const float d = std::sqrt(delta.x * delta.x + delta.y * delta.y);
-                    const float height = d * std::tan(angles::DegreesToRadians(*pitch));
-                    return Vector3(targetPos.x, targetPos.y, projOrigin.z + height);
+                    const float height = d * std::tan(angles::degrees_to_radians(*pitch));
+                    return Vector3(target_pos.x, target_pos.y, proj_origin.z + height);
                 }
             }
         }
 
         // Fallback scalar processing for remaining times
-        for (; currentTime <= m_maximumSimulationTime; currentTime += m_simulationTimeStep)
+        for (; current_time <= m_maximum_simulation_time; current_time += m_simulation_time_step)
         {
-            const Vector3 targetPos = target.PredictPosition(currentTime, m_gravityConstant);
-            const auto pitch = CalculatePitch(projOrigin, targetPos, bulletGravity, v0, currentTime);
+            Vector3 target_pos = target.m_origin + target.m_velocity * current_time;
+            if (target.m_is_airborne)
+                target_pos.z -= 0.5f * m_gravity_constant * current_time * current_time;
+
+            const auto pitch = calculate_pitch(proj_origin, target_pos, bullet_gravity, v0, current_time);
             if (!pitch)
                 continue;
 
-            const Vector3 delta = targetPos - projOrigin;
+            const Vector3 delta = target_pos - proj_origin;
             const float d = std::sqrt(delta.x * delta.x + delta.y * delta.y);
-            const float height = d * std::tan(angles::DegreesToRadians(*pitch));
-            return Vector3(targetPos.x, targetPos.y, projOrigin.z + height);
+            const float height = d * std::tan(angles::degrees_to_radians(*pitch));
+            return Vector3(target_pos.x, target_pos.y, proj_origin.z + height);
         }
 
         return std::nullopt;
@@ -134,22 +141,22 @@ namespace omath::projectile_prediction
             return std::nullopt;
 
         const Vector3 delta = target_pos - proj_origin;
-        const float dSqr = delta.x * delta.x + delta.y * delta.y;
+        const float d_sqr = delta.x * delta.x + delta.y * delta.y;
         const float h = delta.z;
 
         const float term = h + 0.5f * bullet_gravity * time * time;
-        const float requiredV0Sqr = (dSqr + term * term) / (time * time);
-        const float v0Sqr = v0 * v0;
+        const float required_v0_sqr = (d_sqr + term * term) / (time * time);
+        const float v0_sqr = v0 * v0;
 
-        if (requiredV0Sqr > v0Sqr + 1e-3f)
+        if (required_v0_sqr > v0_sqr + 1e-3f)
             return std::nullopt;
 
-        if (dSqr == 0.0f)
+        if (d_sqr == 0.0f)
             return term >= 0.0f ? 90.0f : -90.0f;
 
-        const float d = std::sqrt(dSqr);
-        const float tanTheta = term / d;
-        return angles::RadiansToDegrees(std::atan(tanTheta));
+        const float d = std::sqrt(d_sqr);
+        const float tan_theta = term / d;
+        return angles::radians_to_degrees(std::atan(tan_theta));
 #else
         throw std::runtime_error(
                 std::format("{} AVX2 feature is not enabled!", std::source_location::current().function_name()));
