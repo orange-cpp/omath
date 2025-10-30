@@ -13,7 +13,7 @@ namespace omath::pathfinding
                                                   { return a.first.distance_to(point) < b.first.distance_to(point); });
 
         if (res == m_vertex_map.cend())
-            return std::unexpected("Failed to get clossest point");
+            return std::unexpected("Failed to get closest point");
 
         return res->first;
     }
