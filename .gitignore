@@ -1,6 +1,4 @@
 /cmake-build/
-/build/
-/_codeql_build_dir/
 /out
 *.DS_Store
 /extlibs/vcpkg
