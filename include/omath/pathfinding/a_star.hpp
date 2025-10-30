@@ -22,9 +22,5 @@ namespace omath::pathfinding
         static std::vector<Vector3<float>>
         reconstruct_final_path(const std::unordered_map<Vector3<float>, PathNode>& closed_list,
                                const Vector3<float>& current) noexcept;
-
-        [[nodiscard]]
-        static auto get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
-                                     const Vector3<float>& end_vertex) noexcept;
     };
 } // namespace omath::pathfinding

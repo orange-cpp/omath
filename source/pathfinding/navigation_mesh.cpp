@@ -3,6 +3,8 @@
 //
 #include "omath/pathfinding/navigation_mesh.hpp"
 #include <algorithm>
+#include <cstring>
+#include <limits>
 #include <stdexcept>
 namespace omath::pathfinding
 {
@@ -30,23 +32,36 @@ namespace omath::pathfinding
 
     std::vector<uint8_t> NavigationMesh::serialize() const noexcept
     {
-        auto dump_to_vector = []<typename T>(const T& t, std::vector<uint8_t>& vec)
-        {
-            for (size_t i = 0; i < sizeof(t); i++)
-                vec.push_back(*(reinterpret_cast<const uint8_t*>(&t) + i));
-        };
-
         std::vector<uint8_t> raw;
+
+        // Pre-calculate total size for better performance
+        size_t total_size = 0;
+        for (const auto& [vertex, neighbors]: m_vertex_map)
+        {
+            total_size += sizeof(vertex) + sizeof(uint16_t) + sizeof(Vector3<float>) * neighbors.size();
+        }
+        raw.reserve(total_size);
+
+        auto dump_to_vector = [&raw]<typename T>(const T& t)
+        {
+            const auto* byte_ptr = reinterpret_cast<const uint8_t*>(&t);
+            raw.insert(raw.end(), byte_ptr, byte_ptr + sizeof(T));
+        };
 
         for (const auto& [vertex, neighbors]: m_vertex_map)
         {
-            const auto neighbors_count = neighbors.size();
+            // Clamp neighbors count to fit in uint16_t (prevents silent data corruption)
+            // NOTE: If neighbors.size() > 65535, only the first 65535 neighbors will be serialized.
+            // This is a limitation of the current serialization format using uint16_t for count.
+            const auto clamped_count = std::min<size_t>(neighbors.size(), std::numeric_limits<uint16_t>::max());
+            const auto neighbors_count = static_cast<uint16_t>(clamped_count);
 
-            dump_to_vector(vertex, raw);
-            dump_to_vector(neighbors_count, raw);
+            dump_to_vector(vertex);
+            dump_to_vector(neighbors_count);
 
-            for (const auto& neighbor: neighbors)
-                dump_to_vector(neighbor, raw);
+            // Only serialize up to the clamped count
+            for (size_t i = 0; i < clamped_count; ++i)
+                dump_to_vector(neighbors[i]);
         }
         return raw;
     }
@@ -59,7 +74,7 @@ namespace omath::pathfinding
             {
                 throw std::runtime_error("Deserialize: Invalid input data size.");
             }
-            std::copy_n(vec.data() + offset, sizeof(value), reinterpret_cast<uint8_t*>(&value));
+            std::memcpy(&value, vec.data() + offset, sizeof(value));
             offset += sizeof(value);
         };
 
