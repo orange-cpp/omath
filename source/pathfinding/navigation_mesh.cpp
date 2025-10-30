@@ -3,6 +3,8 @@
 //
 #include "omath/pathfinding/navigation_mesh.hpp"
 #include <algorithm>
+#include <cstring>
+#include <limits>
 #include <stdexcept>
 namespace omath::pathfinding
 {
@@ -30,55 +32,68 @@ namespace omath::pathfinding
 
     std::vector<uint8_t> NavigationMesh::serialize() const noexcept
     {
-        auto dump_to_vector = []<typename T>(const T& t, std::vector<uint8_t>& vec)
+        std::vector<std::uint8_t> raw;
+
+        // Pre-calculate total size for better performance
+        std::size_t total_size = 0;
+        for (const auto& [vertex, neighbors] : m_vertex_map)
         {
-            for (size_t i = 0; i < sizeof(t); i++)
-                vec.push_back(*(reinterpret_cast<const uint8_t*>(&t) + i));
+            total_size += sizeof(vertex) + sizeof(std::uint16_t) + sizeof(Vector3<float>) * neighbors.size();
+        }
+        raw.reserve(total_size);
+
+        auto dump_to_vector = [&raw]<typename T>(const T& t)
+        {
+            const auto* byte_ptr = reinterpret_cast<const std::uint8_t*>(&t);
+            raw.insert(raw.end(), byte_ptr, byte_ptr + sizeof(T));
         };
 
-        std::vector<uint8_t> raw;
-
-        for (const auto& [vertex, neighbors]: m_vertex_map)
+        for (const auto& [vertex, neighbors] : m_vertex_map)
         {
-            const auto neighbors_count = neighbors.size();
+            // Clamp neighbors count to fit in uint16_t (prevents silent data corruption)
+            // NOTE: If neighbors.size() > 65535, only the first 65535 neighbors will be serialized.
+            // This is a limitation of the current serialization format using uint16_t for count.
+            const auto clamped_count =
+                    std::min<std::size_t>(neighbors.size(), std::numeric_limits<std::uint16_t>::max());
+            const auto neighbors_count = static_cast<std::uint16_t>(clamped_count);
 
-            dump_to_vector(vertex, raw);
-            dump_to_vector(neighbors_count, raw);
+            dump_to_vector(vertex);
+            dump_to_vector(neighbors_count);
 
-            for (const auto& neighbor: neighbors)
-                dump_to_vector(neighbor, raw);
+            // Only serialize up to the clamped count
+            for (std::size_t i = 0; i < clamped_count; ++i)
+                dump_to_vector(neighbors[i]);
         }
         return raw;
     }
 
     void NavigationMesh::deserialize(const std::vector<uint8_t>& raw) noexcept
     {
-        auto load_from_vector = [](const std::vector<uint8_t>& vec, size_t& offset, auto& value)
+        auto load_from_vector = [](const std::vector<uint8_t>& vec, std::size_t& offset, auto& value)
         {
             if (offset + sizeof(value) > vec.size())
-            {
                 throw std::runtime_error("Deserialize: Invalid input data size.");
-            }
+
             std::copy_n(vec.data() + offset, sizeof(value), reinterpret_cast<uint8_t*>(&value));
             offset += sizeof(value);
         };
 
         m_vertex_map.clear();
 
-        size_t offset = 0;
+        std::size_t offset = 0;
 
         while (offset < raw.size())
         {
             Vector3<float> vertex;
             load_from_vector(raw, offset, vertex);
 
-            uint16_t neighbors_count;
+            std::uint16_t neighbors_count;
             load_from_vector(raw, offset, neighbors_count);
 
             std::vector<Vector3<float>> neighbors;
             neighbors.reserve(neighbors_count);
 
-            for (size_t i = 0; i < neighbors_count; ++i)
+            for (std::size_t i = 0; i < neighbors_count; ++i)
             {
                 Vector3<float> neighbor;
                 load_from_vector(raw, offset, neighbor);

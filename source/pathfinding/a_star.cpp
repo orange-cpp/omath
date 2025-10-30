@@ -4,8 +4,24 @@
 #include "omath/pathfinding/a_star.hpp"
 #include <algorithm>
 #include <optional>
+#include <queue>
 #include <unordered_map>
 #include <unordered_set>
+
+namespace
+{
+    struct OpenListNode final
+    {
+        omath::Vector3<float> position;
+        float f_cost;
+
+        [[nodiscard]]
+        bool operator>(const OpenListNode& other) const noexcept
+        {
+            return f_cost > other.f_cost;
+        }
+    };
+}
 
 namespace omath::pathfinding
 {
@@ -37,23 +53,13 @@ namespace omath::pathfinding
         std::ranges::reverse(path);
         return path;
     }
-    auto Astar::get_perfect_node(const std::unordered_map<Vector3<float>, PathNode>& open_list,
-                                 const Vector3<float>& end_vertex) noexcept
-    {
-        return std::ranges::min_element(open_list,
-                                        [&end_vertex](const auto& a, const auto& b)
-                                        {
-                                            const float fa = a.second.g_cost + a.first.distance_to(end_vertex);
-                                            const float fb = b.second.g_cost + b.first.distance_to(end_vertex);
-                                            return fa < fb;
-                                        });
-    }
 
     std::vector<Vector3<float>> Astar::find_path(const Vector3<float>& start, const Vector3<float>& end,
                                                  const NavigationMesh& nav_mesh) noexcept
     {
         std::unordered_map<Vector3<float>, PathNode> closed_list;
-        std::unordered_map<Vector3<float>, PathNode> open_list;
+        std::unordered_map<Vector3<float>, PathNode> node_data;
+        std::priority_queue<OpenListNode, std::vector<OpenListNode>, std::greater<>> open_list;
 
         auto maybe_start_vertex = nav_mesh.get_closest_vertex(start);
         auto maybe_end_vertex = nav_mesh.get_closest_vertex(end);
@@ -64,20 +70,27 @@ namespace omath::pathfinding
         const auto start_vertex = maybe_start_vertex.value();
         const auto end_vertex = maybe_end_vertex.value();
 
-        open_list.emplace(start_vertex, PathNode{std::nullopt, 0.f});
+        node_data.emplace(start_vertex, PathNode{std::nullopt, 0.f});
+        open_list.push({start_vertex, start_vertex.distance_to(end_vertex)});
 
         while (!open_list.empty())
         {
-            auto current_it = get_perfect_node(open_list, end_vertex);
+            auto current = open_list.top().position;
+            open_list.pop();
 
-            const auto current = current_it->first;
-            const auto current_node = current_it->second;
+            if (closed_list.contains(current))
+                continue;
+
+            auto current_node_it = node_data.find(current);
+            if (current_node_it == node_data.end())
+                continue;
+
+            const auto current_node = current_node_it->second;
 
             if (current == end_vertex)
                 return reconstruct_final_path(closed_list, current);
 
             closed_list.emplace(current, current_node);
-            open_list.erase(current_it);
 
             for (const auto& neighbor: nav_mesh.get_neighbors(current))
             {
@@ -86,11 +99,14 @@ namespace omath::pathfinding
 
                 const float tentative_g_cost = current_node.g_cost + neighbor.distance_to(current);
 
-                // ReSharper disable once CppTooWideScopeInitStatement
-                const auto open_it = open_list.find(neighbor);
+                auto node_it = node_data.find(neighbor);
 
-                if (open_it == open_list.end() || tentative_g_cost < open_it->second.g_cost)
-                    open_list[neighbor] = PathNode{current, tentative_g_cost};
+                if (node_it == node_data.end() || tentative_g_cost < node_it->second.g_cost)
+                {
+                    node_data[neighbor] = PathNode{current, tentative_g_cost};
+                    const float f_cost = tentative_g_cost + neighbor.distance_to(end_vertex);
+                    open_list.push({neighbor, f_cost});
+                }
             }
         }
 
