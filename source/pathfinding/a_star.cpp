@@ -8,23 +8,26 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace omath::pathfinding
+namespace
 {
-    struct PathNode final
-    {
-        std::optional<Vector3<float>> came_from;
-        float g_cost = 0.f;
-    };
-
     struct OpenListNode final
     {
-        Vector3<float> position;
+        omath::Vector3<float> position;
         float f_cost;
 
         bool operator>(const OpenListNode& other) const noexcept
         {
             return f_cost > other.f_cost;
         }
+    };
+}
+
+namespace omath::pathfinding
+{
+    struct PathNode final
+    {
+        std::optional<Vector3<float>> came_from;
+        float g_cost = 0.f;
     };
 
     std::vector<Vector3<float>>
