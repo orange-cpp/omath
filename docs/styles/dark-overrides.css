@@ -1,0 +1,67 @@
+/* styles/dark-overrides.css */
+:root[data-md-color-scheme="mydark"] {
+    color-scheme: dark;                 /* important for native UI */
+    --md-default-bg-color: #0d0f12;
+    --md-code-bg-color: #12151a;
+    --md-footer-bg-color: #0b0d10;
+
+    --md-default-fg-color: #dfe5ef;
+    --md-typeset-color: #dfe5ef;
+    --md-default-fg-color--light: #aab2bf;
+    --md-code-fg-color: #e6edf3;
+
+    --md-primary-fg-color: #7c4dff;
+    --md-accent-fg-color: #c6ff00;
+
+    --md-default-fg-color--lighter: #2a2f36;
+    --md-shadow-z1: 0 2px 6px rgba(0,0,0,.35);
+}
+
+/* Ensure the page chrome actually uses the bg (prevents white flashes/areas) */
+html[data-md-color-scheme="mydark"],
+body[data-md-color-scheme="mydark"],
+.md-header, .md-main, .md-footer, .md-sidebar {
+    background-color: #0d0f12 !important;
+}
+
+/* Optional: code tokens */
+:root[data-md-color-scheme="mydark"] .md-typeset code,
+:root[data-md-color-scheme="mydark"] .md-typeset pre {
+    --md-code-hl-keyword-color: #c678dd;
+    --md-code-hl-string-color:  #98c379;
+    --md-code-hl-name-color:    #61afef;
+    --md-code-hl-number-color:  #d19a66;
+}
+/* Make default/body text white-ish in dark mode */
+:root[data-md-color-scheme="mydark"] {
+    --md-default-fg-color: #e6edf3;   /* global text */
+    --md-default-fg-color--light: #c5cfdb;
+    --md-default-fg-color--lighter: #9aa4b2;
+    --md-typeset-color: #e6edf3;      /* content text */
+}
+
+/* Ensure it actually applies (beats theme selectors) */
+:root[data-md-color-scheme="mydark"] body,
+:root[data-md-color-scheme="mydark"] .md-content,
+:root[data-md-color-scheme="mydark"] .md-typeset {
+    color: var(--md-typeset-color) !important;
+}
+
+/* Nav, header, footer text */
+:root[data-md-color-scheme="mydark"] .md-header,
+:root[data-md-color-scheme="mydark"] .md-footer,
+:root[data-md-color-scheme="mydark"] .md-nav,
+:root[data-md-color-scheme="mydark"] .md-nav__link {
+    color: var(--md-default-fg-color) !important;
+}
+
+/* Link color in articles (optional) */
+:root[data-md-color-scheme="mydark"] .md-typeset a {
+    color: var(--md-accent-fg-color);
+}
+
+/* Inline code text (optional) */
+:root[data-md-color-scheme="mydark"] code,
+:root[data-md-color-scheme="mydark"] pre {
+    color: var(--md-code-fg-color) !important;
+}
