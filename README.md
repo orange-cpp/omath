@@ -1,6 +1,6 @@
 <div align = center>
 
-![banner](.github/images/logos/omath_logo_macro.png)
+![banner](docs/images/logos/omath_logo_macro.png)
 
 ![Static Badge](https://img.shields.io/badge/license-libomath-orange)
 ![GitHub contributors](https://img.shields.io/github/contributors/orange-cpp/omath)
@@ -61,7 +61,7 @@ It provides the latest features, is highly customizable, has all for cheat devel
 
 <br>
 
-[![Youtube Video](.github/images/yt_previews/img.png)](https://youtu.be/lM_NJ1yCunw?si=-Qf5yzDcWbaxAXGQ)
+[![Youtube Video](docs/images/yt_previews/img.png)](https://youtu.be/lM_NJ1yCunw?si=-Qf5yzDcWbaxAXGQ)
 
 <br>
 
@@ -88,10 +88,10 @@ It provides the latest features, is highly customizable, has all for cheat devel
 -  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
 
 <!----------------------------------{ Images }--------------------------------->
-[APEX Preview]: .github/images/showcase/apex.png
-[BO2 Preview]: .github/images/showcase/cod_bo2.png
-[CS2 Preview]: .github/images/showcase/cs2.jpeg
-[TF2 Preview]: .github/images/showcase/tf2.jpg
+[APEX Preview]: docs/images/showcase/apex.png
+[BO2 Preview]: docs/images/showcase/cod_bo2.png
+[CS2 Preview]: docs/images/showcase/cs2.jpeg
+[TF2 Preview]: docs/images/showcase/tf2.jpg
 <!----------------------------------{ Buttons }--------------------------------->
 [INSTALL]: INSTALL.md
 [DOCUMENTATION]: http://libomath.org
