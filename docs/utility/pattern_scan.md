@@ -45,7 +45,7 @@ The pattern string is parsed into a sequence of byte **tokens**:
 * **Wildcard byte**: `?` or `??` matches **any single byte**.
 * **Separators**: any ASCII whitespace (space, tab, newline) is **ignored** and may be used to group tokens.
 
-> ✔️ Valid: `"48 8B ?? 05 00"`, `"90 90 90"`, `"??"`, `"00??FF"` (no spaces)
+> ✔️ Valid: `"48 8B ?? 05 00"`, `"90 90 90"`, `"??"`
 > ❌ Invalid: odd number of hex digits in a token, non-hex characters (besides `?` and whitespace)
 
 If the string cannot be parsed into a clean sequence of tokens, `parse_pattern()` returns `std::unexpected(PatternScanError::INVALID_PATTERN_STRING)`, and the public scan function returns **end**.
