@@ -84,3 +84,39 @@ jobs:
       - name: Run unit_tests.exe
         shell: bash
         run: ./out/Release/unit_tests.exe
+
+  ##############################################################################
+  # 3)  macOS  –  AppleClang / Ninja
+  ##############################################################################
+  macosx-build-and-test:
+    name: macOS (AppleClang)
+    runs-on: macOS-latest
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    steps:
+      - name: Install basic tool-chain with Homebrew
+        shell: bash
+        run: |
+          brew install cmake ninja
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: cmake --preset darwin-release-vcpkg -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+
+      - name: Build
+        shell: bash
+        run: cmake --build cmake-build/build/darwin-release-vcpkg --target unit_tests omath
+
+      - name: Run unit_tests
+        shell: bash
+        run: ./out/Release/unit_tests
