@@ -43,18 +43,45 @@ It provides the latest features, is highly customizable, has all for cheat devel
  </a>
 </div>
 
-# Features
-- **Efficiency**: Optimized for performance, ensuring quick computations using AVX2.
-- **Versatility**: Includes a wide array of mathematical functions and algorithms.
-- **Ease of Use**: Simplified interface for convenient integration into various projects.
-- **Projectile Prediction**: Projectile prediction engine with O(N) algo complexity, that can power you projectile aim-bot.
-- **3D Projection**: No need to find view-projection matrix anymore you can make your own projection pipeline.
-- **Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
-- **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
-- **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
-- **Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine and canonical OpenGL**.
-- **Cross platform**: Supports Windows, MacOS and Linux.
-- **Algorithms**: Has ability to scan for byte pattern with wildcards in PE files/modules, binary slices, works even with Wine apps. 
+## 🚀 Quick Example
+
+```cpp
+#include <omath/omath.hpp>
+
+using namespace omath;
+
+// 3D vector operations
+Vector3<float> a{1, 2, 3};
+Vector3<float> b{4, 5, 6};
+
+auto dot = a.dot(b);              // 32.0
+auto cross = a.cross(b);          // (-3, 6, -3)
+auto distance = a.distance_to(b); // ~5.196
+auto normalized = a.normalized(); // Unit vector
+
+// World-to-screen projection (Source Engine example)
+using namespace omath::source_engine;
+Camera camera(position, angles, viewport, fov, near_plane, far_plane);
+
+if (auto screen = camera.world_to_screen(world_position)) {
+    // Draw at screen->x, screen->y
+}
+```
+
+**[➡️ See more examples and tutorials][TUTORIALS]**
+
+# ✨ Features
+- **🚀 Efficiency**: Optimized for performance, ensuring quick computations using AVX2.
+- **🎯 Versatility**: Includes a wide array of mathematical functions and algorithms.
+- **✅ Ease of Use**: Simplified interface for convenient integration into various projects.
+- **🎮 Projectile Prediction**: Projectile prediction engine with O(N) algo complexity, that can power you projectile aim-bot.
+- **📐 3D Projection**: No need to find view-projection matrix anymore you can make your own projection pipeline.
+- **💥 Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
+- **📦 No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
+- **🔧 Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
+- **🎯 Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine and canonical OpenGL**.
+- **🌍 Cross platform**: Supports Windows, MacOS and Linux.
+- **🔍 Algorithms**: Has ability to scan for byte pattern with wildcards in PE files/modules, binary slices, works even with Wine apps. 
 <div align = center>
  
 # Gallery
@@ -84,6 +111,22 @@ It provides the latest features, is highly customizable, has all for cheat devel
 
 </div>
 
+## 📚 Documentation
+
+- **[Getting Started Guide](https://libomath.org/getting_started/)** - Installation and first steps
+- **[API Overview](https://libomath.org/api_overview/)** - Complete API reference
+- **[Tutorials](https://libomath.org/tutorials/)** - Step-by-step guides
+- **[FAQ](https://libomath.org/faq/)** - Common questions and answers
+- **[Troubleshooting](https://libomath.org/troubleshooting/)** - Solutions to common issues
+- **[Best Practices](https://libomath.org/best_practices/)** - Guidelines for effective usage
+
+## 🤝 Community & Support
+
+- **Discord**: [Join our community](https://discord.gg/eDgdaWbqwZ)
+- **Telegram**: [@orangennotes](https://t.me/orangennotes)
+- **Issues**: [Report bugs or request features](https://github.com/orange-cpp/omath/issues)
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
+
 # 💘 Acknowledgments
 -  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
 
@@ -93,8 +136,10 @@ It provides the latest features, is highly customizable, has all for cheat devel
 [CS2 Preview]: docs/images/showcase/cs2.jpeg
 [TF2 Preview]: docs/images/showcase/tf2.jpg
 <!----------------------------------{ Buttons }--------------------------------->
+[QUICKSTART]: docs/getting_started.md
 [INSTALL]: INSTALL.md
 [DOCUMENTATION]: http://libomath.org
+[TUTORIALS]: docs/tutorials.md
 [CONTRIBUTING]: CONTRIBUTING.md
 [EXAMPLES]: examples
 [SPONSOR]: https://boosty.to/orangecpp/purchase/3568644?ssource=DIRECT&share=subscription_link
