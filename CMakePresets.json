@@ -127,12 +127,24 @@
       "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
       "installDir": "${sourceDir}/cmake-build/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_MAKE_PROGRAM": "ninja"
       },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "darwin-base-vcpkg",
+      "hidden": true,
+      "inherits": "darwin-base",
+      "cacheVariables": {
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2"
       }
     },
     {
@@ -146,7 +158,7 @@
     {
       "name": "darwin-debug-vcpkg",
       "displayName": "Darwin Debug",
-      "inherits": "darwin-base",
+      "inherits": "darwin-base-vcpkg",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -154,7 +166,7 @@
     {
       "name": "darwin-release",
       "displayName": "Darwin Release",
-      "inherits": "darwin-debug",
+      "inherits": "darwin-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -162,7 +174,7 @@
     {
       "name": "darwin-release-vcpkg",
       "displayName": "Darwin Release",
-      "inherits": "darwin-debug",
+      "inherits": "darwin-base-vcpkg",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
