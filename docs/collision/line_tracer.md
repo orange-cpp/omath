@@ -168,4 +168,14 @@ public:
 
 ---
 
-*Last updated: 31 Oct 2025*
+## See Also
+
+- [Plane Documentation](../3d_primitives/plane.md) - Ray-plane intersection
+- [Box Documentation](../3d_primitives/box.md) - AABB collision detection
+- [Triangle Documentation](../linear_algebra/triangle.md) - Triangle primitives
+- [Tutorials - Collision Detection](../tutorials.md#tutorial-4-collision-detection) - Complete collision tutorial
+- [Getting Started Guide](../getting_started.md) - Quick start with OMath
+
+---
+
+*Last updated: 1 Nov 2025*
