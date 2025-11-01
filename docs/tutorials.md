@@ -1,4 +1,4 @@
-# OMath Tutorials
+# Tutorials
 
 This page provides step-by-step tutorials for common OMath use cases.
 
