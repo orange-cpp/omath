@@ -3,3 +3,4 @@ theme:
   name: darkly
 extra_css:
   - styles/center.css
+  - styles/custom-header.css
