@@ -1,4 +1,4 @@
-# Frequently Asked Questions (FAQ)
+# FAQ
 
 Common questions and answers about OMath.
 

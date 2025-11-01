@@ -1,4 +1,4 @@
-# Troubleshooting Guide
+# Troubleshooting
 
 Solutions to common problems when using OMath.
 

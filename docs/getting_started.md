@@ -1,5 +1,4 @@
-# Getting Started with OMath
-
+# Getting Started
 Welcome to OMath! This guide will help you get up and running with the library quickly.
 
 ## What is OMath?
