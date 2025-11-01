@@ -34,6 +34,10 @@ public:
     {
         return call_virtual_method<1, int>();
     }
+    [[nodiscard]] int rev_bar_const() const
+    {
+        return call_virtual_method<1, int>();
+    }
 };
 
 
@@ -47,4 +51,5 @@ TEST(unit_test_reverse_enineering, read_test)
 
     EXPECT_EQ(player_original.bar(), player_reversed->rev_bar());
     EXPECT_EQ(player_original.foo(), player_reversed->rev_foo());
+    EXPECT_EQ(player_original.bar(), player_reversed->rev_bar_const());
 }

@@ -23,15 +23,27 @@ namespace omath::rev_eng
             return *reinterpret_cast<Type*>(reinterpret_cast<std::uintptr_t>(this) + offset);
         }
 
-        template<std::size_t id, class ReturnType>
-        ReturnType call_virtual_method(auto... arg_list)
+        template<std::size_t id, class ReturnType, class... Args>
+        ReturnType call_virtual_method(Args&&... arg_list)
         {
 #ifdef _MSC_VER
             using VirtualMethodType = ReturnType(__thiscall*)(void*, decltype(arg_list)...);
 #else
-            using VirtualMethodType = ReturnType(*)(void*, decltype(arg_list)...);
+            using VirtualMethodType = ReturnType (*)(void*, decltype(arg_list)...);
 #endif
-            return (*reinterpret_cast<VirtualMethodType**>(this))[id](this, arg_list...);
+            return (*reinterpret_cast<VirtualMethodType**>(this))[id](this, std::forward<Args>(arg_list)...);
+        }
+        template<std::size_t id, class ReturnType,class... Args>
+        ReturnType call_virtual_method(Args&&... arg_list) const
+        {
+            using This = std::remove_cv_t<std::remove_pointer_t<decltype(this)>>;
+#ifdef _MSC_VER
+            using VirtualMethodType = ReturnType(__thiscall*)(const void*, decltype(arg_list)...);
+#else
+            using VirtualMethodType = ReturnType (*)(void*, decltype(arg_list)...);
+#endif
+            return (*reinterpret_cast<VirtualMethodType**>(const_cast<This*>(this)))[id](
+                    this, std::forward<Args>(arg_list)...);
         }
     };
 } // namespace omath::rev_eng
