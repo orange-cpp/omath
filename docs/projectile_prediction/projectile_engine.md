@@ -149,4 +149,14 @@ Return `nullopt` if `t*` is absent.
 
 ---
 
+## See Also
+
+- [Projectile Documentation](projectile.md) - Projectile properties
+- [Target Documentation](target.md) - Target state representation
+- [Legacy Implementation](proj_pred_engine_legacy.md) - Standard projectile prediction engine
+- [AVX2 Implementation](proj_pred_engine_avx2.md) - Optimized AVX2 engine
+- [Tutorials - Projectile Prediction](../tutorials.md#tutorial-3-projectile-prediction-aim-bot) - Complete aim-bot tutorial
+
+---
+
 *Last updated: 1 Nov 2025*
