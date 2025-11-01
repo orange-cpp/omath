@@ -1,4 +1,4 @@
-# `omath::Mat`
+# `omath::Mat` — Matrix class (C++20/23)
 
 > Header: your project’s `mat.hpp` (requires `vector3.hpp`)
 > Namespace: `omath`
