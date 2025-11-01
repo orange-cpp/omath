@@ -33,7 +33,7 @@ namespace omath::rev_eng
 #endif
             return (*reinterpret_cast<VirtualMethodType**>(this))[id](this, std::forward<Args>(arg_list)...);
         }
-        template<std::size_t id, class ReturnType,class... Args>
+        template<std::size_t id, class ReturnType, class... Args>
         ReturnType call_virtual_method(Args&&... arg_list) const
         {
             using This = std::remove_cv_t<std::remove_pointer_t<decltype(this)>>;
@@ -43,7 +43,7 @@ namespace omath::rev_eng
             using VirtualMethodType = ReturnType (*)(void*, decltype(arg_list)...);
 #endif
             return (*reinterpret_cast<VirtualMethodType**>(const_cast<This*>(this)))[id](
-                    this, std::forward<Args>(arg_list)...);
+                    const_cast<void*>(static_cast<const void*>(this)), std::forward<Args>(arg_list)...);
         }
     };
 } // namespace omath::rev_eng
