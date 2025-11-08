@@ -7,13 +7,17 @@
 #include "omath/linear_algebra/mat.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 #include "omath/projection/error_codes.hpp"
-#include <omath/trigonometry/angle.hpp>
 #include <expected>
+#include <omath/trigonometry/angle.hpp>
 #include <type_traits>
 
 #ifdef OMATH_BUILD_TESTS
-// ReSharper disable once CppInconsistentNaming
+// ReSharper disable CppInconsistentNaming
 class UnitTestProjection_Projection_Test;
+class UnitTestProjection_ScreenToNdcTopLeft_Test;
+class UnitTestProjection_ScreenToNdcBottomLeft_Test;
+// ReSharper restore CppInconsistentNaming
+
 #endif
 
 namespace omath::projection
@@ -52,6 +56,8 @@ namespace omath::projection
     {
 #ifdef OMATH_BUILD_TESTS
         friend UnitTestProjection_Projection_Test;
+        friend UnitTestProjection_ScreenToNdcTopLeft_Test;
+        friend UnitTestProjection_ScreenToNdcBottomLeft_Test;
 #endif
     public:
         enum class ScreenStart
@@ -152,7 +158,6 @@ namespace omath::projection
             return m_origin;
         }
 
-
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]] std::expected<Vector3<float>, Error>
         world_to_screen(const Vector3<float>& world_position) const noexcept
@@ -206,17 +211,19 @@ namespace omath::projection
                                   inverted_projection.at(2, 0)};
         }
 
+        template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]]
         std::expected<Vector3<float>, Error> screen_to_world(const Vector3<float>& screen_pos) const noexcept
         {
-            return view_port_to_screen(screen_to_ndc(screen_pos));
+            return view_port_to_screen(screen_to_ndc<screen_start>(screen_pos));
         }
 
+        template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]]
         std::expected<Vector3<float>, Error> screen_to_world(const Vector2<float>& screen_pos) const noexcept
         {
             const auto& [x, y] = screen_pos;
-            return screen_to_world({x, y, 1.f});
+            return screen_to_world<screen_start>({x, y, 1.f});
         }
 
     protected:
@@ -286,10 +293,17 @@ namespace omath::projection
             return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (ndc.y / 2.f + 0.5f) * m_view_port.m_height, ndc.z};
         }
 
+        template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]] Vector3<float> screen_to_ndc(const Vector3<float>& screen_pos) const noexcept
         {
-            return {screen_pos.x / m_view_port.m_width * 2.f - 1.f, 1.f - screen_pos.y / m_view_port.m_height * 2.f,
-                    screen_pos.z};
+            if constexpr (screen_start == ScreenStart::TOP_LEFT_CORNER)
+                return {screen_pos.x / m_view_port.m_width * 2.f - 1.f, 1.f - screen_pos.y / m_view_port.m_height * 2.f,
+                        screen_pos.z};
+            else if (screen_start == ScreenStart::BOTTOM_LEFT_CORNER)
+                return {screen_pos.x / m_view_port.m_width * 2.f - 1.f,
+                        (screen_pos.y / m_view_port.m_height - 0.5f) * 2.f, screen_pos.z};
+            else
+                std::unreachable();
         }
     };
 } // namespace omath::projection
