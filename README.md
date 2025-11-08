@@ -113,12 +113,12 @@ if (auto screen = camera.world_to_screen(world_position)) {
 
 ## 📚 Documentation
 
-- **[Getting Started Guide](https://libomath.org/getting_started/)** - Installation and first steps
-- **[API Overview](https://libomath.org/api_overview/)** - Complete API reference
-- **[Tutorials](https://libomath.org/tutorials/)** - Step-by-step guides
-- **[FAQ](https://libomath.org/faq/)** - Common questions and answers
-- **[Troubleshooting](https://libomath.org/troubleshooting/)** - Solutions to common issues
-- **[Best Practices](https://libomath.org/best_practices/)** - Guidelines for effective usage
+- **[Getting Started Guide](http://libomath.org/getting_started/)** - Installation and first steps
+- **[API Overview](http://libomath.org/api_overview/)** - Complete API reference
+- **[Tutorials](http://libomath.org/tutorials/)** - Step-by-step guides
+- **[FAQ](http://libomath.org/faq/)** - Common questions and answers
+- **[Troubleshooting](http://libomath.org/troubleshooting/)** - Solutions to common issues
+- **[Best Practices](http://libomath.org/best_practices/)** - Guidelines for effective usage
 
 ## 🤝 Community & Support
 
