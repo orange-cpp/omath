@@ -128,7 +128,25 @@ namespace omath::collision
             return false;
         }
 
-        [[nodiscard]] constexpr bool handle_line(VectorType& direction) noexcept
+        template<class V>
+        static constexpr bool near_zero(const V& v, float eps = 1e-7f)
+        {
+            return v.dot(v) <= eps * eps;
+        }
+
+        template<class V>
+        static constexpr V any_perp(const V& v)
+        {
+            // try cross with axes until non-zero
+            V d = v.cross(V{1, 0, 0});
+            if (near_zero(d))
+                d = v.cross(V{0, 1, 0});
+            if (near_zero(d))
+                d = v.cross(V{0, 0, 1});
+            return d;
+        }
+
+        constexpr bool handle_line(VectorType& direction)
         {
             const auto& a = m_points[0];
             const auto& b = m_points[1];
@@ -138,7 +156,16 @@ namespace omath::collision
 
             if (ab.point_to_same_direction(ao))
             {
-                direction = ab.cross(ao).cross(ab);
+                auto n = ab.cross(ao);
+                if (near_zero(n))
+                {
+                    // collinear: origin lies on ray AB (often on segment), pick any perp to escape
+                    direction = any_perp(ab);
+                }
+                else
+                {
+                    direction = n.cross(ab);
+                }
             }
             else
             {
