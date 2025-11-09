@@ -58,7 +58,7 @@ namespace omath::collision
         [[nodiscard]]
         constexpr bool handle(VectorType& direction)
         {
-            switch (m_points.size())
+            switch (size())
             {
             case 2:
                 return handle_line(direction);
