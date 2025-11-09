@@ -216,6 +216,11 @@ namespace omath
             return sum_2d() + z;
         }
 
+        [[nodiscard]]
+        bool point_to_same_direction(const Vector3& other) const
+        {
+            return dot(other) > static_cast<Type>(0);
+        }
         [[nodiscard]] std::expected<Angle<float, 0.f, 180.f, AngleFlags::Clamped>, Vector3Error>
         angle_between(const Vector3& other) const noexcept
         {
