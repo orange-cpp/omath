@@ -20,7 +20,7 @@ namespace omath::collision
     template<GjkVector VectorType = Vector3<float>>
     class Simplex final
     {
-        std::array<VectorType, 4> m_points{}; // value-initialized
+        std::array<VectorType, 4> m_points{};
         std::size_t m_size{0};
 
     public:
@@ -28,7 +28,6 @@ namespace omath::collision
 
         constexpr Simplex() = default;
 
-        // Keep your convenient "{a, b, c}" assignments, but guard size.
         constexpr Simplex& operator=(std::initializer_list<VectorType> list) noexcept
         {
             assert(list.size() <= capacity && "Simplex can have at most 4 points");
@@ -38,7 +37,6 @@ namespace omath::collision
             return *this;
         }
 
-        // Safe push_front: only shifts the valid range; no reads from uninitialized slots.
         constexpr void push_front(const VectorType& p) noexcept
         {
             const std::size_t limit = (m_size < capacity) ? m_size : capacity - 1;
@@ -49,7 +47,6 @@ namespace omath::collision
                 ++m_size;
         }
 
-        // Accessors
         constexpr const VectorType& operator[](std::size_t i) const noexcept
         {
             return m_points[i];
@@ -129,7 +126,7 @@ namespace omath::collision
         }
 
         template<class V>
-        static constexpr bool near_zero(const V& v, float eps = 1e-7f)
+        static constexpr bool near_zero(const V& v, const float eps = 1e-7f)
         {
             return v.dot(v) <= eps * eps;
         }
@@ -156,7 +153,8 @@ namespace omath::collision
 
             if (ab.point_to_same_direction(ao))
             {
-                auto n = ab.cross(ao);
+                // ReSharper disable once CppTooWideScopeInitStatement
+                auto n = ab.cross(ao); // Needed to valid handle collision if colliders placed at same origin pos
                 if (near_zero(n))
                 {
                     // collinear: origin lies on ray AB (often on segment), pick any perp to escape
