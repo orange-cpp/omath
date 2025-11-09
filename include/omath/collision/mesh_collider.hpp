@@ -38,7 +38,6 @@ namespace omath::collision
         Vector3<float> find_abs_furthest_vertex(const Vector3<float>& direction) const
         {
             return vertex_to_world_space(find_furthest_vertex(direction));
-
         }
         [[nodiscard]] Vector3<float> vertex_to_world_space( const Vector3<float>& local_vertex) const
         {
