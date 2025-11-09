@@ -25,8 +25,8 @@ namespace omath::collision
             // Get initial support point in any direction
             auto support = find_support_vertex(collider_a, collider_b, {1, 0, 0});
 
-            Simplex points;
-            points.push_front(support);
+            Simplex simplex;
+            simplex.push_front(support);
 
             auto direction = -support;
 
@@ -37,9 +37,9 @@ namespace omath::collision
                 if (support.dot(direction) <= 0.f)
                     return false;
 
-                points.push_front(support);
+                simplex.push_front(support);
 
-                if (handle_simplex(points, direction))
+                if (simplex.handle(direction))
                     return true;
             }
         }
