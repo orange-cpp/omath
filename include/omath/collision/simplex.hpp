@@ -34,20 +34,20 @@ namespace omath::collision
             m_size = std::min(m_size + 1, 4);
         }
 
-        Vector3<float>& operator[](const int i)
+        Vector3<float>& operator[](const std::size_t i)
         {
             return m_points[i];
         }
-        size_t size() const
+        [[nodiscard]] std::size_t size() const
         {
             return m_size;
         }
 
-        auto begin() const
+        [[nodiscard]] auto begin() const
         {
             return m_points.begin();
         }
-        auto end() const
+        [[nodiscard]] auto end() const
         {
             return m_points.end() - (4 - m_size);
         }
