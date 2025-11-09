@@ -3,10 +3,7 @@
 //
 
 #pragma once
-#include "omath/engines/source_engine/traits/pred_engine_trait.hpp"
 #include "omath/linear_algebra/vector3.hpp"
-#include <omath/3d_primitives/mesh.hpp>
-#include <vector>
 
 namespace omath::collision
 {
