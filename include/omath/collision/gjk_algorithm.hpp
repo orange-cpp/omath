@@ -9,25 +9,25 @@
 
 namespace omath::collision
 {
-    template<class ColliderType = MeshCollider>
+    template<class ColliderType = MeshCollider<>>
     class GjkAlgorithm final
     {
     public:
         [[nodiscard]]
-        static MeshCollider::VertexType find_support_vertex(const ColliderType& collider_a,
+        static ColliderType::VertexType find_support_vertex(const ColliderType& collider_a,
                                                             const ColliderType& collider_b,
-                                                            const MeshCollider::VertexType& direction)
+                                                            const ColliderType::VertexType& direction)
         {
             return collider_a.find_abs_furthest_vertex(direction) - collider_b.find_abs_furthest_vertex(-direction);
         }
 
         [[nodiscard]]
-        static bool is_collide(const MeshCollider& collider_a, const MeshCollider& collider_b)
+        static bool is_collide(const ColliderType& collider_a, const ColliderType& collider_b)
         {
             // Get initial support point in any direction
             auto support = find_support_vertex(collider_a, collider_b, {1, 0, 0});
 
-            Simplex<MeshCollider::VertexType> simplex;
+            Simplex<typename ColliderType::VertexType> simplex;
             simplex.push_front(support);
 
             auto direction = -support;
