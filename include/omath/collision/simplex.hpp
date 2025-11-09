@@ -9,7 +9,7 @@
 namespace omath::collision
 {
     template<class VectorType = Vector3<float>>
-    class Simplex
+    class Simplex final
     {
         std::array<VectorType, 4> m_points;
         std::size_t m_size;
