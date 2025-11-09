@@ -9,7 +9,7 @@
 
 namespace omath
 {
-    struct Hsv
+    struct Hsv final
     {
         float hue{};
         float saturation{};

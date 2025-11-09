@@ -113,30 +113,30 @@ namespace omath::collision
         return false;
     }
 
-    bool handle_tetrahedron(Simplex& points, Vector3<float>& direction)
+    bool handle_tetrahedron(Simplex& simplex, Vector3<float>& direction)
     {
-        Vector3<float> a = points[0];
-        Vector3<float> b = points[1];
-        Vector3<float> c = points[2];
-        Vector3<float> d = points[3];
+        const auto& a = simplex[0];
+        const auto& b = simplex[1];
+        const auto& c = simplex[2];
+        const auto& d = simplex[3];
 
-        Vector3<float> ab = b - a;
-        Vector3<float> ac = c - a;
-        Vector3<float> ad = d - a;
-        Vector3<float> ao = -a;
+        const Vector3<float> ab = b - a;
+        const Vector3<float> ac = c - a;
+        const Vector3<float> ad = d - a;
+        const Vector3<float> ao = -a;
 
-        Vector3<float> abc = ab.cross(ac);
-        Vector3<float> acd = ac.cross(ad);
-        Vector3<float> adb = ad.cross(ab);
+        const Vector3<float> abc = ab.cross(ac);
+        const Vector3<float> acd = ac.cross(ad);
+        const Vector3<float> adb = ad.cross(ab);
 
         if (abc.point_to_same_direction(ao))
-            return handle_triangle(points = {a, b, c}, direction);
+            return handle_triangle(simplex = {a, b, c}, direction);
 
         if (acd.point_to_same_direction(ao))
-            return handle_triangle(points = {a, c, d}, direction);
+            return handle_triangle(simplex = {a, c, d}, direction);
 
         if (adb.point_to_same_direction(ao))
-            return handle_triangle(points = {a, d, b}, direction);
+            return handle_triangle(simplex = {a, d, b}, direction);
 
 
         return true;
