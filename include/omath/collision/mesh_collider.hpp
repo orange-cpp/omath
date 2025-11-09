@@ -9,12 +9,14 @@
 
 namespace omath::collision
 {
+    template<class NumericType = float>
     class MeshCollider
     {
     public:
-        using VertexType = Vector3<float>;
-        MeshCollider(const std::vector<VertexType>& vertexes, const VertexType& origin, const VertexType& scale = {1.f, 1.f, 1.f})
-            : m_vertexes(vertexes),m_scale(scale), m_origin(origin)
+        using VertexType = Vector3<NumericType>;
+        MeshCollider(const std::vector<VertexType>& vertexes, const VertexType& origin,
+                     const VertexType& scale = {1.f, 1.f, 1.f})
+            : m_vertexes(vertexes), m_scale(scale), m_origin(origin)
         {
             if (m_vertexes.empty())
                 throw std::runtime_error("Collider cannot have 0 vertexes");
@@ -37,12 +39,14 @@ namespace omath::collision
             return *std::ranges::max_element(m_vertexes, [&direction](const auto& first, const auto& second)
                                              { return first.dot(direction) < second.dot(direction); });
         }
+
         [[nodiscard]]
         Vector3<float> find_abs_furthest_vertex(const Vector3<float>& direction) const
         {
             return vertex_to_world_space(find_furthest_vertex(direction));
         }
-        [[nodiscard]] Vector3<float> vertex_to_world_space( const Vector3<float>& local_vertex) const
+
+        [[nodiscard]] Vector3<float> vertex_to_world_space(const Vector3<float>& local_vertex) const
         {
             auto abs_vec = to_world() * mat_column_from_vector(local_vertex);
 
