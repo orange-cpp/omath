@@ -11,7 +11,7 @@ namespace omath::collision
     class MeshCollider
     {
     public:
-        using NumericType = MeshType::NumericType;
+        using NumericType = typename MeshType::NumericType;
 
         using VertexType = Vector3<NumericType>;
         explicit MeshCollider(MeshType mesh): m_mesh(std::move(mesh))
