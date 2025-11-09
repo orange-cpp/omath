@@ -217,7 +217,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        bool point_to_same_direction(const Vector3& other)
+        bool point_to_same_direction(const Vector3& other) const
         {
             return dot(other) > static_cast<Type>(0);
         }
