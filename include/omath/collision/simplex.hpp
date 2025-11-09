@@ -1,65 +1,114 @@
-//
-// Created by Vlad on 11/9/2025.
-//
-
 #pragma once
 #include "omath/linear_algebra/vector3.hpp"
 #include <array>
+#include <cassert>
+#include <initializer_list>
+#include <type_traits>
 
 namespace omath::collision
 {
-    template<class VectorType = Vector3<float>>
+
+    // Minimal structural contract for the vector type used by GJK.
+    template<class V>
+    concept GjkVector = requires(const V& a, const V& b) {
+        { -a } -> std::same_as<V>;
+        { a - b } -> std::same_as<V>;
+        { a.cross(b) } -> std::same_as<V>;
+        { a.point_to_same_direction(b) } -> std::same_as<bool>;
+    };
+
+    template<GjkVector VectorType = Vector3<float>>
     class Simplex final
     {
-        std::array<VectorType, 4> m_points;
-        std::size_t m_size;
+        std::array<VectorType, 4> m_points{}; // value-initialized
+        std::size_t m_size{0};
 
     public:
-        constexpr Simplex(): m_size(0)
-        {
-        }
+        static constexpr std::size_t capacity = 4;
 
-        constexpr Simplex& operator=(const std::initializer_list<VectorType>& list)
+        constexpr Simplex() = default;
+
+        // Keep your convenient "{a, b, c}" assignments, but guard size.
+        constexpr Simplex& operator=(std::initializer_list<VectorType> list) noexcept
         {
+            assert(list.size() <= capacity && "Simplex can have at most 4 points");
             m_size = 0;
-
-            for (const VectorType& point : list)
-                m_points[m_size++] = point;
-
+            for (const auto& p : list)
+                m_points[m_size++] = p;
             return *this;
         }
 
-        constexpr void push_front(const VectorType& point)
+        // Safe push_front: only shifts the valid range; no reads from uninitialized slots.
+        constexpr void push_front(const VectorType& p) noexcept
         {
-            m_points = {point, m_points[0], m_points[1], m_points[2]};
-            m_size = std::min<std::size_t>(m_size + 1, 4);
+            const std::size_t limit = (m_size < capacity) ? m_size : capacity - 1;
+            for (std::size_t i = limit; i > 0; --i)
+                m_points[i] = m_points[i - 1];
+            m_points[0] = p;
+            if (m_size < capacity)
+                ++m_size;
         }
 
-        constexpr const VectorType& operator[](const std::size_t i) const
+        // Accessors
+        constexpr const VectorType& operator[](std::size_t i) const noexcept
         {
             return m_points[i];
         }
-        [[nodiscard]]
-        constexpr std::size_t size() const
+        constexpr VectorType& operator[](std::size_t i) noexcept
+        {
+            return m_points[i];
+        }
+
+        [[nodiscard]] constexpr std::size_t size() const noexcept
         {
             return m_size;
         }
 
-        [[nodiscard]]
-        constexpr auto begin() const
+        [[nodiscard]] constexpr bool empty() const noexcept
+        {
+            return m_size == 0;
+        }
+
+        [[nodiscard]] constexpr const VectorType& front() const noexcept
+        {
+            return m_points[0];
+        }
+
+        [[nodiscard]] constexpr const VectorType& back() const noexcept
+        {
+            return m_points[m_size - 1];
+        }
+
+        [[nodiscard]] constexpr const VectorType* data() const noexcept
+        {
+            return m_points.data();
+        }
+
+        [[nodiscard]] constexpr auto begin() const noexcept
         {
             return m_points.begin();
         }
-        [[nodiscard]]
-        constexpr auto end() const
+
+        [[nodiscard]] constexpr auto end() const noexcept
         {
-            return m_points.end() - (4 - m_size);
+            return m_points.begin() + m_size;
         }
-        [[nodiscard]]
-        constexpr bool handle(VectorType& direction)
+
+        constexpr void clear() noexcept
         {
-            switch (size())
+            m_size = 0;
+        }
+
+        // GJK step: updates simplex + next search direction.
+        // Returns true iff the origin lies inside the tetrahedron.
+        [[nodiscard]] constexpr bool handle(VectorType& direction) noexcept
+        {
+            switch (m_size)
             {
+            case 0:
+                return false;
+            case 1:
+                return handle_point(direction);
             case 2:
                 return handle_line(direction);
             case 3:
@@ -70,29 +119,36 @@ namespace omath::collision
                 std::unreachable();
             }
         }
+
     private:
-        [[nodiscard]]
-        constexpr bool handle_line(VectorType& direction)
+        [[nodiscard]] constexpr bool handle_point(VectorType& direction) noexcept
+        {
+            const auto& a = m_points[0];
+            direction = -a;
+            return false;
+        }
+
+        [[nodiscard]] constexpr bool handle_line(VectorType& direction) noexcept
         {
             const auto& a = m_points[0];
             const auto& b = m_points[1];
 
             const auto ab = b - a;
-            // ReSharper disable once CppTooWideScopeInitStatement
             const auto ao = -a;
 
             if (ab.point_to_same_direction(ao))
+            {
                 direction = ab.cross(ao).cross(ab);
+            }
             else
             {
                 *this = {a};
                 direction = ao;
             }
-
             return false;
         }
-        [[nodiscard]]
-        constexpr bool handle_triangle(VectorType& direction)
+
+        [[nodiscard]] constexpr bool handle_triangle(VectorType& direction) noexcept
         {
             const auto& a = m_points[0];
             const auto& b = m_points[1];
@@ -104,38 +160,40 @@ namespace omath::collision
 
             const auto abc = ab.cross(ac);
 
+            // Region AC
             if (abc.cross(ac).point_to_same_direction(ao))
             {
                 if (ac.point_to_same_direction(ao))
                 {
                     *this = {a, c};
                     direction = ac.cross(ao).cross(ac);
-
                     return false;
                 }
                 *this = {a, b};
                 return handle_line(direction);
             }
 
+            // Region AB
             if (ab.cross(abc).point_to_same_direction(ao))
             {
                 *this = {a, b};
                 return handle_line(direction);
             }
+
+            // Above or below triangle
             if (abc.point_to_same_direction(ao))
             {
                 direction = abc;
             }
             else
             {
-                *this = {a, c, b};
+                *this = {a, c, b}; // flip winding
                 direction = -abc;
             }
-
             return false;
         }
-        [[nodiscard]]
-        constexpr bool handle_tetrahedron(VectorType& direction)
+
+        [[nodiscard]] constexpr bool handle_tetrahedron(VectorType& direction) noexcept
         {
             const auto& a = m_points[0];
             const auto& b = m_points[1];
@@ -156,18 +214,17 @@ namespace omath::collision
                 *this = {a, b, c};
                 return handle_triangle(direction);
             }
-
             if (acd.point_to_same_direction(ao))
             {
                 *this = {a, c, d};
                 return handle_triangle(direction);
             }
-
             if (adb.point_to_same_direction(ao))
             {
                 *this = {a, d, b};
                 return handle_triangle(direction);
             }
+            // Origin inside tetrahedron
             return true;
         }
     };

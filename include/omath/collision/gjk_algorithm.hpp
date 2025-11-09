@@ -9,12 +9,14 @@
 
 namespace omath::collision
 {
+    template<class ColliderType = MeshCollider>
     class GjkAlgorithm final
     {
     public:
         [[nodiscard]]
-        static Vector3<float> find_support_vertex(const MeshCollider& collider_a, const MeshCollider& collider_b,
-                                                  const Vector3<float>& direction)
+        static MeshCollider::VertexType find_support_vertex(const ColliderType& collider_a,
+                                                            const ColliderType& collider_b,
+                                                            const MeshCollider::VertexType& direction)
         {
             return collider_a.find_abs_furthest_vertex(direction) - collider_b.find_abs_furthest_vertex(-direction);
         }
@@ -25,7 +27,7 @@ namespace omath::collision
             // Get initial support point in any direction
             auto support = find_support_vertex(collider_a, collider_b, {1, 0, 0});
 
-            Simplex simplex;
+            Simplex<MeshCollider::VertexType> simplex;
             simplex.push_front(support);
 
             auto direction = -support;
@@ -44,4 +46,4 @@ namespace omath::collision
             }
         }
     };
-}// namespace omath::collision
+} // namespace omath::collision
