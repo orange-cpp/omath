@@ -10,9 +10,13 @@
 
 namespace omath::primitives
 {
-    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class NumericType = float>
+    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class Type = float>
     class Mesh final
     {
+    public:
+        using NumericType = Type;
+
+    private:
         using Vbo = std::vector<Vector3<NumericType>>;
         using Vao = std::vector<Vector3<std::size_t>>;
 
@@ -20,9 +24,9 @@ namespace omath::primitives
         Vbo m_vertex_buffer;
         Vao m_vertex_array_object;
 
-        Mesh(Vbo vbo, Vao vao): m_vertex_buffer(std::move(vbo)), m_vertex_array_object(std::move(vao))
+        Mesh(Vbo vbo, Vao vao, const Vector3<NumericType> scale = {1, 1, 1,})
+            : m_vertex_buffer(std::move(vbo)), m_vertex_array_object(std::move(vao)), m_scale(scale)
         {
-
         }
         void set_origin(const Vector3<NumericType>& new_origin)
         {
@@ -78,12 +82,13 @@ namespace omath::primitives
 
             return {abs_vec.at(0, 0), abs_vec.at(1, 0), abs_vec.at(2, 0)};
         }
+
         [[nodiscard]]
-        Triangle<Vector3<float>> make_face_in_world_space(const Vao::const_iterator index) const
+        Triangle<Vector3<float>> make_face_in_world_space(const Vao::const_iterator vao_iterator) const
         {
-            return {vertex_to_world_space(m_vertex_buffer.at(index->x)),
-                    vertex_to_world_space(m_vertex_buffer.at(index->y)),
-                    vertex_to_world_space(m_vertex_buffer.at(index->z))};
+            return {vertex_to_world_space(m_vertex_buffer.at(vao_iterator->x)),
+                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->y)),
+                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->z))};
         }
 
     private:
