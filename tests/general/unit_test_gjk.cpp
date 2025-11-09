@@ -19,7 +19,6 @@ namespace
 }
 TEST(UnitTestGjk, TestCollisionTrue)
 {
-
     const omath::collision::MeshCollider collider_a(mesh, {0.f, 0.f, 0.f});
     const omath::collision::MeshCollider collider_b(mesh, {0.f, 0.5f, 0.f});
 
