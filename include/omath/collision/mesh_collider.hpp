@@ -13,20 +13,22 @@ namespace omath::collision
     {
     public:
         using VertexType = Vector3<float>;
-        MeshCollider(const std::vector<Vector3<float>>& vertexes, const Vector3<float> origin)
-            : m_vertexes(vertexes), m_origin(origin)
+        MeshCollider(const std::vector<VertexType>& vertexes, const VertexType& origin, const VertexType& scale = {1.f, 1.f, 1.f})
+            : m_vertexes(vertexes),m_scale(scale), m_origin(origin)
         {
             if (m_vertexes.empty())
                 throw std::runtime_error("Collider cannot have 0 vertexes");
         }
         std::vector<Vector3<float>> m_vertexes;
+        Vector3<float> m_scale;
+
         Vector3<float> m_origin;
         source_engine::ViewAngles m_rotation;
 
         [[nodiscard]]
         source_engine::Mat4X4 to_world() const
         {
-            return mat_translation(m_origin) * source_engine::rotation_matrix(m_rotation);
+            return mat_scale(m_scale) * mat_translation(m_origin) * source_engine::rotation_matrix(m_rotation);
         }
 
         [[nodiscard]]
