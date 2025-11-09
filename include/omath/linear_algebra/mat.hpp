@@ -586,6 +586,17 @@ namespace omath
                 {0, 0, 0, 1},
         };
     }
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    constexpr Mat<4, 4, Type, St> mat_scale(const Vector3<Type>& scale) noexcept
+    {
+        return {
+                {scale.x, 0, 0, 0},
+                {0, scale.y, 0, 0},
+                {0, 0, scale.z, 0},
+                {0, 0, 0, 1},
+        };
+    }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard]]
