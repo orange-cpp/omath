@@ -20,7 +20,7 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        static bool check_collision(const MeshCollider& collider_a, const MeshCollider& collider_b)
+        static bool is_collide(const MeshCollider& collider_a, const MeshCollider& collider_b)
         {
             // Get initial support point in any direction
             auto support = find_support_vertex(collider_a, collider_b, {1, 0, 0});
