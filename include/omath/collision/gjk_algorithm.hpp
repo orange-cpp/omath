@@ -9,7 +9,7 @@
 
 namespace omath::collision
 {
-    template<class ColliderType = MeshCollider<>>
+    template<class ColliderType>
     class GjkAlgorithm final
     {
     public:
