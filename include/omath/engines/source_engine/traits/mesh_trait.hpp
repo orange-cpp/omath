@@ -4,6 +4,7 @@
 #pragma once
 #include <omath/engines/source_engine/constants.hpp>
 #include <omath/engines/source_engine/formulas.hpp>
+
 namespace omath::source_engine
 {
     class MeshTrait final
@@ -15,4 +16,4 @@ namespace omath::source_engine
             return source_engine::rotation_matrix(rotation);
         }
     };
-}
+} // namespace omath::source_engine
