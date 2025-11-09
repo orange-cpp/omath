@@ -1,0 +1,160 @@
+//
+// Created by Vlad on 11/9/2025.
+//
+
+#pragma once
+#include "omath/linear_algebra/vector3.hpp"
+#include <array>
+
+namespace omath::collision
+{
+    class Simplex
+    {
+        std::array<Vector3<float>, 4> m_points;
+        int m_size;
+
+    public:
+        Simplex(): m_size(0)
+        {
+        }
+
+        Simplex& operator=(const std::initializer_list<Vector3<float>> list)
+        {
+            m_size = 0;
+
+            for (const Vector3<float>& point : list)
+                m_points[m_size++] = point;
+
+            return *this;
+        }
+
+        void push_front(const Vector3<float>& point)
+        {
+            m_points = {point, m_points[0], m_points[1], m_points[2]};
+            m_size = std::min(m_size + 1, 4);
+        }
+
+        Vector3<float>& operator[](const int i)
+        {
+            return m_points[i];
+        }
+        size_t size() const
+        {
+            return m_size;
+        }
+
+        auto begin() const
+        {
+            return m_points.begin();
+        }
+        auto end() const
+        {
+            return m_points.end() - (4 - m_size);
+        }
+    };
+
+    bool handle_line(Simplex& points, Vector3<float>& direction)
+    {
+        Vector3<float> a = points[0];
+        const Vector3<float> b = points[1];
+
+        Vector3<float> ab = b - a;
+        const Vector3<float> ao = -a;
+
+        if (ab.point_to_same_direction(ao))
+            direction = ab.cross(ao).cross(ab);
+        else
+        {
+            points = {a};
+            direction = ao;
+        }
+
+        return false;
+    }
+
+    bool handle_triangle(Simplex& points, Vector3<float>& direction)
+    {
+        Vector3<float> a = points[0];
+        Vector3<float> b = points[1];
+        Vector3<float> c = points[2];
+
+        Vector3<float> ab = b - a;
+        Vector3<float> ac = c - a;
+        Vector3<float> ao = -a;
+
+        Vector3<float> abc = ab.cross(ac);
+
+        if (abc.cross(ac).point_to_same_direction(ao))
+        {
+            if (ac.point_to_same_direction(ao))
+            {
+                points = {a, c};
+                direction = ac.cross(ao).cross(ac);
+
+                return false;
+            }
+            return handle_line(points = {a, b}, direction);
+        }
+
+        if (ab.cross(abc).point_to_same_direction(ao))
+            return handle_line(points = {a, b}, direction);
+
+
+        if (abc.point_to_same_direction(ao))
+        {
+            direction = abc;
+        }
+        else
+        {
+            points = {a, c, b};
+            direction = -abc;
+        }
+
+        return false;
+    }
+
+    bool handle_tetrahedron(Simplex& points, Vector3<float>& direction)
+    {
+        Vector3<float> a = points[0];
+        Vector3<float> b = points[1];
+        Vector3<float> c = points[2];
+        Vector3<float> d = points[3];
+
+        Vector3<float> ab = b - a;
+        Vector3<float> ac = c - a;
+        Vector3<float> ad = d - a;
+        Vector3<float> ao = -a;
+
+        Vector3<float> abc = ab.cross(ac);
+        Vector3<float> acd = ac.cross(ad);
+        Vector3<float> adb = ad.cross(ab);
+
+        if (abc.point_to_same_direction(ao))
+            return handle_triangle(points = {a, b, c}, direction);
+
+        if (acd.point_to_same_direction(ao))
+            return handle_triangle(points = {a, c, d}, direction);
+
+        if (adb.point_to_same_direction(ao))
+            return handle_triangle(points = {a, d, b}, direction);
+
+
+        return true;
+    }
+
+    [[nodiscard]]
+    bool handle_simplex(Simplex& points, Vector3<float>& direction)
+    {
+        switch (points.size())
+        {
+        case 2:
+            return handle_line(points, direction);
+        case 3:
+            return handle_triangle(points, direction);
+        case 4:
+            return handle_tetrahedron(points, direction);
+        default:
+            return false;
+        }
+    }
+} // namespace omath::collision
