@@ -28,7 +28,7 @@ namespace omath::collision
         [[nodiscard]]
         source_engine::Mat4X4 to_world() const
         {
-            return mat_scale(m_scale) * mat_translation(m_origin) * source_engine::rotation_matrix(m_rotation);
+            return mat_translation(m_origin) * mat_scale(m_scale) * source_engine::rotation_matrix(m_rotation);
         }
 
         [[nodiscard]]
