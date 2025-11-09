@@ -55,10 +55,11 @@ namespace omath::collision
 
     bool handle_line(Simplex& points, Vector3<float>& direction)
     {
-        Vector3<float> a = points[0];
-        const Vector3<float> b = points[1];
+        const Vector3<float>& a = points[0];
+        const Vector3<float>& b = points[1];
 
-        Vector3<float> ab = b - a;
+        const Vector3<float> ab = b - a;
+        // ReSharper disable once CppTooWideScopeInitStatement
         const Vector3<float> ao = -a;
 
         if (ab.point_to_same_direction(ao))
@@ -74,15 +75,15 @@ namespace omath::collision
 
     bool handle_triangle(Simplex& points, Vector3<float>& direction)
     {
-        Vector3<float> a = points[0];
-        Vector3<float> b = points[1];
-        Vector3<float> c = points[2];
+        const Vector3<float>& a = points[0];
+        const Vector3<float>& b = points[1];
+        const Vector3<float>& c = points[2];
 
-        Vector3<float> ab = b - a;
-        Vector3<float> ac = c - a;
-        Vector3<float> ao = -a;
+        const Vector3<float> ab = b - a;
+        const Vector3<float> ac = c - a;
+        const Vector3<float> ao = -a;
 
-        Vector3<float> abc = ab.cross(ac);
+        const Vector3<float> abc = ab.cross(ac);
 
         if (abc.cross(ac).point_to_same_direction(ao))
         {
@@ -98,7 +99,6 @@ namespace omath::collision
 
         if (ab.cross(abc).point_to_same_direction(ao))
             return handle_line(points = {a, b}, direction);
-
 
         if (abc.point_to_same_direction(ao))
         {
@@ -137,7 +137,6 @@ namespace omath::collision
 
         if (adb.point_to_same_direction(ao))
             return handle_triangle(simplex = {a, d, b}, direction);
-
 
         return true;
     }
