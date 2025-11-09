@@ -12,6 +12,7 @@ namespace omath::collision
     class MeshCollider
     {
     public:
+        using VertexType = Vector3<float>;
         MeshCollider(const std::vector<Vector3<float>>& vertexes, const Vector3<float> origin)
             : m_vertexes(vertexes), m_origin(origin)
         {

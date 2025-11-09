@@ -20,7 +20,7 @@ TEST(UnitTestGjk, TestCollisionTrue)
     const omath::collision::MeshCollider collider_a(mesh, {0.f, 0.f, 0.f});
     const omath::collision::MeshCollider collider_b(mesh, {0.f, 0.5f, 0.f});
 
-    const auto result = omath::collision::GjkAlgorithm::is_collide(collider_a, collider_b);
+    const auto result = omath::collision::GjkAlgorithm<>::is_collide(collider_a, collider_b);
 
     EXPECT_TRUE(result);
 }
@@ -38,9 +38,9 @@ TEST(UnitTestGjk, TestCollisionFalse)
     };
 
     const omath::collision::MeshCollider collider_a(mesh, {0.f, 0.f, 0.f});
-    const omath::collision::MeshCollider collider_b(mesh, {0.f, 4.1f, 0.f});
+    const omath::collision::MeshCollider collider_b(mesh, {0.f, 2.1f, 0.f});
 
-    const auto result = omath::collision::GjkAlgorithm::is_collide(collider_a, collider_b);
+    const auto result = omath::collision::GjkAlgorithm<>::is_collide(collider_a, collider_b);
 
     EXPECT_FALSE(result);
 }
