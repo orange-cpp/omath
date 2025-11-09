@@ -16,16 +16,13 @@ namespace omath::collision
         using VertexType = Vector3<NumericType>;
         explicit MeshCollider(MeshType mesh): m_mesh(std::move(mesh))
         {
-
         }
 
         [[nodiscard]]
         const Vector3<float>& find_furthest_vertex(const Vector3<float>& direction) const
         {
             return *std::ranges::max_element(m_mesh.m_vertex_buffer, [&direction](const auto& first, const auto& second)
-            {
-                return first.dot(direction) < second.dot(direction);
-            });
+                                             { return first.dot(direction) < second.dot(direction); });
         }
 
         [[nodiscard]]
