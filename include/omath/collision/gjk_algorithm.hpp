@@ -3,8 +3,6 @@
 //
 
 #pragma once
-#include "mesh_collider.hpp"
-#include "omath/linear_algebra/vector3.hpp"
 #include "simplex.hpp"
 
 namespace omath::collision
@@ -12,11 +10,12 @@ namespace omath::collision
     template<class ColliderType>
     class GjkAlgorithm final
     {
+        using VertexType = typename ColliderType::VertexType;
+
     public:
         [[nodiscard]]
-        static ColliderType::VertexType find_support_vertex(const ColliderType& collider_a,
-                                                            const ColliderType& collider_b,
-                                                            const ColliderType::VertexType& direction)
+        static VertexType find_support_vertex(const ColliderType& collider_a, const ColliderType& collider_b,
+                                              const VertexType& direction)
         {
             return collider_a.find_abs_furthest_vertex(direction) - collider_b.find_abs_furthest_vertex(-direction);
         }
@@ -27,7 +26,7 @@ namespace omath::collision
             // Get initial support point in any direction
             auto support = find_support_vertex(collider_a, collider_b, {1, 0, 0});
 
-            Simplex<typename ColliderType::VertexType> simplex;
+            Simplex<VertexType> simplex;
             simplex.push_front(support);
 
             auto direction = -support;
