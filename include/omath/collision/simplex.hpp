@@ -47,10 +47,13 @@ namespace omath::collision
                 ++m_size;
         }
 
+        [[nodiscard]]
         constexpr const VectorType& operator[](std::size_t i) const noexcept
         {
             return m_points[i];
         }
+
+        [[nodiscard]]
         constexpr VectorType& operator[](std::size_t i) noexcept
         {
             return m_points[i];
@@ -126,12 +129,14 @@ namespace omath::collision
         }
 
         template<class V>
+        [[nodiscard]]
         static constexpr bool near_zero(const V& v, const float eps = 1e-7f)
         {
             return v.dot(v) <= eps * eps;
         }
 
         template<class V>
+        [[nodiscard]]
         static constexpr V any_perp(const V& v)
         {
             for (const auto& dir : {V{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})
@@ -140,6 +145,7 @@ namespace omath::collision
             std::unreachable();
         }
 
+        [[nodiscard]]
         constexpr bool handle_line(VectorType& direction)
         {
             const auto& a = m_points[0];
