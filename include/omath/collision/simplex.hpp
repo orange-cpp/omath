@@ -134,13 +134,10 @@ namespace omath::collision
         template<class V>
         static constexpr V any_perp(const V& v)
         {
-            // try cross with axes until non-zero
-            V d = v.cross(V{1, 0, 0});
-            if (near_zero(d))
-                d = v.cross(V{0, 1, 0});
-            if (near_zero(d))
-                d = v.cross(V{0, 0, 1});
-            return d;
+            for (const auto& dir : {V{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})
+                if (const auto d = v.cross(dir); !near_zero(d))
+                    return d;
+            std::unreachable();
         }
 
         constexpr bool handle_line(VectorType& direction)
