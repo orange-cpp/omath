@@ -4,3 +4,4 @@ theme:
 extra_css:
   - styles/center.css
   - styles/custom-header.css
+  - styles/links.css
