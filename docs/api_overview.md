@@ -11,10 +11,10 @@ OMath is organized into several logical modules:
 ### Core Mathematics
 - **Linear Algebra** - Vectors, matrices, triangles
 - **Trigonometry** - Angles, view angles, trigonometric functions
-- **3D Primitives** - Boxes, planes, geometric shapes
+- **3D Primitives** - Boxes, planes, meshes, geometric shapes
 
 ### Game Development
-- **Collision Detection** - Ray tracing, intersection tests
+- **Collision Detection** - Ray tracing, GJK/EPA algorithms, mesh collision, intersection tests
 - **Projectile Prediction** - Ballistics and aim-assist calculations
 - **Projection** - Camera systems and world-to-screen transformations
 - **Pathfinding** - A* algorithm, navigation meshes
@@ -131,6 +131,41 @@ omath::opengl_engine::Camera      // OpenGL
 
 ## Collision Detection
 
+### GJK/EPA Algorithms
+
+Advanced convex shape collision detection using the Gilbert-Johnson-Keerthi and Expanding Polytope algorithms:
+
+```cpp
+namespace omath::collision {
+    template<class ColliderType>
+    class GjkAlgorithm;
+    
+    template<class ColliderType>
+    class Epa;
+}
+```
+
+**GJK (Gilbert-Johnson-Keerthi):**
+* Detects collision between two convex shapes
+* Returns a 4-point simplex when collision is detected
+* O(k) complexity where k is typically < 20 iterations
+* Works with any collider implementing `find_abs_furthest_vertex()`
+
+**EPA (Expanding Polytope Algorithm):**
+* Computes penetration depth and separation normal
+* Takes GJK's output simplex as input
+* Provides contact information for physics simulation
+* Configurable iteration limit and convergence tolerance
+
+**Supporting Types:**
+
+| Type | Description | Key Features |
+|------|-------------|--------------|
+| `Simplex<VectorType>` | 1-4 point geometric simplex | Fixed capacity, GJK iteration support |
+| `MeshCollider<MeshType>` | Convex mesh collider | Support function for GJK/EPA |
+| `GjkHitInfo<VertexType>` | Collision result | Hit flag and simplex |
+| `Epa::Result` | Penetration info | Depth, normal, iteration count |
+
 ### LineTracer
 
 Ray-casting and line tracing utilities:
@@ -142,7 +177,7 @@ namespace omath::collision {
 ```
 
 **Features:**
-- Ray-triangle intersection
+- Ray-triangle intersection (Möller-Trumbore algorithm)
 - Ray-plane intersection
 - Ray-box intersection
 - Distance calculations
@@ -154,6 +189,14 @@ namespace omath::collision {
 |------|-------------|-------------|
 | `Plane` | Infinite plane | `intersects_ray()`, `distance_to_point()` |
 | `Box` | Axis-aligned bounding box | `contains()`, `intersects()` |
+| `Mesh` | Polygonal mesh with transforms | `vertex_to_world_space()`, `make_face_in_world_space()` |
+
+**Mesh Features:**
+* Vertex buffer (VBO) and index buffer (VAO/EBO) storage
+* Position, rotation, and scale transformations
+* Cached transformation matrix
+* Engine-specific coordinate system support
+* Compatible with `MeshCollider` for collision detection
 
 ---
 
@@ -241,6 +284,13 @@ Implements camera math for an engine:
 - `calc_view_matrix()` - Build view matrix from angles and position
 - `calc_projection_matrix()` - Build projection matrix from FOV and viewport
 
+### MeshTrait
+
+Provides mesh transformation for an engine:
+- `rotation_matrix()` - Build rotation matrix from engine-specific angles
+- Handles coordinate system differences (Y-up vs Z-up, left/right-handed)
+- Used by `Mesh` class for local-to-world transformations
+
 ### PredEngineTrait
 
 Provides physics/ballistics specific to an engine:
@@ -251,18 +301,18 @@ Provides physics/ballistics specific to an engine:
 
 ### Available Traits
 
-| Engine | Camera Trait | Pred Engine Trait | Constants | Formulas |
-|--------|--------------|-------------------|-----------|----------|
-| Source Engine | ✓ | ✓ | ✓ | ✓ |
-| Unity Engine | ✓ | ✓ | ✓ | ✓ |
-| Unreal Engine | ✓ | ✓ | ✓ | ✓ |
-| Frostbite | ✓ | ✓ | ✓ | ✓ |
-| IW Engine | ✓ | ✓ | ✓ | ✓ |
-| OpenGL | ✓ | ✓ | ✓ | ✓ |
+| Engine | Camera Trait | Mesh Trait | Pred Engine Trait | Constants | Formulas |
+|--------|--------------|------------|-------------------|-----------|----------|
+| Source Engine | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Unity Engine | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Unreal Engine | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Frostbite | ✓ | ✓ | ✓ | ✓ | ✓ |
+| IW Engine | ✓ | ✓ | ✓ | ✓ | ✓ |
+| OpenGL | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 **Documentation:**
 - See `docs/engines/<engine_name>/` for detailed per-engine docs
-- Each engine has separate docs for camera_trait, pred_engine_trait, constants, and formulas
+- Each engine has separate docs for camera_trait, mesh_trait, pred_engine_trait, constants, and formulas
 
 ---
 
@@ -524,4 +574,4 @@ UnityCamera camera{pos, SourceAngles{}}; // Wrong!
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 13 Nov 2025*
