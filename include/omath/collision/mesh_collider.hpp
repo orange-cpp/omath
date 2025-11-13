@@ -19,14 +19,14 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        const Vector3<float>& find_furthest_vertex(const Vector3<float>& direction) const
+        const VertexType& find_furthest_vertex(const VertexType& direction) const
         {
             return *std::ranges::max_element(m_mesh.m_vertex_buffer, [&direction](const auto& first, const auto& second)
                                              { return first.dot(direction) < second.dot(direction); });
         }
 
         [[nodiscard]]
-        Vector3<float> find_abs_furthest_vertex(const Vector3<float>& direction) const
+        VertexType find_abs_furthest_vertex(const VertexType& direction) const
         {
             return m_mesh.vertex_to_world_space(find_furthest_vertex(direction));
         }
