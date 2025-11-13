@@ -7,6 +7,13 @@
 
 namespace omath::collision
 {
+    template<class VertexType>
+    struct GjkHitInfo final
+    {
+        bool hit{false};
+        Simplex<VertexType> simplex; // valid only if hit == true and size==4
+    };
+
     template<class ColliderType>
     class GjkAlgorithm final
     {
@@ -23,7 +30,13 @@ namespace omath::collision
         [[nodiscard]]
         static bool is_collide(const ColliderType& collider_a, const ColliderType& collider_b)
         {
-            // Get initial support point in any direction
+            return is_collide_with_simplex_info(collider_a, collider_b).hit;
+        }
+
+        [[nodiscard]]
+        static GjkHitInfo<VertexType> is_collide_with_simplex_info(const ColliderType& collider_a,
+                                                                   const ColliderType& collider_b)
+        {
             auto support = find_support_vertex(collider_a, collider_b, {1, 0, 0});
 
             Simplex<VertexType> simplex;
@@ -36,12 +49,12 @@ namespace omath::collision
                 support = find_support_vertex(collider_a, collider_b, direction);
 
                 if (support.dot(direction) <= 0.f)
-                    return false;
+                    return {false, simplex};
 
                 simplex.push_front(support);
 
                 if (simplex.handle(direction))
-                    return true;
+                    return {true, simplex};
             }
         }
     };
