@@ -29,7 +29,6 @@ namespace omath::collision
 
         struct Result final
         {
-            bool success{false};
             Vertex normal{}; // outward normal (from B to A)
             Vertex penetration_vector;
             float depth{0.0f};
@@ -46,8 +45,8 @@ namespace omath::collision
 
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
-        static Result solve(const ColliderType& a, const ColliderType& b, const Simplex<Vertex>& simplex,
-                            const Params params = {})
+        static std::optional<Result> solve(const ColliderType& a, const ColliderType& b, const Simplex<Vertex>& simplex,
+                                           const Params params = {})
         {
             // --- Build initial polytope from simplex (4 points) ---
             std::vector<Vertex> vertexes;
@@ -91,7 +90,6 @@ namespace omath::collision
                 // Converged if we can’t push the face closer than tolerance
                 if (p_dist - f.d <= params.tolerance)
                 {
-                    out.success = true;
                     out.normal = f.n;
                     out.depth = f.d; // along unit normal
                     out.iterations = it + 1;
@@ -155,7 +153,6 @@ namespace omath::collision
                 for (const auto& f : faces)
                     if (f.d < best.d)
                         best = f;
-                out.success = true;
                 out.normal = best.n;
                 out.depth = best.d;
                 out.num_vertices = static_cast<int>(vertexes.size());
@@ -165,8 +162,10 @@ namespace omath::collision
                 const auto sign = out.normal.dot(centers) >= 0 ? 1 : -1;
 
                 out.penetration_vector = out.normal * out.depth * sign;
+
+                return out;
             }
-            return out;
+            return std::nullopt;
         }
 
     private:
