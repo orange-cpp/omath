@@ -26,12 +26,12 @@ namespace omath
         {
         }
 
-        Vector3<float> m_vertex1;
-        Vector3<float> m_vertex2;
-        Vector3<float> m_vertex3;
+        Vector m_vertex1;
+        Vector m_vertex2;
+        Vector m_vertex3;
 
         [[nodiscard]]
-        constexpr Vector3<float> calculate_normal() const
+        constexpr Vector calculate_normal() const
         {
             const auto b = side_b_vector();
             const auto a = side_a_vector();
@@ -40,25 +40,25 @@ namespace omath
         }
 
         [[nodiscard]]
-        float side_a_length() const
+        Vector::ContainedType side_a_length() const
         {
             return m_vertex1.distance_to(m_vertex2);
         }
 
         [[nodiscard]]
-        float side_b_length() const
+        Vector::ContainedType side_b_length() const
         {
             return m_vertex3.distance_to(m_vertex2);
         }
 
         [[nodiscard]]
-        constexpr Vector3<float> side_a_vector() const
+        constexpr Vector side_a_vector() const
         {
             return m_vertex1 - m_vertex2;
         }
 
         [[nodiscard]]
-        constexpr float hypot() const
+        constexpr Vector::ContainedType hypot() const
         {
             return m_vertex1.distance_to(m_vertex3);
         }
@@ -72,12 +72,12 @@ namespace omath
             return std::abs(side_a * side_a + side_b * side_b - hypot_value * hypot_value) <= 0.0001f;
         }
         [[nodiscard]]
-        constexpr Vector3<float> side_b_vector() const
+        constexpr Vector side_b_vector() const
         {
             return m_vertex3 - m_vertex2;
         }
         [[nodiscard]]
-        constexpr Vector3<float> mid_point() const
+        constexpr Vector mid_point() const
         {
             return (m_vertex1 + m_vertex2 + m_vertex3) / 3;
         }
