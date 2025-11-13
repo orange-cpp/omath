@@ -11,7 +11,8 @@
 namespace omath::collision
 {
     template<class V>
-    concept EpaVector = requires(const V& a, const V& b, float s) {
+    concept EpaVector = requires(const V& a, const V& b, float s)
+    {
         { a - b } -> std::same_as<V>;
         { a.cross(b) } -> std::same_as<V>;
         { a.dot(b) } -> std::same_as<float>;
@@ -280,7 +281,7 @@ namespace omath::collision
             simplex.push_front(support);
             auto direction = -support;
 
-            for (;;)
+            while (true)
             {
                 support = find_support_vertex(a, b, direction);
                 if (support.dot(direction) <= 0.f)
