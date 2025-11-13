@@ -1,13 +1,14 @@
-#include <gtest/gtest.h>
-#include "omath/linear_algebra/vector3.hpp"
+#include "omath/collision/epa_algorithm.hpp" // Epa<Collider> + GjkAlgorithmWithSimplex<Collider>
+#include "omath/collision/gjk_algorithm.hpp"
 #include "omath/collision/simplex.hpp"
-#include "omath/collision/epa_algorithm.hpp"      // Epa<Collider> + GjkAlgorithmWithSimplex<Collider>
-#include "omath/engines/source_engine/mesh.hpp"
 #include "omath/engines/source_engine/collider.hpp"
+#include "omath/engines/source_engine/mesh.hpp"
+#include "omath/linear_algebra/vector3.hpp"
+#include <gtest/gtest.h>
 
 using Mesh = omath::source_engine::Mesh;
 using Collider = omath::source_engine::MeshCollider;
-using GJK      = omath::collision::GjkAlgorithmWithSimplex<Collider>;
+using GJK      = omath::collision::GjkAlgorithm<Collider>;
 using EPA      = omath::collision::Epa<Collider>;
 
 TEST(UnitTestEpa, TestCollisionTrue)
@@ -29,7 +30,7 @@ TEST(UnitTestEpa, TestCollisionTrue)
     Collider A(a), B(b);
 
     // GJK
-    auto gjk = GJK::collide(A, B);
+    auto gjk = GJK::is_collide_with_simplex_info(A, B);
     ASSERT_TRUE(gjk.hit) << "GJK should report collision";
 
     // EPA
@@ -57,8 +58,8 @@ TEST(UnitTestEpa, TestCollisionTrue)
 
     Collider B_plus(b_plus), B_minus(b_minus);
 
-    const bool sep_plus  = !GJK::collide(A, B_plus).hit;
-    const bool sep_minus = !GJK::collide(A, B_minus).hit;
+    const bool sep_plus  = !GJK::is_collide_with_simplex_info(A, B_plus).hit;
+    const bool sep_minus = !GJK::is_collide_with_simplex_info(A, B_minus).hit;
 
     // Exactly one direction should separate
     EXPECT_NE(sep_plus, sep_minus) << "Exactly one of ±penetration must separate";
@@ -67,9 +68,9 @@ TEST(UnitTestEpa, TestCollisionTrue)
     const auto resolve = sep_plus ? ( pen * margin) : (-pen * margin);
 
     Mesh b_resolved = b; b_resolved.set_origin(b_resolved.get_origin() + resolve);
-    EXPECT_FALSE(GJK::collide(A, Collider(b_resolved)).hit) << "Resolved position should be non-colliding";
+    EXPECT_FALSE(GJK::is_collide(A, Collider(b_resolved))) << "Resolved position should be non-colliding";
 
     // Moving the other way should still collide
     Mesh b_wrong = b; b_wrong.set_origin(b_wrong.get_origin() - resolve);
-    EXPECT_TRUE(GJK::collide(A, Collider(b_wrong)).hit);
+    EXPECT_TRUE(GJK::is_collide(A, Collider(b_wrong)));
 }
