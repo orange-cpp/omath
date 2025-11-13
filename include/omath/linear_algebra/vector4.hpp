@@ -13,6 +13,7 @@ namespace omath
     class Vector4 : public Vector3<Type>
     {
     public:
+        using ContainedType = Type;
         Type w;
 
         constexpr Vector4(const Type& x, const Type& y, const Type& z, const Type& w): Vector3<Type>(x, y, z), w(w)
