@@ -11,8 +11,7 @@
 namespace omath::collision
 {
     template<class V>
-    concept EpaVector = requires(const V& a, const V& b, float s)
-    {
+    concept EpaVector = requires(const V& a, const V& b, float s) {
         { a - b } -> std::same_as<V>;
         { a.cross(b) } -> std::same_as<V>;
         { a.dot(b) } -> std::same_as<float>;
@@ -28,7 +27,7 @@ namespace omath::collision
         using Vertex = typename ColliderType::VertexType;
         static_assert(EpaVector<Vertex>, "VertexType must satisfy EpaVector concept");
 
-        struct Result
+        struct Result final
         {
             bool success{false};
             Vertex normal{}; // outward normal (from B to A)
@@ -38,7 +37,7 @@ namespace omath::collision
             int num_faces{0};
         };
 
-        struct Params
+        struct Params final
         {
             int max_iterations{64};
             float tolerance{1e-4f}; // absolute tolerance on distance growth
@@ -50,18 +49,18 @@ namespace omath::collision
                             const Params params = {})
         {
             // --- Build initial polytope from simplex (4 points) ---
-            std::vector<Vertex> verts;
-            verts.reserve(64);
+            std::vector<Vertex> vertexes;
+            vertexes.reserve(64);
             for (std::size_t i = 0; i < simplex.size(); ++i)
-                verts.push_back(simplex[i]);
+                vertexes.push_back(simplex[i]);
 
             // Initial tetra faces (windings corrected in make_face)
             std::vector<Face> faces;
             faces.reserve(128);
-            faces.emplace_back(make_face(verts, 0, 1, 2));
-            faces.emplace_back(make_face(verts, 0, 2, 3));
-            faces.emplace_back(make_face(verts, 0, 3, 1));
-            faces.emplace_back(make_face(verts, 1, 3, 2));
+            faces.emplace_back(make_face(vertexes, 0, 1, 2));
+            faces.emplace_back(make_face(vertexes, 0, 2, 3));
+            faces.emplace_back(make_face(vertexes, 0, 3, 1));
+            faces.emplace_back(make_face(vertexes, 1, 3, 2));
 
             auto heap = rebuild_heap(faces);
 
@@ -95,14 +94,14 @@ namespace omath::collision
                     out.normal = f.n;
                     out.depth = f.d; // along unit normal
                     out.iterations = it + 1;
-                    out.num_vertices = static_cast<int>(verts.size());
+                    out.num_vertices = static_cast<int>(vertexes.size());
                     out.num_faces = static_cast<int>(faces.size());
                     return out;
                 }
 
                 // Add new vertex
-                const int new_idx = static_cast<int>(verts.size());
-                verts.push_back(p);
+                const int new_idx = static_cast<int>(vertexes.size());
+                vertexes.push_back(p);
 
                 // Mark faces visible from p and collect their horizon
                 std::vector<char> to_delete(faces.size(), 0);
@@ -133,12 +132,12 @@ namespace omath::collision
 
                 // Stitch new faces around the horizon
                 for (const auto& e : boundary)
-                    faces.push_back(make_face(verts, e.a, e.b, new_idx));
+                    faces.push_back(make_face(vertexes, e.a, e.b, new_idx));
 
                 // Rebuild heap after topology change
                 heap = rebuild_heap(faces);
 
-                if (!std::isfinite(verts.back().dot(verts.back())))
+                if (!std::isfinite(vertexes.back().dot(vertexes.back())))
                     break; // safety
                 out.iterations = it + 1;
             }
@@ -153,31 +152,31 @@ namespace omath::collision
                 out.success = true;
                 out.normal = best.n;
                 out.depth = best.d;
-                out.num_vertices = static_cast<int>(verts.size());
+                out.num_vertices = static_cast<int>(vertexes.size());
                 out.num_faces = static_cast<int>(faces.size());
             }
             return out;
         }
 
     private:
-        struct Face
+        struct Face final
         {
             int i0, i1, i2;
             Vertex n; // unit outward normal
             float d; // n · v0  (>=0 ideally because origin is inside)
         };
 
-        struct Edge
+        struct Edge final
         {
             int a, b;
         };
 
-        struct HeapItem
+        struct HeapItem final
         {
             float d;
             int idx;
         };
-        struct HeapCmp
+        struct HeapCmp final
         {
             bool operator()(const HeapItem& lhs, const HeapItem& rhs) const noexcept
             {
@@ -186,6 +185,7 @@ namespace omath::collision
         };
         using Heap = std::priority_queue<HeapItem, std::vector<HeapItem>, HeapCmp>;
 
+        [[nodiscard]]
         static Heap rebuild_heap(const std::vector<Face>& faces)
         {
             Heap h;
@@ -194,6 +194,7 @@ namespace omath::collision
             return h;
         }
 
+        [[nodiscard]]
         static bool visible_from(const Face& f, const Vertex& p)
         {
             // positive if p is in front of the face
@@ -211,6 +212,7 @@ namespace omath::collision
                 boundary.push_back({a, b}); // horizon edge (directed)
         }
 
+        [[nodiscard]]
         static Face make_face(const std::vector<Vertex>& verts, int i0, int i1, int i2)
         {
             const Vertex& a0 = verts[i0];
@@ -233,18 +235,21 @@ namespace omath::collision
             return {i0, i1, i2, n, d};
         }
 
+        [[nodiscard]]
         static Vertex support_point(const ColliderType& a, const ColliderType& b, const Vertex& dir)
         {
             return a.find_abs_furthest_vertex(dir) - b.find_abs_furthest_vertex(-dir);
         }
 
         template<class V>
+        [[nodiscard]]
         static constexpr bool near_zero_vec(const V& v, const float eps = 1e-7f)
         {
             return v.dot(v) <= eps * eps;
         }
 
         template<class V>
+        [[nodiscard]]
         static constexpr V any_perp_vec(const V& v)
         {
             for (const auto& dir : {V{1, 0, 0}, V{0, 1, 0}, V{0, 0, 1}})
