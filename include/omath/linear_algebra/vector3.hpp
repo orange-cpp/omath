@@ -23,6 +23,7 @@ namespace omath
     class Vector3 : public Vector2<Type>
     {
     public:
+        using ContainedType = Type;
         Type z = static_cast<Type>(0);
         constexpr Vector3(const Type& x, const Type& y, const Type& z) noexcept: Vector2<Type>(x, y), z(z)
         {

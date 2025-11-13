@@ -19,6 +19,7 @@ namespace omath
     class Vector2
     {
     public:
+        using ContainedType = Type;
         Type x = static_cast<Type>(0);
         Type y = static_cast<Type>(0);
 
