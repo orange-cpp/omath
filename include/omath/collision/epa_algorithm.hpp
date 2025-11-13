@@ -58,10 +58,10 @@ namespace omath::collision
             // Initial tetra faces (windings corrected in make_face)
             std::vector<Face> faces;
             faces.reserve(128);
-            faces.push_back(make_face(verts, 0, 1, 2));
-            faces.push_back(make_face(verts, 0, 2, 3));
-            faces.push_back(make_face(verts, 0, 3, 1));
-            faces.push_back(make_face(verts, 1, 3, 2));
+            faces.emplace_back(make_face(verts, 0, 1, 2));
+            faces.emplace_back(make_face(verts, 0, 2, 3));
+            faces.emplace_back(make_face(verts, 0, 3, 1));
+            faces.emplace_back(make_face(verts, 1, 3, 2));
 
             auto heap = rebuild_heap(faces);
 
