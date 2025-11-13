@@ -213,11 +213,11 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        static Face make_face(const std::vector<Vertex>& verts, int i0, int i1, int i2)
+        static Face make_face(const std::vector<Vertex>& vertexes, int i0, int i1, int i2)
         {
-            const Vertex& a0 = verts[i0];
-            const Vertex& a1 = verts[i1];
-            const Vertex& a2 = verts[i2];
+            const Vertex& a0 = vertexes[i0];
+            const Vertex& a1 = vertexes[i1];
+            const Vertex& a2 = vertexes[i2];
             Vertex n = (a1 - a0).cross(a2 - a0);
             if (n.dot(n) <= 1e-30f)
             {
