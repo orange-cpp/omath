@@ -31,6 +31,11 @@ namespace omath::collision
             return m_mesh.vertex_to_world_space(find_furthest_vertex(direction));
         }
 
+        [[nodiscard]]
+        const VertexType& get_origin() const
+        {
+            return m_mesh.get_origin();
+        }
     private:
         MeshType m_mesh;
     };

@@ -36,22 +36,22 @@ TEST(UnitTestEpa, TestCollisionTrue)
     params.max_iterations = 64;
     params.tolerance = 1e-4f;
     auto epa = EPA::solve(A, B, gjk.simplex, params);
-    ASSERT_TRUE(epa.success) << "EPA should converge";
+    ASSERT_TRUE(epa.has_value()) << "EPA should converge";
 
     // Normal is unit
-    EXPECT_NEAR(epa.normal.dot(epa.normal), 1.0f, 1e-5f);
+    EXPECT_NEAR(epa->normal.dot(epa->normal), 1.0f, 1e-5f);
 
     // For this setup, depth ≈ 1.5 (2 - 0.5)
-    EXPECT_NEAR(epa.depth, 1.5f, 1e-3f);
+    EXPECT_NEAR(epa->depth, 1.5f, 1e-3f);
 
     // Normal axis sanity: near X axis
-    EXPECT_NEAR(std::abs(epa.normal.x), 1.0f, 1e-3f);
-    EXPECT_NEAR(epa.normal.y, 0.0f, 1e-3f);
-    EXPECT_NEAR(epa.normal.z, 0.0f, 1e-3f);
+    EXPECT_NEAR(std::abs(epa->normal.x), 1.0f, 1e-3f);
+    EXPECT_NEAR(epa->normal.y, 0.0f, 1e-3f);
+    EXPECT_NEAR(epa->normal.z, 0.0f, 1e-3f);
 
     // Try both signs with a tiny margin (avoid grazing contacts)
     const float margin = 1.0f + 1e-3f;
-    const auto pen = epa.normal * epa.depth;
+    const auto pen = epa->normal * epa->depth;
 
     Mesh b_plus = b;
     b_plus.set_origin(b_plus.get_origin() + pen * margin);
@@ -102,25 +102,25 @@ TEST(UnitTestEpa, TestCollisionTrue2)
     params.max_iterations = 64;
     params.tolerance = 1e-4f;
     auto epa = EPA::solve(A, B, gjk.simplex, params);
-    ASSERT_TRUE(epa.success) << "EPA should converge";
+    ASSERT_TRUE(epa.has_value()) << "EPA should converge";
 
     // Normal is unit-length
-    EXPECT_NEAR(epa.normal.dot(epa.normal), 1.0f, 1e-5f);
+    EXPECT_NEAR(epa->normal.dot(epa->normal), 1.0f, 1e-5f);
 
     // For centers at 0 and +0.5 and half-extent 1 -> depth ≈ 1.5
-    EXPECT_NEAR(epa.depth, 1.5f, 1e-3f);
+    EXPECT_NEAR(epa->depth, 1.5f, 1e-3f);
 
     // Axis sanity: mostly X
-    EXPECT_NEAR(std::abs(epa.normal.x), 1.0f, 1e-3f);
-    EXPECT_NEAR(epa.normal.y, 0.0f, 1e-3f);
-    EXPECT_NEAR(epa.normal.z, 0.0f, 1e-3f);
+    EXPECT_NEAR(std::abs(epa->normal.x), 1.0f, 1e-3f);
+    EXPECT_NEAR(epa->normal.y, 0.0f, 1e-3f);
+    EXPECT_NEAR(epa->normal.z, 0.0f, 1e-3f);
 
     // Choose a deterministic sign: orient penetration from A toward B
     const auto centers = b.get_origin() - a.get_origin(); // (0.5, 0, 0)
-    float sign = (epa.normal.dot(centers) >= 0.0f) ? +1.0f : -1.0f;
+    float sign = (epa->normal.dot(centers) >= 0.0f) ? +1.0f : -1.0f;
 
     constexpr float margin = 1.0f + 1e-3f; // tiny slack to avoid grazing
-    const auto pen = epa.normal * epa.depth * sign;
+    const auto pen = epa->normal * epa->depth * sign;
 
     // Apply once: B + pen must separate; the opposite must still collide
     Mesh b_resolved = b;
@@ -132,8 +132,8 @@ TEST(UnitTestEpa, TestCollisionTrue2)
     EXPECT_TRUE(GJK::is_collide(A, Collider(b_wrong))) << "Opposite direction should still intersect";
 
     // Some book-keeping sanity
-    EXPECT_GT(epa.iterations, 0);
-    EXPECT_LT(epa.iterations, params.max_iterations);
-    EXPECT_GE(epa.num_faces, 4);
-    EXPECT_GT(epa.num_vertices, 4);
+    EXPECT_GT(epa->iterations, 0);
+    EXPECT_LT(epa->iterations, params.max_iterations);
+    EXPECT_GE(epa->num_faces, 4);
+    EXPECT_GT(epa->num_vertices, 4);
 }
