@@ -31,6 +31,7 @@ namespace omath::collision
         {
             bool success{false};
             Vertex normal{}; // outward normal (from B to A)
+            Vertex penetration_vector;
             float depth{0.0f};
             int iterations{0};
             int num_vertices{0};
@@ -96,6 +97,11 @@ namespace omath::collision
                     out.iterations = it + 1;
                     out.num_vertices = static_cast<int>(vertexes.size());
                     out.num_faces = static_cast<int>(faces.size());
+
+                    const auto centers = b.get_origin() - a.get_origin();
+                    const auto sign = out.normal.dot(centers) >= 0 ? 1 : -1;
+
+                    out.penetration_vector = out.normal * out.depth * sign;
                     return out;
                 }
 
@@ -154,6 +160,11 @@ namespace omath::collision
                 out.depth = best.d;
                 out.num_vertices = static_cast<int>(vertexes.size());
                 out.num_faces = static_cast<int>(faces.size());
+
+                const auto centers = b.get_origin() - a.get_origin();
+                const auto sign = out.normal.dot(centers) >= 0 ? 1 : -1;
+
+                out.penetration_vector = out.normal * out.depth * sign;
             }
             return out;
         }
