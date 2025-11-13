@@ -25,7 +25,7 @@ namespace omath::primitives
         Vao m_vertex_array_object;
 
         Mesh(Vbo vbo, Vao vao, const Vector3<NumericType> scale = {1, 1, 1,})
-            : m_vertex_buffer(std::move(vbo)), m_vertex_array_object(std::move(vao)), m_scale(scale)
+            : m_vertex_buffer(std::move(vbo)), m_vertex_array_object(std::move(vao)), m_scale(std::move(scale))
         {
         }
         void set_origin(const Vector3<NumericType>& new_origin)
