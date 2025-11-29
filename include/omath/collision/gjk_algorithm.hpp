@@ -17,14 +17,14 @@ namespace omath::collision
     template<class ColliderType>
     class GjkAlgorithm final
     {
-        using VertexType = typename ColliderType::VertexType;
-
+        using VertexType = ColliderType::VertexType;
+        using VectorType = VertexType::VectorType;
     public:
         [[nodiscard]]
-        static VertexType find_support_vertex(const ColliderType& collider_a, const ColliderType& collider_b,
-                                              const VertexType& direction)
+        static VectorType find_support_vertex(const ColliderType& collider_a, const ColliderType& collider_b,
+                                              const VectorType& direction)
         {
-            return collider_a.find_abs_furthest_vertex(direction) - collider_b.find_abs_furthest_vertex(-direction);
+            return collider_a.find_abs_furthest_vertex(direction).position - collider_b.find_abs_furthest_vertex(-direction).position;
         }
 
         [[nodiscard]]
@@ -34,12 +34,12 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        static GjkHitInfo<VertexType> is_collide_with_simplex_info(const ColliderType& collider_a,
+        static GjkHitInfo<VectorType> is_collide_with_simplex_info(const ColliderType& collider_a,
                                                                    const ColliderType& collider_b)
         {
-            auto support = find_support_vertex(collider_a, collider_b, {1, 0, 0});
+            auto support = find_support_vertex(collider_a, collider_b, VectorType{1, 0, 0});
 
-            Simplex<VertexType> simplex;
+            Simplex<VectorType> simplex;
             simplex.push_front(support);
 
             auto direction = -support;

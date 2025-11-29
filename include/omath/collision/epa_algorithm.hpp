@@ -24,13 +24,13 @@ namespace omath::collision
     class Epa final
     {
     public:
-        using Vertex = typename ColliderType::VertexType;
-        static_assert(EpaVector<Vertex>, "VertexType must satisfy EpaVector concept");
+        using VectorType = typename ColliderType::VectorType;
+        static_assert(EpaVector<VectorType>, "VertexType must satisfy EpaVector concept");
 
         struct Result final
         {
-            Vertex normal{}; // outward normal (from B to A)
-            Vertex penetration_vector;
+            VectorType normal{}; // outward normal (from B to A)
+            VectorType penetration_vector;
             float depth{0.0f};
             int iterations{0};
             int num_vertices{0};
@@ -45,11 +45,11 @@ namespace omath::collision
 
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
-        static std::optional<Result> solve(const ColliderType& a, const ColliderType& b, const Simplex<Vertex>& simplex,
+        static std::optional<Result> solve(const ColliderType& a, const ColliderType& b, const Simplex<VectorType>& simplex,
                                            const Params params = {})
         {
             // --- Build initial polytope from simplex (4 points) ---
-            std::vector<Vertex> vertexes;
+            std::vector<VectorType> vertexes;
             vertexes.reserve(64);
             for (std::size_t i = 0; i < simplex.size(); ++i)
                 vertexes.push_back(simplex[i]);
@@ -84,7 +84,7 @@ namespace omath::collision
                 const Face f = faces[fidx];
 
                 // Get farthest point in face normal direction
-                const Vertex p = support_point(a, b, f.n);
+                const VectorType p = support_point(a, b, f.n);
                 const float p_dist = f.n.dot(p);
 
                 // Converged if we can’t push the face closer than tolerance
@@ -172,7 +172,7 @@ namespace omath::collision
         struct Face final
         {
             int i0, i1, i2;
-            Vertex n; // unit outward normal
+            VectorType n; // unit outward normal
             float d; // n · v0  (>=0 ideally because origin is inside)
         };
 
@@ -205,7 +205,7 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        static bool visible_from(const Face& f, const Vertex& p)
+        static bool visible_from(const Face& f, const VectorType& p)
         {
             // positive if p is in front of the face
             return (f.n.dot(p) - f.d) > 1e-7f;
@@ -223,12 +223,12 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        static Face make_face(const std::vector<Vertex>& vertexes, int i0, int i1, int i2)
+        static Face make_face(const std::vector<VectorType>& vertexes, int i0, int i1, int i2)
         {
-            const Vertex& a0 = vertexes[i0];
-            const Vertex& a1 = vertexes[i1];
-            const Vertex& a2 = vertexes[i2];
-            Vertex n = (a1 - a0).cross(a2 - a0);
+            const VectorType& a0 = vertexes[i0];
+            const VectorType& a1 = vertexes[i1];
+            const VectorType& a2 = vertexes[i2];
+            VectorType n = (a1 - a0).cross(a2 - a0);
             if (n.dot(n) <= 1e-30f)
             {
                 n = any_perp_vec(a1 - a0); // degenerate guard
@@ -246,9 +246,9 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        static Vertex support_point(const ColliderType& a, const ColliderType& b, const Vertex& dir)
+        static VectorType support_point(const ColliderType& a, const ColliderType& b, const VectorType& dir)
         {
-            return a.find_abs_furthest_vertex(dir) - b.find_abs_furthest_vertex(-dir);
+            return a.find_abs_furthest_vertex(dir).position - b.find_abs_furthest_vertex(-dir).position;
         }
 
         template<class V>
