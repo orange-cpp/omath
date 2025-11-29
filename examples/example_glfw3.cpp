@@ -265,7 +265,7 @@ int main()
 
     // ---------- Camera setup ----------
     omath::projection::ViewPort viewPort{static_cast<float>(SCR_WIDTH), static_cast<float>(SCR_HEIGHT)};
-    
+
     Vector3<float> camPos{0.f, 0.f, 3.f};
 
     float nearPlane = 0.1f;
@@ -301,7 +301,8 @@ int main()
 
         RotationAngles rot = cube.get_rotation_angles();
         rot.yaw += omath::opengl_engine::YawAngle::from_degrees(40.f * deltaTime);
-        rot.roll += omath::opengl_engine::YawAngle::from_degrees(40.f * deltaTime);
+        rot.roll += omath::opengl_engine::RollAngle::from_degrees(40.f * deltaTime);
+        rot.pitch += omath::opengl_engine::PitchAngle::from_degrees(40.f * deltaTime);
         cube.set_rotation(rot);
 
         const Mat4x4& viewProj = camera.get_view_projection_matrix();
