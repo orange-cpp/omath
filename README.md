@@ -107,6 +107,10 @@ if (auto screen = camera.world_to_screen(world_position)) {
 ![TF2 Preview]
 
 <br>
+
+![OpenGL Preview]
+
+<br>
 <br>
 
 </div>
@@ -135,6 +139,7 @@ if (auto screen = camera.world_to_screen(world_position)) {
 [BO2 Preview]: docs/images/showcase/cod_bo2.png
 [CS2 Preview]: docs/images/showcase/cs2.jpeg
 [TF2 Preview]: docs/images/showcase/tf2.jpg
+[OpenGL Preview]: docs/images/showcase/opengl.png
 <!----------------------------------{ Buttons }--------------------------------->
 [QUICKSTART]: docs/getting_started.md
 [INSTALL]: INSTALL.md
