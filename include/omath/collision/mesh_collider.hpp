@@ -11,31 +11,37 @@ namespace omath::collision
     class MeshCollider
     {
     public:
-        using NumericType = typename MeshType::NumericType;
+        using NumericType = MeshType::NumericType;
 
-        using VertexType = Vector3<NumericType>;
+        using VertexType = MeshType::VertexType;
+        using VectorType = VertexType::VectorType;
         explicit MeshCollider(MeshType mesh): m_mesh(std::move(mesh))
         {
         }
 
         [[nodiscard]]
-        const VertexType& find_furthest_vertex(const VertexType& direction) const
+        const VertexType& find_furthest_vertex(const VectorType& direction) const
         {
-            return *std::ranges::max_element(m_mesh.m_vertex_buffer, [&direction](const auto& first, const auto& second)
-                                             { return first.dot(direction) < second.dot(direction); });
+            return *std::ranges::max_element(
+                    m_mesh.m_vertex_buffer, [&direction](const auto& first, const auto& second)
+                    { return first.position.dot(direction) < second.position.dot(direction); });
         }
 
         [[nodiscard]]
-        VertexType find_abs_furthest_vertex(const VertexType& direction) const
+        VertexType find_abs_furthest_vertex(const VectorType& direction) const
         {
-            return m_mesh.vertex_to_world_space(find_furthest_vertex(direction));
+            const auto& vertex = find_furthest_vertex(direction);
+            auto new_vertex = vertex;
+            new_vertex.position = m_mesh.vertex_to_world_space(find_furthest_vertex(direction).position);
+            return new_vertex;
         }
 
         [[nodiscard]]
-        const VertexType& get_origin() const
+        const VectorType& get_origin() const
         {
             return m_mesh.get_origin();
         }
+
     private:
         MeshType m_mesh;
     };

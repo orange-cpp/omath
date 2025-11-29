@@ -6,25 +6,44 @@
 #include <omath/linear_algebra/mat.hpp>
 #include <omath/linear_algebra/vector3.hpp>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace omath::primitives
 {
-    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class Type = float>
+    struct Vertex
+    {
+        using VectorType = Vector3<float>;
+        Vector3<float> position;
+        Vector3<float> normal;
+        Vector3<float> uv;
+    };
+
+    template<typename T> concept HasPosition = requires(T vertex) { vertex.position; };
+    template<typename T> concept HasNormal = requires(T vertex) { vertex.normal; };
+    template<typename T> concept HasUv = requires(T vertex) { vertex.uv; };
+
+    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class VertType = Vertex>
     class Mesh final
     {
     public:
-        using NumericType = Type;
-
+        using NumericType = float;
+        using VertexType = Vertex;
     private:
-        using Vbo = std::vector<Vector3<NumericType>>;
+        using Vbo = std::vector<VertexType>;
         using Vao = std::vector<Vector3<std::size_t>>;
 
     public:
         Vbo m_vertex_buffer;
         Vao m_vertex_array_object;
 
-        Mesh(Vbo vbo, Vao vao, const Vector3<NumericType> scale = {1, 1, 1,})
+        Mesh(Vbo vbo, Vao vao,
+             const Vector3<NumericType> scale =
+                     {
+                             1,
+                             1,
+                             1,
+                     })
             : m_vertex_buffer(std::move(vbo)), m_vertex_array_object(std::move(vao)), m_scale(std::move(scale))
         {
         }
@@ -76,19 +95,20 @@ namespace omath::primitives
         }
 
         [[nodiscard]]
-        Vector3<float> vertex_to_world_space(const Vector3<float>& vertex) const
+        Vector3<float> vertex_to_world_space(const Vector3<float>& vertex_position) const
         {
-            auto abs_vec = get_to_world_matrix() * mat_column_from_vector(vertex);
+            auto abs_vec = get_to_world_matrix() * mat_column_from_vector(vertex_position);
 
             return {abs_vec.at(0, 0), abs_vec.at(1, 0), abs_vec.at(2, 0)};
         }
 
         [[nodiscard]]
         Triangle<Vector3<float>> make_face_in_world_space(const Vao::const_iterator vao_iterator) const
+        requires HasPosition<VertexType>
         {
-            return {vertex_to_world_space(m_vertex_buffer.at(vao_iterator->x)),
-                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->y)),
-                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->z))};
+            return {vertex_to_world_space(m_vertex_buffer.at(vao_iterator->x).position),
+                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->y).position),
+                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->z).position)};
         }
 
     private:
