@@ -35,6 +35,8 @@ if (VCPKG_MANIFEST_FEATURES)
             set(OMATH_BUILD_TESTS ON)
         elseif (omath_feature STREQUAL "benchmark")
             set(OMATH_BUILD_BENCHMARK ON)
+        elseif (omath_feature STREQUAL "examples")
+            set(OMATH_BUILD_EXAMPLES ON)
         endif ()
 
     endforeach ()

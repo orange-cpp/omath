@@ -90,8 +90,9 @@ namespace omath::primitives
         {
             if (m_to_world_matrix)
                 return m_to_world_matrix.value();
-            m_to_world_matrix =
-                    mat_translation(m_origin) * mat_scale(m_scale) * MeshTypeTrait::rotation_matrix(m_rotation_angles);
+            m_to_world_matrix = mat_translation<float, Mat4X4::get_store_ordering()>(m_origin)
+                                * MeshTypeTrait::rotation_matrix(m_rotation_angles)
+                                * mat_scale<float, Mat4X4::get_store_ordering()>(m_scale);
 
             return m_to_world_matrix.value();
         }

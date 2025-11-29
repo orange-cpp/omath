@@ -8,5 +8,5 @@
 
 namespace omath::opengl_engine
 {
-    using Mesh = primitives::Mesh<Mat4X4, ViewAngles, MeshTrait, float>;
+    using Mesh = primitives::Mesh<Mat4X4, ViewAngles, MeshTrait>;
 }
