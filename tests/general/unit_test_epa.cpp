@@ -24,7 +24,7 @@ TEST(UnitTestEpa, TestCollisionTrue)
         { { 1.f, -1.f,  1.f}, {}, {} },
         { { 1.f, -1.f, -1.f}, {}, {} }
     };
-    std::vector<omath::Vector3<std::size_t>> vao; // not needed
+    std::vector<omath::Vector3<std::uint32_t>> vao; // not needed
 
     Mesh a(vbo, vao, {1, 1, 1});
     Mesh b(vbo, vao, {1, 1, 1});
@@ -98,7 +98,7 @@ TEST(UnitTestEpa, TestCollisionTrue2)
         { {  1.f, -1.f,  1.f }, {}, {} },
         { {  1.f, -1.f, -1.f }, {}, {} }
     };
-    std::vector<omath::Vector3<std::size_t>> vao; // not needed
+    std::vector<omath::Vector3<std::uint32_t>> vao; // not needed
 
     Mesh a(vbo, vao, {1, 1, 1});
     Mesh b(vbo, vao, {1, 1, 1});

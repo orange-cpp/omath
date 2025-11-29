@@ -33,13 +33,13 @@ namespace omath::primitives
 
     private:
         using Vbo = std::vector<VertexType>;
-        using Vao = std::vector<Vector3<std::size_t>>;
+        using Ebo = std::vector<Vector3<std::uint32_t>>;
 
     public:
         Vbo m_vertex_buffer;
-        Vao m_vertex_array_object;
+        Ebo m_vertex_array_object;
 
-        Mesh(Vbo vbo, Vao vao,
+        Mesh(Vbo vbo, Ebo vao,
              const VectorType scale =
                      {
                              1,
@@ -97,7 +97,7 @@ namespace omath::primitives
         }
 
         [[nodiscard]]
-        Vector3<float> vertex_to_world_space(const Vector3<float>& vertex_position) const
+        VectorType vertex_to_world_space(const Vector3<float>& vertex_position) const
         requires HasPosition<VertexType>
         {
             auto abs_vec = get_to_world_matrix() * mat_column_from_vector(vertex_position);
@@ -106,7 +106,7 @@ namespace omath::primitives
         }
 
         [[nodiscard]]
-        Triangle<Vector3<float>> make_face_in_world_space(const Vao::const_iterator vao_iterator) const
+        Triangle<VectorType> make_face_in_world_space(const Ebo::const_iterator vao_iterator) const
         requires HasPosition<VertexType>
         {
             return {vertex_to_world_space(m_vertex_buffer.at(vao_iterator->x).position),
