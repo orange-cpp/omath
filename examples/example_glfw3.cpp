@@ -197,32 +197,32 @@ int main()
     using Idx = Vector3<std::uint32_t>;
 
     // front (z+)
-    ebo.emplace_back(Idx{1, 5, 7});
-    ebo.emplace_back(Idx{1, 7, 3});
+    ebo.emplace_back(1, 5, 7);
+    ebo.emplace_back(1, 7, 3);
 
     // back (z-)
-    ebo.emplace_back(Idx{0, 2, 6});
-    ebo.emplace_back(Idx{0, 6, 4});
+    ebo.emplace_back(0, 2, 6);
+    ebo.emplace_back(0, 6, 4);
 
     // left (x-)
-    ebo.emplace_back(Idx{0, 1, 3});
-    ebo.emplace_back(Idx{0, 3, 2});
+    ebo.emplace_back(0, 1, 3);
+    ebo.emplace_back(0, 3, 2);
 
     // right (x+)
-    ebo.emplace_back(Idx{4, 6, 7});
-    ebo.emplace_back(Idx{4, 7, 5});
+    ebo.emplace_back(4, 6, 7);
+    ebo.emplace_back(4, 7, 5);
 
     // bottom (y-)
-    ebo.emplace_back(Idx{0, 4, 5});
-    ebo.emplace_back(Idx{0, 5, 1});
+    ebo.emplace_back(0, 4, 5);
+    ebo.emplace_back(0, 5, 1);
 
     // top (y+)
-    ebo.emplace_back(Idx{2, 3, 7});
-    ebo.emplace_back(Idx{2, 7, 6});
+    ebo.emplace_back(2, 3, 7);
+    ebo.emplace_back(2, 7, 6);
 
     CubeMesh cube{std::move(vbo), std::move(ebo)};
-    cube.set_origin(Vector3<float>{0.f, 0.f, 0.f});
-    cube.set_scale(Vector3<float>{1.f, 2.f, 1.f});
+    cube.set_origin({0.f, 0.f, 0.f});
+    cube.set_scale({1.f, 2.f, 1.f});
     cube.set_rotation(RotationAngles{});
 
     // ---------- OpenGL buffers ----------
@@ -313,7 +313,6 @@ int main()
         glUseProgram(shaderProgram);
 
         // Send matrix to GPU
-        // TODO: replace mvp.data() with whatever your Mat4x4 uses to expose float*
         const float* mvpPtr = viewProj.raw_array().data(); // assumes column-major float[16]
 
         glUniformMatrix4fv(uMvpLoc, 1, GL_FALSE, mvpPtr);
