@@ -7,3 +7,11 @@ target_link_libraries(example_projection_matrix_builder PRIVATE omath::omath)
 add_executable(example_signature_scan example_signature_scan.cpp)
 set_target_properties(example_signature_scan PROPERTIES CXX_STANDARD 26)
 target_link_libraries(example_signature_scan PRIVATE omath::omath)
+
+
+add_executable(example_glfw3 example_glfw3.cpp)
+set_target_properties(example_glfw3 PROPERTIES CXX_STANDARD 26)
+
+find_package(GLEW REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(example_glfw3 PRIVATE omath::omath GLEW::GLEW glfw)

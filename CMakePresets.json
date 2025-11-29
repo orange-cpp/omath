@@ -144,7 +144,7 @@
         "OMATH_BUILD_VIA_VCPKG": "ON",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
-        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2"
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples"
       }
     },
     {

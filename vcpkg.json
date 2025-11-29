@@ -4,7 +4,7 @@
   "description": "General purpose math library",
   "homepage": "https://github.com/orange-cpp/omath",
   "license": "Zlib",
-  "supports": "windows | linux",
+  "supports": "windows | linux | macos",
   "dependencies": [
     {
       "name": "vcpkg-cmake",
@@ -24,6 +24,13 @@
       "description": "Build benchmarks",
       "dependencies": [
         "benchmark"
+      ]
+    },
+    "examples": {
+      "description": "Build benchmarks",
+      "dependencies": [
+        "glfw3",
+        "glew"
       ]
     },
     "imgui": {
