@@ -302,6 +302,9 @@ int main()
         RotationAngles rot = cube.get_rotation_angles();
         rot.yaw += omath::opengl_engine::YawAngle::from_degrees(40.f * deltaTime);
         rot.roll += omath::opengl_engine::RollAngle::from_degrees(40.f * deltaTime);
+
+        if (rot.pitch.as_degrees() == 90.f)
+            rot.pitch = omath::opengl_engine::PitchAngle::from_degrees(-90.f);
         rot.pitch += omath::opengl_engine::PitchAngle::from_degrees(40.f * deltaTime);
         cube.set_rotation(rot);
 
