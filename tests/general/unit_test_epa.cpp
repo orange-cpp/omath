@@ -14,9 +14,17 @@ using EPA = omath::collision::Epa<Collider>;
 TEST(UnitTestEpa, TestCollisionTrue)
 {
     // Unit cube [-1,1]^3
-    std::vector<omath::Vector3<float>> vbo = {{-1, -1, -1}, {-1, -1, 1}, {-1, 1, -1}, {-1, 1, 1},
-                                              {1, 1, 1},    {1, 1, -1},  {1, -1, 1},  {1, -1, -1}};
-    std::vector<omath::Vector3<std::size_t>> vao; // not needed
+    std::vector<omath::primitives::Vertex<>> vbo = {
+        { {-1.f, -1.f, -1.f}, {}, {} },
+        { {-1.f, -1.f,  1.f}, {}, {} },
+        { {-1.f,  1.f, -1.f}, {}, {} },
+        { {-1.f,  1.f,  1.f}, {}, {} },
+        { { 1.f,  1.f,  1.f}, {}, {} },
+        { { 1.f,  1.f, -1.f}, {}, {} },
+        { { 1.f, -1.f,  1.f}, {}, {} },
+        { { 1.f, -1.f, -1.f}, {}, {} }
+    };
+    std::vector<omath::Vector3<std::uint32_t>> vao; // not needed
 
     Mesh a(vbo, vao, {1, 1, 1});
     Mesh b(vbo, vao, {1, 1, 1});
@@ -80,9 +88,17 @@ TEST(UnitTestEpa, TestCollisionTrue)
 }
 TEST(UnitTestEpa, TestCollisionTrue2)
 {
-    std::vector<omath::Vector3<float>> vbo = {{-1, -1, -1}, {-1, -1, 1}, {-1, 1, -1}, {-1, 1, 1},
-                                              {1, 1, 1},    {1, 1, -1},  {1, -1, 1},  {1, -1, -1}};
-    std::vector<omath::Vector3<std::size_t>> vao; // not needed
+    std::vector<omath::primitives::Vertex<>> vbo = {
+        { { -1.f, -1.f, -1.f }, {}, {} },
+        { { -1.f, -1.f,  1.f }, {}, {} },
+        { { -1.f,  1.f, -1.f }, {}, {} },
+        { { -1.f,  1.f,  1.f }, {}, {} },
+        { {  1.f,  1.f,  1.f }, {}, {} },
+        { {  1.f,  1.f, -1.f }, {}, {} },
+        { {  1.f, -1.f,  1.f }, {}, {} },
+        { {  1.f, -1.f, -1.f }, {}, {} }
+    };
+    std::vector<omath::Vector3<std::uint32_t>> vao; // not needed
 
     Mesh a(vbo, vao, {1, 1, 1});
     Mesh b(vbo, vao, {1, 1, 1});

@@ -6,35 +6,56 @@
 #include <omath/linear_algebra/mat.hpp>
 #include <omath/linear_algebra/vector3.hpp>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace omath::primitives
 {
-    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class Type = float>
+    template<class T = Vector3<float>>
+    struct Vertex final
+    {
+        using VectorType = T;
+        VectorType position;
+        VectorType normal;
+        VectorType uv;
+    };
+
+    template<typename T> concept HasPosition = requires(T vertex) { vertex.position; };
+    template<typename T> concept HasNormal = requires(T vertex) { vertex.normal; };
+    template<typename T> concept HasUv = requires(T vertex) { vertex.uv; };
+
+    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class VertType = Vertex<>>
     class Mesh final
     {
     public:
-        using NumericType = Type;
+        using VectorType = VertType::VectorType;
+        using VertexType = VertType;
 
     private:
-        using Vbo = std::vector<Vector3<NumericType>>;
-        using Vao = std::vector<Vector3<std::size_t>>;
+        using Vbo = std::vector<VertexType>;
+        using Ebo = std::vector<Vector3<std::uint32_t>>;
 
     public:
         Vbo m_vertex_buffer;
-        Vao m_vertex_array_object;
+        Ebo m_vertex_array_object;
 
-        Mesh(Vbo vbo, Vao vao, const Vector3<NumericType> scale = {1, 1, 1,})
+        Mesh(Vbo vbo, Ebo vao,
+             const VectorType scale =
+                     {
+                             1,
+                             1,
+                             1,
+                     })
             : m_vertex_buffer(std::move(vbo)), m_vertex_array_object(std::move(vao)), m_scale(std::move(scale))
         {
         }
-        void set_origin(const Vector3<NumericType>& new_origin)
+        void set_origin(const VectorType& new_origin)
         {
             m_origin = new_origin;
             m_to_world_matrix = std::nullopt;
         }
 
-        void set_scale(const Vector3<NumericType>& new_scale)
+        void set_scale(const VectorType& new_scale)
         {
             m_scale = new_scale;
             m_to_world_matrix = std::nullopt;
@@ -47,13 +68,13 @@ namespace omath::primitives
         }
 
         [[nodiscard]]
-        const Vector3<NumericType>& get_origin() const
+        const VectorType& get_origin() const
         {
             return m_origin;
         }
 
         [[nodiscard]]
-        const Vector3<NumericType>& get_scale() const
+        const VectorType& get_scale() const
         {
             return m_scale;
         }
@@ -76,24 +97,26 @@ namespace omath::primitives
         }
 
         [[nodiscard]]
-        Vector3<float> vertex_to_world_space(const Vector3<float>& vertex) const
+        VectorType vertex_to_world_space(const Vector3<float>& vertex_position) const
+        requires HasPosition<VertexType>
         {
-            auto abs_vec = get_to_world_matrix() * mat_column_from_vector(vertex);
+            auto abs_vec = get_to_world_matrix() * mat_column_from_vector(vertex_position);
 
             return {abs_vec.at(0, 0), abs_vec.at(1, 0), abs_vec.at(2, 0)};
         }
 
         [[nodiscard]]
-        Triangle<Vector3<float>> make_face_in_world_space(const Vao::const_iterator vao_iterator) const
+        Triangle<VectorType> make_face_in_world_space(const Ebo::const_iterator vao_iterator) const
+        requires HasPosition<VertexType>
         {
-            return {vertex_to_world_space(m_vertex_buffer.at(vao_iterator->x)),
-                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->y)),
-                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->z))};
+            return {vertex_to_world_space(m_vertex_buffer.at(vao_iterator->x).position),
+                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->y).position),
+                    vertex_to_world_space(m_vertex_buffer.at(vao_iterator->z).position)};
         }
 
     private:
-        Vector3<NumericType> m_origin;
-        Vector3<NumericType> m_scale;
+        VectorType m_origin;
+        VectorType m_scale;
 
         RotationAngles m_rotation_angles;
 

@@ -320,7 +320,7 @@ namespace omath
         return std::visit(
                 [base_address, &pattern](const auto& nt_header) -> std::optional<std::uintptr_t>
                 {
-                    // Define .code segment as scan area
+                    // Define .text segment as scan area
                     const auto start = nt_header.optional_header.base_of_code;
                     const auto scan_size = nt_header.optional_header.size_code;
 
