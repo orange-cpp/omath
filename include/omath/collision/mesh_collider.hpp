@@ -11,7 +11,6 @@ namespace omath::collision
     class MeshCollider
     {
     public:
-        using NumericType = MeshType::NumericType;
 
         using VertexType = MeshType::VertexType;
         using VectorType = VertexType::VectorType;

@@ -28,7 +28,7 @@ namespace omath::primitives
     class Mesh final
     {
     public:
-        using NumericType = float;
+        using VectorType = VertType::VectorType;
         using VertexType = VertType;
 
     private:
@@ -40,7 +40,7 @@ namespace omath::primitives
         Vao m_vertex_array_object;
 
         Mesh(Vbo vbo, Vao vao,
-             const Vector3<NumericType> scale =
+             const VectorType scale =
                      {
                              1,
                              1,
@@ -49,13 +49,13 @@ namespace omath::primitives
             : m_vertex_buffer(std::move(vbo)), m_vertex_array_object(std::move(vao)), m_scale(std::move(scale))
         {
         }
-        void set_origin(const Vector3<NumericType>& new_origin)
+        void set_origin(const VectorType& new_origin)
         {
             m_origin = new_origin;
             m_to_world_matrix = std::nullopt;
         }
 
-        void set_scale(const Vector3<NumericType>& new_scale)
+        void set_scale(const VectorType& new_scale)
         {
             m_scale = new_scale;
             m_to_world_matrix = std::nullopt;
@@ -68,13 +68,13 @@ namespace omath::primitives
         }
 
         [[nodiscard]]
-        const Vector3<NumericType>& get_origin() const
+        const VectorType& get_origin() const
         {
             return m_origin;
         }
 
         [[nodiscard]]
-        const Vector3<NumericType>& get_scale() const
+        const VectorType& get_scale() const
         {
             return m_scale;
         }
@@ -115,8 +115,8 @@ namespace omath::primitives
         }
 
     private:
-        Vector3<NumericType> m_origin;
-        Vector3<NumericType> m_scale;
+        VectorType m_origin;
+        VectorType m_scale;
 
         RotationAngles m_rotation_angles;
 
