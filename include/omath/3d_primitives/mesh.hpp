@@ -11,24 +11,25 @@
 
 namespace omath::primitives
 {
-    struct Vertex
+    template<class T = Vector3<float>>
+    struct Vertex final
     {
-        using VectorType = Vector3<float>;
-        Vector3<float> position;
-        Vector3<float> normal;
-        Vector3<float> uv;
+        using VectorType = T;
+        VectorType position;
+        VectorType normal;
+        VectorType uv;
     };
 
     template<typename T> concept HasPosition = requires(T vertex) { vertex.position; };
     template<typename T> concept HasNormal = requires(T vertex) { vertex.normal; };
     template<typename T> concept HasUv = requires(T vertex) { vertex.uv; };
 
-    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class VertType = Vertex>
+    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class VertType = Vertex<>>
     class Mesh final
     {
     public:
         using NumericType = float;
-        using VertexType = Vertex;
+        using VertexType = VertType;
     private:
         using Vbo = std::vector<VertexType>;
         using Vao = std::vector<Vector3<std::size_t>>;

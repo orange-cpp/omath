@@ -8,7 +8,7 @@
 TEST(UnitTestColider, CheckToWorld)
 {
     omath::source_engine::Mesh mesh = {
-        std::vector<omath::primitives::Vertex>{
+        std::vector<omath::primitives::Vertex<>>{
             { { 1.f,  1.f,  1.f }, {}, {} },
             { {-1.f, -1.f, -1.f }, {}, {} }
         },
