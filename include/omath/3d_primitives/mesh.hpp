@@ -30,6 +30,7 @@ namespace omath::primitives
     public:
         using NumericType = float;
         using VertexType = VertType;
+
     private:
         using Vbo = std::vector<VertexType>;
         using Vao = std::vector<Vector3<std::size_t>>;
@@ -97,6 +98,7 @@ namespace omath::primitives
 
         [[nodiscard]]
         Vector3<float> vertex_to_world_space(const Vector3<float>& vertex_position) const
+        requires HasPosition<VertexType>
         {
             auto abs_vec = get_to_world_matrix() * mat_column_from_vector(vertex_position);
 
