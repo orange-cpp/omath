@@ -222,7 +222,7 @@ int main()
 
     CubeMesh cube{std::move(vbo), std::move(ebo)};
     cube.set_origin({0.f, 0.f, 0.f});
-    cube.set_scale({1.f, 2.f, 1.f});
+    cube.set_scale({2.f, 2.f, 2.f});
     cube.set_rotation(RotationAngles{});
 
     // ---------- OpenGL buffers ----------
