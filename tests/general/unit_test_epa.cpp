@@ -14,7 +14,7 @@ using EPA = omath::collision::Epa<Collider>;
 TEST(UnitTestEpa, TestCollisionTrue)
 {
     // Unit cube [-1,1]^3
-    std::vector<omath::primitives::Vertex> vbo = {
+    std::vector<omath::primitives::Vertex<>> vbo = {
         { {-1.f, -1.f, -1.f}, {}, {} },
         { {-1.f, -1.f,  1.f}, {}, {} },
         { {-1.f,  1.f, -1.f}, {}, {} },
@@ -88,7 +88,7 @@ TEST(UnitTestEpa, TestCollisionTrue)
 }
 TEST(UnitTestEpa, TestCollisionTrue2)
 {
-    std::vector<omath::primitives::Vertex> vbo = {
+    std::vector<omath::primitives::Vertex<>> vbo = {
         { { -1.f, -1.f, -1.f }, {}, {} },
         { { -1.f, -1.f,  1.f }, {}, {} },
         { { -1.f,  1.f, -1.f }, {}, {} },
