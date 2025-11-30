@@ -21,16 +21,8 @@ using omath::Vector3;
 // Your 4x4 matrix type
 using Mat4x4 = omath::opengl_engine::Mat4X4;
 
-// Rotation angles for the Mesh (whatever you use for rotation)
-using RotationAngles =
-        omath::opengl_engine::ViewAngles; // TODO: if you have a dedicated angle type for mesh rotation, use it
-
-// View angles type for camera trait
-using ViewAngles = RotationAngles; // TODO: if your camera uses a different view-angle type, change this
-
-// Your trait types (that satisfy the concepts declared in your headers)
-using CameraTrait = /* TODO: your camera engine trait type here */ void;
-using MeshTrait = /* TODO: your mesh rotation trait type here */ void;
+// Rotation angles for the Mesh
+using RotationAngles = omath::opengl_engine::ViewAngles;
 
 // For brevity, alias the templates instantiated with your types
 using VertexType = omath::primitives::Vertex<Vector3<float>>;
@@ -47,6 +39,7 @@ layout (location = 2) in vec3 aUv;
 
 uniform mat4 uMVP;
 uniform mat4 uModel;
+
 out vec3 vNormal;
 out vec3 vUv;
 
@@ -159,10 +152,16 @@ int main()
         return -1;
     }
 
+    // ---------- GL state ----------
     glEnable(GL_DEPTH_TEST);
 
+    // Face culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK); // cull back faces
+    glFrontFace(GL_CCW); // counter-clockwise is front
+
     // ---------- Build Cube Mesh (CPU side) ----------
-    std::vector<omath::primitives::Vertex<>> vbo;
+    std::vector<VertexType> vbo;
     vbo.reserve(8);
 
     Vector3<float> p000{-0.5f, -0.5f, -0.5f};
@@ -192,9 +191,9 @@ int main()
     vbo.push_back(v6); // 6
     vbo.push_back(v7); // 7
 
-    std::vector<Vector3<std::uint32_t>> ebo;
-    ebo.reserve(12);
     using Idx = Vector3<std::uint32_t>;
+    std::vector<Idx> ebo;
+    ebo.reserve(12);
 
     // front (z+)
     ebo.emplace_back(1, 5, 7);
@@ -238,7 +237,7 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, cube.m_vertex_buffer.size() * sizeof(VertexType), cube.m_vertex_buffer.data(),
                  GL_STATIC_DRAW);
 
-    // flatten Ebo to GL indices
+    // flatten EBO to GL indices
     std::vector<GLuint> flatIndices;
     flatIndices.reserve(cube.m_vertex_array_object.size() * 3);
     for (const auto& tri : cube.m_vertex_array_object)
@@ -271,13 +270,14 @@ int main()
     float nearPlane = 0.1f;
     float farPlane = 100.f;
     auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    // NOTE: you must replace CameraTrait alias above with your real type
+
     MyCamera camera{camPos, {}, viewPort, fov, nearPlane, farPlane};
 
     // ---------- Shader ----------
     GLuint shaderProgram = createShaderProgram();
     GLint uMvpLoc = glGetUniformLocation(shaderProgram, "uMVP");
     GLint uModel = glGetUniformLocation(shaderProgram, "uModel");
+
     static float old_frame_time = glfwGetTime();
 
     // ---------- Main loop ----------
@@ -288,7 +288,8 @@ int main()
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - old_frame_time;
         old_frame_time = currentTime;
-        int fbW, fbH;
+
+        int fbW = 0, fbH = 0;
         glfwGetFramebufferSize(window, &fbW, &fbH);
         glViewport(0, 0, fbW, fbH);
 
@@ -300,7 +301,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         RotationAngles rot = cube.get_rotation_angles();
-        rot.yaw += omath::opengl_engine::YawAngle::from_degrees(40.f * deltaTime);
+        rot.yaw += omath::opengl_engine::YawAngle ::from_degrees(40.f * deltaTime);
         rot.roll += omath::opengl_engine::RollAngle::from_degrees(40.f * deltaTime);
 
         if (rot.pitch.as_degrees() == 90.f)
@@ -310,15 +311,17 @@ int main()
 
         const Mat4x4& viewProj = camera.get_view_projection_matrix();
         const auto& model = cube.get_to_world_matrix();
+
         glUseProgram(shaderProgram);
 
-        // Send matrix to GPU
-        const float* mvpPtr = viewProj.raw_array().data(); // assumes column-major float[16]
+        // Send matrices to GPU
+        const float* mvpPtr = viewProj.raw_array().data();
+        const float* modelPtr = model.raw_array().data();
 
         glUniformMatrix4fv(uMvpLoc, 1, GL_FALSE, mvpPtr);
-        const float* modelPtr = model.raw_array().data(); // assumes column-major float[16]
-        glBindVertexArray(VAO);
         glUniformMatrix4fv(uModel, 1, GL_FALSE, modelPtr);
+
+        glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(flatIndices.size()), GL_UNSIGNED_INT, nullptr);
 
         glfwSwapBuffers(window);
