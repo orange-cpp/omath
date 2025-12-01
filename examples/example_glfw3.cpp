@@ -173,14 +173,14 @@ int main()
     Vector3<float> p110{0.5f, 0.5f, -0.5f};
     Vector3<float> p111{0.5f, 0.5f, 0.5f};
 
-    VertexType v0{p000, Vector3<float>{-1, -1, -1}, Vector3<float>{0, 0, 0}};
-    VertexType v1{p001, Vector3<float>{-1, -1, 1}, Vector3<float>{0, 1, 0}};
-    VertexType v2{p010, Vector3<float>{-1, 1, -1}, Vector3<float>{1, 0, 0}};
-    VertexType v3{p011, Vector3<float>{-1, 1, 1}, Vector3<float>{1, 1, 0}};
-    VertexType v4{p100, Vector3<float>{1, -1, -1}, Vector3<float>{0, 0, 1}};
-    VertexType v5{p101, Vector3<float>{1, -1, 1}, Vector3<float>{0, 1, 1}};
-    VertexType v6{p110, Vector3<float>{1, 1, -1}, Vector3<float>{1, 0, 1}};
-    VertexType v7{p111, Vector3<float>{1, 1, 1}, Vector3<float>{1, 1, 1}};
+    VertexType v0{p000, Vector3<float>{-1, -1, -1}, omath::Vector2<float>{0, 0}};
+    VertexType v1{p001, Vector3<float>{-1, -1, 1}, omath::Vector2<float>{0, 1}};
+    VertexType v2{p010, Vector3<float>{-1, 1, -1}, omath::Vector2<float>{1, 0}};
+    VertexType v3{p011, Vector3<float>{-1, 1, 1}, omath::Vector2<float>{1, 1}};
+    VertexType v4{p100, Vector3<float>{1, -1, -1}, omath::Vector2<float>{0, 0}};
+    VertexType v5{p101, Vector3<float>{1, -1, 1}, omath::Vector2<float>{0, 1}};
+    VertexType v6{p110, Vector3<float>{1, 1, -1}, omath::Vector2<float>{1, 0}};
+    VertexType v7{p111, Vector3<float>{1, 1, 1}, omath::Vector2<float>{1, 1}};
 
     vbo.push_back(v0); // 0
     vbo.push_back(v1); // 1
