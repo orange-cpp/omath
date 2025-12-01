@@ -24,7 +24,7 @@ namespace omath::collision
     class Epa final
     {
     public:
-        using VectorType = typename ColliderType::VectorType;
+        using VectorType = ColliderType::VectorType;
         static_assert(EpaVector<VectorType>, "VertexType must satisfy EpaVector concept");
 
         struct Result final
@@ -45,8 +45,8 @@ namespace omath::collision
 
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
-        static std::optional<Result> solve(const ColliderType& a, const ColliderType& b, const Simplex<VectorType>& simplex,
-                                           const Params params = {})
+        static std::optional<Result> solve(const ColliderType& a, const ColliderType& b,
+                                           const Simplex<VectorType>& simplex, const Params params = {})
         {
             // --- Build initial polytope from simplex (4 points) ---
             std::vector<VectorType> vertexes;

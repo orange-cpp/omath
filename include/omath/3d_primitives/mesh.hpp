@@ -11,13 +11,14 @@
 
 namespace omath::primitives
 {
-    template<class T = Vector3<float>>
+    template<class VecType = Vector3<float>, class UvT = Vector2<float>>
     struct Vertex final
     {
-        using VectorType = T;
+        using VectorType = VecType;
+        using UvType = UvT;
         VectorType position;
         VectorType normal;
-        VectorType uv;
+        UvType uv;
     };
 
     template<typename T> concept HasPosition = requires(T vertex) { vertex.position; };
