@@ -5,6 +5,7 @@
 #include "omath/engines/source_engine/mesh.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 #include <gtest/gtest.h>
+#include <memory_resource>
 
 using Mesh = omath::source_engine::Mesh;
 using Collider = omath::source_engine::MeshCollider;
@@ -41,9 +42,10 @@ TEST(UnitTestEpa, TestCollisionTrue)
 
     // EPA
     EPA::Params params;
+    auto pool = std::make_shared<std::pmr::monotonic_buffer_resource>(1024);
     params.max_iterations = 64;
     params.tolerance = 1e-4f;
-    auto epa = EPA().solve(A, B, gjk.simplex, params);
+    auto epa = EPA(pool).solve(A, B, gjk.simplex, params);
     ASSERT_TRUE(epa.has_value()) << "EPA should converge";
 
     // Normal is unit
@@ -112,12 +114,12 @@ TEST(UnitTestEpa, TestCollisionTrue2)
     // --- GJK must detect collision and provide simplex ---
     auto gjk = GJK::is_collide_with_simplex_info(A, B);
     ASSERT_TRUE(gjk.hit) << "GJK should report collision for overlapping cubes";
-
     // --- EPA penetration ---
     EPA::Params params;
     params.max_iterations = 64;
     params.tolerance = 1e-4f;
-    auto epa = EPA().solve(A, B, gjk.simplex, params);
+    auto pool = std::make_shared<std::pmr::monotonic_buffer_resource>(1024);
+    auto epa = EPA(pool).solve(A, B, gjk.simplex, params);
     ASSERT_TRUE(epa.has_value()) << "EPA should converge";
 
     // Normal is unit-length
