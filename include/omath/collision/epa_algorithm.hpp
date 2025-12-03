@@ -25,15 +25,6 @@ namespace omath::collision
     class Epa final
     {
     public:
-        explicit Epa(std::shared_ptr<std::pmr::memory_resource> mem_resource = {std::shared_ptr<void>{},
-                                                                                std::pmr::get_default_resource()},
-                     const int max_iterations = 64, const float tolerance = 1e-4f)
-            : m_memory_resource(std::move(mem_resource)), m_max_iterations(max_iterations), m_tolerance(tolerance)
-        {
-        }
-        std::shared_ptr<std::pmr::memory_resource> m_memory_resource;
-        int m_max_iterations{64};
-        float m_tolerance{1e-4f};
         using VectorType = ColliderType::VectorType;
         static_assert(EpaVector<VectorType>, "VertexType must satisfy EpaVector concept");
 
@@ -55,17 +46,19 @@ namespace omath::collision
 
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
-        std::optional<Result> solve(const ColliderType& a, const ColliderType& b, const Simplex<VectorType>& simplex,
-                                    const Params params = {})
+        static std::optional<Result> solve(const ColliderType& a, const ColliderType& b,
+                                           const Simplex<VectorType>& simplex, const Params params = {},
+                                           std::shared_ptr<std::pmr::memory_resource> mem_resource = {
+                                                   std::shared_ptr<void>{}, std::pmr::get_default_resource()})
         {
             // --- Build initial polytope from simplex (4 points) ---
-            std::pmr::vector<VectorType> vertexes{m_memory_resource.get()};
+            std::pmr::vector<VectorType> vertexes{mem_resource.get()};
             vertexes.reserve(64);
             for (std::size_t i = 0; i < simplex.size(); ++i)
                 vertexes.push_back(simplex[i]);
 
             // Initial tetra faces (windings corrected in make_face)
-            std::pmr::vector<Face> faces{m_memory_resource.get()};
+            std::pmr::vector<Face> faces{mem_resource.get()};
             faces.reserve(128);
             faces.emplace_back(make_face(vertexes, 0, 1, 2));
             faces.emplace_back(make_face(vertexes, 0, 2, 3));
@@ -118,8 +111,8 @@ namespace omath::collision
                 vertexes.push_back(p);
 
                 // Mark faces visible from p and collect their horizon
-                std::pmr::vector<char> to_delete(faces.size(), 0, m_memory_resource.get());
-                std::pmr::vector<Edge> boundary{m_memory_resource.get()};
+                std::pmr::vector<char> to_delete(faces.size(), 0, mem_resource.get());
+                std::pmr::vector<Edge> boundary{mem_resource.get()};
                 boundary.reserve(faces.size() * 2);
 
                 for (int i = 0; i < static_cast<int>(faces.size()); ++i)
@@ -137,7 +130,7 @@ namespace omath::collision
                 }
 
                 // Remove visible faces
-                std::pmr::vector<Face> new_faces{m_memory_resource.get()};
+                std::pmr::vector<Face> new_faces{mem_resource.get()};
                 new_faces.reserve(faces.size() + boundary.size());
                 for (int i = 0; i < static_cast<int>(faces.size()); ++i)
                     if (!to_delete[i])

@@ -45,7 +45,7 @@ TEST(UnitTestEpa, TestCollisionTrue)
     auto pool = std::make_shared<std::pmr::monotonic_buffer_resource>(1024);
     params.max_iterations = 64;
     params.tolerance = 1e-4f;
-    auto epa = EPA(pool).solve(A, B, gjk.simplex, params);
+    auto epa = EPA::solve(A, B, gjk.simplex, params, pool);
     ASSERT_TRUE(epa.has_value()) << "EPA should converge";
 
     // Normal is unit
@@ -119,7 +119,7 @@ TEST(UnitTestEpa, TestCollisionTrue2)
     params.max_iterations = 64;
     params.tolerance = 1e-4f;
     auto pool = std::make_shared<std::pmr::monotonic_buffer_resource>(1024);
-    auto epa = EPA(pool).solve(A, B, gjk.simplex, params);
+    auto epa = EPA::solve(A, B, gjk.simplex, params, pool);
     ASSERT_TRUE(epa.has_value()) << "EPA should converge";
 
     // Normal is unit-length
