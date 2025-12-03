@@ -108,7 +108,7 @@ namespace omath::collision
 
                 // Add new vertex
                 const int new_idx = static_cast<int>(vertexes.size());
-                vertexes.push_back(p);
+                vertexes.emplace_back(p);
 
                 // Mark faces visible from p and collect their horizon
                 std::pmr::vector<char> to_delete(faces.size(), 0, mem_resource.get());
@@ -134,12 +134,12 @@ namespace omath::collision
                 new_faces.reserve(faces.size() + boundary.size());
                 for (int i = 0; i < static_cast<int>(faces.size()); ++i)
                     if (!to_delete[i])
-                        new_faces.push_back(faces[i]);
+                        new_faces.emplace_back(faces[i]);
                 faces.swap(new_faces);
 
                 // Stitch new faces around the horizon
                 for (const auto& e : boundary)
-                    faces.push_back(make_face(vertexes, e.a, e.b, new_idx));
+                    faces.emplace_back(make_face(vertexes, e.a, e.b, new_idx));
 
                 // Rebuild heap after topology change
                 heap = rebuild_heap(faces);
@@ -203,7 +203,7 @@ namespace omath::collision
         {
             Heap h;
             for (int i = 0; i < static_cast<int>(faces.size()); ++i)
-                h.push({faces[i].d, i});
+                h.emplace(faces[i].d, i);
             return h;
         }
 
@@ -222,7 +222,7 @@ namespace omath::collision
             if (itb != boundary.end())
                 boundary.erase(itb); // internal edge cancels out
             else
-                boundary.push_back({a, b}); // horizon edge (directed)
+                boundary.emplace_back(a, b); // horizon edge (directed)
         }
 
         [[nodiscard]]
