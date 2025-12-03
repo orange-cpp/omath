@@ -43,7 +43,7 @@ TEST(UnitTestEpa, TestCollisionTrue)
     EPA::Params params;
     params.max_iterations = 64;
     params.tolerance = 1e-4f;
-    auto epa = EPA::solve(A, B, gjk.simplex, params);
+    auto epa = EPA().solve(A, B, gjk.simplex, params);
     ASSERT_TRUE(epa.has_value()) << "EPA should converge";
 
     // Normal is unit
@@ -117,7 +117,7 @@ TEST(UnitTestEpa, TestCollisionTrue2)
     EPA::Params params;
     params.max_iterations = 64;
     params.tolerance = 1e-4f;
-    auto epa = EPA::solve(A, B, gjk.simplex, params);
+    auto epa = EPA().solve(A, B, gjk.simplex, params);
     ASSERT_TRUE(epa.has_value()) << "EPA should converge";
 
     // Normal is unit-length

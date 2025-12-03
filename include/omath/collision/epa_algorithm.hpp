@@ -24,6 +24,14 @@ namespace omath::collision
     class Epa final
     {
     public:
+        explicit Epa( std::pmr::memory_resource* mem_resource = std::pmr::get_default_resource(),
+                     const int max_iterations = 64, const float tolerance = 1e-4f)
+            : m_memory_resource(mem_resource), m_max_iterations(max_iterations), m_tolerance(tolerance)
+        {
+        }
+        std::pmr::memory_resource* m_memory_resource;
+        int m_max_iterations{64};
+        float m_tolerance{1e-4f};
         using VectorType = ColliderType::VectorType;
         static_assert(EpaVector<VectorType>, "VertexType must satisfy EpaVector concept");
 
@@ -45,17 +53,17 @@ namespace omath::collision
 
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
-        static std::optional<Result> solve(const ColliderType& a, const ColliderType& b,
+        std::optional<Result> solve(const ColliderType& a, const ColliderType& b,
                                            const Simplex<VectorType>& simplex, const Params params = {})
         {
             // --- Build initial polytope from simplex (4 points) ---
-            std::vector<VectorType> vertexes;
+            std::pmr::vector<VectorType> vertexes{m_memory_resource};
             vertexes.reserve(64);
             for (std::size_t i = 0; i < simplex.size(); ++i)
                 vertexes.push_back(simplex[i]);
 
             // Initial tetra faces (windings corrected in make_face)
-            std::vector<Face> faces;
+            std::pmr::vector<Face> faces{m_memory_resource};
             faces.reserve(128);
             faces.emplace_back(make_face(vertexes, 0, 1, 2));
             faces.emplace_back(make_face(vertexes, 0, 2, 3));
@@ -127,7 +135,7 @@ namespace omath::collision
                 }
 
                 // Remove visible faces
-                std::vector<Face> new_faces;
+                std::pmr::vector<Face> new_faces;
                 new_faces.reserve(faces.size() + boundary.size());
                 for (int i = 0; i < static_cast<int>(faces.size()); ++i)
                     if (!to_delete[i])
@@ -196,7 +204,7 @@ namespace omath::collision
         using Heap = std::priority_queue<HeapItem, std::vector<HeapItem>, HeapCmp>;
 
         [[nodiscard]]
-        static Heap rebuild_heap(const std::vector<Face>& faces)
+        static Heap rebuild_heap(const std::pmr::vector<Face>& faces)
         {
             Heap h;
             for (int i = 0; i < static_cast<int>(faces.size()); ++i)
@@ -223,7 +231,7 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        static Face make_face(const std::vector<VectorType>& vertexes, int i0, int i1, int i2)
+        static Face make_face(const std::pmr::vector<VectorType>& vertexes, int i0, int i1, int i2)
         {
             const VectorType& a0 = vertexes[i0];
             const VectorType& a1 = vertexes[i1];
