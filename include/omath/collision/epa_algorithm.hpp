@@ -9,6 +9,7 @@
 #include <queue>
 #include <utility>
 #include <vector>
+#include <memory_resource>
 
 namespace omath::collision
 {
