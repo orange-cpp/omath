@@ -86,7 +86,7 @@ namespace omath::collision
                 const int fidx = heap.top().idx;
                 const Face f = faces[fidx];
 
-                // Get farthest point in face normal direction
+                // Get the furthest point in face normal direction
                 const VectorType p = support_point(a, b, f.n);
                 const float p_dist = f.n.dot(p);
 
