@@ -53,13 +53,13 @@ namespace omath::collision
         {
             // --- Build initial polytope from simplex (4 points) ---
             std::pmr::vector<VectorType> vertexes{mem_resource.get()};
-            vertexes.reserve(64);
+            vertexes.reserve(simplex.size());
             for (std::size_t i = 0; i < simplex.size(); ++i)
-                vertexes.push_back(simplex[i]);
+                vertexes.emplace_back(simplex[i]);
 
             // Initial tetra faces (windings corrected in make_face)
             std::pmr::vector<Face> faces{mem_resource.get()};
-            faces.reserve(128);
+            faces.reserve(4);
             faces.emplace_back(make_face(vertexes, 0, 1, 2));
             faces.emplace_back(make_face(vertexes, 0, 2, 3));
             faces.emplace_back(make_face(vertexes, 0, 3, 1));
