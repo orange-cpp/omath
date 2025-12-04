@@ -192,7 +192,7 @@ namespace omath::collision
         struct HeapCmp final
         {
             [[nodiscard]]
-            static bool operator()(const HeapItem& lhs, const HeapItem& rhs) const noexcept
+            static bool operator()(const HeapItem& lhs, const HeapItem& rhs) noexcept
             {
                 return lhs.d > rhs.d; // min-heap by distance
             }
