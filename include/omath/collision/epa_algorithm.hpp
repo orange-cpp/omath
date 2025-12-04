@@ -213,7 +213,7 @@ namespace omath::collision
         static bool visible_from(const Face& f, const VectorType& p)
         {
             // positive if p is in front of the face
-            return (f.n.dot(p) - f.d) > 1e-7f;
+            return f.n.dot(p) - f.d > 1e-7f;
         }
 
         static void add_edge_boundary(std::pmr::vector<Edge>& boundary, int a, int b)
