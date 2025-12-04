@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <queue>
 #include <utility>
 #include <vector>
@@ -218,8 +219,7 @@ namespace omath::collision
         static void add_edge_boundary(std::pmr::vector<Edge>& boundary, int a, int b)
         {
             // Keep edges that appear only once; erase if opposite already present
-            auto itb =
-                    std::find_if(boundary.begin(), boundary.end(), [&](const Edge& e) { return e.a == b && e.b == a; });
+            auto itb = std::ranges::find_if(boundary, [&](const Edge& e) { return e.a == b && e.b == a; });
             if (itb != boundary.end())
                 boundary.erase(itb); // internal edge cancels out
             else
