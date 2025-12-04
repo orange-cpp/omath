@@ -111,7 +111,7 @@ namespace omath::collision
                 vertexes.emplace_back(p);
 
                 // Mark faces visible from p and collect their horizon
-                std::pmr::vector<char> to_delete(faces.size(), 0, mem_resource.get());
+                std::pmr::vector<bool> to_delete(faces.size(), false, mem_resource.get()); // uses single bits
                 std::pmr::vector<Edge> boundary{mem_resource.get()};
                 boundary.reserve(faces.size() * 2);
 
@@ -122,7 +122,7 @@ namespace omath::collision
                     if (visible_from(faces[i], p))
                     {
                         const auto& rf = faces[i];
-                        to_delete[i] = 1;
+                        to_delete[i] = true;
                         add_edge_boundary(boundary, rf.i0, rf.i1);
                         add_edge_boundary(boundary, rf.i1, rf.i2);
                         add_edge_boundary(boundary, rf.i2, rf.i0);
