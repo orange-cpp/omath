@@ -14,14 +14,14 @@ class UnitTestColider_FindFurthestVertex_Test;
 namespace omath::collision
 {
     template<class MeshType>
-    class MeshCollider final : public ColliderInterface<omath::Vector3<float>>
+    class MeshCollider final : public ColliderInterface<typename MeshType::VertexType::VectorType>
     {
 #ifdef OMATH_BUILD_TESTS
         friend UnitTestColider_FindFurthestVertex_Test;
 #endif
     public:
         using VertexType = MeshType::VertexType;
-        using VectorType = VertexType::VectorType;
+        using VectorType = MeshType::VertexType::VectorType;
         explicit MeshCollider(MeshType mesh): m_mesh(std::move(mesh))
         {
         }
