@@ -32,7 +32,7 @@ namespace omath::collision
 
         struct Result final
         {
-            VectorType normal{}; // outward normal (from B to A)
+            VectorType normal{}; // from A to B
             VectorType penetration_vector;
             float depth{0.0f};
             int iterations{0};
@@ -86,17 +86,17 @@ namespace omath::collision
                     break;
 
                 const int fidx = heap.top().idx;
-                const Face f = faces[fidx];
+                const Face face = faces[fidx];
 
                 // Get the furthest point in face normal direction
-                const VectorType p = support_point(a, b, f.n);
-                const float p_dist = f.n.dot(p);
+                const VectorType p = support_point(a, b, face.n);
+                const float p_dist = face.n.dot(p);
 
                 // Converged if we can’t push the face closer than tolerance
-                if (p_dist - f.d <= params.tolerance)
+                if (p_dist - face.d <= params.tolerance)
                 {
-                    out.normal = f.n;
-                    out.depth = f.d; // along unit normal
+                    out.normal = face.n;
+                    out.depth = face.d; // along unit normal
                     out.iterations = it + 1;
                     out.num_vertices = static_cast<int>(vertexes.size());
                     out.num_faces = static_cast<int>(faces.size());
