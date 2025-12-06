@@ -17,14 +17,15 @@ namespace omath::collision
     template<class ColliderType>
     class GjkAlgorithm final
     {
-        using VertexType = ColliderType::VertexType;
-        using VectorType = VertexType::VectorType;
+        using VectorType = ColliderType::VectorType;
+
     public:
         [[nodiscard]]
         static VectorType find_support_vertex(const ColliderType& collider_a, const ColliderType& collider_b,
                                               const VectorType& direction)
         {
-            return collider_a.find_abs_furthest_vertex(direction).position - collider_b.find_abs_furthest_vertex(-direction).position;
+            return collider_a.find_abs_furthest_vertex_position(direction)
+                   - collider_b.find_abs_furthest_vertex_position(-direction);
         }
 
         [[nodiscard]]

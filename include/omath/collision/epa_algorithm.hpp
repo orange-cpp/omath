@@ -101,10 +101,7 @@ namespace omath::collision
                     out.num_vertices = static_cast<int>(vertexes.size());
                     out.num_faces = static_cast<int>(faces.size());
 
-                    const auto centers = b.get_origin() - a.get_origin();
-                    const auto sign = out.normal.dot(centers) >= 0 ? 1 : -1;
-
-                    out.penetration_vector = out.normal * out.depth * sign;
+                    out.penetration_vector = out.normal * out.depth;
                     return out;
                 }
 
@@ -163,10 +160,7 @@ namespace omath::collision
                 out.num_vertices = static_cast<int>(vertexes.size());
                 out.num_faces = static_cast<int>(faces.size());
 
-                const auto centers = b.get_origin() - a.get_origin();
-                const auto sign = out.normal.dot(centers) >= 0 ? 1 : -1;
-
-                out.penetration_vector = out.normal * out.depth * sign;
+                out.penetration_vector = out.normal * out.depth;
 
                 return out;
             }
@@ -253,7 +247,7 @@ namespace omath::collision
         [[nodiscard]]
         static VectorType support_point(const ColliderType& a, const ColliderType& b, const VectorType& dir)
         {
-            return a.find_abs_furthest_vertex(dir).position - b.find_abs_furthest_vertex(-dir).position;
+            return a.find_abs_furthest_vertex_position(dir) - b.find_abs_furthest_vertex_position(-dir);
         }
 
         template<class V>
