@@ -17,7 +17,7 @@ TEST(UnitTestColider, CheckToWorld)
     mesh.set_origin({0, 2, 0});
     const omath::source_engine::MeshCollider collider(mesh);
 
-    const auto vertex = collider.find_abs_furthest_vertex({1.f, 0.f, 0.f}).position;
+    const auto vertex = collider.find_abs_furthest_vertex_position({1.f, 0.f, 0.f});
 
     EXPECT_EQ(vertex, omath::Vector3<float>(1.f, 3.f, 1.f));
 }
