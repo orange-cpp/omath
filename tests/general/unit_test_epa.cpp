@@ -61,7 +61,7 @@ TEST(UnitTestEpa, TestCollisionTrue)
 
     // Try both signs with a tiny margin (avoid grazing contacts)
     const float margin = 1.0f + 1e-3f;
-    const auto pen = epa->normal * epa->depth;
+    const auto pen = epa->penetration_vector;
 
     Mesh b_plus = b;
     b_plus.set_origin(b_plus.get_origin() + pen * margin);
@@ -133,12 +133,8 @@ TEST(UnitTestEpa, TestCollisionTrue2)
     EXPECT_NEAR(epa->normal.y, 0.0f, 1e-3f);
     EXPECT_NEAR(epa->normal.z, 0.0f, 1e-3f);
 
-    // Choose a deterministic sign: orient penetration from A toward B
-    const auto centers = b.get_origin() - a.get_origin(); // (0.5, 0, 0)
-    float sign = (epa->normal.dot(centers) >= 0.0f) ? +1.0f : -1.0f;
-
     constexpr float margin = 1.0f + 1e-3f; // tiny slack to avoid grazing
-    const auto pen = epa->normal * epa->depth * sign;
+    const auto pen = epa->normal * epa->depth;
 
     // Apply once: B + pen must separate; the opposite must still collide
     Mesh b_resolved = b;

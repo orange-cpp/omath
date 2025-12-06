@@ -46,7 +46,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr static MatStoreType get_store_ordering() noexcept
+        consteval static MatStoreType get_store_ordering() noexcept
         {
             return StoreType;
         }

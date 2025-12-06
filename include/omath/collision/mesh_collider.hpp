@@ -3,13 +3,22 @@
 //
 
 #pragma once
+#include "collider_interface.hpp"
 #include "omath/linear_algebra/vector3.hpp"
+
+#ifdef OMATH_BUILD_TESTS
+// ReSharper disable once CppInconsistentNaming
+class UnitTestColider_FindFurthestVertex_Test;
+#endif
 
 namespace omath::collision
 {
     template<class MeshType>
-    class MeshCollider
+    class MeshCollider final : public ColliderInterface<omath::Vector3<float>>
     {
+#ifdef OMATH_BUILD_TESTS
+        friend UnitTestColider_FindFurthestVertex_Test;
+#endif
     public:
         using VertexType = MeshType::VertexType;
         using VectorType = VertexType::VectorType;
@@ -18,29 +27,29 @@ namespace omath::collision
         }
 
         [[nodiscard]]
+        VectorType find_abs_furthest_vertex_position(const VectorType& direction) const override
+        {
+            return m_mesh.vertex_position_to_world_space(find_furthest_vertex(direction).position);
+        }
+
+        [[nodiscard]]
+        const VectorType& get_origin() const override
+        {
+            return m_mesh.get_origin();
+        }
+        void set_origin(const VectorType& new_origin) override
+        {
+            m_mesh.set_origin(new_origin);
+        }
+
+    private:
+        [[nodiscard]]
         const VertexType& find_furthest_vertex(const VectorType& direction) const
         {
             return *std::ranges::max_element(
                     m_mesh.m_vertex_buffer, [&direction](const auto& first, const auto& second)
                     { return first.position.dot(direction) < second.position.dot(direction); });
         }
-
-        [[nodiscard]]
-        VertexType find_abs_furthest_vertex(const VectorType& direction) const
-        {
-            const auto& vertex = find_furthest_vertex(direction);
-            auto new_vertex = vertex;
-            new_vertex.position = m_mesh.vertex_to_world_space(find_furthest_vertex(direction).position);
-            return new_vertex;
-        }
-
-        [[nodiscard]]
-        const VectorType& get_origin() const
-        {
-            return m_mesh.get_origin();
-        }
-
-    private:
         MeshType m_mesh;
     };
 } // namespace omath::collision
