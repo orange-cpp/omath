@@ -14,28 +14,29 @@ namespace omath::collision
         Simplex<VertexType> simplex; // valid only if hit == true and size==4
     };
 
-    template<class ColliderType>
+    template<class ColliderInterfaceType>
     class GjkAlgorithm final
     {
-        using VertexType = ColliderType::VertexType;
-        using VectorType = VertexType::VectorType;
+        using VectorType = ColliderInterfaceType::VectorType;
+
     public:
         [[nodiscard]]
-        static VectorType find_support_vertex(const ColliderType& collider_a, const ColliderType& collider_b,
-                                              const VectorType& direction)
+        static VectorType find_support_vertex(const ColliderInterfaceType& collider_a,
+                                              const ColliderInterfaceType& collider_b, const VectorType& direction)
         {
-            return collider_a.find_abs_furthest_vertex(direction).position - collider_b.find_abs_furthest_vertex(-direction).position;
+            return collider_a.find_abs_furthest_vertex_position(direction)
+                   - collider_b.find_abs_furthest_vertex_position(-direction);
         }
 
         [[nodiscard]]
-        static bool is_collide(const ColliderType& collider_a, const ColliderType& collider_b)
+        static bool is_collide(const ColliderInterfaceType& collider_a, const ColliderInterfaceType& collider_b)
         {
             return is_collide_with_simplex_info(collider_a, collider_b).hit;
         }
 
         [[nodiscard]]
-        static GjkHitInfo<VectorType> is_collide_with_simplex_info(const ColliderType& collider_a,
-                                                                   const ColliderType& collider_b)
+        static GjkHitInfo<VectorType> is_collide_with_simplex_info(const ColliderInterfaceType& collider_a,
+                                                                   const ColliderInterfaceType& collider_b)
         {
             auto support = find_support_vertex(collider_a, collider_b, VectorType{1, 0, 0});
 

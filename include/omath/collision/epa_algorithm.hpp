@@ -6,10 +6,10 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <memory_resource>
 #include <queue>
 #include <utility>
 #include <vector>
-#include <memory_resource>
 
 namespace omath::collision
 {
@@ -23,16 +23,16 @@ namespace omath::collision
         { a / s } -> std::same_as<V>;
     };
 
-    template<class ColliderType>
+    template<class ColliderInterfaceType>
     class Epa final
     {
     public:
-        using VectorType = ColliderType::VectorType;
+        using VectorType = ColliderInterfaceType::VectorType;
         static_assert(EpaVector<VectorType>, "VertexType must satisfy EpaVector concept");
 
         struct Result final
         {
-            VectorType normal{}; // outward normal (from B to A)
+            VectorType normal{}; // from A to B
             VectorType penetration_vector;
             float depth{0.0f};
             int iterations{0};
@@ -48,7 +48,7 @@ namespace omath::collision
 
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
-        static std::optional<Result> solve(const ColliderType& a, const ColliderType& b,
+        static std::optional<Result> solve(const ColliderInterfaceType& a, const ColliderInterfaceType& b,
                                            const Simplex<VectorType>& simplex, const Params params = {},
                                            std::shared_ptr<std::pmr::memory_resource> mem_resource = {
                                                    std::shared_ptr<void>{}, std::pmr::get_default_resource()})
@@ -86,25 +86,22 @@ namespace omath::collision
                     break;
 
                 const int fidx = heap.top().idx;
-                const Face f = faces[fidx];
+                const Face face = faces[fidx];
 
                 // Get the furthest point in face normal direction
-                const VectorType p = support_point(a, b, f.n);
-                const float p_dist = f.n.dot(p);
+                const VectorType p = support_point(a, b, face.n);
+                const float p_dist = face.n.dot(p);
 
                 // Converged if we can’t push the face closer than tolerance
-                if (p_dist - f.d <= params.tolerance)
+                if (p_dist - face.d <= params.tolerance)
                 {
-                    out.normal = f.n;
-                    out.depth = f.d; // along unit normal
+                    out.normal = face.n;
+                    out.depth = face.d; // along unit normal
                     out.iterations = it + 1;
                     out.num_vertices = static_cast<int>(vertexes.size());
                     out.num_faces = static_cast<int>(faces.size());
 
-                    const auto centers = b.get_origin() - a.get_origin();
-                    const auto sign = out.normal.dot(centers) >= 0 ? 1 : -1;
-
-                    out.penetration_vector = out.normal * out.depth * sign;
+                    out.penetration_vector = out.normal * out.depth;
                     return out;
                 }
 
@@ -163,10 +160,7 @@ namespace omath::collision
                 out.num_vertices = static_cast<int>(vertexes.size());
                 out.num_faces = static_cast<int>(faces.size());
 
-                const auto centers = b.get_origin() - a.get_origin();
-                const auto sign = out.normal.dot(centers) >= 0 ? 1 : -1;
-
-                out.penetration_vector = out.normal * out.depth * sign;
+                out.penetration_vector = out.normal * out.depth;
 
                 return out;
             }
@@ -251,9 +245,10 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        static VectorType support_point(const ColliderType& a, const ColliderType& b, const VectorType& dir)
+        static VectorType support_point(const ColliderInterfaceType& a, const ColliderInterfaceType& b,
+                                        const VectorType& dir)
         {
-            return a.find_abs_furthest_vertex(dir).position - b.find_abs_furthest_vertex(-dir).position;
+            return a.find_abs_furthest_vertex_position(dir) - b.find_abs_furthest_vertex_position(-dir);
         }
 
         template<class V>
