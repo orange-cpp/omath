@@ -6,10 +6,10 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <memory_resource>
 #include <queue>
 #include <utility>
 #include <vector>
-#include <memory_resource>
 
 namespace omath::collision
 {
@@ -23,11 +23,11 @@ namespace omath::collision
         { a / s } -> std::same_as<V>;
     };
 
-    template<class ColliderType>
+    template<class ColliderInterfaceType>
     class Epa final
     {
     public:
-        using VectorType = ColliderType::VectorType;
+        using VectorType = ColliderInterfaceType::VectorType;
         static_assert(EpaVector<VectorType>, "VertexType must satisfy EpaVector concept");
 
         struct Result final
@@ -48,7 +48,7 @@ namespace omath::collision
 
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
-        static std::optional<Result> solve(const ColliderType& a, const ColliderType& b,
+        static std::optional<Result> solve(const ColliderInterfaceType& a, const ColliderInterfaceType& b,
                                            const Simplex<VectorType>& simplex, const Params params = {},
                                            std::shared_ptr<std::pmr::memory_resource> mem_resource = {
                                                    std::shared_ptr<void>{}, std::pmr::get_default_resource()})
@@ -245,7 +245,8 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        static VectorType support_point(const ColliderType& a, const ColliderType& b, const VectorType& dir)
+        static VectorType support_point(const ColliderInterfaceType& a, const ColliderInterfaceType& b,
+                                        const VectorType& dir)
         {
             return a.find_abs_furthest_vertex_position(dir) - b.find_abs_furthest_vertex_position(-dir);
         }
