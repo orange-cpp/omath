@@ -84,7 +84,8 @@ namespace omath::projection
         [[nodiscard]] Mat4X4Type calc_view_projection_matrix() const noexcept
         {
             return TraitClass::calc_projection_matrix(m_field_of_view, m_view_port, m_near_plane_distance,
-                                                      m_far_plane_distance);
+                                                      m_far_plane_distance)
+                   * TraitClass::calc_view_matrix(m_view_angles, m_origin);
         }
 
     public:
