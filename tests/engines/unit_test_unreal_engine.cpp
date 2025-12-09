@@ -82,6 +82,18 @@ TEST(unit_test_unreal_engine, ProjectTargetMovedFromCamera)
         EXPECT_NEAR(projected->y, 360, 0.00001f);
     }
 }
+TEST(unit_test_unreal_engine, ProjectTargetMovedFromCameraBehind)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
+    const auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.01f, 10000.f);
+
+    for (float distance = 0.02f; distance < 9000.f; distance += 100.f)
+    {
+        const auto projected = cam.world_to_screen({-distance, 0, 0});
+
+        EXPECT_FALSE(projected.has_value());
+    }
+}
 
 TEST(unit_test_unreal_engine, CameraSetAndGetFov)
 {
