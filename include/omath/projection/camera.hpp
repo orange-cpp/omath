@@ -242,7 +242,16 @@ namespace omath::projection
         template<class Type>
         [[nodiscard]] constexpr static bool is_ndc_out_of_bounds(const Type& ndc) noexcept
         {
-            return std::ranges::any_of(ndc.raw_array(), [](const auto& val) { return val < -1 || val > 1; });
+            const auto& raw_array = ndc.raw_array();
+
+            if (raw_array[2] < 0.f)
+                return true;
+
+            for (std::size_t i = 0; i < 2; i++)
+                if (raw_array[i] < -1.f || raw_array[i] > 1.f)
+                    return true;
+
+            return false;
         }
 
         // NDC REPRESENTATION:
