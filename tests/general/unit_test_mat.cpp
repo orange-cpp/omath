@@ -231,3 +231,13 @@ TEST(UnitTestMatStandalone, Equanity)
 
     EXPECT_EQ(ndc_left_handed, ndc_right_handed);
 }
+TEST(UnitTestMatStandalone, MatPerspectiveLeftHanded)
+{
+    auto perspective_proj = mat_perspective_left_handed(90.f, 16.f/9.f, 0.1f, 1000.f);
+    auto projected = perspective_proj
+                             * mat_column_from_vector<float>({0, 0, 0.1001});
+
+    projected /= projected.at(3, 0);
+
+    EXPECT_TRUE(projected.at(2, 0) > -1.0f && projected.at(2, 0) < 0.f);
+}
