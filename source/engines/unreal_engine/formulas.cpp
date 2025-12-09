@@ -37,13 +37,6 @@ namespace omath::unreal_engine
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
                                               const float far) noexcept
     {
-        const float fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / 2.f);
-
-        return {
-                {1.f / (aspect_ratio * fov_half_tan), 0, 0, 0},
-                {0, 1.f / (fov_half_tan), 0, 0},
-                {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
-                {0, 0, -1.f, 0},
-        };
+        return mat_perspective_left_handed(field_of_view, aspect_ratio, near, far);
     }
 } // namespace omath::unreal_engine
