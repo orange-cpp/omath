@@ -50,24 +50,23 @@ namespace omath::collision
         [[nodiscard]]
         static std::optional<Result> solve(const ColliderInterfaceType& a, const ColliderInterfaceType& b,
                                            const Simplex<VectorType>& simplex, const Params params = {},
-                                           std::shared_ptr<std::pmr::memory_resource> mem_resource = {
-                                                   std::shared_ptr<void>{}, std::pmr::get_default_resource()})
+                                           std::pmr::memory_resource& mem_resource = *std::pmr::get_default_resource())
         {
             // --- Build initial polytope from simplex (4 points) ---
-            std::pmr::vector<VectorType> vertexes{mem_resource.get()};
+            std::pmr::vector<VectorType> vertexes{&mem_resource};
             vertexes.reserve(simplex.size());
             for (std::size_t i = 0; i < simplex.size(); ++i)
                 vertexes.emplace_back(simplex[i]);
 
             // Initial tetra faces (windings corrected in make_face)
-            std::pmr::vector<Face> faces{mem_resource.get()};
+            std::pmr::vector<Face> faces{&mem_resource};
             faces.reserve(4);
             faces.emplace_back(make_face(vertexes, 0, 1, 2));
             faces.emplace_back(make_face(vertexes, 0, 2, 3));
             faces.emplace_back(make_face(vertexes, 0, 3, 1));
             faces.emplace_back(make_face(vertexes, 1, 3, 2));
 
-            auto heap = rebuild_heap(faces);
+            auto heap = rebuild_heap(faces, mem_resource);
 
             Result out{};
 
@@ -80,7 +79,7 @@ namespace omath::collision
                 // (We could keep face handles; this is fine for small Ns.)
 
                 if (const auto top = heap.top(); faces[top.idx].d != top.d)
-                    heap = rebuild_heap(faces);
+                    heap = rebuild_heap(faces, mem_resource);
 
                 if (heap.empty())
                     break;
@@ -110,8 +109,8 @@ namespace omath::collision
                 vertexes.emplace_back(p);
 
                 // Mark faces visible from p and collect their horizon
-                std::pmr::vector<bool> to_delete(faces.size(), false, mem_resource.get()); // uses single bits
-                std::pmr::vector<Edge> boundary{mem_resource.get()};
+                std::pmr::vector<bool> to_delete(faces.size(), false, &mem_resource); // uses single bits
+                std::pmr::vector<Edge> boundary{&mem_resource};
                 boundary.reserve(faces.size() * 2);
 
                 for (int i = 0; i < static_cast<int>(faces.size()); ++i)
@@ -129,7 +128,7 @@ namespace omath::collision
                 }
 
                 // Remove visible faces
-                std::pmr::vector<Face> new_faces{mem_resource.get()};
+                std::pmr::vector<Face> new_faces{&mem_resource};
                 new_faces.reserve(faces.size() + boundary.size());
                 for (int i = 0; i < static_cast<int>(faces.size()); ++i)
                     if (!to_delete[i])
@@ -141,7 +140,7 @@ namespace omath::collision
                     faces.emplace_back(make_face(vertexes, e.a, e.b, new_idx));
 
                 // Rebuild heap after topology change
-                heap = rebuild_heap(faces);
+                heap = rebuild_heap(faces, mem_resource);
 
                 if (!std::isfinite(vertexes.back().dot(vertexes.back())))
                     break; // safety
@@ -193,15 +192,21 @@ namespace omath::collision
                 return lhs.d > rhs.d; // min-heap by distance
             }
         };
-        using Heap = std::priority_queue<HeapItem, std::vector<HeapItem>, HeapCmp>;
+
+        using Heap = std::priority_queue<HeapItem, std::pmr::vector<HeapItem>, HeapCmp>;
 
         [[nodiscard]]
-        static Heap rebuild_heap(const std::pmr::vector<Face>& faces)
+        static Heap rebuild_heap(const std::pmr::vector<Face>& faces, auto& memory_resource)
         {
-            Heap h;
+            std::pmr::vector<HeapItem> storage{ &memory_resource };
+            storage.reserve(faces.size()); // optional but recommended
+
+            Heap h{ HeapCmp{}, std::move(storage) };
+
             for (int i = 0; i < static_cast<int>(faces.size()); ++i)
                 h.emplace(faces[i].d, i);
-            return h;
+
+            return h; // allocator is preserved
         }
 
         [[nodiscard]]
