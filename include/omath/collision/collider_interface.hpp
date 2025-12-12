@@ -2,7 +2,7 @@
 // Created by Vladislav on 06.12.2025.
 //
 #pragma once
-
+#include <omath/linear_algebra/vector3.hpp>
 
 namespace omath::collision
 {
