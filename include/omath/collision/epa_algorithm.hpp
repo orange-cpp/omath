@@ -1,6 +1,6 @@
 #pragma once
 #include "simplex.hpp"
-#include <algorithm> // find_if
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -19,7 +19,7 @@ namespace omath::collision
         { a.cross(b) } -> std::same_as<V>;
         { a.dot(b) } -> std::same_as<float>;
         { -a } -> std::same_as<V>;
-        { a* s } -> std::same_as<V>;
+        { a * s } -> std::same_as<V>;
         { a / s } -> std::same_as<V>;
     };
 
@@ -45,29 +45,19 @@ namespace omath::collision
             int max_iterations{64};
             float tolerance{1e-4f}; // absolute tolerance on distance growth
         };
-
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
         static std::optional<Result> solve(const ColliderInterfaceType& a, const ColliderInterfaceType& b,
                                            const Simplex<VectorType>& simplex, const Params params = {},
-                                           std::shared_ptr<std::pmr::memory_resource> mem_resource = {
-                                                   std::shared_ptr<void>{}, std::pmr::get_default_resource()})
+                                           std::pmr::memory_resource& mem_resource = *std::pmr::get_default_resource())
         {
             // --- Build initial polytope from simplex (4 points) ---
-            std::pmr::vector<VectorType> vertexes{mem_resource.get()};
-            vertexes.reserve(simplex.size());
-            for (std::size_t i = 0; i < simplex.size(); ++i)
-                vertexes.emplace_back(simplex[i]);
+            std::pmr::vector<VectorType> vertexes = build_initial_polytope_from_simplex(simplex, mem_resource);
 
             // Initial tetra faces (windings corrected in make_face)
-            std::pmr::vector<Face> faces{mem_resource.get()};
-            faces.reserve(4);
-            faces.emplace_back(make_face(vertexes, 0, 1, 2));
-            faces.emplace_back(make_face(vertexes, 0, 2, 3));
-            faces.emplace_back(make_face(vertexes, 0, 3, 1));
-            faces.emplace_back(make_face(vertexes, 1, 3, 2));
+            std::pmr::vector<Face> faces = create_initial_tetra_faces(mem_resource, vertexes);
 
-            auto heap = rebuild_heap(faces);
+            auto heap = rebuild_heap(faces, mem_resource);
 
             Result out{};
 
@@ -80,7 +70,7 @@ namespace omath::collision
                 // (We could keep face handles; this is fine for small Ns.)
 
                 if (const auto top = heap.top(); faces[top.idx].d != top.d)
-                    heap = rebuild_heap(faces);
+                    heap = rebuild_heap(faces, mem_resource);
 
                 if (heap.empty())
                     break;
@@ -109,62 +99,35 @@ namespace omath::collision
                 const int new_idx = static_cast<int>(vertexes.size());
                 vertexes.emplace_back(p);
 
-                // Mark faces visible from p and collect their horizon
-                std::pmr::vector<bool> to_delete(faces.size(), false, mem_resource.get()); // uses single bits
-                std::pmr::vector<Edge> boundary{mem_resource.get()};
-                boundary.reserve(faces.size() * 2);
+                const auto [to_delete, boundary] = mark_visible_and_collect_horizon(faces, p);
 
-                for (int i = 0; i < static_cast<int>(faces.size()); ++i)
-                {
-                    if (to_delete[i])
-                        continue;
-                    if (visible_from(faces[i], p))
-                    {
-                        const auto& rf = faces[i];
-                        to_delete[i] = true;
-                        add_edge_boundary(boundary, rf.i0, rf.i1);
-                        add_edge_boundary(boundary, rf.i1, rf.i2);
-                        add_edge_boundary(boundary, rf.i2, rf.i0);
-                    }
-                }
-
-                // Remove visible faces
-                std::pmr::vector<Face> new_faces{mem_resource.get()};
-                new_faces.reserve(faces.size() + boundary.size());
-                for (int i = 0; i < static_cast<int>(faces.size()); ++i)
-                    if (!to_delete[i])
-                        new_faces.emplace_back(faces[i]);
-                faces.swap(new_faces);
+                erase_marked(faces, to_delete);
 
                 // Stitch new faces around the horizon
                 for (const auto& e : boundary)
                     faces.emplace_back(make_face(vertexes, e.a, e.b, new_idx));
 
                 // Rebuild heap after topology change
-                heap = rebuild_heap(faces);
+                heap = rebuild_heap(faces, mem_resource);
 
                 if (!std::isfinite(vertexes.back().dot(vertexes.back())))
                     break; // safety
                 out.iterations = it + 1;
             }
 
-            // Fallback: pick closest face as best-effort answer
-            if (!faces.empty())
-            {
-                auto best = faces[0];
-                for (const auto& f : faces)
-                    if (f.d < best.d)
-                        best = f;
-                out.normal = best.n;
-                out.depth = best.d;
-                out.num_vertices = static_cast<int>(vertexes.size());
-                out.num_faces = static_cast<int>(faces.size());
+            if (faces.empty())
+                return std::nullopt;
 
-                out.penetration_vector = out.normal * out.depth;
+            const auto best = *std::ranges::min_element(faces, [](const auto& first, const auto& second)
+                                                        { return first.d < second.d; });
+            out.normal = best.n;
+            out.depth = best.d;
+            out.num_vertices = static_cast<int>(vertexes.size());
+            out.num_faces = static_cast<int>(faces.size());
 
-                return out;
-            }
-            return std::nullopt;
+            out.penetration_vector = out.normal * out.depth;
+
+            return out;
         }
 
     private:
@@ -193,15 +156,21 @@ namespace omath::collision
                 return lhs.d > rhs.d; // min-heap by distance
             }
         };
-        using Heap = std::priority_queue<HeapItem, std::vector<HeapItem>, HeapCmp>;
+
+        using Heap = std::priority_queue<HeapItem, std::pmr::vector<HeapItem>, HeapCmp>;
 
         [[nodiscard]]
-        static Heap rebuild_heap(const std::pmr::vector<Face>& faces)
+        static Heap rebuild_heap(const std::pmr::vector<Face>& faces, auto& memory_resource)
         {
-            Heap h;
+            std::pmr::vector<HeapItem> storage{&memory_resource};
+            storage.reserve(faces.size()); // optional but recommended
+
+            Heap h{HeapCmp{}, std::move(storage)};
+
             for (int i = 0; i < static_cast<int>(faces.size()); ++i)
                 h.emplace(faces[i].d, i);
-            return h;
+
+            return h; // allocator is preserved
         }
 
         [[nodiscard]]
@@ -266,6 +235,68 @@ namespace omath::collision
                 if (const auto d = v.cross(dir); !near_zero_vec(d))
                     return d;
             return V{1, 0, 0};
+        }
+        [[nodiscard]]
+        static std::pmr::vector<Face> create_initial_tetra_faces(std::pmr::memory_resource& mem_resource,
+                                                                 const std::pmr::vector<VectorType>& vertexes)
+        {
+            std::pmr::vector<Face> faces{&mem_resource};
+            faces.reserve(4);
+            faces.emplace_back(make_face(vertexes, 0, 1, 2));
+            faces.emplace_back(make_face(vertexes, 0, 2, 3));
+            faces.emplace_back(make_face(vertexes, 0, 3, 1));
+            faces.emplace_back(make_face(vertexes, 1, 3, 2));
+            return faces;
+        }
+
+        [[nodiscard]]
+        static std::pmr::vector<VectorType> build_initial_polytope_from_simplex(const Simplex<VectorType>& simplex,
+                                                                                std::pmr::memory_resource& mem_resource)
+        {
+            std::pmr::vector<VectorType> vertexes{&mem_resource};
+            vertexes.reserve(simplex.size());
+
+            for (std::size_t i = 0; i < simplex.size(); ++i)
+                vertexes.emplace_back(simplex[i]);
+
+            return vertexes;
+        }
+        static void erase_marked(std::pmr::vector<Face>& faces, const std::pmr::vector<bool>& to_delete)
+        {
+            auto* mr = faces.get_allocator().resource(); // keep same resource
+            std::pmr::vector<Face> kept{mr};
+            kept.reserve(faces.size());
+
+            for (std::size_t i = 0; i < faces.size(); ++i)
+                if (!to_delete[i])
+                    kept.emplace_back(faces[i]);
+
+            faces.swap(kept);
+        }
+        struct Horizon
+        {
+            std::pmr::vector<bool> to_delete;
+            std::pmr::vector<Edge> boundary;
+        };
+
+        static Horizon mark_visible_and_collect_horizon(const std::pmr::vector<Face>& faces, const VectorType& p)
+        {
+            auto* mr = faces.get_allocator().resource();
+
+            Horizon horizon{std::pmr::vector<bool>(faces.size(), false, mr), std::pmr::vector<Edge>(mr)};
+            horizon.boundary.reserve(faces.size());
+
+            for (std::size_t i = 0; i < faces.size(); ++i)
+                if (visible_from(faces[i], p))
+                {
+                    const auto& rf = faces[i];
+                    horizon.to_delete[i] = true;
+                    add_edge_boundary(horizon.boundary, rf.i0, rf.i1);
+                    add_edge_boundary(horizon.boundary, rf.i1, rf.i2);
+                    add_edge_boundary(horizon.boundary, rf.i2, rf.i0);
+                }
+
+            return horizon;
         }
     };
 } // namespace omath::collision

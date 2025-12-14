@@ -5,6 +5,7 @@
 #pragma once
 
 #include "omath/linear_algebra/mat.hpp"
+#include "omath/linear_algebra/triangle.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 #include "omath/projection/error_codes.hpp"
 #include <expected>
@@ -173,6 +174,53 @@ namespace omath::projection
                 return ndc_to_screen_position_from_bottom_left_corner(*normalized_cords);
             else
                 std::unreachable();
+        }
+
+        [[nodiscard]] bool is_culled_by_frustum(const Triangle<Vector3<float>>& triangle) const noexcept
+        {
+            // Transform to clip space (before perspective divide)
+            auto to_clip = [this](const Vector3<float>& point)
+            {
+                auto clip = get_view_projection_matrix()
+                            * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(point);
+                return std::array<float, 4>{
+                        clip.at(0, 0), // x
+                        clip.at(1, 0), // y
+                        clip.at(2, 0), // z
+                        clip.at(3, 0) // w
+                };
+            };
+
+            const auto c0 = to_clip(triangle.m_vertex1);
+            const auto c1 = to_clip(triangle.m_vertex2);
+            const auto c2 = to_clip(triangle.m_vertex3);
+
+            // If all vertices are behind the camera (w <= 0), trivially reject
+            if (c0[3] <= 0.f && c1[3] <= 0.f && c2[3] <= 0.f)
+                return true;
+
+            // Helper: all three vertices outside the same clip plane
+            auto all_outside_plane = [](const int axis, const std::array<float, 4>& a, const std::array<float, 4>& b,
+                                        const std::array<float, 4>& c, const bool positive_side)
+            {
+                if (positive_side)
+                    return a[axis] > a[3] && b[axis] > b[3] && c[axis] > c[3];
+                return a[axis] < -a[3] && b[axis] < -b[3] && c[axis] < -c[3];
+            };
+
+            // Clip volume in clip space (OpenGL-style):
+            // -w <= x <= w
+            // -w <= y <= w
+            // -w <= z <= w
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (all_outside_plane(i, c0, c1, c2, false))
+                    return true; // x < -w (left)
+                if (all_outside_plane(i, c0, c1, c2, true))
+                    return true; // x >  w (right)
+            }
+            return false;
         }
 
         [[nodiscard]] std::expected<Vector3<float>, Error>

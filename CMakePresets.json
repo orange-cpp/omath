@@ -38,7 +38,7 @@
     },
     {
       "name": "windows-debug-vcpkg",
-      "displayName": "Debug",
+      "displayName": "Windows Debug Vcpkg",
       "inherits": "windows-base-vcpkg",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
@@ -46,7 +46,7 @@
     },
     {
       "name": "windows-release-vcpkg",
-      "displayName": "Release",
+      "displayName": "Windows Release Vcpkg",
       "inherits": "windows-base-vcpkg",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
@@ -157,7 +157,7 @@
     },
     {
       "name": "darwin-debug-vcpkg",
-      "displayName": "Darwin Debug",
+      "displayName": "Darwin Debug Vcpkg",
       "inherits": "darwin-base-vcpkg",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
@@ -173,7 +173,7 @@
     },
     {
       "name": "darwin-release-vcpkg",
-      "displayName": "Darwin Release",
+      "displayName": "Darwin Release Vcpkg",
       "inherits": "darwin-base-vcpkg",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
