@@ -38,7 +38,7 @@ namespace omath::primitives
 
     public:
         Vbo m_vertex_buffer;
-        Ebo m_vertex_array_object;
+        Ebo m_element_buffer_object;
 
         Mesh(Vbo vbo, Ebo vao,
              const VectorType scale =
@@ -47,7 +47,7 @@ namespace omath::primitives
                              1,
                              1,
                      })
-            : m_vertex_buffer(std::move(vbo)), m_vertex_array_object(std::move(vao)), m_scale(std::move(scale))
+            : m_vertex_buffer(std::move(vbo)), m_element_buffer_object(std::move(vao)), m_scale(std::move(scale))
         {
         }
         void set_origin(const VectorType& new_origin)
