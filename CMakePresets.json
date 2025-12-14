@@ -237,6 +237,64 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "android-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
+      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Android",
+        "CMAKE_SYSTEM_VERSION": "24",
+        "CMAKE_ANDROID_ARCH_ABI": "arm64-v8a",
+        "CMAKE_ANDROID_NDK": "$env{ANDROID_NDK_HOME}",
+        "CMAKE_MAKE_PROGRAM": "ninja"
+      }
+    },
+    {
+      "name": "android-base-vcpkg",
+      "hidden": true,
+      "inherits": "android-base",
+      "cacheVariables": {
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "VCPKG_TARGET_TRIPLET": "arm64-android",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui"
+      }
+    },
+    {
+      "name": "android-debug",
+      "displayName": "Android Debug",
+      "inherits": "android-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "android-debug-vcpkg",
+      "displayName": "Android Debug Vcpkg",
+      "inherits": "android-base-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "android-release",
+      "displayName": "Android Release",
+      "inherits": "android-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "android-release-vcpkg",
+      "displayName": "Android Release Vcpkg",
+      "inherits": "android-base-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     }
   ]
 }
