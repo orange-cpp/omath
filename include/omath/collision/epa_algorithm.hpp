@@ -52,10 +52,7 @@ namespace omath::collision
                                            std::pmr::memory_resource& mem_resource = *std::pmr::get_default_resource())
         {
             // --- Build initial polytope from simplex (4 points) ---
-            std::pmr::vector<VectorType> vertexes{&mem_resource};
-            vertexes.reserve(simplex.size());
-            for (std::size_t i = 0; i < simplex.size(); ++i)
-                vertexes.emplace_back(simplex[i]);
+            std::pmr::vector<VectorType> vertexes = build_initial_polytope_from_simplex(simplex, mem_resource);
 
             // Initial tetra faces (windings corrected in make_face)
             std::pmr::vector<Face> faces = create_initial_tetra_faces(mem_resource, vertexes);
@@ -278,6 +275,19 @@ namespace omath::collision
             faces.emplace_back(make_face(vertexes, 0, 3, 1));
             faces.emplace_back(make_face(vertexes, 1, 3, 2));
             return faces;
+        }
+
+        [[nodiscard]]
+        static std::pmr::vector<VectorType> build_initial_polytope_from_simplex(const Simplex<VectorType>& simplex,
+                                                                                std::pmr::memory_resource& mem_resource)
+        {
+            std::pmr::vector<VectorType> vertexes{&mem_resource};
+            vertexes.reserve(simplex.size());
+
+            for (std::size_t i = 0; i < simplex.size(); ++i)
+                vertexes.emplace_back(simplex[i]);
+
+            return vertexes;
         }
     };
 } // namespace omath::collision
