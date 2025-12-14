@@ -99,7 +99,7 @@ namespace omath::collision
                 const int new_idx = static_cast<int>(vertexes.size());
                 vertexes.emplace_back(p);
 
-                auto [to_delete, boundary] = mark_visible_and_collect_horizon(faces, p);
+                const auto [to_delete, boundary] = mark_visible_and_collect_horizon(faces, p);
 
                 erase_marked(faces, to_delete);
 
