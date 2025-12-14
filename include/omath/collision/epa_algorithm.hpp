@@ -45,7 +45,6 @@ namespace omath::collision
             int max_iterations{64};
             float tolerance{1e-4f}; // absolute tolerance on distance growth
         };
-
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
         static std::optional<Result> solve(const ColliderInterfaceType& a, const ColliderInterfaceType& b,
@@ -59,12 +58,7 @@ namespace omath::collision
                 vertexes.emplace_back(simplex[i]);
 
             // Initial tetra faces (windings corrected in make_face)
-            std::pmr::vector<Face> faces{&mem_resource};
-            faces.reserve(4);
-            faces.emplace_back(make_face(vertexes, 0, 1, 2));
-            faces.emplace_back(make_face(vertexes, 0, 2, 3));
-            faces.emplace_back(make_face(vertexes, 0, 3, 1));
-            faces.emplace_back(make_face(vertexes, 1, 3, 2));
+            std::pmr::vector<Face> faces = create_initial_tetra_faces(mem_resource, vertexes);
 
             auto heap = rebuild_heap(faces, mem_resource);
 
@@ -271,6 +265,17 @@ namespace omath::collision
                 if (const auto d = v.cross(dir); !near_zero_vec(d))
                     return d;
             return V{1, 0, 0};
+        }
+        static std::pmr::vector<Face> create_initial_tetra_faces(std::pmr::memory_resource& mem_resource,
+                                                                 const std::pmr::vector<VectorType>& vertexes)
+        {
+            std::pmr::vector<Face> faces{&mem_resource};
+            faces.reserve(4);
+            faces.emplace_back(make_face(vertexes, 0, 1, 2));
+            faces.emplace_back(make_face(vertexes, 0, 2, 3));
+            faces.emplace_back(make_face(vertexes, 0, 3, 1));
+            faces.emplace_back(make_face(vertexes, 1, 3, 2));
+            return faces;
         }
     };
 } // namespace omath::collision
