@@ -115,21 +115,19 @@ namespace omath::collision
                 out.iterations = it + 1;
             }
 
-            // Fallback: pick closest face as best-effort answer
-            if (!faces.empty())
-            {
-                const auto best = *std::ranges::min_element(faces, [](const auto& first, const auto& second)
-                                                            { return first.d < second.d; });
-                out.normal = best.n;
-                out.depth = best.d;
-                out.num_vertices = static_cast<int>(vertexes.size());
-                out.num_faces = static_cast<int>(faces.size());
+            if (faces.empty())
+                return std::nullopt;
 
-                out.penetration_vector = out.normal * out.depth;
+            const auto best = *std::ranges::min_element(faces, [](const auto& first, const auto& second)
+                                                        { return first.d < second.d; });
+            out.normal = best.n;
+            out.depth = best.d;
+            out.num_vertices = static_cast<int>(vertexes.size());
+            out.num_faces = static_cast<int>(faces.size());
 
-                return out;
-            }
-            return std::nullopt;
+            out.penetration_vector = out.normal * out.depth;
+
+            return out;
         }
 
     private:
