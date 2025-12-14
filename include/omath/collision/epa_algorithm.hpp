@@ -1,6 +1,6 @@
 #pragma once
 #include "simplex.hpp"
-#include <algorithm> // find_if
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdint>
