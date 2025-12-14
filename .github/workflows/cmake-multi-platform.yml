@@ -12,7 +12,7 @@ concurrency:
 
 
 ##############################################################################
-# 1)  ARCH LINUX  –  Clang / Ninja
+# 1)  Arch Linux  –  Clang / Ninja
 ##############################################################################
 jobs:
   arch-build-and-test:
@@ -120,3 +120,41 @@ jobs:
       - name: Run unit_tests
         shell: bash
         run: ./out/Release/unit_tests
+
+  ##############################################################################
+  # 4)  FreeBSD  –  Clang / Ninja
+  ##############################################################################
+  freebsd-build-and-test:
+    name: FreeBSD (Clang)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build and Test
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          sync: sshfs
+          mem: 12288
+          copyback: false
+          prepare: pkg install -y git curl zip unzip gmake llvm gsed bash perl5 openssl 7-zip coreutils cmake ninja pkgconf patchelf
+          run: |
+            git config --global --add safe.directory `pwd`
+            # Build vcpkg in /tmp to avoid sshfs timestamp sync issues
+            # This prevents PCH timestamp mismatches during parallel builds
+            export VCPKG_ROOT=/tmp/vcpkg
+            rm -rf "$VCPKG_ROOT"
+            git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+            cd "$VCPKG_ROOT"
+            # Bootstrap vcpkg - it will build from source on FreeBSD
+            # Building in /tmp avoids sshfs timestamp issues that break PCH
+            ./bootstrap-vcpkg.sh
+            cd -
+            export VCPKG_FORCE_SYSTEM_BINARIES=0
+            # VCPKG_ROOT is set to /tmp/vcpkg, which CMake will use via the preset
+            cmake --preset freebsd-release-vcpkg -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests" -DVCPKG_INSTALL_OPTIONS="--allow-unsupported"
+            cmake --build cmake-build/build/freebsd-release-vcpkg --target unit_tests omath
+            ./out/Release/unit_tests
