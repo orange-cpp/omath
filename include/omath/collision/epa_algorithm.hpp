@@ -99,33 +99,9 @@ namespace omath::collision
                 const int new_idx = static_cast<int>(vertexes.size());
                 vertexes.emplace_back(p);
 
-                // Mark faces visible from p and collect their horizon
-                std::pmr::vector<bool> to_delete(faces.size(), false, &mem_resource); // uses single bits
-                std::pmr::vector<Edge> boundary{&mem_resource};
-                boundary.reserve(faces.size() * 2);
+                auto [to_delete, boundary] = mark_visible_and_collect_horizon(faces, p);
 
-                for (int i = 0; i < static_cast<int>(faces.size()); ++i)
-                {
-                    if (to_delete[i])
-                        continue;
-
-                    if (visible_from(faces[i], p))
-                    {
-                        const auto& rf = faces[i];
-                        to_delete[i] = true;
-                        add_edge_boundary(boundary, rf.i0, rf.i1);
-                        add_edge_boundary(boundary, rf.i1, rf.i2);
-                        add_edge_boundary(boundary, rf.i2, rf.i0);
-                    }
-                }
-
-                // Remove visible faces
-                std::pmr::vector<Face> new_faces{&mem_resource};
-                new_faces.reserve(faces.size() + boundary.size());
-                for (int i = 0; i < static_cast<int>(faces.size()); ++i)
-                    if (!to_delete[i])
-                        new_faces.emplace_back(faces[i]);
-                faces.swap(new_faces);
+                erase_marked(faces, to_delete);
 
                 // Stitch new faces around the horizon
                 for (const auto& e : boundary)
@@ -142,10 +118,8 @@ namespace omath::collision
             // Fallback: pick closest face as best-effort answer
             if (!faces.empty())
             {
-                auto best = faces[0];
-                for (const auto& f : faces)
-                    if (f.d < best.d)
-                        best = f;
+                const auto best = *std::ranges::min_element(faces, [](const auto& first, const auto& second)
+                                                            { return first.d < second.d; });
                 out.normal = best.n;
                 out.depth = best.d;
                 out.num_vertices = static_cast<int>(vertexes.size());
@@ -288,6 +262,43 @@ namespace omath::collision
                 vertexes.emplace_back(simplex[i]);
 
             return vertexes;
+        }
+        static void erase_marked(std::pmr::vector<Face>& faces, const std::pmr::vector<bool>& to_delete)
+        {
+            auto* mr = faces.get_allocator().resource(); // keep same resource
+            std::pmr::vector<Face> kept{mr};
+            kept.reserve(faces.size());
+
+            for (std::size_t i = 0; i < faces.size(); ++i)
+                if (!to_delete[i])
+                    kept.emplace_back(faces[i]);
+
+            faces.swap(kept);
+        }
+        struct Horizon
+        {
+            std::pmr::vector<bool> to_delete;
+            std::pmr::vector<Edge> boundary;
+        };
+
+        static Horizon mark_visible_and_collect_horizon(const std::pmr::vector<Face>& faces, const VectorType& p)
+        {
+            auto* mr = faces.get_allocator().resource();
+
+            Horizon out{std::pmr::vector<bool>(faces.size(), false, mr), std::pmr::vector<Edge>(mr)};
+            out.boundary.reserve(faces.size() * 2);
+
+            for (std::size_t i = 0; i < faces.size(); ++i)
+                if (visible_from(faces[i], p))
+                {
+                    const auto& rf = faces[i];
+                    out.to_delete[i] = true;
+                    add_edge_boundary(out.boundary, rf.i0, rf.i1);
+                    add_edge_boundary(out.boundary, rf.i1, rf.i2);
+                    add_edge_boundary(out.boundary, rf.i2, rf.i0);
+                }
+
+            return out;
         }
     };
 } // namespace omath::collision
