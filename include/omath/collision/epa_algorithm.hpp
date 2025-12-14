@@ -111,6 +111,7 @@ namespace omath::collision
                 {
                     if (to_delete[i])
                         continue;
+
                     if (visible_from(faces[i], p))
                     {
                         const auto& rf = faces[i];
@@ -266,6 +267,7 @@ namespace omath::collision
                     return d;
             return V{1, 0, 0};
         }
+        [[nodiscard]]
         static std::pmr::vector<Face> create_initial_tetra_faces(std::pmr::memory_resource& mem_resource,
                                                                  const std::pmr::vector<VectorType>& vertexes)
         {
