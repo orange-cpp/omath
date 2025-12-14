@@ -178,6 +178,65 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "freebsd-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
+      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_MAKE_PROGRAM": "ninja"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "FreeBSD"
+      }
+    },
+    {
+      "name": "freebsd-base-vcpkg",
+      "hidden": true,
+      "inherits": "freebsd-base",
+      "cacheVariables": {
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2"
+      }
+    },
+    {
+      "name": "freebsd-debug",
+      "displayName": "FreeBSD Debug",
+      "inherits": "freebsd-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "freebsd-debug-vcpkg",
+      "displayName": "FreeBSD Debug Vcpkg",
+      "inherits": "freebsd-base-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "freebsd-release",
+      "displayName": "FreeBSD Release",
+      "inherits": "freebsd-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "freebsd-release-vcpkg",
+      "displayName": "FreeBSD Release Vcpkg",
+      "inherits": "freebsd-base-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     }
   ]
 }

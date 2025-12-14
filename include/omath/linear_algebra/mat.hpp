@@ -17,6 +17,13 @@
 
 #undef near
 #undef far
+// Undefine FreeBSD/BSD system macros that conflict with method names
+#ifdef minor
+#undef minor
+#endif
+#ifdef major
+#undef major
+#endif
 namespace omath
 {
     struct MatSize
