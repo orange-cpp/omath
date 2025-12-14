@@ -285,20 +285,20 @@ namespace omath::collision
         {
             auto* mr = faces.get_allocator().resource();
 
-            Horizon out{std::pmr::vector<bool>(faces.size(), false, mr), std::pmr::vector<Edge>(mr)};
-            out.boundary.reserve(faces.size() * 2);
+            Horizon horizon{std::pmr::vector<bool>(faces.size(), false, mr), std::pmr::vector<Edge>(mr)};
+            horizon.boundary.reserve(faces.size());
 
             for (std::size_t i = 0; i < faces.size(); ++i)
                 if (visible_from(faces[i], p))
                 {
                     const auto& rf = faces[i];
-                    out.to_delete[i] = true;
-                    add_edge_boundary(out.boundary, rf.i0, rf.i1);
-                    add_edge_boundary(out.boundary, rf.i1, rf.i2);
-                    add_edge_boundary(out.boundary, rf.i2, rf.i0);
+                    horizon.to_delete[i] = true;
+                    add_edge_boundary(horizon.boundary, rf.i0, rf.i1);
+                    add_edge_boundary(horizon.boundary, rf.i1, rf.i2);
+                    add_edge_boundary(horizon.boundary, rf.i2, rf.i0);
                 }
 
-            return out;
+            return horizon;
         }
     };
 } // namespace omath::collision
