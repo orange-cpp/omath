@@ -19,7 +19,7 @@ namespace omath::collision
         { a.cross(b) } -> std::same_as<V>;
         { a.dot(b) } -> std::same_as<float>;
         { -a } -> std::same_as<V>;
-        { a* s } -> std::same_as<V>;
+        { a * s } -> std::same_as<V>;
         { a / s } -> std::same_as<V>;
     };
 
@@ -198,10 +198,10 @@ namespace omath::collision
         [[nodiscard]]
         static Heap rebuild_heap(const std::pmr::vector<Face>& faces, auto& memory_resource)
         {
-            std::pmr::vector<HeapItem> storage{ &memory_resource };
+            std::pmr::vector<HeapItem> storage{&memory_resource};
             storage.reserve(faces.size()); // optional but recommended
 
-            Heap h{ HeapCmp{}, std::move(storage) };
+            Heap h{HeapCmp{}, std::move(storage)};
 
             for (int i = 0; i < static_cast<int>(faces.size()); ++i)
                 h.emplace(faces[i].d, i);
