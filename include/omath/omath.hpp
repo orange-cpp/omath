@@ -30,7 +30,8 @@
 
 // Collision detection
 #include "omath/collision/line_tracer.hpp"
-
+#include "omath/collision/gjk_algorithm.hpp"
+#include "omath/collision/epa_algorithm.hpp"
 // Pathfinding algorithms
 #include "omath/pathfinding/a_star.hpp"
 #include "omath/pathfinding/navigation_mesh.hpp"
