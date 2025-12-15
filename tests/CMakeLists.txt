@@ -22,4 +22,8 @@ else() # GTest is being linked as vcpkg package
     find_package(GTest CONFIG REQUIRED)
     target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main omath::omath)
 endif()
-gtest_discover_tests(${PROJECT_NAME})
+
+# Skip test discovery for Android builds - binaries cannot run on host
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+    gtest_discover_tests(${PROJECT_NAME})
+endif()
