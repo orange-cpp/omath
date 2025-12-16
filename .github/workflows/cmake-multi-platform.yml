@@ -253,3 +253,57 @@ jobs:
         shell: bash
         run: |
           cmake --build cmake-build/build/android-release-vcpkg --target unit_tests omath
+
+  ##############################################################################
+  # 6)  WebAssembly (Emscripten)  –  Clang / Ninja / wasm32-emscripten
+  ##############################################################################
+  wasm-build-and-test:
+    name: WebAssembly (Emscripten) (wasm32-emscripten)
+    runs-on: ubuntu-latest
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    steps:
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install basic tool-chain
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 'latest'
+
+      - name: Verify Emscripten
+        shell: bash
+        run: |
+          echo "EMSDK=$EMSDK"
+          emcc --version
+          # Verify toolchain file exists
+          ls -la "$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: |
+          cmake --preset wasm-release-vcpkg \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=ON \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui;tests"
+
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build cmake-build/build/wasm-release-vcpkg --target unit_tests omath
