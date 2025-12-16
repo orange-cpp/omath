@@ -180,6 +180,38 @@
       }
     },
     {
+  "name": "ios-base",
+  "hidden": true,
+  "generator": "Ninja",
+  "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
+  "cacheVariables": {
+    "CMAKE_SYSTEM_NAME": "iOS",
+    "CMAKE_OSX_DEPLOYMENT_TARGET": "18.5",
+    "CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED": "NO",
+    "CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED": "NO"
+  },
+  "condition": {
+    "type": "equals",
+    "lhs": "${hostSystemName}",
+    "rhs": "Darwin"
+  }
+},
+{
+  "name": "ios-base-vcpkg",
+  "hidden": true,
+  "inherits": "ios-base",
+  "cacheVariables": {
+    "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+    "VCPKG_TARGET_TRIPLET": "arm64-ios",
+    "VCPKG_HOST_TRIPLET": "arm64-osx"
+  }
+},
+{
+  "name": "ios-release-vcpkg",
+  "displayName": "iOS Release (vcpkg)",
+  "inherits": "ios-base-vcpkg"
+},
+    {
       "name": "freebsd-base",
       "hidden": true,
       "generator": "Ninja",

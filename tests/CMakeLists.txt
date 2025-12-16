@@ -24,6 +24,6 @@ else() # GTest is being linked as vcpkg package
 endif()
 
 # Skip test discovery for Android builds - binaries cannot run on host
-if (NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+if (NOT (CMAKE_SYSTEM_NAME STREQUAL "Android" OR CMAKE_SYSTEM_NAME STREQUAL "iOS"))
     gtest_discover_tests(${PROJECT_NAME})
 endif()

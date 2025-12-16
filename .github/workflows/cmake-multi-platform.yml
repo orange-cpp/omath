@@ -122,7 +122,47 @@ jobs:
         run: ./out/Release/unit_tests
 
   ##############################################################################
-  # 4)  FreeBSD  –  Clang / Ninja
+  # 4)  iOS  –  AppleClang / Xcode / arm64-ios
+  ##############################################################################
+  ios-build:
+    name: iOS (AppleClang) (arm64-ios)
+    runs-on: macOS-latest
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    steps:
+      - name: Install CMake tooling
+        shell: bash
+        run: |
+          brew install cmake ninja
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: |
+          cmake --preset ios-release-vcpkg \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=ON \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui;tests"
+
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build cmake-build/build/ios-release-vcpkg --config Release --target unit_tests omath
+
+  ##############################################################################
+  # 5)  FreeBSD  –  Clang / Ninja
   ##############################################################################
   freebsd-build-and-test:
     name: FreeBSD (Clang) (x64-freebsd)
