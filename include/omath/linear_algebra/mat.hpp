@@ -380,7 +380,9 @@ namespace omath
         {
             const auto det = determinant();
 
-            if (det == 0)
+            constexpr Type det_epsilon = static_cast<Type>(1e-6);
+
+            if (std::abs(det) < det_epsilon)
                 return std::nullopt;
 
             const auto transposed_mat = transposed();
