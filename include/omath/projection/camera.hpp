@@ -8,6 +8,7 @@
 #include "omath/linear_algebra/triangle.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 #include "omath/projection/error_codes.hpp"
+#include <cmath>
 #include <expected>
 #include <omath/trigonometry/angle.hpp>
 #include <type_traits>
@@ -229,10 +230,11 @@ namespace omath::projection
             auto projected = get_view_projection_matrix()
                              * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(world_position);
 
-            if (projected.at(3, 0) == 0.0f)
+            const auto& w = projected.at(3, 0);
+            if (w <= std::numeric_limits<float>::epsilon())
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
-            projected /= projected.at(3, 0);
+            projected /= w;
 
             if (is_ndc_out_of_bounds(projected))
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
@@ -250,10 +252,12 @@ namespace omath::projection
             auto inverted_projection =
                     inv_view_proj.value() * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(ndc);
 
-            if (!inverted_projection.at(3, 0))
+            const auto& w = inverted_projection.at(3, 0);
+
+            if (std::abs(w) < std::numeric_limits<float>::epsilon())
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
-            inverted_projection /= inverted_projection.at(3, 0);
+            inverted_projection /= w;
 
             return Vector3<float>{inverted_projection.at(0, 0), inverted_projection.at(1, 0),
                                   inverted_projection.at(2, 0)};
@@ -290,7 +294,9 @@ namespace omath::projection
         template<class Type>
         [[nodiscard]] constexpr static bool is_ndc_out_of_bounds(const Type& ndc) noexcept
         {
-            return std::ranges::any_of(ndc.raw_array(), [](const auto& val) { return val < -1 || val > 1; });
+            constexpr auto eps = std::numeric_limits<float>::epsilon();
+            return std::ranges::any_of(ndc.raw_array(),
+                                       [](const auto& val) { return val < -1.0f - eps || val > 1.0f + eps; });
         }
 
         // NDC REPRESENTATION:
@@ -347,7 +353,7 @@ namespace omath::projection
             if constexpr (screen_start == ScreenStart::TOP_LEFT_CORNER)
                 return {screen_pos.x / m_view_port.m_width * 2.f - 1.f, 1.f - screen_pos.y / m_view_port.m_height * 2.f,
                         screen_pos.z};
-            else if (screen_start == ScreenStart::BOTTOM_LEFT_CORNER)
+            else if constexpr (screen_start == ScreenStart::BOTTOM_LEFT_CORNER)
                 return {screen_pos.x / m_view_port.m_width * 2.f - 1.f,
                         (screen_pos.y / m_view_port.m_height - 0.5f) * 2.f, screen_pos.z};
             else

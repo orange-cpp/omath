@@ -37,7 +37,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
       - name: Configure (cmake --preset)
         shell: bash
         run: cmake --preset linux-release-vcpkg -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
@@ -53,7 +53,7 @@ jobs:
 
 
   ##############################################################################
-  # 2)  Windows  –  MSVC / Ninja
+  # 2)  Windows x64  –  MSVC (x64-windows)
   ##############################################################################
   windows-build-and-test:
     name: Windows (MSVC) (x64-windows)
@@ -85,6 +85,43 @@ jobs:
         shell: bash
         run: ./out/Release/unit_tests.exe
 
+
+
+  ##############################################################################
+  # 3)  Windows x86  –  MSVC (x86-windows)
+  ##############################################################################
+  windows-x86-build-and-test:
+    name: Windows (MSVC) (x86-windows)
+    runs-on: windows-latest
+    env:
+      OMATH_BUILD_VIA_VCPKG: ON
+
+    steps:
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v4
+
+      - name: Set up MSVC developer command-prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64_x86
+
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: cmake --preset windows-release-vcpkg-x86 -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+
+      - name: Build
+        shell: bash
+        run: cmake --build cmake-build/build/windows-release-vcpkg-x86 --target unit_tests omath
+
+      - name: Run unit_tests.exe
+        shell: bash
+        run: ./out/Release/unit_tests.exe
+
   ##############################################################################
   # 3)  macOS  –  AppleClang / Ninja
   ##############################################################################
@@ -107,7 +144,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           
       - name: Configure (cmake --preset)
         shell: bash
@@ -143,7 +180,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
@@ -187,7 +224,7 @@ jobs:
             # This prevents PCH timestamp mismatches during parallel builds
             export VCPKG_ROOT=/tmp/vcpkg
             rm -rf "$VCPKG_ROOT"
-            git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+            git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
             cd "$VCPKG_ROOT"
             # Bootstrap vcpkg - it will build from source on FreeBSD
             # Building in /tmp avoids sshfs timestamp issues that break PCH
@@ -236,7 +273,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
@@ -290,7 +327,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
@@ -307,3 +344,168 @@ jobs:
         shell: bash
         run: |
           cmake --build cmake-build/build/wasm-release-vcpkg --target unit_tests omath
+
+  ##############################################################################
+  # 7)  Windows MSYS2 MinGW  –  GCC / Ninja / x64-mingw-dynamic
+  ##############################################################################
+  mingw-build-and-test:
+    name: MINGW64 (MSYS2) (x64-mingw-dynamic)
+    runs-on: windows-latest
+    
+    defaults:
+      run:
+        shell: msys2 {0}
+    
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    
+    steps:
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-pkg-config
+            git
+            base-devel
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        run: |
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        run: |
+          cmake --preset mingw-release-vcpkg \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=ON \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui;tests"
+
+      - name: Build
+        run: |
+          cmake --build cmake-build/build/mingw-release-vcpkg --target unit_tests omath
+
+      - name: Run unit_tests.exe
+        run: |
+          ./out/Release/unit_tests.exe
+
+  ##############################################################################
+  # 8)  Windows UCRT64 MSYS2 MinGW  –  GCC / Ninja / x64-mingw-dynamic
+  ##############################################################################
+  mingw-ucrt-build-and-test:
+    name: UCRT64 (MSYS2) (x64-mingw-dynamic)
+    runs-on: windows-latest
+    
+    defaults:
+      run:
+        shell: msys2 {0}
+    
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    
+    steps:
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkg-config
+            git
+            base-devel
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        run: |
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        run: |
+          cmake --preset mingw-release-vcpkg \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=ON \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui;tests"
+
+      - name: Build
+        run: |
+          cmake --build cmake-build/build/mingw-release-vcpkg --target unit_tests omath
+
+      - name: Run unit_tests.exe
+        run: |
+          ./out/Release/unit_tests.exe
+
+  ##############################################################################
+  # 9)  Windows MSYS2 MinGW32  –  GCC / Ninja / x86-mingw-dynamic
+  ##############################################################################
+  mingw32-build-and-test:
+    name: MINGW32 (MSYS2) (x86-mingw-dynamic)
+    runs-on: windows-latest
+    
+    defaults:
+      run:
+        shell: msys2 {0}
+    
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    
+    steps:
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          update: true
+          install: >-
+            mingw-w64-i686-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-i686-ninja
+            mingw-w64-i686-pkg-config
+            git
+            base-devel
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        run: |
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        run: |
+          cmake --preset mingw32-release-vcpkg \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=ON \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui;tests"
+
+      - name: Build
+        run: |
+          cmake --build cmake-build/build/mingw32-release-vcpkg --target unit_tests omath
+
+      - name: Run unit_tests.exe
+        run: |
+          ./out/Release/unit_tests.exe
