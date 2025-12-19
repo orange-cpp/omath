@@ -309,8 +309,9 @@ namespace omath::projection
         template<class Type>
         [[nodiscard]] constexpr static bool is_ndc_out_of_bounds(const Type& ndc) noexcept
         {
-            constexpr float eps = 1e-5f;
-            return std::ranges::any_of(ndc.raw_array(), [](const auto& val) { return val < -1.0f - eps || val > 1.0f + eps; });
+            constexpr auto eps = std::numeric_limits<float>::epsilon();
+            return std::ranges::any_of(ndc.raw_array(),
+                                       [](const auto& val) { return val < -1.0f - eps || val > 1.0f + eps; });
         }
 
         // NDC REPRESENTATION:
