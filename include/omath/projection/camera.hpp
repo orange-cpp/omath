@@ -230,17 +230,14 @@ namespace omath::projection
             auto projected = get_view_projection_matrix()
                              * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(world_position);
 
-            constexpr float w_epsilon = 1e-6f;
-            const auto w = projected.at(3, 0);
-            if (w <= w_epsilon) {
+            const auto& w = projected.at(3, 0);
+            if (w <= std::numeric_limits<float>::epsilon())
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
-            }
 
             projected /= w;
 
-            if (is_ndc_out_of_bounds(projected)) {
+            if (is_ndc_out_of_bounds(projected))
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
-            }
 
             return Vector3<float>{projected.at(0, 0), projected.at(1, 0), projected.at(2, 0)};
         }
@@ -249,29 +246,28 @@ namespace omath::projection
         {
             const auto inv_view_proj = get_view_projection_matrix().inverted();
 
-            if (!inv_view_proj) {
+            if (!inv_view_proj)
                 return std::unexpected(Error::INV_VIEW_PROJ_MAT_DET_EQ_ZERO);
-            }
 
             auto inverted_projection =
                     inv_view_proj.value() * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(ndc);
 
-            constexpr float w_epsilon = 1e-6f;
-            const auto w = inverted_projection.at(3, 0);
-            if (std::abs(w) < w_epsilon) {
+            const auto& w = inverted_projection.at(3, 0);
+
+            if (std::abs(w) < std::numeric_limits<float>::epsilon())
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
-            }
 
             inverted_projection /= w;
 
             const Vector3<float> world_pos{inverted_projection.at(0, 0), inverted_projection.at(1, 0),
-                                          inverted_projection.at(2, 0)};
+                                           inverted_projection.at(2, 0)};
 
             // Validate that the computed world position is reasonable
             constexpr float max_reasonable_component = 1e6f;
-            if (!std::isfinite(world_pos.x) || !std::isfinite(world_pos.y)
-                || !std::isfinite(world_pos.z) || std::abs(world_pos.x) > max_reasonable_component
-                || std::abs(world_pos.y) > max_reasonable_component || std::abs(world_pos.z) > max_reasonable_component) {
+            if (!std::isfinite(world_pos.x) || !std::isfinite(world_pos.y) || !std::isfinite(world_pos.z)
+                || std::abs(world_pos.x) > max_reasonable_component || std::abs(world_pos.y) > max_reasonable_component
+                || std::abs(world_pos.z) > max_reasonable_component)
+            {
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
             }
 
