@@ -259,19 +259,8 @@ namespace omath::projection
 
             inverted_projection /= w;
 
-            const Vector3<float> world_pos{inverted_projection.at(0, 0), inverted_projection.at(1, 0),
-                                           inverted_projection.at(2, 0)};
-
-            // Validate that the computed world position is reasonable
-            constexpr float max_reasonable_component = 1e6f;
-            if (!std::isfinite(world_pos.x) || !std::isfinite(world_pos.y) || !std::isfinite(world_pos.z)
-                || std::abs(world_pos.x) > max_reasonable_component || std::abs(world_pos.y) > max_reasonable_component
-                || std::abs(world_pos.z) > max_reasonable_component)
-            {
-                return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
-            }
-
-            return world_pos;
+            return Vector3<float>{inverted_projection.at(0, 0), inverted_projection.at(1, 0),
+                                  inverted_projection.at(2, 0)};
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
