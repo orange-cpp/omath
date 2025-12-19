@@ -37,7 +37,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
       - name: Configure (cmake --preset)
         shell: bash
         run: cmake --preset linux-release-vcpkg -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
@@ -144,7 +144,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           
       - name: Configure (cmake --preset)
         shell: bash
@@ -180,7 +180,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
@@ -224,7 +224,7 @@ jobs:
             # This prevents PCH timestamp mismatches during parallel builds
             export VCPKG_ROOT=/tmp/vcpkg
             rm -rf "$VCPKG_ROOT"
-            git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+            git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
             cd "$VCPKG_ROOT"
             # Bootstrap vcpkg - it will build from source on FreeBSD
             # Building in /tmp avoids sshfs timestamp issues that break PCH
@@ -273,7 +273,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
@@ -327,7 +327,7 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
@@ -380,7 +380,7 @@ jobs:
 
       - name: Set up vcpkg
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
@@ -435,7 +435,7 @@ jobs:
 
       - name: Set up vcpkg
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
@@ -490,7 +490,7 @@ jobs:
 
       - name: Set up vcpkg
         run: |
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
