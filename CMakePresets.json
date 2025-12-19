@@ -54,6 +54,40 @@
       }
     },
     {
+      "name": "windows-base-vcpkg-x86",
+      "hidden": true,
+      "inherits": "windows-base",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "VCPKG_TARGET_TRIPLET": "x86-windows",
+        "VCPKG_HOST_TRIPLET": "x64-windows",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples"
+      }
+    },
+    {
+      "name": "windows-debug-vcpkg-x86",
+      "displayName": "Windows Debug Vcpkg (x86)",
+      "inherits": "windows-base-vcpkg-x86",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-release-vcpkg-x86",
+      "displayName": "Windows Release Vcpkg (x86)",
+      "inherits": "windows-base-vcpkg-x86",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "OMATH_BUILD_VIA_VCPKG": "ON"
+      }
+    },
+    {
       "name": "windows-release",
       "displayName": "Release",
       "inherits": "windows-base",
@@ -362,6 +396,160 @@
       "name": "wasm-release-vcpkg",
       "displayName": "WASM Release Vcpkg",
       "inherits": "wasm-base-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "mingw-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
+      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_MAKE_PROGRAM": "ninja"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "mingw-ucrt-base-vcpkg",
+      "hidden": true,
+      "inherits": "mingw-base",
+      "environment": {
+        "VCPKG_DEFAULT_HOST_TRIPLET": "x64-mingw-dynamic"
+      },
+      "cacheVariables": {
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+        "VCPKG_HOST_TRIPLET": "x64-mingw-dynamic",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui"
+      }
+    },
+    {
+      "name": "mingw-ucrt-release-vcpkg",
+      "displayName": "MinGW UCRT64 Release Vcpkg",
+      "inherits": "mingw-ucrt-base-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "mingw-base-vcpkg",
+      "hidden": true,
+      "inherits": "mingw-base",
+      "environment": {
+        "VCPKG_DEFAULT_HOST_TRIPLET": "x64-mingw-dynamic"
+      },
+      "cacheVariables": {
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+        "VCPKG_HOST_TRIPLET": "x64-mingw-dynamic",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui"
+      }
+    },
+    {
+      "name": "mingw-debug",
+      "displayName": "MinGW Debug",
+      "inherits": "mingw-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "mingw-debug-vcpkg",
+      "displayName": "MinGW Debug Vcpkg",
+      "inherits": "mingw-base-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "mingw-release",
+      "displayName": "MinGW Release",
+      "inherits": "mingw-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "mingw-release-vcpkg",
+      "displayName": "MinGW Release Vcpkg",
+      "inherits": "mingw-base-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "mingw32-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
+      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_MAKE_PROGRAM": "ninja"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "mingw32-base-vcpkg",
+      "hidden": true,
+      "inherits": "mingw32-base",
+      "environment": {
+        "VCPKG_DEFAULT_HOST_TRIPLET": "x86-mingw-dynamic"
+      },
+      "cacheVariables": {
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
+        "VCPKG_TARGET_TRIPLET": "x86-mingw-dynamic",
+        "VCPKG_HOST_TRIPLET": "x86-mingw-dynamic",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui"
+      }
+    },
+    {
+      "name": "mingw32-debug",
+      "displayName": "MinGW32 Debug",
+      "inherits": "mingw32-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "mingw32-debug-vcpkg",
+      "displayName": "MinGW32 Debug Vcpkg",
+      "inherits": "mingw32-base-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "mingw32-release",
+      "displayName": "MinGW32 Release",
+      "inherits": "mingw32-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "mingw32-release-vcpkg",
+      "displayName": "MinGW32 Release Vcpkg",
+      "inherits": "mingw32-base-vcpkg",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
