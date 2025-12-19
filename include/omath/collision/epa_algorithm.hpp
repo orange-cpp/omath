@@ -75,8 +75,9 @@ namespace omath::collision
                 if (heap.empty())
                     break;
 
-                const int fidx = heap.top().idx;
-                const Face face = faces[fidx];
+                //FIXME: STORE REF VALUE, DO NOT USE
+                // AFTER IF STATEMENT BLOCK
+                const Face& face = faces[heap.top().idx];
 
                 // Get the furthest point in face normal direction
                 const VectorType p = support_point(a, b, face.n);
