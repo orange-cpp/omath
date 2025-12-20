@@ -37,6 +37,11 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
+          vcpkg fetch ninja
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
           git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
       - name: Configure (cmake --preset)
         shell: bash
@@ -145,7 +150,7 @@ jobs:
         shell: bash
         run: |
           vcpkg fetch ninja
-          
+
       - name: Configure (cmake --preset)
         shell: bash
         run: cmake --preset darwin-release-vcpkg -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
