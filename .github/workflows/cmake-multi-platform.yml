@@ -144,7 +144,12 @@ jobs:
       - name: Set up vcpkg
         shell: bash
         run: |
-          git clone --branch 2025.12.12 --single-branch https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          vcpkg fetch ninja
           
       - name: Configure (cmake --preset)
         shell: bash
