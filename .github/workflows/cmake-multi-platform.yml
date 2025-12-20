@@ -128,6 +128,8 @@ jobs:
   macosx-build-and-test:
     name: macOS (AppleClang) (arm64-osx)
     runs-on: macOS-latest
+    env:
+      VCPKG_ROOT: "/usr/local/share/vcpkg"
     steps:
       - name: Install basic tool-chain with Homebrew
         shell: bash
