@@ -506,6 +506,14 @@ jobs:
             cmake-build/build/${{ matrix.preset }}/**/*.log
             ${{ env.VCPKG_ROOT }}/buildtrees/**/*.log
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run WASM Unit Tests
+        run: node out/Release/unit_tests.js
+
   ##############################################################################
   # 8)  Windows MSYS2 MinGW  –  GCC / Ninja
   ##############################################################################
