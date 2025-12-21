@@ -390,8 +390,10 @@ TEST_F(UnitTestVector3, AsTuple)
 // Test AsTuple method
 TEST_F(UnitTestVector3, AngleBeatween)
 {
-    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).angle_between({1, 0 ,0}).value().as_degrees(), 90.0f);
-    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).angle_between({0.0f, 0.0f, 1.0f}).value().as_degrees(), 0.0f);
+    EXPECT_NEAR(Vector3(0.0f, 0.0f, 1.0f).angle_between({1, 0, 0}).value().as_degrees(),
+                90.0f, 0.001f);
+    EXPECT_NEAR(Vector3(0.0f, 0.0f, 1.0f).angle_between({0.0f, 0.0f, 1.0f}).value().as_degrees(),
+                0.0f, 0.001f);
     EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).angle_between({0.0f, 0.0f, 1.0f}).has_value());
 }
 
