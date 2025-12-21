@@ -1,15 +1,49 @@
 {
-  "version": 3,
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+
   "configurePresets": [
     {
-      "name": "windows-base",
+      "name": "base",
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
-      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "installDir": "${sourceDir}/cmake-build/install/${presetName}"
+    },
+    {
+      "name": "vcpkg-base",
+      "hidden": true,
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "cl.exe",
-        "CMAKE_MAKE_PROGRAM": "Ninja"
+        "OMATH_BUILD_VIA_VCPKG": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed"
+      }
+    },
+    {
+      "name": "debug",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+
+    {
+      "name": "windows-base",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "cl.exe"
       },
       "condition": {
         "type": "equals",
@@ -18,53 +52,43 @@
       }
     },
     {
-      "name": "windows-base-vcpkg",
+      "name": "windows-vcpkg-base",
       "hidden": true,
-      "inherits": "windows-base",
+      "inherits": ["windows-base", "vcpkg-base"],
       "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
         "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples"
       }
     },
     {
       "name": "windows-debug",
-      "displayName": "Debug",
-      "inherits": "windows-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "displayName": "Windows Debug",
+      "inherits": ["windows-base", "debug"]
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Windows Release",
+      "inherits": ["windows-base", "release"]
     },
     {
       "name": "windows-debug-vcpkg",
-      "displayName": "Windows Debug Vcpkg",
-      "inherits": "windows-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "displayName": "Windows Debug (vcpkg)",
+      "inherits": ["windows-vcpkg-base", "debug"]
     },
     {
       "name": "windows-release-vcpkg",
-      "displayName": "Windows Release Vcpkg",
-      "inherits": "windows-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "OMATH_BUILD_VIA_VCPKG": "ON"
-      }
+      "displayName": "Windows Release (vcpkg)",
+      "inherits": ["windows-vcpkg-base", "release"]
     },
+
     {
-      "name": "windows-base-vcpkg-x86",
+      "name": "windows-x86-vcpkg-base",
       "hidden": true,
-      "inherits": "windows-base",
+      "inherits": ["windows-base", "vcpkg-base"],
       "architecture": {
         "value": "x86",
         "strategy": "external"
       },
       "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
         "VCPKG_TARGET_TRIPLET": "x86-windows",
         "VCPKG_HOST_TRIPLET": "x64-windows",
         "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples"
@@ -72,38 +96,47 @@
     },
     {
       "name": "windows-debug-vcpkg-x86",
-      "displayName": "Windows Debug Vcpkg (x86)",
-      "inherits": "windows-base-vcpkg-x86",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "displayName": "Windows x86 Debug (vcpkg)",
+      "inherits": ["windows-x86-vcpkg-base", "debug"]
     },
     {
       "name": "windows-release-vcpkg-x86",
-      "displayName": "Windows Release Vcpkg (x86)",
-      "inherits": "windows-base-vcpkg-x86",
+      "displayName": "Windows x86 Release (vcpkg)",
+      "inherits": ["windows-x86-vcpkg-base", "release"]
+    },
+
+    {
+      "name": "windows-arm64-vcpkg-base",
+      "hidden": true,
+      "inherits": ["windows-base", "vcpkg-base"],
+      "architecture": {
+        "value": "arm64",
+        "strategy": "external"
+      },
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "OMATH_BUILD_VIA_VCPKG": "ON"
+        "VCPKG_TARGET_TRIPLET": "arm64-windows",
+        "VCPKG_HOST_TRIPLET": "arm64-windows",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;examples"
       }
     },
     {
-      "name": "windows-release",
-      "displayName": "Release",
-      "inherits": "windows-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "name": "windows-debug-vcpkg-arm64",
+      "displayName": "Windows ARM64 Debug (vcpkg)",
+      "inherits": ["windows-arm64-vcpkg-base", "debug"]
     },
+    {
+      "name": "windows-release-vcpkg-arm64",
+      "displayName": "Windows ARM64 Release (vcpkg)",
+      "inherits": ["windows-arm64-vcpkg-base", "release"]
+    },
+
     {
       "name": "linux-base",
       "hidden": true,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
-      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "inherits": "base",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_MAKE_PROGRAM": "ninja"
+        "CMAKE_C_COMPILER": "clang-21",
+        "CMAKE_CXX_COMPILER": "clang++-21"
       },
       "condition": {
         "type": "equals",
@@ -112,57 +145,88 @@
       }
     },
     {
-      "name": "linux-base-vcpkg",
+      "name": "linux-vcpkg-base",
       "hidden": true,
-      "inherits": "linux-base",
+      "inherits": ["linux-base", "vcpkg-base"],
       "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
         "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2"
       }
     },
     {
       "name": "linux-debug",
       "displayName": "Linux Debug",
-      "inherits": "linux-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "linux-debug-vcpkg",
-      "displayName": "Linux Debug",
-      "inherits": "linux-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "inherits": ["linux-base", "debug"]
     },
     {
       "name": "linux-release",
       "displayName": "Linux Release",
-      "inherits": "linux-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "inherits": ["linux-base", "release"]
+    },
+    {
+      "name": "linux-debug-vcpkg",
+      "displayName": "Linux Debug (vcpkg)",
+      "inherits": ["linux-vcpkg-base", "debug"]
     },
     {
       "name": "linux-release-vcpkg",
-      "displayName": "Linux Release",
-      "inherits": "linux-base-vcpkg",
+      "displayName": "Linux Release (vcpkg)",
+      "inherits": ["linux-vcpkg-base", "release"]
+    },
+
+    {
+      "name": "linux-x86-vcpkg-base",
+      "hidden": true,
+      "inherits": ["linux-base", "vcpkg-base"],
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_C_FLAGS": "-m32",
+        "CMAKE_CXX_FLAGS": "-m32",
+        "VCPKG_TARGET_TRIPLET": "x86-linux",
+        "VCPKG_HOST_TRIPLET": "x64-linux",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui"
       }
     },
     {
+      "name": "linux-debug-vcpkg-x86",
+      "displayName": "Linux x86 Debug (vcpkg)",
+      "inherits": ["linux-x86-vcpkg-base", "debug"]
+    },
+    {
+      "name": "linux-release-vcpkg-x86",
+      "displayName": "Linux x86 Release (vcpkg)",
+      "inherits": ["linux-x86-vcpkg-base", "release"]
+    },
+
+    {
+      "name": "linux-arm64-vcpkg-base",
+      "hidden": true,
+      "inherits": ["linux-base", "vcpkg-base"],
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "arm64-linux",
+        "VCPKG_HOST_TRIPLET": "arm64-linux",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui"
+      }
+    },
+    {
+      "name": "linux-debug-vcpkg-arm64",
+      "displayName": "Linux ARM64 Debug (vcpkg)",
+      "inherits": ["linux-arm64-vcpkg-base", "debug"]
+    },
+    {
+      "name": "linux-release-vcpkg-arm64",
+      "displayName": "Linux ARM64 Release (vcpkg)",
+      "inherits": ["linux-arm64-vcpkg-base", "release"]
+    },
+
+    {
       "name": "darwin-base",
       "hidden": true,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
-      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "inherits": "base",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_MAKE_PROGRAM": "ninja"
+        "CMAKE_CXX_COMPILER": "clang++"
       },
       "condition": {
         "type": "equals",
@@ -171,89 +235,100 @@
       }
     },
     {
-      "name": "darwin-base-vcpkg",
+      "name": "darwin-vcpkg-base",
       "hidden": true,
-      "inherits": "darwin-base",
+      "inherits": ["darwin-base", "vcpkg-base"],
       "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
         "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples"
       }
     },
     {
       "name": "darwin-debug",
-      "displayName": "Darwin Debug",
-      "inherits": "darwin-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "darwin-debug-vcpkg",
-      "displayName": "Darwin Debug Vcpkg",
-      "inherits": "darwin-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "displayName": "macOS Debug",
+      "inherits": ["darwin-base", "debug"]
     },
     {
       "name": "darwin-release",
-      "displayName": "Darwin Release",
-      "inherits": "darwin-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "displayName": "macOS Release",
+      "inherits": ["darwin-base", "release"]
+    },
+    {
+      "name": "darwin-debug-vcpkg",
+      "displayName": "macOS Debug (vcpkg)",
+      "inherits": ["darwin-vcpkg-base", "debug"]
     },
     {
       "name": "darwin-release-vcpkg",
-      "displayName": "Darwin Release Vcpkg",
-      "inherits": "darwin-base-vcpkg",
+      "displayName": "macOS Release (vcpkg)",
+      "inherits": ["darwin-vcpkg-base", "release"]
+    },
+
+    {
+      "name": "darwin-x64-vcpkg-base",
+      "hidden": true,
+      "inherits": ["darwin-base", "vcpkg-base"],
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_OSX_ARCHITECTURES": "x86_64",
+        "VCPKG_TARGET_TRIPLET": "x64-osx",
+        "VCPKG_HOST_TRIPLET": "x64-osx",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples"
       }
     },
     {
-  "name": "ios-base",
-  "hidden": true,
-  "generator": "Ninja",
-  "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
-  "cacheVariables": {
-    "CMAKE_SYSTEM_NAME": "iOS",
-    "CMAKE_OSX_DEPLOYMENT_TARGET": "18.5",
-    "CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED": "NO",
-    "CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED": "NO"
-  },
-  "condition": {
-    "type": "equals",
-    "lhs": "${hostSystemName}",
-    "rhs": "Darwin"
-  }
-},
-{
-  "name": "ios-base-vcpkg",
-  "hidden": true,
-  "inherits": "ios-base",
-  "cacheVariables": {
-    "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-    "VCPKG_TARGET_TRIPLET": "arm64-ios",
-    "VCPKG_HOST_TRIPLET": "arm64-osx"
-  }
-},
-{
-  "name": "ios-release-vcpkg",
-  "displayName": "iOS Release (vcpkg)",
-  "inherits": "ios-base-vcpkg"
-},
+      "name": "darwin-debug-vcpkg-x64",
+      "displayName": "macOS x64 Debug (vcpkg)",
+      "inherits": ["darwin-x64-vcpkg-base", "debug"]
+    },
+    {
+      "name": "darwin-release-vcpkg-x64",
+      "displayName": "macOS x64 Release (vcpkg)",
+      "inherits": ["darwin-x64-vcpkg-base", "release"]
+    },
+
+    {
+      "name": "ios-base",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "iOS",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "18.5",
+        "CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED": "NO",
+        "CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED": "NO"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "ios-vcpkg-base",
+      "hidden": true,
+      "inherits": ["ios-base", "vcpkg-base"],
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "arm64-ios",
+        "VCPKG_HOST_TRIPLET": "arm64-osx",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui"
+      }
+    },
+    {
+      "name": "ios-debug-vcpkg",
+      "displayName": "iOS Debug (vcpkg)",
+      "inherits": ["ios-vcpkg-base", "debug"]
+    },
+    {
+      "name": "ios-release-vcpkg",
+      "displayName": "iOS Release (vcpkg)",
+      "inherits": ["ios-vcpkg-base", "release"]
+    },
+
     {
       "name": "freebsd-base",
       "hidden": true,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
-      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "inherits": "base",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_MAKE_PROGRAM": "ninja"
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
       },
       "condition": {
         "type": "equals",
@@ -262,154 +337,262 @@
       }
     },
     {
-      "name": "freebsd-base-vcpkg",
+      "name": "freebsd-vcpkg-base",
       "hidden": true,
-      "inherits": "freebsd-base",
+      "inherits": ["freebsd-base", "vcpkg-base"],
       "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
         "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2"
       }
     },
     {
       "name": "freebsd-debug",
       "displayName": "FreeBSD Debug",
-      "inherits": "freebsd-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "freebsd-debug-vcpkg",
-      "displayName": "FreeBSD Debug Vcpkg",
-      "inherits": "freebsd-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "inherits": ["freebsd-base", "debug"]
     },
     {
       "name": "freebsd-release",
       "displayName": "FreeBSD Release",
-      "inherits": "freebsd-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "inherits": ["freebsd-base", "release"]
+    },
+    {
+      "name": "freebsd-debug-vcpkg",
+      "displayName": "FreeBSD Debug (vcpkg)",
+      "inherits": ["freebsd-vcpkg-base", "debug"]
     },
     {
       "name": "freebsd-release-vcpkg",
-      "displayName": "FreeBSD Release Vcpkg",
-      "inherits": "freebsd-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "displayName": "FreeBSD Release (vcpkg)",
+      "inherits": ["freebsd-vcpkg-base", "release"]
     },
+
     {
       "name": "android-base",
       "hidden": true,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
-      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "inherits": "base",
       "cacheVariables": {
         "CMAKE_SYSTEM_NAME": "Android",
         "CMAKE_SYSTEM_VERSION": "24",
-        "CMAKE_ANDROID_ARCH_ABI": "arm64-v8a",
         "CMAKE_ANDROID_NDK": "$env{ANDROID_NDK_HOME}",
-        "CMAKE_MAKE_PROGRAM": "ninja"
+        "CMAKE_ANDROID_STL_TYPE": "c++_static"
       }
     },
     {
-      "name": "android-base-vcpkg",
+      "name": "android-vcpkg-base",
+      "hidden": true,
+      "inherits": ["android-base", "vcpkg-base"],
+      "cacheVariables": {
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui"
+      }
+    },
+
+    {
+      "name": "android-arm64-base",
       "hidden": true,
       "inherits": "android-base",
       "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
-        "VCPKG_TARGET_TRIPLET": "arm64-android",
+        "CMAKE_ANDROID_ARCH_ABI": "arm64-v8a"
+      }
+    },
+    {
+      "name": "android-arm64-vcpkg-base",
+      "hidden": true,
+      "inherits": "android-vcpkg-base",
+      "cacheVariables": {
+        "CMAKE_ANDROID_ARCH_ABI": "arm64-v8a",
+        "VCPKG_TARGET_TRIPLET": "arm64-android"
+      }
+    },
+    {
+      "name": "android-arm64-debug",
+      "displayName": "Android arm64-v8a Debug",
+      "inherits": ["android-arm64-base", "debug"]
+    },
+    {
+      "name": "android-arm64-release",
+      "displayName": "Android arm64-v8a Release",
+      "inherits": ["android-arm64-base", "release"]
+    },
+    {
+      "name": "android-arm64-debug-vcpkg",
+      "displayName": "Android arm64-v8a Debug (vcpkg)",
+      "inherits": ["android-arm64-vcpkg-base", "debug"]
+    },
+    {
+      "name": "android-arm64-release-vcpkg",
+      "displayName": "Android arm64-v8a Release (vcpkg)",
+      "inherits": ["android-arm64-vcpkg-base", "release"]
+    },
+
+    {
+      "name": "android-arm-neon-base",
+      "hidden": true,
+      "inherits": "android-base",
+      "cacheVariables": {
+        "CMAKE_ANDROID_ARCH_ABI": "armeabi-v7a",
+        "CMAKE_ANDROID_ARM_NEON": "ON"
+      }
+    },
+    {
+      "name": "android-arm-neon-vcpkg-base",
+      "hidden": true,
+      "inherits": "android-vcpkg-base",
+      "cacheVariables": {
+        "CMAKE_ANDROID_ARCH_ABI": "armeabi-v7a",
+        "CMAKE_ANDROID_ARM_NEON": "ON",
+        "VCPKG_TARGET_TRIPLET": "arm-neon-android"
+      }
+    },
+    {
+      "name": "android-arm-neon-debug",
+      "displayName": "Android armeabi-v7a NEON Debug",
+      "inherits": ["android-arm-neon-base", "debug"]
+    },
+    {
+      "name": "android-arm-neon-release",
+      "displayName": "Android armeabi-v7a NEON Release",
+      "inherits": ["android-arm-neon-base", "release"]
+    },
+    {
+      "name": "android-arm-neon-debug-vcpkg",
+      "displayName": "Android armeabi-v7a NEON Debug (vcpkg)",
+      "inherits": ["android-arm-neon-vcpkg-base", "debug"]
+    },
+    {
+      "name": "android-arm-neon-release-vcpkg",
+      "displayName": "Android armeabi-v7a NEON Release (vcpkg)",
+      "inherits": ["android-arm-neon-vcpkg-base", "release"]
+    },
+
+    {
+      "name": "android-x64-base",
+      "hidden": true,
+      "inherits": "android-base",
+      "cacheVariables": {
+        "CMAKE_ANDROID_ARCH_ABI": "x86_64"
+      }
+    },
+    {
+      "name": "android-x64-vcpkg-base",
+      "hidden": true,
+      "inherits": "android-vcpkg-base",
+      "cacheVariables": {
+        "CMAKE_ANDROID_ARCH_ABI": "x86_64",
+        "VCPKG_TARGET_TRIPLET": "x64-android"
+      }
+    },
+    {
+      "name": "android-x64-debug",
+      "displayName": "Android x86_64 Debug",
+      "inherits": ["android-x64-base", "debug"]
+    },
+    {
+      "name": "android-x64-release",
+      "displayName": "Android x86_64 Release",
+      "inherits": ["android-x64-base", "release"]
+    },
+    {
+      "name": "android-x64-debug-vcpkg",
+      "displayName": "Android x86_64 Debug (vcpkg)",
+      "inherits": ["android-x64-vcpkg-base", "debug"]
+    },
+    {
+      "name": "android-x64-release-vcpkg",
+      "displayName": "Android x86_64 Release (vcpkg)",
+      "inherits": ["android-x64-vcpkg-base", "release"]
+    },
+
+    {
+      "name": "android-x86-base",
+      "hidden": true,
+      "inherits": "android-base",
+      "cacheVariables": {
+        "CMAKE_ANDROID_ARCH_ABI": "x86"
+      }
+    },
+    {
+      "name": "android-x86-vcpkg-base",
+      "hidden": true,
+      "inherits": "android-vcpkg-base",
+      "cacheVariables": {
+        "CMAKE_ANDROID_ARCH_ABI": "x86",
+        "VCPKG_TARGET_TRIPLET": "x86-android"
+      }
+    },
+    {
+      "name": "android-x86-debug",
+      "displayName": "Android x86 Debug",
+      "inherits": ["android-x86-base", "debug"]
+    },
+    {
+      "name": "android-x86-release",
+      "displayName": "Android x86 Release",
+      "inherits": ["android-x86-base", "release"]
+    },
+    {
+      "name": "android-x86-debug-vcpkg",
+      "displayName": "Android x86 Debug (vcpkg)",
+      "inherits": ["android-x86-vcpkg-base", "debug"]
+    },
+    {
+      "name": "android-x86-release-vcpkg",
+      "displayName": "Android x86 Release (vcpkg)",
+      "inherits": ["android-x86-vcpkg-base", "release"]
+    },
+
+    {
+      "name": "android-debug",
+      "displayName": "Android Debug (default: arm64)",
+      "inherits": "android-arm64-debug"
+    },
+    {
+      "name": "android-release",
+      "displayName": "Android Release (default: arm64)",
+      "inherits": "android-arm64-release"
+    },
+    {
+      "name": "android-debug-vcpkg",
+      "displayName": "Android Debug (default: arm64, vcpkg)",
+      "inherits": "android-arm64-debug-vcpkg"
+    },
+    {
+      "name": "android-release-vcpkg",
+      "displayName": "Android Release (default: arm64, vcpkg)",
+      "inherits": "android-arm64-release-vcpkg"
+    },
+
+    {
+      "name": "wasm-base",
+      "hidden": true,
+      "inherits": "base"
+    },
+    {
+      "name": "wasm-vcpkg-base",
+      "hidden": true,
+      "inherits": ["wasm-base", "vcpkg-base"],
+      "cacheVariables": {
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten",
         "VCPKG_MANIFEST_FEATURES": "tests;imgui"
       }
     },
     {
-      "name": "android-debug",
-      "displayName": "Android Debug",
-      "inherits": "android-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "android-debug-vcpkg",
-      "displayName": "Android Debug Vcpkg",
-      "inherits": "android-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "android-release",
-      "displayName": "Android Release",
-      "inherits": "android-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "android-release-vcpkg",
-      "displayName": "Android Release Vcpkg",
-      "inherits": "android-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "wasm-base",
-      "hidden": true,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
-      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
-      "cacheVariables": {
-        "CMAKE_MAKE_PROGRAM": "ninja"
-      }
-    },
-    {
-      "name": "wasm-base-vcpkg",
-      "hidden": true,
-      "inherits": "wasm-base",
-      "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
-        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten"
-      }
-    },
-    {
       "name": "wasm-debug-vcpkg",
-      "displayName": "WASM Debug Vcpkg",
-      "inherits": "wasm-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "displayName": "WebAssembly Debug (vcpkg)",
+      "inherits": ["wasm-vcpkg-base", "debug"]
     },
     {
       "name": "wasm-release-vcpkg",
-      "displayName": "WASM Release Vcpkg",
-      "inherits": "wasm-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "displayName": "WebAssembly Release (vcpkg)",
+      "inherits": ["wasm-vcpkg-base", "release"]
     },
+
     {
       "name": "mingw-base",
       "hidden": true,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
-      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "inherits": "base",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_MAKE_PROGRAM": "ninja"
+        "CMAKE_CXX_COMPILER": "g++"
       },
       "condition": {
         "type": "equals",
@@ -418,40 +601,13 @@
       }
     },
     {
-      "name": "mingw-ucrt-base-vcpkg",
+      "name": "mingw-vcpkg-base",
       "hidden": true,
-      "inherits": "mingw-base",
+      "inherits": ["mingw-base", "vcpkg-base"],
       "environment": {
         "VCPKG_DEFAULT_HOST_TRIPLET": "x64-mingw-dynamic"
       },
       "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
-        "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
-        "VCPKG_HOST_TRIPLET": "x64-mingw-dynamic",
-        "VCPKG_MANIFEST_FEATURES": "tests;imgui"
-      }
-    },
-    {
-      "name": "mingw-ucrt-release-vcpkg",
-      "displayName": "MinGW UCRT64 Release Vcpkg",
-      "inherits": "mingw-ucrt-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "mingw-base-vcpkg",
-      "hidden": true,
-      "inherits": "mingw-base",
-      "environment": {
-        "VCPKG_DEFAULT_HOST_TRIPLET": "x64-mingw-dynamic"
-      },
-      "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
         "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
         "VCPKG_HOST_TRIPLET": "x64-mingw-dynamic",
         "VCPKG_MANIFEST_FEATURES": "tests;imgui"
@@ -459,46 +615,37 @@
     },
     {
       "name": "mingw-debug",
-      "displayName": "MinGW Debug",
-      "inherits": "mingw-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "mingw-debug-vcpkg",
-      "displayName": "MinGW Debug Vcpkg",
-      "inherits": "mingw-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "displayName": "MinGW x64 Debug",
+      "inherits": ["mingw-base", "debug"]
     },
     {
       "name": "mingw-release",
-      "displayName": "MinGW Release",
-      "inherits": "mingw-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "displayName": "MinGW x64 Release",
+      "inherits": ["mingw-base", "release"]
+    },
+    {
+      "name": "mingw-debug-vcpkg",
+      "displayName": "MinGW x64 Debug (vcpkg)",
+      "inherits": ["mingw-vcpkg-base", "debug"]
     },
     {
       "name": "mingw-release-vcpkg",
-      "displayName": "MinGW Release Vcpkg",
-      "inherits": "mingw-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "displayName": "MinGW x64 Release (vcpkg)",
+      "inherits": ["mingw-vcpkg-base", "release"]
     },
+    {
+      "name": "mingw-ucrt-release-vcpkg",
+      "displayName": "MinGW UCRT64 Release (vcpkg)",
+      "inherits": ["mingw-vcpkg-base", "release"]
+    },
+
     {
       "name": "mingw32-base",
       "hidden": true,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build/build/${presetName}",
-      "installDir": "${sourceDir}/cmake-build/install/${presetName}",
+      "inherits": "base",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_MAKE_PROGRAM": "ninja"
+        "CMAKE_CXX_COMPILER": "g++"
       },
       "condition": {
         "type": "equals",
@@ -507,16 +654,13 @@
       }
     },
     {
-      "name": "mingw32-base-vcpkg",
+      "name": "mingw32-vcpkg-base",
       "hidden": true,
-      "inherits": "mingw32-base",
+      "inherits": ["mingw32-base", "vcpkg-base"],
       "environment": {
         "VCPKG_DEFAULT_HOST_TRIPLET": "x86-mingw-dynamic"
       },
       "cacheVariables": {
-        "OMATH_BUILD_VIA_VCPKG": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_INSTALLED_DIR": "${sourceDir}/cmake-build/vcpkg_installed",
         "VCPKG_TARGET_TRIPLET": "x86-mingw-dynamic",
         "VCPKG_HOST_TRIPLET": "x86-mingw-dynamic",
         "VCPKG_MANIFEST_FEATURES": "tests;imgui"
@@ -524,35 +668,23 @@
     },
     {
       "name": "mingw32-debug",
-      "displayName": "MinGW32 Debug",
-      "inherits": "mingw32-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "mingw32-debug-vcpkg",
-      "displayName": "MinGW32 Debug Vcpkg",
-      "inherits": "mingw32-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "displayName": "MinGW x86 Debug",
+      "inherits": ["mingw32-base", "debug"]
     },
     {
       "name": "mingw32-release",
-      "displayName": "MinGW32 Release",
-      "inherits": "mingw32-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "displayName": "MinGW x86 Release",
+      "inherits": ["mingw32-base", "release"]
+    },
+    {
+      "name": "mingw32-debug-vcpkg",
+      "displayName": "MinGW x86 Debug (vcpkg)",
+      "inherits": ["mingw32-vcpkg-base", "debug"]
     },
     {
       "name": "mingw32-release-vcpkg",
-      "displayName": "MinGW32 Release Vcpkg",
-      "inherits": "mingw32-base-vcpkg",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "displayName": "MinGW x86 Release (vcpkg)",
+      "inherits": ["mingw32-vcpkg-base", "release"]
     }
   ]
 }
