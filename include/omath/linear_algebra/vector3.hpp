@@ -233,10 +233,10 @@ namespace omath
             return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(std::acos(dot(other) / bottom));
         }
 
-        [[nodiscard]] bool is_perpendicular(const Vector3& other) const noexcept
+        [[nodiscard]] bool is_perpendicular(const Vector3& other, Type epsilon = static_cast<Type>(0.0001)) const noexcept
         {
             if (const auto angle = angle_between(other))
-                return angle->as_degrees() == static_cast<Type>(90);
+                return std::abs(angle->as_degrees() - static_cast<Type>(90)) <= epsilon;
 
             return false;
         }
