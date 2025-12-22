@@ -104,28 +104,13 @@ jobs:
             -DOMATH_BUILD_BENCHMARK=OFF \
             -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
 
-      - name: Build and Run (non-coverage)
-        if: ${{ matrix.triplet != 'x64-linux' }}
+      - name: Build
         shell: bash
-        run: |
-          cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
-          ./out/Release/unit_tests
+        run: cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
 
-      - name: Run clang coverage (x64-linux)
-        if: ${{ matrix.triplet == 'x64-linux' }}
+      - name: Run unit_tests
         shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lcov llvm-21
-          export PATH="/usr/lib/llvm-21/bin:$PATH"
-          NO_AVX=1 ./scripts/run_clang_coverage.sh build/clang-coverage-lcov
-
-      - name: Run coveralls (x64-linux)
-        if: ${{ matrix.triplet == 'x64-linux' }}
-        uses: coverallsapp/github-action@master
-        with:
-          path-to-lcov: ./build/clang-coverage-lcov/coverage/coverage.fixed.lcov
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        run: ./out/Release/unit_tests
 
       - name: Upload logs on failure
         if: ${{ failure() }}

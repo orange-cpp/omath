@@ -6,8 +6,6 @@ project(omath VERSION ${OMATH_VERSION} LANGUAGES CXX)
 include(CMakePackageConfigHelpers)
 include(CheckCXXCompilerFlag)
 
-include(cmake/Coverage.cmake)
-
 if (MSVC)
     check_cxx_compiler_flag("/arch:AVX2" COMPILER_SUPPORTS_AVX2)
 else ()
@@ -25,7 +23,7 @@ option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OF
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" ON)
-option(OMATH_ENABLE_COVERAGE "Enable compiling tests with coverage. (Linux only)" ON)
+
 
 if (VCPKG_MANIFEST_FEATURES)
     foreach (omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
@@ -62,7 +60,6 @@ if (${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: ImGUI integration feature status ${OMATH_IMGUI_INTEGRATION}")
     message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY}")
     message(STATUS "[${PROJECT_NAME}]: Building using vcpkg ${OMATH_BUILD_VIA_VCPKG}")
-    message(STATUS "[${PROJECT_NAME}]: Coverage is ${OMATH_ENABLE_COVERAGE}")
 endif ()
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
@@ -78,13 +75,6 @@ endif ()
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_VERSION="${PROJECT_VERSION}")
-
-# If forward_helpers.cpp is present, compile it with inlining disabled so that
-# emitted symbols/debug-info are produced in that TU (helpful for coverage attribution).
-# Delegate coverage-related configuration to cmake/Coverage.cmake
-if(OMATH_ENABLE_COVERAGE AND CMAKE_HOST_LINUX AND OMATH_BUILD_TESTS)
-    omath_setup_coverage_for_root(${PROJECT_NAME})
-endif()
 
 if (OMATH_IMGUI_INTEGRATION)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_IMGUI_INTEGRATION)

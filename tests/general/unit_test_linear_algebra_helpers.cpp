@@ -1,5 +1,7 @@
+#include "omath/linear_algebra/triangle.hpp"
+#include "omath/linear_algebra/vector3.hpp"
+#include "omath/linear_algebra/vector4.hpp"
 #include <gtest/gtest.h>
-#include "coverage_wrappers.hpp"
 
 // This test file exercises the non-inlined helpers added to headers
 // (Vector3, Triangle, Vector4) to encourage symbol emission and

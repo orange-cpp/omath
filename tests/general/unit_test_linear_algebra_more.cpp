@@ -1,5 +1,7 @@
+#include "omath/linear_algebra/triangle.hpp"
+#include "omath/linear_algebra/vector3.hpp"
+#include "omath/linear_algebra/vector4.hpp"
 #include <gtest/gtest.h>
-#include "coverage_wrappers.hpp"
 
 using namespace omath;
 
