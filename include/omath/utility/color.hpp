@@ -207,6 +207,7 @@ struct std::formatter<omath::Color> // NOLINT(*-dcl58-cpp)
         if constexpr (std::is_same_v<typename FormatContext::char_type, char8_t>)
             return std::format_to(ctx.out(), u8"{}", col.to_u8string());
 
-        return std::unreachable();
+        // Fallback: return the output iterator (no-op) to satisfy the required return type
+        return ctx.out();
     }
 };

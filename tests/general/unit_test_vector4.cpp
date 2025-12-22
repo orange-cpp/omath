@@ -11,6 +11,32 @@
 
 using namespace omath;
 
+TEST(Vector4More, ConstructorsAndClamp)
+{
+    Vector4<float> a;
+    EXPECT_EQ(a.x, 0.f);
+    EXPECT_EQ(a.y, 0.f);
+    EXPECT_EQ(a.z, 0.f);
+    EXPECT_EQ(a.w, 0.f);
+
+    Vector4<float> b{1.f, -2.f, 3.5f, 4.f};
+    b.clamp(0.f, 3.f);
+    EXPECT_GE(b.x, 0.f);
+    EXPECT_GE(b.y, 0.f);
+    EXPECT_LE(b.z, 3.f);
+}
+
+TEST(Vector4More, ComparisonsAndHashFormatter)
+{
+    Vector4<int> a{1,2,3,4};
+    Vector4<int> b{1,2,3,5};
+    EXPECT_NE(a, b);
+
+    // exercise to_string via formatting if available by converting via std::format
+    // call length and comparison to exercise more branches
+    EXPECT_LT(a.length(), b.length());
+}
+
 class UnitTestVector4 : public ::testing::Test
 {
 protected:

@@ -10,7 +10,6 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-
 ##############################################################################
 # 1)  Linux  –  Clang / Ninja
 ##############################################################################
@@ -32,8 +31,8 @@ jobs:
               sudo apt-get install -y git build-essential cmake ninja-build \
                      zip unzip curl pkg-config ca-certificates \
                      clang-21 lld-21 libc++-21-dev libc++abi-21-dev
-              sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
-              sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 100
+              sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
+              sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
               sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
           - name: Linux (Clang) (x86-linux)
             triplet: x86-linux
@@ -56,8 +55,8 @@ jobs:
               # Install GCC 15 with multilib support
               sudo apt-get install -y gcc-15-multilib g++-15-multilib
               # Set up alternatives for Clang
-              sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
-              sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 100
+              sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
+              sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
               sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
               # Set up alternatives for GCC
               sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
@@ -73,8 +72,8 @@ jobs:
               sudo apt-get install -y git build-essential cmake ninja-build \
                      zip unzip curl pkg-config ca-certificates \
                      clang-21 lld-21 libc++-21-dev libc++abi-21-dev
-              sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
-              sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 100
+              sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
+              sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
               sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
       fail-fast: false
     env:
@@ -83,16 +82,6 @@ jobs:
       - name: Install basic tool-chain
         shell: bash
         run: ${{ matrix.install_cmd }}
-
-      - name: Verify compiler versions
-        shell: bash
-        run: |
-          echo "=== Clang ===" 
-          clang --version
-          clang++ --version
-          echo "=== GCC ===" 
-          gcc --version || true
-          g++ --version || true
 
       - name: Checkout repository (with sub-modules)
         uses: actions/checkout@v4
@@ -115,13 +104,28 @@ jobs:
             -DOMATH_BUILD_BENCHMARK=OFF \
             -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
 
-      - name: Build
+      - name: Build and Run (non-coverage)
+        if: ${{ matrix.triplet != 'x64-linux' }}
         shell: bash
-        run: cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
+        run: |
+          cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
+          ./out/Release/unit_tests
 
-      - name: Run unit_tests
+      - name: Run clang coverage (x64-linux)
+        if: ${{ matrix.triplet == 'x64-linux' }}
         shell: bash
-        run: ./out/Release/unit_tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov llvm-21
+          export PATH="/usr/lib/llvm-21/bin:$PATH"
+          NO_AVX=1 ./scripts/run_clang_coverage.sh build/clang-coverage-lcov
+
+      - name: Run coveralls (x64-linux)
+        if: ${{ matrix.triplet == 'x64-linux' }}
+        uses: coverallsapp/github-action@master
+        with:
+          path-to-lcov: ./build/clang-coverage-lcov/coverage/coverage.fixed.lcov
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload logs on failure
         if: ${{ failure() }}

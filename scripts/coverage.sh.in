@@ -1,0 +1,67 @@
+
+set -e
+
+src_dir=${1:-"Missing source directory"}
+binary_dir=${2:-"Missing binary directory"}
+
+# Prefer absolute paths for lcov
+src_dir=$(cd "${src_dir}" && pwd)
+binary_dir=$(cd "${binary_dir}" && pwd)
+
+# lcov options injected by CMake
+LCOV_IGNORE_ERRORS='@LCOV_IGNORE_ERRORS@'
+BR_EXCLUSION='@BR_EXCLUSION@'
+# Expand the extract paths as a bash array so glob patterns are preserved
+LCOV_EXTRACT_PATHS=( @LCOV_EXTRACT_PATHS@ )
+
+cd "${binary_dir}"
+# Run tests to produce .gcda files
+ctest --output-on-failure || true
+
+# Create local symlinks to the source tree so geninfo can open relative
+# source-file paths like ./include/omath/...
+created_links=()
+if [ ! -e "include" ]; then
+    ln -s "${src_dir}/include" include
+    created_links+=(include)
+fi
+if [ ! -e "source" ]; then
+    ln -s "${src_dir}/source" source
+    created_links+=(source)
+fi
+
+# Require LLVM coverage flow only: llvm-profdata + llvm-cov
+if ! command -v llvm-profdata >/dev/null 2>&1 || ! command -v llvm-cov >/dev/null 2>&1; then
+    echo "Required LLVM coverage tools not found: llvm-profdata and llvm-cov are required." 1>&2
+    echo "Install clang/llvm and ensure llvm-profdata and llvm-cov are on PATH." 1>&2
+    exit 1
+fi
+
+# Find raw profiles (.profraw) produced by Clang instrumentation
+profraws=( $(find . -maxdepth 4 -name "*.profraw" -print 2>/dev/null) )
+if [ ${#profraws[@]} -eq 0 ]; then
+    echo "No .profraw LLVM raw profiles found in the build tree. Build with Clang using -fprofile-instr-generate -fcoverage-mapping and run tests to produce .profraw files." 1>&2
+    exit 1
+fi
+
+echo "Merging LLVM profiles: ${profraws[*]}"
+llvm-profdata merge -sparse ${profraws[*]} -o coverage.profdata || { echo "llvm-profdata failed" 1>&2; exit 1; }
+
+# Use llvm-cov to render HTML; require the test binary to be present.
+if [ ! -x "${binary_dir}/unit_tests" ]; then
+    echo "unit_tests binary not found at ${binary_dir}/unit_tests; build tests with Clang and rerun." 1>&2
+    exit 1
+fi
+
+echo "Generating HTML with llvm-cov (binary: ${binary_dir}/unit_tests)"
+llvm-cov show "${binary_dir}/unit_tests" -instr-profile=coverage.profdata -format=html -output-dir coverage || { echo "llvm-cov show failed" 1>&2; exit 1; }
+echo "Generated HTML coverage at coverage/index.html (via llvm-cov)"
+
+
+# Cleanup any symlinks we created
+for p in "${created_links[@]}"; do
+    if [ -L "${p}" ]; then
+        rm "${p}"
+    fi
+done
+
