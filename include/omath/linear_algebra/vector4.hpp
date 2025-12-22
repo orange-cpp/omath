@@ -201,8 +201,6 @@ namespace omath
         }
 #endif
 };
-
-
 } // namespace omath
 
 template<> struct std::hash<omath::Vector4<float>>

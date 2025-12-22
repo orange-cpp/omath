@@ -73,11 +73,6 @@ TEST(LineTracerMore, THitGreaterThanOneReturnsEnd)
     const auto q = tvec.cross(side_a);
     const auto t_hit = side_b.dot(q) * inv_det;
 
-    fprintf(stderr, "DBG t_hit=%f hit=(%f,%f,%f) ray_end=(%f,%f,%f)\n", (double)t_hit,
-            (double)hit.x, (double)hit.y, (double)hit.z,
-            (double)ray.end.x, (double)ray.end.y, (double)ray.end.z);
-    fflush(stderr);
-
     if (t_hit <= k_epsilon || t_hit > 1.0f)
         EXPECT_EQ(hit, ray.end) << "t_hit=" << t_hit << " hit=" << hit.x << "," << hit.y << "," << hit.z;
     else

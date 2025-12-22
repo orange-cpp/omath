@@ -178,27 +178,6 @@ TEST(PePatternScanMore2, PatternAtEndFound)
     std::vector<std::uint8_t> bytes = {0x00, 0x11, 0x22, 0x33, 0x44};
     ASSERT_TRUE(write_minimal_pe_file(path, bytes));
 
-    // Diagnostic dump
-    {
-        std::ifstream in(path, std::ios::binary);
-        ASSERT_TRUE(in.is_open());
-        std::vector<uint8_t> head(512, 0);
-        in.read(reinterpret_cast<char*>(head.data()), static_cast<std::streamsize>(head.size()));
-        std::cerr << "--- DUMP begin: " << path << " ---\n";
-        for (size_t i = 0; i < 512; i += 16)
-        {
-            char buf[128];
-            int pos = std::snprintf(buf, sizeof(buf), "%04zx: ", i);
-            for (size_t j = 0; j < 16; ++j)
-            {
-                std::snprintf(buf + pos, sizeof(buf) - pos, "%02x ", head[i + j]);
-                pos = std::strlen(buf);
-            }
-            std::cerr << buf << "\n";
-        }
-        std::cerr << "--- DUMP end ---\n";
-    }
-
     const auto res = PePatternScanner::scan_for_pattern_in_file(path, "22 33 44", ".text");
     if (!res.has_value())
     {

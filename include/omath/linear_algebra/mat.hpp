@@ -268,7 +268,6 @@ namespace omath
             std::unreachable();
         }
 
-
         [[nodiscard]]
         constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> strip(const size_t row, const size_t column) const
         {
@@ -729,8 +728,6 @@ namespace omath
     }
 
 } // namespace omath
-
-
 
 template<size_t Rows, size_t Columns, class Type, omath::MatStoreType StoreType>
 struct std::formatter<omath::Mat<Rows, Columns, Type, StoreType>> // NOLINT(*-dcl58-cpp)

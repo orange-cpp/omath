@@ -220,8 +220,6 @@ namespace omath
         {
             return std::make_tuple(x, y);
         }
-
-
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
         constexpr ImVec2 to_im_vec2() const noexcept

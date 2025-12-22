@@ -62,12 +62,6 @@ namespace omath
         {
             return m_vertex1.distance_to(m_vertex3);
         }
-
-
-
-
-
-
         [[nodiscard]]
         constexpr bool is_rectangular() const
         {
