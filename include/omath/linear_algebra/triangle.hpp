@@ -82,6 +82,4 @@ namespace omath
             return (m_vertex1 + m_vertex2 + m_vertex3) / 3;
         }
     };
-
-
 } // namespace omath
