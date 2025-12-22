@@ -190,7 +190,7 @@ template<>
 struct std::formatter<omath::Color> // NOLINT(*-dcl58-cpp)
 {
     [[nodiscard]]
-    static constexpr auto parse(std::format_parse_context& ctx)
+    static constexpr auto parse(const std::format_parse_context& ctx)
     {
         return ctx.begin();
     }
@@ -207,6 +207,6 @@ struct std::formatter<omath::Color> // NOLINT(*-dcl58-cpp)
         if constexpr (std::is_same_v<typename FormatContext::char_type, char8_t>)
             return std::format_to(ctx.out(), u8"{}", col.to_u8string());
 
-        return std::unreachable();
+        std::unreachable();
     }
 };

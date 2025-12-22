@@ -135,6 +135,11 @@ if (OMATH_USE_AVX2)
     endif ()
 endif ()
 
+if(EMSCRIPTEN)
+    target_compile_options(${PROJECT_NAME} PUBLIC -fexceptions)
+    target_link_options(${PROJECT_NAME} PUBLIC -fexceptions)
+endif()
+
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
 if (OMATH_BUILD_TESTS)
@@ -149,6 +154,7 @@ endif ()
 if (OMATH_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif ()
+
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND OMATH_THREAT_WARNING_AS_ERROR)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
@@ -187,7 +193,6 @@ install(EXPORT ${PROJECT_NAME}Targets
         NAMESPACE ${PROJECT_NAME}::
         DESTINATION lib/cmake/${PROJECT_NAME} COMPONENT ${PROJECT_NAME}
 )
-
 
 # Generate the omathConfigVersion.cmake file
 write_basic_package_version_file(

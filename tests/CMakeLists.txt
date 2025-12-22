@@ -14,8 +14,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON)
 
-
-
 if (TARGET gtest) # GTest is being linked as submodule
     target_link_libraries(${PROJECT_NAME} PRIVATE gtest gtest_main omath::omath)
 else() # GTest is being linked as vcpkg package
@@ -24,6 +22,6 @@ else() # GTest is being linked as vcpkg package
 endif()
 
 # Skip test discovery for Android/iOS builds or when cross-compiling - binaries cannot run on host
-if (NOT (ANDROID OR IOS))
+if (NOT (ANDROID OR IOS OR EMSCRIPTEN))
     gtest_discover_tests(${PROJECT_NAME})
 endif()
