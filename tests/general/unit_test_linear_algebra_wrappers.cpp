@@ -86,7 +86,6 @@ TEST(LinearAlgebraWrappers, TriangleAndMat)
     EXPECT_FLOAT_EQ(t.m_vertex3.y, 4.0f);
     EXPECT_NEAR(t.m_vertex1.distance_to(t.m_vertex3), 5.0f, 1e-6f);
     EXPECT_NEAR(t.hypot(), 5.0f, 1e-6f);
-    std::cerr << "t.hypot()=" << t.hypot() << " wrapper=" << coverage_wrappers::triangle_hypot(t) << " m_v1->v3=" << t.m_vertex1.distance_to(t.m_vertex3) << std::endl;
     EXPECT_FLOAT_EQ(t.hypot(), coverage_wrappers::triangle_hypot(t));
     EXPECT_FLOAT_EQ(t.m_vertex1.distance_to(t.m_vertex3), coverage_wrappers::triangle_hypot(t));
 
