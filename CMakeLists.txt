@@ -136,8 +136,8 @@ if (OMATH_USE_AVX2)
 endif ()
 
 if(EMSCRIPTEN)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fexceptions)
-    target_link_options(${PROJECT_NAME} PRIVATE -fexceptions)  
+    target_compile_options(${PROJECT_NAME} PUBLIC -fexceptions)
+    target_link_options(${PROJECT_NAME} PUBLIC -fexceptions)
 endif()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
