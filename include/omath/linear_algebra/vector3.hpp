@@ -12,7 +12,6 @@
 
 namespace omath
 {
-
     enum class Vector3Error
     {
         IMPOSSIBLE_BETWEEN_ANGLE,
@@ -171,6 +170,8 @@ namespace omath
             return Vector2<Type>::length_sqr() + z * z;
         }
 
+
+
         [[nodiscard]] constexpr Vector3 operator-() const noexcept
         {
             return {-this->x, -this->y, -z};
@@ -275,6 +276,8 @@ namespace omath
             return length() >= other.length();
         }
     };
+
+
 } // namespace omath
 
 template<> struct std::hash<omath::Vector3<float>>

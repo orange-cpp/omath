@@ -51,9 +51,13 @@ namespace omath
 
             const auto whole_range_size = static_cast<std::ptrdiff_t>(std::distance(begin, end));
 
-            const std::ptrdiff_t scan_size = whole_range_size - static_cast<std::ptrdiff_t>(pattern.size());
+            const std::ptrdiff_t pattern_size = static_cast<std::ptrdiff_t>(parsed_pattern->size());
+            const std::ptrdiff_t scan_size = whole_range_size - pattern_size;
 
-            for (std::ptrdiff_t i = 0; i < scan_size; i++)
+            if (scan_size < 0)
+                return end;
+
+            for (std::ptrdiff_t i = 0; i <= scan_size; i++)
             {
                 bool found = true;
 

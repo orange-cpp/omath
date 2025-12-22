@@ -6,6 +6,8 @@ project(omath VERSION ${OMATH_VERSION} LANGUAGES CXX)
 include(CMakePackageConfigHelpers)
 include(CheckCXXCompilerFlag)
 
+include(cmake/Coverage.cmake)
+
 if (MSVC)
     check_cxx_compiler_flag("/arch:AVX2" COMPILER_SUPPORTS_AVX2)
 else ()
@@ -23,7 +25,7 @@ option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OF
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" ON)
-
+option(OMATH_ENABLE_COVERAGE "Enable compiling tests with coverage. (Linux only)" ON)
 
 if (VCPKG_MANIFEST_FEATURES)
     foreach (omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
@@ -60,6 +62,7 @@ if (${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: ImGUI integration feature status ${OMATH_IMGUI_INTEGRATION}")
     message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY}")
     message(STATUS "[${PROJECT_NAME}]: Building using vcpkg ${OMATH_BUILD_VIA_VCPKG}")
+    message(STATUS "[${PROJECT_NAME}]: Coverage is ${OMATH_ENABLE_COVERAGE}")
 endif ()
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
@@ -75,6 +78,13 @@ endif ()
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_VERSION="${PROJECT_VERSION}")
+
+# If forward_helpers.cpp is present, compile it with inlining disabled so that
+# emitted symbols/debug-info are produced in that TU (helpful for coverage attribution).
+# Delegate coverage-related configuration to cmake/Coverage.cmake
+if(OMATH_ENABLE_COVERAGE AND CMAKE_HOST_LINUX AND OMATH_BUILD_TESTS)
+    omath_setup_coverage_for_root(${PROJECT_NAME})
+endif()
 
 if (OMATH_IMGUI_INTEGRATION)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_IMGUI_INTEGRATION)
@@ -135,6 +145,11 @@ if (OMATH_USE_AVX2)
     endif ()
 endif ()
 
+if(EMSCRIPTEN)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fexceptions)
+    target_link_options(${PROJECT_NAME} PRIVATE -fexceptions)  
+endif()
+
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
 if (OMATH_BUILD_TESTS)
@@ -148,6 +163,56 @@ endif ()
 
 if (OMATH_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif ()
+
+if(OMATH_ENABLE_COVERAGE AND CMAKE_HOST_LINUX AND OMATH_BUILD_TESTS)
+    # Configure coverage flags per-compiler:
+    # - For Clang/AppleClang use LLVM's instrumentation flags so the build
+    #   produces .profraw files usable by llvm-profdata/llvm-cov.
+    # - For GCC use the traditional gcov flags (-fprofile-arcs -ftest-coverage).
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:-g>
+            $<$<CONFIG:Debug>:-fprofile-instr-generate>
+            $<$<CONFIG:Debug>:-fcoverage-mapping>
+        )
+        # No special link flags needed for Clang llvm profile instrumentation.
+    else()
+        # Default to GCC-style gcov instrumentation for other compilers.
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:-g>
+            $<$<CONFIG:Debug>:-fprofile-arcs>
+            $<$<CONFIG:Debug>:-ftest-coverage>
+        )
+        # Link-time flags to ensure coverage support for gcov
+        target_link_libraries(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:-fprofile-arcs>
+            $<$<CONFIG:Debug>:-ftest-coverage>
+        )
+    endif()
+
+    # Normalize recorded source file paths in debug info and coverage by
+    # rewriting build/source prefixes to a stable value. This helps tools
+    # like geninfo/gcov map execution addresses to canonical header paths.
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+        # Map the absolute source and binary paths to a short placeholder
+        file(TO_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" OMATH_SRC_PATH)
+        file(TO_CMAKE_PATH "${CMAKE_CURRENT_BINARY_DIR}" OMATH_BUILD_PATH)
+        string(REPLACE "/" "\\/" OMATH_SRC_PATH_ESCAPED "${OMATH_SRC_PATH}")
+        string(REPLACE "/" "\\/" OMATH_BUILD_PATH_ESCAPED "${OMATH_BUILD_PATH}")
+
+        # Add compiler flags that rewrite recorded paths in debug info.
+        # Map them to '.' so geninfo can find sources relative to the
+        # build working directory used when collecting coverage.
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            # Map source tree to one level up so geninfo running from the
+            # binary directory can find ../include/... and ../source/...
+            $<$<CONFIG:Debug>:-ffile-prefix-map=${OMATH_SRC_PATH}=..>
+            $<$<CONFIG:Debug>:-ffile-prefix-map=${OMATH_BUILD_PATH}=.>
+            $<$<CONFIG:Debug>:-fdebug-prefix-map=${OMATH_SRC_PATH}=..>
+            $<$<CONFIG:Debug>:-fdebug-prefix-map=${OMATH_BUILD_PATH}=.>
+        )
+    endif()
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND OMATH_THREAT_WARNING_AS_ERROR)
@@ -167,6 +232,8 @@ target_include_directories(${PROJECT_NAME}
         $<INSTALL_INTERFACE:include>                             # Use this path when the project is installed
 )
 
+# Coverage targets are configured by cmake/Coverage.cmake via
+# omath_setup_coverage_for_root().
 
 # Installation rules
 
@@ -187,7 +254,6 @@ install(EXPORT ${PROJECT_NAME}Targets
         NAMESPACE ${PROJECT_NAME}::
         DESTINATION lib/cmake/${PROJECT_NAME} COMPONENT ${PROJECT_NAME}
 )
-
 
 # Generate the omathConfigVersion.cmake file
 write_basic_package_version_file(

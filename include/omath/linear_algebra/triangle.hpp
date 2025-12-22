@@ -62,6 +62,12 @@ namespace omath
         {
             return m_vertex1.distance_to(m_vertex3);
         }
+
+
+
+
+
+
         [[nodiscard]]
         constexpr bool is_rectangular() const
         {
@@ -82,4 +88,6 @@ namespace omath
             return (m_vertex1 + m_vertex2 + m_vertex3) / 3;
         }
     };
+
+
 } // namespace omath
