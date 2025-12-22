@@ -155,55 +155,6 @@ if (OMATH_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif ()
 
-if(OMATH_ENABLE_COVERAGE AND CMAKE_HOST_LINUX AND OMATH_BUILD_TESTS)
-    # Configure coverage flags per-compiler:
-    # - For Clang/AppleClang use LLVM's instrumentation flags so the build
-    #   produces .profraw files usable by llvm-profdata/llvm-cov.
-    # - For GCC use the traditional gcov flags (-fprofile-arcs -ftest-coverage).
-    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
-        target_compile_options(${PROJECT_NAME} PRIVATE
-            $<$<CONFIG:Debug>:-g>
-            $<$<CONFIG:Debug>:-fprofile-instr-generate>
-            $<$<CONFIG:Debug>:-fcoverage-mapping>
-        )
-        # No special link flags needed for Clang llvm profile instrumentation.
-    else()
-        # Default to GCC-style gcov instrumentation for other compilers.
-        target_compile_options(${PROJECT_NAME} PRIVATE
-            $<$<CONFIG:Debug>:-g>
-            $<$<CONFIG:Debug>:-fprofile-arcs>
-            $<$<CONFIG:Debug>:-ftest-coverage>
-        )
-        # Link-time flags to ensure coverage support for gcov
-        target_link_libraries(${PROJECT_NAME} PRIVATE
-            $<$<CONFIG:Debug>:-fprofile-arcs>
-            $<$<CONFIG:Debug>:-ftest-coverage>
-        )
-    endif()
-
-    # Normalize recorded source file paths in debug info and coverage by
-    # rewriting build/source prefixes to a stable value. This helps tools
-    # like geninfo/gcov map execution addresses to canonical header paths.
-    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
-        # Map the absolute source and binary paths to a short placeholder
-        file(TO_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" OMATH_SRC_PATH)
-        file(TO_CMAKE_PATH "${CMAKE_CURRENT_BINARY_DIR}" OMATH_BUILD_PATH)
-        string(REPLACE "/" "\\/" OMATH_SRC_PATH_ESCAPED "${OMATH_SRC_PATH}")
-        string(REPLACE "/" "\\/" OMATH_BUILD_PATH_ESCAPED "${OMATH_BUILD_PATH}")
-
-        # Add compiler flags that rewrite recorded paths in debug info.
-        # Map them to '.' so geninfo can find sources relative to the
-        # build working directory used when collecting coverage.
-        target_compile_options(${PROJECT_NAME} PRIVATE
-            # Map source tree to one level up so geninfo running from the
-            # binary directory can find ../include/... and ../source/...
-            $<$<CONFIG:Debug>:-ffile-prefix-map=${OMATH_SRC_PATH}=..>
-            $<$<CONFIG:Debug>:-ffile-prefix-map=${OMATH_BUILD_PATH}=.>
-            $<$<CONFIG:Debug>:-fdebug-prefix-map=${OMATH_SRC_PATH}=..>
-            $<$<CONFIG:Debug>:-fdebug-prefix-map=${OMATH_BUILD_PATH}=.>
-        )
-    endif()
-endif ()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND OMATH_THREAT_WARNING_AS_ERROR)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
@@ -222,8 +173,6 @@ target_include_directories(${PROJECT_NAME}
         $<INSTALL_INTERFACE:include>                             # Use this path when the project is installed
 )
 
-# Coverage targets are configured by cmake/Coverage.cmake via
-# omath_setup_coverage_for_root().
 
 # Installation rules
 
