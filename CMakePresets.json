@@ -134,10 +134,6 @@
       "name": "linux-base",
       "hidden": true,
       "inherits": "base",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-21",
-        "CMAKE_CXX_COMPILER": "clang++-21"
-      },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
