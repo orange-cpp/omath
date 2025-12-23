@@ -315,7 +315,7 @@ TEST_F(UnitTestVector3, Division_ByZeroScalar)
 // Test operations with infinity
 TEST_F(UnitTestVector3, Addition_WithInfinity)
 {
-    constexpr Vector3 v_inf(INFINITY, INFINITY, INFINITY);
+    const Vector3 v_inf(INFINITY, INFINITY, INFINITY);
     const Vector3 result = v1 + v_inf;
     EXPECT_TRUE(std::isinf(result.x));
     EXPECT_TRUE(std::isinf(result.y));

@@ -19,12 +19,12 @@ static bool write_bytes(const std::string& path, const std::vector<std::uint8_t>
 
 TEST(unit_test_pe_pattern_scan_more, InvalidDosHeader)
 {
-    constexpr std::string path = "./test_bad_dos.bin";
+    constexpr std::string_view path = "./test_bad_dos.bin";
     std::vector<std::uint8_t> data(128, 0);
     // write wrong magic
     data[0] = 'N';
     data[1] = 'Z';
-    ASSERT_TRUE(write_bytes(path, data));
+    ASSERT_TRUE(write_bytes(path.data(), data));
 
     const auto res = PePatternScanner::scan_for_pattern_in_file(path, "55 8B EC", ".text");
     EXPECT_FALSE(res.has_value());
@@ -32,7 +32,7 @@ TEST(unit_test_pe_pattern_scan_more, InvalidDosHeader)
 
 TEST(unit_test_pe_pattern_scan_more, InvalidNtSignature)
 {
-    constexpr std::string path = "./test_bad_nt.bin";
+    constexpr std::string_view path = "./test_bad_nt.bin";
     std::vector<std::uint8_t> data(256, 0);
     // valid DOS header
     data[0] = 'M';
@@ -45,7 +45,7 @@ TEST(unit_test_pe_pattern_scan_more, InvalidNtSignature)
     data[e_lfanew + 1] = 'Y';
     data[e_lfanew + 2] = 'Z';
     data[e_lfanew + 3] = 'W';
-    ASSERT_TRUE(write_bytes(path, data));
+    ASSERT_TRUE(write_bytes(path.data(), data));
 
     const auto res = PePatternScanner::scan_for_pattern_in_file(path, "55 8B EC", ".text");
     EXPECT_FALSE(res.has_value());
@@ -54,8 +54,8 @@ TEST(unit_test_pe_pattern_scan_more, InvalidNtSignature)
 TEST(unit_test_pe_pattern_scan_more, SectionNotFound)
 {
     // reuse minimal writer but with section named .data and search .text
-    const std::string path = "./test_section_not_found.bin";
-    std::ofstream f(path, std::ios::binary);
+    constexpr std::string_view path = "./test_section_not_found.bin";
+    std::ofstream f(path.data(), std::ios::binary);
     ASSERT_TRUE(f.is_open());
     // DOS
     std::vector<std::uint8_t> dos(64, 0);
