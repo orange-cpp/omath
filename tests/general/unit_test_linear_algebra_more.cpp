@@ -7,32 +7,32 @@ using namespace omath;
 
 TEST(LinearAlgebraMore, Vector3EdgeCases)
 {
-    Vector3<float> zero{0.f,0.f,0.f};
-    Vector3<float> v{1.f,0.f,0.f};
+    constexpr Vector3<float> zero{0.f,0.f,0.f};
+    constexpr Vector3<float> v{1.f,0.f,0.f};
 
     // angle_between should be unexpected when one vector has zero length
-    auto angle = zero.angle_between(v);
+    const auto angle = zero.angle_between(v);
     EXPECT_FALSE(static_cast<bool>(angle));
 
     // normalized of zero should return zero
-    auto nz = zero.normalized();
+    const auto nz = zero.normalized();
     EXPECT_EQ(nz.x, 0.f);
     EXPECT_EQ(nz.y, 0.f);
     EXPECT_EQ(nz.z, 0.f);
 
     // perpendicular case: x-axis and y-axis
-    Vector3<float> x{1.f,0.f,0.f};
-    Vector3<float> y{0.f,1.f,0.f};
+    constexpr Vector3<float> x{1.f,0.f,0.f};
+    constexpr Vector3<float> y{0.f,1.f,0.f};
     EXPECT_TRUE(x.is_perpendicular(y));
 }
 
 TEST(LinearAlgebraMore, TriangleRectangularAndDegenerate)
 {
-    Vector3<float> v1{0.f,0.f,0.f};
-    Vector3<float> v2{3.f,0.f,0.f};
-    Vector3<float> v3{3.f,4.f,0.f}; // 3-4-5 triangle, rectangular at v2
+    constexpr Vector3<float> v1{0.f,0.f,0.f};
+    constexpr Vector3<float> v2{3.f,0.f,0.f};
+    constexpr Vector3<float> v3{3.f,4.f,0.f}; // 3-4-5 triangle, rectangular at v2
 
-    Triangle<Vector3<float>> t{v1,v2,v3};
+    constexpr Triangle<Vector3<float>> t{v1,v2,v3};
 
     EXPECT_NEAR(t.side_a_length(), 3.f, 1e-6f);
     EXPECT_NEAR(t.side_b_length(), 4.f, 1e-6f);
@@ -40,7 +40,7 @@ TEST(LinearAlgebraMore, TriangleRectangularAndDegenerate)
     EXPECT_TRUE(t.is_rectangular());
 
     // Degenerate: all points same
-    Triangle<Vector3<float>> d{v1,v1,v1};
+    constexpr Triangle<Vector3<float>> d{v1,v1,v1};
     EXPECT_NEAR(d.side_a_length(), 0.f, 1e-6f);
     EXPECT_NEAR(d.side_b_length(), 0.f, 1e-6f);
     EXPECT_NEAR(d.hypot(), 0.f, 1e-6f);
@@ -49,7 +49,7 @@ TEST(LinearAlgebraMore, TriangleRectangularAndDegenerate)
 TEST(LinearAlgebraMore, Vector4ClampAndComparisons)
 {
     Vector4<float> v{10.f, -20.f, 30.f, -40.f};
-    auto s = v.sum();
+    const auto s = v.sum();
     EXPECT_NEAR(s, -20.f, 1e-6f);
 
     v.clamp(-10.f, 10.f);
@@ -58,7 +58,7 @@ TEST(LinearAlgebraMore, Vector4ClampAndComparisons)
     EXPECT_LE(v.y, 10.f);
     EXPECT_GE(v.y, -10.f);
 
-    Vector4<float> a{1.f,2.f,3.f,4.f};
-    Vector4<float> b{2.f,2.f,2.f,2.f};
+    constexpr Vector4<float> a{1.f,2.f,3.f,4.f};
+    constexpr Vector4<float> b{2.f,2.f,2.f,2.f};
     EXPECT_TRUE(a < b || a > b || a == b); // just exercise comparisons
 }

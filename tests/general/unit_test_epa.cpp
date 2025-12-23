@@ -60,7 +60,7 @@ TEST(UnitTestEpa, TestCollisionTrue)
     EXPECT_NEAR(epa->normal.z, 0.0f, 1e-3f);
 
     // Try both signs with a tiny margin (avoid grazing contacts)
-    const float margin = 1.0f + 1e-3f;
+    constexpr float margin = 1.0f + 1e-3f;
     const auto pen = epa->penetration_vector;
 
     Mesh b_plus = b;

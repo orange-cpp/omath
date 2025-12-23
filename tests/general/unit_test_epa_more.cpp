@@ -30,12 +30,13 @@ TEST(EpaExtra, DegenerateFaceHandled)
     Simplex s;
     s = { Vector3f{0.01f, 0.f, 0.f}, Vector3f{0.02f, 0.f, 0.f}, Vector3f{0.03f, 0.f, 0.f}, Vector3f{0.0f, 0.0f, 0.01f} };
 
-    DegenerateCollider a, b;
+    constexpr DegenerateCollider a;
+    constexpr DegenerateCollider b;
     Epa::Params params;
     params.max_iterations = 4;
     params.tolerance = 1e-6f;
 
-    auto result = Epa::solve(a, b, s, params);
+    const auto result = Epa::solve(a, b, s, params);
 
     // The algorithm should either return a valid result or gracefully exit (not crash)
     if (result)

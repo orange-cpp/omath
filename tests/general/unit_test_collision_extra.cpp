@@ -66,18 +66,18 @@ TEST(CollisionExtra, EPAConvergesOnSimpleCase)
         std::vector<omath::primitives::Vertex<>>{{ {0.f,0.f,0.f}, {}, {} }, { {1.f,0.f,0.f}, {}, {} } },
         {}
     };
-    omath::source_engine::Mesh meshB = meshA;
-    meshB.set_origin({0.5f, 0.f, 0.f}); // translate to overlap
+    omath::source_engine::Mesh mesh_b = meshA;
+    mesh_b.set_origin({0.5f, 0.f, 0.f}); // translate to overlap
 
-    omath::source_engine::MeshCollider A(meshA);
-    omath::source_engine::MeshCollider B(meshB);
+    omath::source_engine::MeshCollider a(meshA);
+    omath::source_engine::MeshCollider b(mesh_b);
 
     // Create a simplex that approximately contains the origin in Minkowski space
     Simplex<omath::Vector3<float>> simplex;
     simplex = { omath::Vector3<float>{0.5f,0.f,0.f}, omath::Vector3<float>{-0.5f,0.f,0.f}, omath::Vector3<float>{0.f,0.5f,0.f}, omath::Vector3<float>{0.f,-0.5f,0.f} };
 
     auto pool = std::pmr::monotonic_buffer_resource(1024);
-    auto res = Epa<omath::source_engine::MeshCollider>::solve(A, B, simplex, {}, pool);
+    auto res = Epa<omath::source_engine::MeshCollider>::solve(a, b, simplex, {}, pool);
     // EPA may or may not converge depending on numerics; ensure it returns optionally
     // but if it does, fields should be finite
     if (res.has_value())

@@ -99,15 +99,15 @@ TEST_F(UnitTestTriangle, SideLengths)
 // Test side vectors
 TEST_F(UnitTestTriangle, SideVectors)
 {
-    const Vector3 sideA_t1 = t1.side_a_vector(); // m_vertex1 - m_vertex2
-    EXPECT_FLOAT_EQ(sideA_t1.x, 0.0f - 1.0f);
-    EXPECT_FLOAT_EQ(sideA_t1.y, 0.0f - 0.0f);
-    EXPECT_FLOAT_EQ(sideA_t1.z, 0.0f - 0.0f);
+    const Vector3 side_a_t1 = t1.side_a_vector(); // m_vertex1 - m_vertex2
+    EXPECT_FLOAT_EQ(side_a_t1.x, 0.0f - 1.0f);
+    EXPECT_FLOAT_EQ(side_a_t1.y, 0.0f - 0.0f);
+    EXPECT_FLOAT_EQ(side_a_t1.z, 0.0f - 0.0f);
 
-    const Vector3 sideB_t1 = t1.side_b_vector(); // m_vertex3 - m_vertex2
-    EXPECT_FLOAT_EQ(sideB_t1.x, 0.0f - 1.0f);
-    EXPECT_FLOAT_EQ(sideB_t1.y, 1.0f - 0.0f);
-    EXPECT_FLOAT_EQ(sideB_t1.z, 0.0f - 0.0f);
+    const Vector3 side_b_t1 = t1.side_b_vector(); // m_vertex3 - m_vertex2
+    EXPECT_FLOAT_EQ(side_b_t1.x, 0.0f - 1.0f);
+    EXPECT_FLOAT_EQ(side_b_t1.y, 1.0f - 0.0f);
+    EXPECT_FLOAT_EQ(side_b_t1.z, 0.0f - 0.0f);
 }
 
 TEST_F(UnitTestTriangle, IsRectangular)

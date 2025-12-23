@@ -127,8 +127,8 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    const int SCR_WIDTH = 800;
-    const int SCR_HEIGHT = 600;
+    constexpr int SCR_WIDTH = 800;
+    constexpr int SCR_HEIGHT = 600;
 
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "omath cube + camera (GLEW)", nullptr, nullptr);
     if (!window)

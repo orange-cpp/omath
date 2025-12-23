@@ -1,19 +1,29 @@
-#include <gtest/gtest.h>
-#include <omath/utility/pe_pattern_scan.hpp>
-#include <fstream>
-#include <vector>
 #include <cstdint>
 #include <cstring>
+#include <fstream>
+#include <gtest/gtest.h>
+#include <omath/utility/pe_pattern_scan.hpp>
+#include <vector>
 
 using namespace omath;
 
 // Local minimal FileHeader used by tests when constructing raw NT headers
-struct TestFileHeader { std::uint16_t machine; std::uint16_t num_sections; std::uint32_t timedate_stamp; std::uint32_t ptr_symbols; std::uint32_t num_symbols; std::uint16_t size_optional_header; std::uint16_t characteristics; };
+struct TestFileHeader
+{
+    std::uint16_t machine;
+    std::uint16_t num_sections;
+    std::uint32_t timedate_stamp;
+    std::uint32_t ptr_symbols;
+    std::uint32_t num_symbols;
+    std::uint16_t size_optional_header;
+    std::uint16_t characteristics;
+};
 
-static bool write_bytes(const std::string &path, const std::vector<std::uint8_t>& data)
+static bool write_bytes(const std::string& path, const std::vector<std::uint8_t>& data)
 {
     std::ofstream f(path, std::ios::binary);
-    if (!f.is_open()) return false;
+    if (!f.is_open())
+        return false;
     f.write(reinterpret_cast<const char*>(data.data()), data.size());
     return true;
 }
@@ -22,11 +32,13 @@ static bool write_bytes(const std::string &path, const std::vector<std::uint8_t>
 static bool write_minimal_pe_file(const std::string& path, const std::vector<std::uint8_t>& section_bytes)
 {
     std::ofstream f(path, std::ios::binary);
-    if (!f.is_open()) return false;
+    if (!f.is_open())
+        return false;
 
     // Write DOS header (e_magic = 0x5A4D, e_lfanew at offset 0x3C)
     std::vector<std::uint8_t> dos(64, 0);
-    dos[0] = 'M'; dos[1] = 'Z';
+    dos[0] = 'M';
+    dos[1] = 'Z';
     std::uint32_t e_lfanew = 0x80;
     std::memcpy(dos.data() + 0x3C, &e_lfanew, sizeof(e_lfanew));
     f.write(reinterpret_cast<const char*>(dos.data()), dos.size());
@@ -39,7 +51,10 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
     }
 
     // NT headers signature 'PE\0\0'
-    f.put('P'); f.put('E'); f.put('\0'); f.put('\0');
+    f.put('P');
+    f.put('E');
+    f.put('\0');
+    f.put('\0');
 
     // FileHeader minimal
     std::uint16_t machine = 0x8664; // x64
@@ -64,10 +79,10 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
     f.write(reinterpret_cast<const char*>(opt.data()), opt.size());
 
     // Section header (name 8 bytes, then remaining 36 bytes)
-    char name[8] = {'.','t','e','x','t',0,0,0};
+    char name[8] = {'.', 't', 'e', 'x', 't', 0, 0, 0};
     f.write(name, 8);
 
-    const std::uint32_t section_header_rest = 36u;
+    constexpr std::uint32_t section_header_rest = 36u;
     const std::streampos header_rest_pos = f.tellp();
     std::vector<char> placeholder(section_header_rest, 0);
     f.write(placeholder.data(), placeholder.size());
@@ -78,7 +93,7 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
 
     // Patch section header fields
     const std::uint32_t virtual_size = static_cast<std::uint32_t>(section_bytes.size());
-    const std::uint32_t virtual_address = 0x1000u;
+    constexpr std::uint32_t virtual_address = 0x1000u;
     const std::uint32_t size_raw_data = static_cast<std::uint32_t>(section_bytes.size());
     const std::uint32_t ptr_raw_data = static_cast<std::uint32_t>(data_pos);
 
@@ -95,7 +110,7 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
 
 TEST(unit_test_pe_pattern_scan_more2, LoadedModuleNullBaseReturnsNull)
 {
-    auto res = PePatternScanner::scan_for_pattern_in_loaded_module(nullptr, "DE AD");
+    const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(nullptr, "DE AD");
     EXPECT_FALSE(res.has_value());
 }
 
@@ -103,35 +118,46 @@ TEST(unit_test_pe_pattern_scan_more2, LoadedModuleInvalidOptionalHeaderReturnsNu
 {
     // Construct in-memory buffer with DOS header but invalid optional header magic
     std::vector<std::uint8_t> buf(0x200, 0);
-    struct DosHeader { std::uint16_t e_magic; std::uint8_t pad[0x3A]; std::uint32_t e_lfanew; };
-    auto dos = reinterpret_cast<DosHeader*>(buf.data());
-    dos->e_magic = 0x5A4D; dos->e_lfanew = 0x80;
+    struct DosHeader
+    {
+        std::uint16_t e_magic;
+        std::uint8_t pad[0x3A];
+        std::uint32_t e_lfanew;
+    };
+    const auto dos = reinterpret_cast<DosHeader*>(buf.data());
+    dos->e_magic = 0x5A4D;
+    dos->e_lfanew = 0x80;
 
     // Place an NT header with wrong optional magic at e_lfanew
-    auto nt_ptr = buf.data() + dos->e_lfanew;
+    const auto nt_ptr = buf.data() + dos->e_lfanew;
     // write signature
-    nt_ptr[0] = 'P'; nt_ptr[1] = 'E'; nt_ptr[2] = 0; nt_ptr[3] = 0;
+    nt_ptr[0] = 'P';
+    nt_ptr[1] = 'E';
+    nt_ptr[2] = 0;
+    nt_ptr[3] = 0;
     // craft FileHeader with size_optional_header large enough
-    std::uint16_t size_opt = 0xE0;
+    constexpr std::uint16_t size_opt = 0xE0;
     // file header starts at offset 4
-    std::memcpy(nt_ptr + 4 + 12, &size_opt, sizeof(size_opt)); // size_optional_header located after 12 bytes into FileHeader
+    std::memcpy(nt_ptr + 4 + 12, &size_opt,
+                sizeof(size_opt)); // size_optional_header located after 12 bytes into FileHeader
     // write optional header magic to be invalid value
-    std::uint16_t bad_magic = 0x9999;
-    std::memcpy(nt_ptr + 4 + sizeof(std::uint32_t) + sizeof(std::uint16_t) + sizeof(std::uint16_t), &bad_magic, sizeof(bad_magic));
+    constexpr std::uint16_t bad_magic = 0x9999;
+    std::memcpy(nt_ptr + 4 + sizeof(std::uint32_t) + sizeof(std::uint16_t) + sizeof(std::uint16_t), &bad_magic,
+                sizeof(bad_magic));
 
-    auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE AD");
+    const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE AD");
     EXPECT_FALSE(res.has_value());
 }
 
 TEST(unit_test_pe_pattern_scan_more2, FileX86OptionalHeaderScanFindsPattern)
 {
-    const std::string path = "./test_pe_x86.bin";
+    constexpr std::string_view path = "./test_pe_x86.bin";
     const std::vector<std::uint8_t> pattern = {0xDE, 0xAD, 0xBE, 0xEF};
 
     // Use helper from this file to write a consistent minimal PE file with .text section
-    ASSERT_TRUE(write_minimal_pe_file(path, pattern));
+    ASSERT_TRUE(write_minimal_pe_file(path.data(), pattern));
 
-    auto res = PePatternScanner::scan_for_pattern_in_file(path, "DE AD BE EF", ".text");
+    const auto res = PePatternScanner::scan_for_pattern_in_file(path, "DE AD BE EF", ".text");
     ASSERT_TRUE(res.has_value());
     EXPECT_GE(res->virtual_base_addr, 0u);
     EXPECT_GE(res->raw_base_addr, 0u);
@@ -143,21 +169,36 @@ TEST(unit_test_pe_pattern_scan_more2, FilePatternNotFoundReturnsNull)
     const std::string path = "./test_pe_no_pattern.bin";
     std::vector<std::uint8_t> data(512, 0);
     // minimal DOS/NT headers to make extract_section fail earlier or return empty data
-    data[0] = 'M'; data[1] = 'Z'; std::uint32_t e_lfanew = 0x80; std::memcpy(data.data()+0x3C, &e_lfanew, sizeof(e_lfanew));
+    data[0] = 'M';
+    data[1] = 'Z';
+    constexpr std::uint32_t e_lfanew = 0x80;
+    std::memcpy(data.data() + 0x3C, &e_lfanew, sizeof(e_lfanew));
     // NT signature
-    data[e_lfanew + 0] = 'P'; data[e_lfanew + 1] = 'E'; data[e_lfanew + 2] = 0; data[e_lfanew + 3] = 0;
+    data[e_lfanew + 0] = 'P';
+    data[e_lfanew + 1] = 'E';
+    data[e_lfanew + 2] = 0;
+    data[e_lfanew + 3] = 0;
     // FileHeader: one section, size_optional_header set low
-    std::uint16_t num_sections = 1; std::uint16_t size_optional_header = 0xE0; std::memcpy(data.data() + e_lfanew + 6, &num_sections, sizeof(num_sections)); std::memcpy(data.data() + e_lfanew + 4 + 12, &size_optional_header, sizeof(size_optional_header));
+    constexpr std::uint16_t num_sections = 1;
+    constexpr std::uint16_t size_optional_header = 0xE0;
+    std::memcpy(data.data() + e_lfanew + 6, &num_sections, sizeof(num_sections));
+    std::memcpy(data.data() + e_lfanew + 4 + 12, &size_optional_header, sizeof(size_optional_header));
     // Optional header magic x64
-    std::uint16_t magic = 0x020B; std::memcpy(data.data() + e_lfanew + 4 + sizeof(TestFileHeader), &magic, sizeof(magic));
+    constexpr std::uint16_t magic = 0x020B;
+    std::memcpy(data.data() + e_lfanew + 4 + sizeof(TestFileHeader), &magic, sizeof(magic));
     // Section header .text with small data that does not contain the pattern
-    const std::size_t offset_to_segment_table = e_lfanew + 4 + sizeof(TestFileHeader) + size_optional_header;
-    const char name[8] = {'.','t','e','x','t',0,0,0}; std::memcpy(data.data() + offset_to_segment_table, name, 8);
-    std::uint32_t vs = 4, va = 0x1000, srd = 4, prd = 0x200; std::memcpy(data.data() + offset_to_segment_table + 8, &vs, 4); std::memcpy(data.data() + offset_to_segment_table + 12, &va, 4); std::memcpy(data.data() + offset_to_segment_table + 16, &srd, 4); std::memcpy(data.data() + offset_to_segment_table + 20, &prd, 4);
+    constexpr std::size_t offset_to_segment_table = e_lfanew + 4 + sizeof(TestFileHeader) + size_optional_header;
+    constexpr char name[8] = {'.', 't', 'e', 'x', 't', 0, 0, 0};
+    std::memcpy(data.data() + offset_to_segment_table, name, 8);
+    std::uint32_t vs = 4, va = 0x1000, srd = 4, prd = 0x200;
+    std::memcpy(data.data() + offset_to_segment_table + 8, &vs, 4);
+    std::memcpy(data.data() + offset_to_segment_table + 12, &va, 4);
+    std::memcpy(data.data() + offset_to_segment_table + 16, &srd, 4);
+    std::memcpy(data.data() + offset_to_segment_table + 20, &prd, 4);
     // write file
     ASSERT_TRUE(write_bytes(path, data));
 
-    auto res = PePatternScanner::scan_for_pattern_in_file(path, "AA BB CC", ".text");
+    const auto res = PePatternScanner::scan_for_pattern_in_file(path, "AA BB CC", ".text");
     EXPECT_FALSE(res.has_value());
 }
 // Extra tests for pe_pattern_scan edge cases (on-disk API)
@@ -165,7 +206,7 @@ TEST(unit_test_pe_pattern_scan_more2, FilePatternNotFoundReturnsNull)
 TEST(PePatternScanMore2, PatternAtStartFound)
 {
     const std::string path = "./test_pe_more_start.bin";
-    std::vector<std::uint8_t> bytes = {0x90, 0x01, 0x02, 0x03, 0x04};
+    const std::vector<std::uint8_t> bytes = {0x90, 0x01, 0x02, 0x03, 0x04};
     ASSERT_TRUE(write_minimal_pe_file(path, bytes));
 
     const auto res = PePatternScanner::scan_for_pattern_in_file(path, "90 01 02", ".text");
@@ -187,7 +228,7 @@ TEST(PePatternScanMore2, PatternAtEndFound)
         // search for ".text" name
         in.seekg(0, std::ios::beg);
         std::vector<char> filebuf((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-        const auto it = std::search(filebuf.begin(), filebuf.end(), std::begin(".text"), std::end(".text")-1);
+        const auto it = std::search(filebuf.begin(), filebuf.end(), std::begin(".text"), std::end(".text") - 1);
         if (it != filebuf.end())
         {
             const size_t pos = std::distance(filebuf.begin(), it);
@@ -197,12 +238,14 @@ TEST(PePatternScanMore2, PatternAtEndFound)
             uint32_t virtual_address{};
             uint32_t size_raw_data{};
             uint32_t ptr_raw_data{};
-            std::memcpy(&virtual_size, filebuf.data()+meta_off, sizeof(virtual_size));
-            std::memcpy(&virtual_address, filebuf.data()+meta_off+4, sizeof(virtual_address));
-            std::memcpy(&size_raw_data, filebuf.data()+meta_off+8, sizeof(size_raw_data));
-            std::memcpy(&ptr_raw_data, filebuf.data()+meta_off+12, sizeof(ptr_raw_data));
+            std::memcpy(&virtual_size, filebuf.data() + meta_off, sizeof(virtual_size));
+            std::memcpy(&virtual_address, filebuf.data() + meta_off + 4, sizeof(virtual_address));
+            std::memcpy(&size_raw_data, filebuf.data() + meta_off + 8, sizeof(size_raw_data));
+            std::memcpy(&ptr_raw_data, filebuf.data() + meta_off + 12, sizeof(ptr_raw_data));
 
-            std::cerr << "Parsed section header: virtual_size=" << virtual_size << " virtual_address=0x" << std::hex << virtual_address << std::dec << " size_raw_data=" << size_raw_data << " ptr_raw_data=" << ptr_raw_data << "\n";
+            std::cerr << "Parsed section header: virtual_size=" << virtual_size << " virtual_address=0x" << std::hex
+                      << virtual_address << std::dec << " size_raw_data=" << size_raw_data
+                      << " ptr_raw_data=" << ptr_raw_data << "\n";
 
             if (ptr_raw_data + size_raw_data <= filebuf.size())
             {
@@ -223,7 +266,7 @@ TEST(PePatternScanMore2, PatternAtEndFound)
 TEST(PePatternScanMore2, WildcardMatches)
 {
     const std::string path = "./test_pe_more_wild.bin";
-    std::vector<std::uint8_t> bytes = {0xDE, 0xAD, 0xBE, 0xEF};
+    const std::vector<std::uint8_t> bytes = {0xDE, 0xAD, 0xBE, 0xEF};
     ASSERT_TRUE(write_minimal_pe_file(path, bytes));
 
     const auto res = PePatternScanner::scan_for_pattern_in_file(path, "DE ?? BE", ".text");
@@ -233,7 +276,7 @@ TEST(PePatternScanMore2, WildcardMatches)
 TEST(PePatternScanMore2, PatternLongerThanBuffer)
 {
     const std::string path = "./test_pe_more_small.bin";
-    std::vector<std::uint8_t> bytes = {0xAA, 0xBB};
+    const std::vector<std::uint8_t> bytes = {0xAA, 0xBB};
     ASSERT_TRUE(write_minimal_pe_file(path, bytes));
 
     const auto res = PePatternScanner::scan_for_pattern_in_file(path, "AA BB CC", ".text");
@@ -243,10 +286,9 @@ TEST(PePatternScanMore2, PatternLongerThanBuffer)
 TEST(PePatternScanMore2, InvalidPatternParse)
 {
     const std::string path = "./test_pe_more_invalid.bin";
-    std::vector<std::uint8_t> bytes = {0x01, 0x02, 0x03};
+    const std::vector<std::uint8_t> bytes = {0x01, 0x02, 0x03};
     ASSERT_TRUE(write_minimal_pe_file(path, bytes));
 
     const auto res = PePatternScanner::scan_for_pattern_in_file(path, "01 GG 03", ".text");
     EXPECT_FALSE(res.has_value());
 }
-

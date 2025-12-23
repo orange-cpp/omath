@@ -47,7 +47,7 @@ TEST(LinearAlgebraMore2, Vector4NonInlinedHelpers)
     EXPECT_GE(v.x, 0.f);
     EXPECT_LE(v.z, 2.5f);
 
-    Vector4<float> shorter{0.1f,0.1f,0.1f,0.1f};
+    constexpr Vector4<float> shorter{0.1f,0.1f,0.1f,0.1f};
     EXPECT_TRUE(shorter < v);
     EXPECT_FALSE(v < shorter);
 }
@@ -59,7 +59,7 @@ TEST(LinearAlgebraMore2, MatNonInlinedAndStringHelpers)
 
     auto maybe_inv = m.inverted();
     EXPECT_TRUE(maybe_inv.has_value());
-    auto inv = maybe_inv.value();
+    const auto& inv = maybe_inv.value();
 
     // m * inv should be identity (approximately)
     auto prod = m * inv;
@@ -72,14 +72,14 @@ TEST(LinearAlgebraMore2, MatNonInlinedAndStringHelpers)
     EXPECT_EQ(t.at(0,1), m.at(1,0));
 
     auto raw = m.raw_array();
-    EXPECT_EQ(raw.size(), size_t(4));
+    EXPECT_EQ(raw.size(), static_cast<size_t>(4));
 
     auto s = m.to_string();
     EXPECT_NE(s.size(), 0u);
     auto ws = m.to_wstring();
     EXPECT_NE(ws.size(), 0u);
-    auto u8s = m.to_u8string();
-    EXPECT_NE(u8s.size(), 0u);
+    auto u8_s = m.to_u8string();
+    EXPECT_NE(u8_s.size(), 0u);
 
     // to_screen_mat static helper
     auto screen = Mat<4,4,float>::to_screen_mat(800.f, 600.f);
