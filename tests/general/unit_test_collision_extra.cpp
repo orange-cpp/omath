@@ -8,6 +8,29 @@
 using namespace omath;
 using namespace omath::collision;
 
+TEST(SimplexTest, HandleEmptySimplex)
+{
+    Simplex<Vector3<float>> simplex;
+    Vector3<float> direction{1, 0, 0};
+    
+    EXPECT_EQ(simplex.size(), 0);
+    EXPECT_FALSE(simplex.handle(direction));
+}
+
+TEST(SimplexTest, HandleLineCollinearWithXAxis)
+{
+    using Vec3 = Vector3<float>;
+    Simplex<Vec3> simplex;
+    
+    simplex.push_front(Vec3{1, 0, 0});
+    simplex.push_front(Vec3{-1, 0, 0});
+    
+    Vec3 direction{};
+    simplex.handle(direction);
+    
+    EXPECT_NEAR(direction.x, 0.f, 1e-6f);
+}
+
 TEST(CollisionExtra, SimplexLineHandle)
 {
     Simplex<Vector3<float>> s;
