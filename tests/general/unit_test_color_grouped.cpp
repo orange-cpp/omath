@@ -113,50 +113,50 @@ TEST_F(UnitTestColorGrouped, BlendVector3)
 TEST(UnitTestColorGrouped_Extra, SetHueSaturationValue)
 {
     Color c = Color::red();
-    auto h1 = c.to_hsv();
+    const auto h1 = c.to_hsv();
     EXPECT_FLOAT_EQ(h1.hue, 0.f);
 
     c.set_hue(0.5f);
-    auto h2 = c.to_hsv();
+    const auto h2 = c.to_hsv();
     EXPECT_NEAR(h2.hue, 0.5f, 1e-3f);
 
     c = Color::from_hsv(0.25f, 0.8f, 0.6f);
     c.set_saturation(0.3f);
-    auto h3 = c.to_hsv();
+    const auto h3 = c.to_hsv();
     EXPECT_NEAR(h3.saturation, 0.3f, 1e-3f);
 
     c.set_value(1.0f);
-    auto h4 = c.to_hsv();
+    const auto h4 = c.to_hsv();
     EXPECT_NEAR(h4.value, 1.0f, 1e-3f);
 }
 
 TEST(UnitTestColorGrouped_Extra, ToStringVariants)
 {
-    Color c = Color::from_rgba(10, 20, 30, 255);
+    constexpr Color c = Color::from_rgba(10, 20, 30, 255);
     auto s = c.to_string();
     EXPECT_NE(s.find("r:"), std::string::npos);
 
-    auto ws = c.to_wstring();
+    const auto ws = c.to_wstring();
     EXPECT_FALSE(ws.empty());
 
-    auto u8 = c.to_u8string();
+    const auto u8 = c.to_u8string();
     EXPECT_FALSE(u8.empty());
 }
 
 TEST(UnitTestColorGrouped_Extra, BlendEdgeCases)
 {
-    Color a = Color::red();
-    Color b = Color::blue();
-    auto r0 = a.blend(b, 0.f);
+    constexpr Color a = Color::red();
+    constexpr Color b = Color::blue();
+    constexpr auto r0 = a.blend(b, 0.f);
     EXPECT_FLOAT_EQ(r0.x, a.x);
-    auto r1 = a.blend(b, 1.f);
+    constexpr auto r1 = a.blend(b, 1.f);
     EXPECT_FLOAT_EQ(r1.x, b.x);
 }
 
 // From unit_test_color_more.cpp
 TEST(UnitTestColorGrouped_More, DefaultCtorIsZero)
 {
-    Color c;
+    constexpr Color c;
     EXPECT_FLOAT_EQ(c.x, 0.0f);
     EXPECT_FLOAT_EQ(c.y, 0.0f);
     EXPECT_FLOAT_EQ(c.z, 0.0f);
@@ -165,7 +165,7 @@ TEST(UnitTestColorGrouped_More, DefaultCtorIsZero)
 
 TEST(UnitTestColorGrouped_More, FloatCtorAndClampForRGB)
 {
-    Color c(1.2f, -0.5f, 0.5f, 2.0f);
+    constexpr Color c(1.2f, -0.5f, 0.5f, 2.0f);
     EXPECT_FLOAT_EQ(c.x, 1.0f);
     EXPECT_FLOAT_EQ(c.y, 0.0f);
     EXPECT_FLOAT_EQ(c.z, 0.5f);
@@ -174,7 +174,7 @@ TEST(UnitTestColorGrouped_More, FloatCtorAndClampForRGB)
 
 TEST(UnitTestColorGrouped_More, FromRgbaProducesScaledComponents)
 {
-    Color c = Color::from_rgba(25u, 128u, 230u, 64u);
+    constexpr Color c = Color::from_rgba(25u, 128u, 230u, 64u);
     EXPECT_NEAR(c.x, 25.0f/255.0f, 1e-6f);
     EXPECT_NEAR(c.y, 128.0f/255.0f, 1e-6f);
     EXPECT_NEAR(c.z, 230.0f/255.0f, 1e-6f);
@@ -183,9 +183,9 @@ TEST(UnitTestColorGrouped_More, FromRgbaProducesScaledComponents)
 
 TEST(UnitTestColorGrouped_More, BlendProducesIntermediate)
 {
-    Color c0(0.0f, 0.0f, 0.0f, 1.0f);
-    Color c1(1.0f, 1.0f, 1.0f, 0.0f);
-    Color mid = c0.blend(c1, 0.5f);
+    constexpr Color c0(0.0f, 0.0f, 0.0f, 1.0f);
+    constexpr Color c1(1.0f, 1.0f, 1.0f, 0.0f);
+    constexpr Color mid = c0.blend(c1, 0.5f);
     EXPECT_FLOAT_EQ(mid.x, 0.5f);
     EXPECT_FLOAT_EQ(mid.y, 0.5f);
     EXPECT_FLOAT_EQ(mid.z, 0.5f);
@@ -194,9 +194,9 @@ TEST(UnitTestColorGrouped_More, BlendProducesIntermediate)
 
 TEST(UnitTestColorGrouped_More, HsvRoundTrip)
 {
-    Color red = Color::red();
-    auto hsv = red.to_hsv();
-    Color back = Color::from_hsv(hsv);
+    constexpr Color red = Color::red();
+    const auto hsv = red.to_hsv();
+    const Color back = Color::from_hsv(hsv);
     EXPECT_NEAR(back.x, 1.0f, 1e-6f);
     EXPECT_NEAR(back.y, 0.0f, 1e-6f);
     EXPECT_NEAR(back.z, 0.0f, 1e-6f);
@@ -204,7 +204,7 @@ TEST(UnitTestColorGrouped_More, HsvRoundTrip)
 
 TEST(UnitTestColorGrouped_More, ToStringContainsComponents)
 {
-    Color c = Color::from_rgba(10, 20, 30, 40);
+    constexpr Color c = Color::from_rgba(10, 20, 30, 40);
     std::string s = c.to_string();
     EXPECT_NE(s.find("r:"), std::string::npos);
     EXPECT_NE(s.find("g:"), std::string::npos);
@@ -215,7 +215,7 @@ TEST(UnitTestColorGrouped_More, ToStringContainsComponents)
 // From unit_test_color_more2.cpp
 TEST(UnitTestColorGrouped_More2, FromRgbaAndToString)
 {
-    auto c = Color::from_rgba(255, 128, 0, 64);
+    constexpr auto c = Color::from_rgba(255, 128, 0, 64);
     const auto s = c.to_string();
     EXPECT_NE(s.find("r:255"), std::string::npos);
     EXPECT_NE(s.find("g:128"), std::string::npos);
@@ -257,7 +257,7 @@ TEST(UnitTestColorGrouped_More2, FromHsvCases)
 TEST(UnitTestColorGrouped_More2, ToHsvAndSetters)
 {
     Color c{0.2f, 0.4f, 0.6f, 1.f};
-    auto hsv = c.to_hsv();
+    const auto hsv = c.to_hsv();
     EXPECT_NEAR(hsv.value, 0.6f, 1e-6f);
 
     c.set_hue(0.0f);
@@ -272,16 +272,16 @@ TEST(UnitTestColorGrouped_More2, ToHsvAndSetters)
 
 TEST(UnitTestColorGrouped_More2, BlendAndStaticColors)
 {
-    Color a = Color::red();
-    Color b = Color::blue();
-    auto mid = a.blend(b, 0.5f);
+    constexpr Color a = Color::red();
+    constexpr Color b = Color::blue();
+    constexpr auto mid = a.blend(b, 0.5f);
     EXPECT_GT(mid.x, 0.f);
     EXPECT_GT(mid.z, 0.f);
 
-    auto all_a = a.blend(b, -1.f);
+    constexpr auto all_a = a.blend(b, -1.f);
     EXPECT_NEAR(all_a.x, a.x, 1e-6f);
 
-    auto all_b = a.blend(b, 2.f);
+    constexpr auto all_b = a.blend(b, 2.f);
     EXPECT_NEAR(all_b.z, b.z, 1e-6f);
 }
 

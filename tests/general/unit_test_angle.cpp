@@ -13,11 +13,11 @@ namespace
 {
 
     // Handy aliases (defaults: Type=float, [0,360], Normalized)
-    using Deg = Angle<float, float(0), float(360), AngleFlags::Normalized>;
-    using Pitch = Angle<float, float(-90), float(90), AngleFlags::Clamped>;
-    using Turn = Angle<float, float(-180), float(180), AngleFlags::Normalized>;
+    using Deg = Angle<float, static_cast<float>(0), static_cast<float>(360), AngleFlags::Normalized>;
+    using Pitch = Angle<float, static_cast<float>(-90), static_cast<float>(90), AngleFlags::Clamped>;
+    using Turn = Angle<float, static_cast<float>(-180), static_cast<float>(180), AngleFlags::Normalized>;
 
-    constexpr float kEps = 1e-5f;
+    constexpr float k_eps = 1e-5f;
 
 } // namespace
 
@@ -80,8 +80,8 @@ TEST(UnitTestAngle, DereferenceReturnsDegrees)
 TEST(UnitTestAngle, SinCosTanCot_BasicCases)
 {
     const Deg a0 = Deg::from_degrees(0.0f);
-    EXPECT_NEAR(a0.sin(), 0.0f, kEps);
-    EXPECT_NEAR(a0.cos(), 1.0f, kEps);
+    EXPECT_NEAR(a0.sin(), 0.0f, k_eps);
+    EXPECT_NEAR(a0.cos(), 1.0f, k_eps);
     // cot(0) -> cos/sin -> div by 0: allow inf or nan
     const float cot0 = a0.cot();
     EXPECT_TRUE(std::isinf(cot0) || std::isnan(cot0));
@@ -99,7 +99,7 @@ TEST(UnitTestAngle, Atan_IsAtanOfRadians)
 {
     // atan(as_radians). For 0° -> atan(0)=0.
     const Deg a0 = Deg::from_degrees(0.0f);
-    EXPECT_NEAR(a0.atan(), 0.0f, kEps);
+    EXPECT_NEAR(a0.atan(), 0.0f, k_eps);
 
     const Deg a45 = Deg::from_degrees(45.0f);
     // atan(pi/4) ≈ 0.665773...
