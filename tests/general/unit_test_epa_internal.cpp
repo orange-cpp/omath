@@ -9,7 +9,8 @@ using Vector3f = omath::Vector3<float>;
 struct DummyCollider
 {
     using VectorType = Vector3f;
-    VectorType find_abs_furthest_vertex_position(const VectorType& dir) const noexcept
+    [[nodiscard]]
+    static VectorType find_abs_furthest_vertex_position(const VectorType& dir) noexcept
     {
         // map direction to a small point so support_point is finite
         return Vector3f{dir.x * 0.01f, dir.y * 0.01f, dir.z * 0.01f};
@@ -25,7 +26,8 @@ TEST(EpaInternal, SolveHandlesSmallPolytope)
     Simplex s;
     s = { Vector3f{0.01f, 0.f, 0.f}, Vector3f{0.f, 0.01f, 0.f}, Vector3f{0.f, 0.f, 0.01f}, Vector3f{-0.01f, -0.01f, -0.01f} };
 
-    DummyCollider a, b;
+    constexpr DummyCollider a;
+    constexpr DummyCollider b;
     EpaDummy::Params params;
     params.max_iterations = 16;
     params.tolerance = 1e-6f;
