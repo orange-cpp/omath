@@ -306,7 +306,7 @@ TEST_F(UnitTestVector2, DivisionAssignmentOperator_VectorWithZero)
 // Test operations with infinity and NaN
 TEST_F(UnitTestVector2, Operator_WithInfinity)
 {
-    constexpr Vector2 v_inf(INFINITY, INFINITY);
+    const Vector2 v_inf(INFINITY, INFINITY);
     const Vector2 result = v1 + v_inf;
     EXPECT_TRUE(std::isinf(result.x));
     EXPECT_TRUE(std::isinf(result.y));

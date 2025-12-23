@@ -15,7 +15,7 @@ TEST(MatMore, InitListAndMultiply)
 
 TEST(MatMore, Determinant)
 {
-    Mat<2,2,double> m{{{1.0,2.0},{2.0,4.0}}}; // singular
-    double det = m.determinant();
+    const Mat<2,2,double> m{{{1.0,2.0},{2.0,4.0}}}; // singular
+    const double det = m.determinant();
     EXPECT_DOUBLE_EQ(det, 0.0);
 }

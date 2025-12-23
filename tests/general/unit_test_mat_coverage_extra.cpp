@@ -16,9 +16,9 @@ TEST(MatCoverageExtra, InitListColumnsMismatchThrows) {
 
 TEST(MatCoverageExtra, DeterminantFallbackIsCallable) {
     // Call determinant for 1x1 and 2x2 matrices to cover determinant paths
-    Mat<1,1> m1{{3.14f}};
+    const Mat<1,1> m1{{3.14f}};
     EXPECT_FLOAT_EQ(m1.determinant(), 3.14f);
 
-    Mat<2,2> m2{{{1.0f,2.0f},{3.0f,4.0f}}};
+    const Mat<2,2> m2{{{1.0f,2.0f},{3.0f,4.0f}}};
     EXPECT_FLOAT_EQ(m2.determinant(), -2.0f);
 }
