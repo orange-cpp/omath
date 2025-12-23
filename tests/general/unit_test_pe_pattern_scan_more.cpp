@@ -18,7 +18,7 @@ static bool write_bytes(const std::string &path, const std::vector<std::uint8_t>
 
 TEST(unit_test_pe_pattern_scan_more, InvalidDosHeader)
 {
-    const std::string path = "./test_bad_dos.bin";
+    constexpr std::string path = "./test_bad_dos.bin";
     std::vector<std::uint8_t> data(128, 0);
     // write wrong magic
     data[0] = 'N'; data[1] = 'Z';
@@ -30,7 +30,7 @@ TEST(unit_test_pe_pattern_scan_more, InvalidDosHeader)
 
 TEST(unit_test_pe_pattern_scan_more, InvalidNtSignature)
 {
-    const std::string path = "./test_bad_nt.bin";
+    constexpr std::string path = "./test_bad_nt.bin";
     std::vector<std::uint8_t> data(256, 0);
     // valid DOS header
     data[0] = 'M'; data[1] = 'Z';
@@ -83,7 +83,7 @@ TEST(unit_test_pe_pattern_scan_more, LoadedModuleScanFinds)
     struct ImageNtHeadersX64 { std::uint32_t signature; FileHeader file_header; OptionalHeaderX64 optional_header; };
 
     const std::vector<std::uint8_t> pattern_bytes = {0xDE,0xAD,0xBE,0xEF,0x90};
-    const std::uint32_t base_of_code = 0x200; // will place bytes at offset 0x200
+    constexpr std::uint32_t base_of_code = 0x200; // will place bytes at offset 0x200
     const std::uint32_t size_code = static_cast<std::uint32_t>(pattern_bytes.size());
 
     const std::uint32_t bufsize = 0x400 + size_code;

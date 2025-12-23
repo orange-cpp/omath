@@ -64,7 +64,7 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
     f.write(name, 8);
 
     // Write placeholder bytes for the rest of the section header and remember its start
-    const std::uint32_t section_header_rest = 36u;
+    constexpr std::uint32_t section_header_rest = 36u;
     const std::streampos header_rest_pos = f.tellp();
     std::vector<char> placeholder(section_header_rest, 0);
     f.write(placeholder.data(), placeholder.size());
@@ -75,7 +75,7 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
 
     // Patch section header fields: virtual_size, virtual_address, size_raw_data, ptr_raw_data
     const std::uint32_t virtual_size = static_cast<std::uint32_t>(section_bytes.size());
-    const std::uint32_t virtual_address = 0x1000u;
+    constexpr std::uint32_t virtual_address = 0x1000u;
     const std::uint32_t size_raw_data = static_cast<std::uint32_t>(section_bytes.size());
     const std::uint32_t ptr_raw_data = static_cast<std::uint32_t>(data_pos);
 
@@ -95,7 +95,7 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
 
 TEST(unit_test_pe_pattern_scan_file, ScanFindsPattern)
 {
-    const std::string path = "./test_minimal_pe.bin";
+    constexpr std::string path = "./test_minimal_pe.bin";
     std::vector<std::uint8_t> bytes = {0x55, 0x8B, 0xEC, 0x90, 0x90}; // pattern at offset 0
     ASSERT_TRUE(write_minimal_pe_file(path, bytes));
 

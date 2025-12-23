@@ -225,7 +225,7 @@ TEST(UnitTestColorGrouped_More2, FromRgbaAndToString)
 
 TEST(UnitTestColorGrouped_More2, FromHsvCases)
 {
-    const float eps = 1e-5f;
+    constexpr float eps = 1e-5f;
 
     auto check_hue = [&](float h) {
         SCOPED_TRACE(::testing::Message() << "h=" << h);

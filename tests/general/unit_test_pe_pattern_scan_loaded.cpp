@@ -11,7 +11,7 @@ static std::vector<std::uint8_t> make_fake_module(std::uint32_t base_of_code,
                                                   std::uint32_t size_code,
                                                   const std::vector<std::uint8_t>& code_bytes)
 {
-    const std::uint32_t e_lfanew = 0x80;
+    constexpr std::uint32_t e_lfanew = 0x80;
     const std::uint32_t total_size = e_lfanew + 0x200 + size_code + 0x100;
     std::vector<std::uint8_t> buf(total_size, 0);
 
@@ -21,13 +21,13 @@ static std::vector<std::uint8_t> make_fake_module(std::uint32_t base_of_code,
     std::memcpy(buf.data() + 0x3C, &le, sizeof(le));
 
     // NT signature at e_lfanew
-    const std::uint32_t nt_sig = 0x4550; // 'PE\0\0'
+    constexpr std::uint32_t nt_sig = 0x4550; // 'PE\0\0'
     std::memcpy(buf.data() + e_lfanew, &nt_sig, sizeof(nt_sig));
 
     // FileHeader is 20 bytes: we only need to ensure its size is present; leave zeros
 
     // OptionalHeader magic (optional header begins at e_lfanew + 4 + sizeof(FileHeader) == e_lfanew + 24)
-    const std::uint16_t opt_magic = 0x020B; // x64
+    constexpr std::uint16_t opt_magic = 0x020B; // x64
     std::memcpy(buf.data() + e_lfanew + 24, &opt_magic, sizeof(opt_magic));
 
     // size_code is at offset 4 inside OptionalHeader -> absolute e_lfanew + 28

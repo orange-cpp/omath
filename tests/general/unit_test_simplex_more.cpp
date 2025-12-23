@@ -123,9 +123,9 @@ TEST(SimplexMore, HandleLineCollinearProducesPerp)
 
 TEST(SimplexMore, HandleTriangleFlipWinding)
 {
-    const omath::Vector3<float> a{1.f,0.f,0.f};
-    const omath::Vector3<float> b{0.f,1.f,0.f};
-    const omath::Vector3<float> c{0.f,0.f,1.f};
+    constexpr omath::Vector3<float> a{1.f,0.f,0.f};
+    constexpr omath::Vector3<float> b{0.f,1.f,0.f};
+    constexpr omath::Vector3<float> c{0.f,0.f,1.f};
     omath::collision::Simplex<omath::Vector3<float>> s;
     s = { a, b, c };
     omath::Vector3<float> dir{0.f,0.f,0.f};

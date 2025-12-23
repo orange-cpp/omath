@@ -44,8 +44,8 @@ TEST(UnitTestAngle, FromDegrees_Normalized_WrapsBelowMin)
 
 TEST(UnitTestAngle, FromDegrees_Clamped_ClampsToRange)
 {
-    const Pitch hi = Pitch::from_degrees(100.0f);
-    const Pitch lo = Pitch::from_degrees(-120.0f);
+    constexpr Pitch hi = Pitch::from_degrees(100.0f);
+    constexpr Pitch lo = Pitch::from_degrees(-120.0f);
 
     EXPECT_FLOAT_EQ(hi.as_degrees(), 90.0f);
     EXPECT_FLOAT_EQ(lo.as_degrees(), -90.0f);

@@ -16,7 +16,7 @@ TEST(AStarExtra, TrivialNeighbor)
     nav.m_vertex_map[v1] = {v2};
     nav.m_vertex_map[v2] = {v1};
 
-    auto path = Astar::find_path(v1, v2, nav);
+    const auto path = Astar::find_path(v1, v2, nav);
     ASSERT_EQ(path.size(), 1u);
     EXPECT_EQ(path.front(), v2);
 }
@@ -24,10 +24,10 @@ TEST(AStarExtra, TrivialNeighbor)
 TEST(AStarExtra, StartEqualsGoal)
 {
     NavigationMesh nav;
-    Vector3<float> v{1.f,1.f,0.f};
+    constexpr Vector3<float> v{1.f,1.f,0.f};
     nav.m_vertex_map[v] = {};
 
-    auto path = Astar::find_path(v, v, nav);
+    const auto path = Astar::find_path(v, v, nav);
     ASSERT_EQ(path.size(), 1u);
     EXPECT_EQ(path.front(), v);
 }
@@ -35,13 +35,13 @@ TEST(AStarExtra, StartEqualsGoal)
 TEST(AStarExtra, BlockedNoPathBetweenTwoVertices)
 {
     NavigationMesh nav;
-    Vector3<float> left{0.f,0.f,0.f};
-    Vector3<float> right{2.f,0.f,0.f};
+    constexpr Vector3<float> left{0.f,0.f,0.f};
+    constexpr Vector3<float> right{2.f,0.f,0.f};
     // both vertices present but no connections
     nav.m_vertex_map[left] = {};
     nav.m_vertex_map[right] = {};
 
-    auto path = Astar::find_path(left, right, nav);
+    const auto path = Astar::find_path(left, right, nav);
     // disconnected vertices -> empty result
     EXPECT_TRUE(path.empty());
 }
@@ -58,7 +58,7 @@ TEST(AStarExtra, LongerPathAvoidsBlock)
             Vector3<float> v = idx(x,y);
             if (x==1 && y==1) continue; // center is omitted (blocked)
             std::vector<Vector3<float>> neigh;
-            const std::array<std::pair<int,int>,4> offs{{{1,0},{-1,0},{0,1},{0,-1}}};
+            constexpr std::array<std::pair<int,int>,4> offs{{{1,0},{-1,0},{0,1},{0,-1}}};
             for (auto [dx,dy]: offs)
             {
                 int nx = x + dx, ny = y + dy;
@@ -70,9 +70,9 @@ TEST(AStarExtra, LongerPathAvoidsBlock)
         }
     }
 
-    Vector3<float> start = idx(0,1);
-    Vector3<float> goal  = idx(2,1);
-    auto path = Astar::find_path(start, goal, nav);
+    constexpr Vector3<float> start = idx(0,1);
+    constexpr Vector3<float> goal  = idx(2,1);
+    const auto path = Astar::find_path(start, goal, nav);
     ASSERT_FALSE(path.empty());
     EXPECT_EQ(path.front(), goal); // Astar convention: single-element or endpoint present
 }
@@ -87,7 +87,7 @@ TEST(AstarTests, TrivialDirectNeighborPath)
     nav.m_vertex_map.emplace(v1, std::vector<Vector3<float>>{v2});
     nav.m_vertex_map.emplace(v2, std::vector<Vector3<float>>{v1});
 
-    auto path = Astar::find_path(v1, v2, nav);
+    const auto path = Astar::find_path(v1, v2, nav);
     // Current A* implementation returns the end vertex as the reconstructed
     // path (single-element) in the simple neighbor scenario. Assert that the
     // endpoint is present and reachable.
@@ -99,11 +99,11 @@ TEST(AstarTests, NoPathWhenDisconnected)
 {
     NavigationMesh nav;
     Vector3<float> v1{0.f,0.f,0.f};
-    Vector3<float> v2{10.f,0.f,0.f};
+    constexpr Vector3<float> v2{10.f,0.f,0.f};
     // nav has only v1
     nav.m_vertex_map.emplace(v1, std::vector<Vector3<float>>{});
 
-    auto path = Astar::find_path(v1, v2, nav);
+    const auto path = Astar::find_path(v1, v2, nav);
     // When the nav mesh contains only the start vertex, the closest
     // vertex for both start and end will be the same vertex. In that
     // case Astar returns a single-element path with the start vertex.
@@ -113,11 +113,11 @@ TEST(AstarTests, NoPathWhenDisconnected)
 
 TEST(AstarTests, EmptyNavReturnsNoPath)
 {
-    NavigationMesh nav;
-    Vector3<float> v1{0.f,0.f,0.f};
-    Vector3<float> v2{1.f,0.f,0.f};
+    const NavigationMesh nav;
+    constexpr Vector3<float> v1{0.f,0.f,0.f};
+    constexpr Vector3<float> v2{1.f,0.f,0.f};
 
-    auto path = Astar::find_path(v1, v2, nav);
+    const auto path = Astar::find_path(v1, v2, nav);
     EXPECT_TRUE(path.empty());
 }
 

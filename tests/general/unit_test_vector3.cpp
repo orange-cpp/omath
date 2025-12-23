@@ -31,15 +31,15 @@ TEST(Vector3More, ArithmeticAndDotCross)
     Vector3<float> a{1.f, 0.f, 0.f};
     Vector3<float> b{0.f, 1.f, 0.f};
     auto c = a + b;
-    const Vector3<float> expect_c{1.f,1.f,0.f};
+    constexpr Vector3<float> expect_c{1.f,1.f,0.f};
     EXPECT_EQ(c, expect_c);
 
     auto d = a - b;
-    const Vector3<float> expect_d{1.f,-1.f,0.f};
+    constexpr Vector3<float> expect_d{1.f,-1.f,0.f};
     EXPECT_EQ(d, expect_d);
 
     auto e = a * 2.f;
-    const Vector3<float> expect_e{2.f,0.f,0.f};
+    constexpr Vector3<float> expect_e{2.f,0.f,0.f};
     EXPECT_EQ(e, expect_e);
 
     EXPECT_FLOAT_EQ(a.dot(b), 0.f);
@@ -47,7 +47,7 @@ TEST(Vector3More, ArithmeticAndDotCross)
     auto cr = Vector3<float>{ a.y * b.z - a.z * b.y,
                               a.z * b.x - a.x * b.z,
                               a.x * b.y - a.y * b.x };
-    const Vector3<float> expect_cr{0.f,0.f,1.f};
+    constexpr Vector3<float> expect_cr{0.f,0.f,1.f};
     EXPECT_EQ(cr, expect_cr);
 }
 

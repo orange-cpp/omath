@@ -67,7 +67,7 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
     char name[8] = {'.','t','e','x','t',0,0,0};
     f.write(name, 8);
 
-    const std::uint32_t section_header_rest = 36u;
+    constexpr std::uint32_t section_header_rest = 36u;
     const std::streampos header_rest_pos = f.tellp();
     std::vector<char> placeholder(section_header_rest, 0);
     f.write(placeholder.data(), placeholder.size());
@@ -78,7 +78,7 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
 
     // Patch section header fields
     const std::uint32_t virtual_size = static_cast<std::uint32_t>(section_bytes.size());
-    const std::uint32_t virtual_address = 0x1000u;
+    constexpr std::uint32_t virtual_address = 0x1000u;
     const std::uint32_t size_raw_data = static_cast<std::uint32_t>(section_bytes.size());
     const std::uint32_t ptr_raw_data = static_cast<std::uint32_t>(data_pos);
 
@@ -125,7 +125,7 @@ TEST(unit_test_pe_pattern_scan_more2, LoadedModuleInvalidOptionalHeaderReturnsNu
 
 TEST(unit_test_pe_pattern_scan_more2, FileX86OptionalHeaderScanFindsPattern)
 {
-    const std::string path = "./test_pe_x86.bin";
+    constexpr std::string path = "./test_pe_x86.bin";
     const std::vector<std::uint8_t> pattern = {0xDE, 0xAD, 0xBE, 0xEF};
 
     // Use helper from this file to write a consistent minimal PE file with .text section
@@ -152,7 +152,7 @@ TEST(unit_test_pe_pattern_scan_more2, FilePatternNotFoundReturnsNull)
     std::uint16_t magic = 0x020B; std::memcpy(data.data() + e_lfanew + 4 + sizeof(TestFileHeader), &magic, sizeof(magic));
     // Section header .text with small data that does not contain the pattern
     const std::size_t offset_to_segment_table = e_lfanew + 4 + sizeof(TestFileHeader) + size_optional_header;
-    const char name[8] = {'.','t','e','x','t',0,0,0}; std::memcpy(data.data() + offset_to_segment_table, name, 8);
+    constexpr char name[8] = {'.','t','e','x','t',0,0,0}; std::memcpy(data.data() + offset_to_segment_table, name, 8);
     std::uint32_t vs = 4, va = 0x1000, srd = 4, prd = 0x200; std::memcpy(data.data() + offset_to_segment_table + 8, &vs, 4); std::memcpy(data.data() + offset_to_segment_table + 12, &va, 4); std::memcpy(data.data() + offset_to_segment_table + 16, &srd, 4); std::memcpy(data.data() + offset_to_segment_table + 20, &prd, 4);
     // write file
     ASSERT_TRUE(write_bytes(path, data));
@@ -174,7 +174,7 @@ TEST(PePatternScanMore2, PatternAtStartFound)
 
 TEST(PePatternScanMore2, PatternAtEndFound)
 {
-    const std::string path = "./test_pe_more_end.bin";
+    constexpr std::string path = "./test_pe_more_end.bin";
     std::vector<std::uint8_t> bytes = {0x00, 0x11, 0x22, 0x33, 0x44};
     ASSERT_TRUE(write_minimal_pe_file(path, bytes));
 
