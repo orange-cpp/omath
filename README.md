@@ -5,6 +5,7 @@
 ![Static Badge](https://img.shields.io/badge/license-libomath-orange)
 ![GitHub contributors](https://img.shields.io/github/contributors/orange-cpp/omath)
 ![GitHub top language](https://img.shields.io/github/languages/top/orange-cpp/omath)
+![GitHub repo size](https://img.shields.io/github/repo-size/orange-cpp/omath)
 [![CodeFactor](https://www.codefactor.io/repository/github/orange-cpp/omath/badge)](https://www.codefactor.io/repository/github/orange-cpp/omath)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/orange-cpp/omath/cmake-multi-platform.yml)
 [![Vcpkg package](https://repology.org/badge/version-for-repo/vcpkg/orange-math.svg)](https://repology.org/project/orange-math/versions)
