@@ -151,11 +151,11 @@ TEST(unit_test_pe_pattern_scan_more2, LoadedModuleInvalidOptionalHeaderReturnsNu
 
 TEST(unit_test_pe_pattern_scan_more2, FileX86OptionalHeaderScanFindsPattern)
 {
-    constexpr std::string path = "./test_pe_x86.bin";
+    constexpr std::string_view path = "./test_pe_x86.bin";
     const std::vector<std::uint8_t> pattern = {0xDE, 0xAD, 0xBE, 0xEF};
 
     // Use helper from this file to write a consistent minimal PE file with .text section
-    ASSERT_TRUE(write_minimal_pe_file(path, pattern));
+    ASSERT_TRUE(write_minimal_pe_file(path.data(), pattern));
 
     const auto res = PePatternScanner::scan_for_pattern_in_file(path, "DE AD BE EF", ".text");
     ASSERT_TRUE(res.has_value());
@@ -215,7 +215,7 @@ TEST(PePatternScanMore2, PatternAtStartFound)
 
 TEST(PePatternScanMore2, PatternAtEndFound)
 {
-    constexpr std::string path = "./test_pe_more_end.bin";
+    const std::string path = "./test_pe_more_end.bin";
     std::vector<std::uint8_t> bytes = {0x00, 0x11, 0x22, 0x33, 0x44};
     ASSERT_TRUE(write_minimal_pe_file(path, bytes));
 
