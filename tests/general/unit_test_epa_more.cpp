@@ -30,8 +30,8 @@ TEST(EpaExtra, DegenerateFaceHandled)
     Simplex s;
     s = { Vector3f{0.01f, 0.f, 0.f}, Vector3f{0.02f, 0.f, 0.f}, Vector3f{0.03f, 0.f, 0.f}, Vector3f{0.0f, 0.0f, 0.01f} };
 
-    const DegenerateCollider a;
-    const DegenerateCollider b;
+    constexpr DegenerateCollider a;
+    constexpr DegenerateCollider b;
     Epa::Params params;
     params.max_iterations = 4;
     params.tolerance = 1e-6f;

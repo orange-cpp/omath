@@ -12,12 +12,12 @@ using namespace omath;
 
 TEST(Vector3More, ConstructorsAndEquality)
 {
-    const Vector3<float> a;
+    constexpr Vector3<float> a;
     EXPECT_EQ(a.x, 0.f);
     EXPECT_EQ(a.y, 0.f);
     EXPECT_EQ(a.z, 0.f);
 
-    const Vector3<float> b{1.f, 2.f, 3.f};
+    constexpr Vector3<float> b{1.f, 2.f, 3.f};
     EXPECT_EQ(b.x, 1.f);
     EXPECT_EQ(b.y, 2.f);
     EXPECT_EQ(b.z, 3.f);
@@ -28,8 +28,8 @@ TEST(Vector3More, ConstructorsAndEquality)
 
 TEST(Vector3More, ArithmeticAndDotCross)
 {
-    const Vector3<float> a{1.f, 0.f, 0.f};
-    const Vector3<float> b{0.f, 1.f, 0.f};
+    constexpr Vector3<float> a{1.f, 0.f, 0.f};
+    constexpr Vector3<float> b{0.f, 1.f, 0.f};
     const auto c = a + b;
     constexpr Vector3<float> expect_c{1.f,1.f,0.f};
     EXPECT_EQ(c, expect_c);
@@ -53,13 +53,13 @@ TEST(Vector3More, ArithmeticAndDotCross)
 
 TEST(Vector3More, NormalizationEdgeCases)
 {
-    const Vector3<double> z{0.0,0.0,0.0};
+    constexpr Vector3<double> z{0.0,0.0,0.0};
     const auto zn = z.normalized();
     EXPECT_DOUBLE_EQ(zn.x, 0.0);
     EXPECT_DOUBLE_EQ(zn.y, 0.0);
     EXPECT_DOUBLE_EQ(zn.z, 0.0);
 
-    const Vector3<double> v{3.0,4.0,0.0};
+    constexpr Vector3<double> v{3.0,4.0,0.0};
     const auto vn = v.normalized();
     EXPECT_NEAR(vn.x, 0.6, 1e-12);
     EXPECT_NEAR(vn.y, 0.8, 1e-12);

@@ -17,7 +17,7 @@ static std::vector<std::uint8_t> make_fake_module(std::uint32_t base_of_code,
 
     // DOS header: e_magic at 0, e_lfanew at offset 0x3C
     buf[0] = 0x4D; buf[1] = 0x5A; // 'M' 'Z' (little-endian 0x5A4D)
-    const std::uint32_t le = e_lfanew;
+    constexpr std::uint32_t le = e_lfanew;
     std::memcpy(buf.data() + 0x3C, &le, sizeof(le));
 
     // NT signature at e_lfanew

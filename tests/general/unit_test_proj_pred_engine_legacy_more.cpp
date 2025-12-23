@@ -32,8 +32,8 @@ struct FakeEngineZeroGravity
 
 TEST(ProjPredLegacyMore, ZeroGravityUsesDirectPitchAndReturnsViewpoint)
 {
-    const Projectile proj{ .m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 10.f, .m_gravity_scale = 0.f };
-    const Target target{ .m_origin = {100.f, 0.f, 0.f}, .m_velocity = {0.f,0.f,0.f}, .m_is_airborne = false };
+    constexpr Projectile proj{ .m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 10.f, .m_gravity_scale = 0.f };
+    constexpr Target target{ .m_origin = {100.f, 0.f, 0.f}, .m_velocity = {0.f,0.f,0.f}, .m_is_airborne = false };
 
     using Engine = omath::projectile_prediction::ProjPredEngineLegacy<FakeEngineZeroGravity>;
     const Engine engine(9.8f, 0.1f, 5.f, 1e-3f);
@@ -61,8 +61,8 @@ struct FakeEngineNoSolution
 TEST(ProjPredLegacyMore, NoSolutionRootReturnsNullopt)
 {
     // Very slow projectile and large distance -> quadratic root negative
-    const Projectile proj{ .m_origin = {0.f,0.f,0.f}, .m_launch_speed = 1.f, .m_gravity_scale = 1.f };
-    const Target target{ .m_origin = {10000.f, 0.f, 0.f}, .m_velocity = {0.f,0.f,0.f}, .m_is_airborne = false };
+    constexpr Projectile proj{ .m_origin = {0.f,0.f,0.f}, .m_launch_speed = 1.f, .m_gravity_scale = 1.f };
+    constexpr Target target{ .m_origin = {10000.f, 0.f, 0.f}, .m_velocity = {0.f,0.f,0.f}, .m_is_airborne = false };
 
     using Engine = omath::projectile_prediction::ProjPredEngineLegacy<FakeEngineNoSolution>;
     const Engine engine(9.8f, 0.5f, 2.f, 1.f);
@@ -89,8 +89,8 @@ struct FakeEngineAngleButMiss
 
 TEST(ProjPredLegacyMore, AngleComputedButMissReturnsNullopt)
 {
-    const Projectile proj{ .m_origin = {0.f,0.f,0.f}, .m_launch_speed = 100.f, .m_gravity_scale = 1.f };
-    const Target target{ .m_origin = {10.f, 0.f, 0.f}, .m_velocity = {0.f,0.f,0.f}, .m_is_airborne = false };
+    constexpr Projectile proj{ .m_origin = {0.f,0.f,0.f}, .m_launch_speed = 100.f, .m_gravity_scale = 1.f };
+    constexpr Target target{ .m_origin = {10.f, 0.f, 0.f}, .m_velocity = {0.f,0.f,0.f}, .m_is_airborne = false };
 
     using Engine = omath::projectile_prediction::ProjPredEngineLegacy<FakeEngineAngleButMiss>;
     const Engine engine(9.8f, 0.1f, 1.f, 0.1f);

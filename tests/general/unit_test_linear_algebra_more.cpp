@@ -40,7 +40,7 @@ TEST(LinearAlgebraMore, TriangleRectangularAndDegenerate)
     EXPECT_TRUE(t.is_rectangular());
 
     // Degenerate: all points same
-    const Triangle<Vector3<float>> d{v1,v1,v1};
+    constexpr Triangle<Vector3<float>> d{v1,v1,v1};
     EXPECT_NEAR(d.side_a_length(), 0.f, 1e-6f);
     EXPECT_NEAR(d.side_b_length(), 0.f, 1e-6f);
     EXPECT_NEAR(d.hypot(), 0.f, 1e-6f);

@@ -13,7 +13,7 @@ using namespace omath;
 
 TEST(Vector4More, ConstructorsAndClamp)
 {
-    const Vector4<float> a;
+    constexpr Vector4<float> a;
     EXPECT_EQ(a.x, 0.f);
     EXPECT_EQ(a.y, 0.f);
     EXPECT_EQ(a.z, 0.f);
@@ -28,8 +28,8 @@ TEST(Vector4More, ConstructorsAndClamp)
 
 TEST(Vector4More, ComparisonsAndHashFormatter)
 {
-    const Vector4<int> a{1,2,3,4};
-    const Vector4<int> b{1,2,3,5};
+    constexpr Vector4<int> a{1,2,3,4};
+    constexpr Vector4<int> b{1,2,3,5};
     EXPECT_NE(a, b);
 
     // exercise to_string via formatting if available by converting via std::format

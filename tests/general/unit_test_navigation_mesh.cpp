@@ -27,7 +27,7 @@ TEST(NavigationMeshTests, SerializeDeserializeRoundTrip)
 TEST(NavigationMeshTests, GetClosestVertexWhenEmpty)
 {
     const NavigationMesh nav;
-    const Vector3<float> p{5.f,5.f,5.f};
+    constexpr Vector3<float> p{5.f,5.f,5.f};
     const auto res = nav.get_closest_vertex(p);
     EXPECT_FALSE(res.has_value());
 }

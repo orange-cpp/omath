@@ -47,7 +47,7 @@ TEST(LinearAlgebraMore2, Vector4NonInlinedHelpers)
     EXPECT_GE(v.x, 0.f);
     EXPECT_LE(v.z, 2.5f);
 
-    const Vector4<float> shorter{0.1f,0.1f,0.1f,0.1f};
+    constexpr Vector4<float> shorter{0.1f,0.1f,0.1f,0.1f};
     EXPECT_TRUE(shorter < v);
     EXPECT_FALSE(v < shorter);
 }
