@@ -23,7 +23,7 @@ TEST(SimplexExtra, HandleLine_CollinearProducesPerp)
     EXPECT_TRUE(std::isfinite(dir.x));
     EXPECT_TRUE(std::isfinite(dir.y));
     EXPECT_TRUE(std::isfinite(dir.z));
-    auto zero = Vector3<float>{0.f, 0.f, 0.f};
+    const auto zero = Vector3<float>{0.f, 0.f, 0.f};
     EXPECT_FALSE(dir == zero);
 
     // Ensure direction is (approximately) perpendicular to ab
@@ -94,11 +94,11 @@ TEST(SimplexMore, PushFrontAndAccess)
     s.push_front(omath::Vector3<float>{3.f,0.f,0.f});
 
     EXPECT_EQ(s.size(), 3u);
-    omath::Vector3<float> exp_front{3.f,0.f,0.f};
-    omath::Vector3<float> exp_back{1.f,0.f,0.f};
+    const omath::Vector3<float> exp_front{3.f,0.f,0.f};
+    const omath::Vector3<float> exp_back{1.f,0.f,0.f};
     EXPECT_TRUE(s.front() == exp_front);
     EXPECT_TRUE(s.back() == exp_back);
-    auto d = s.data();
+    const auto d = s.data();
     EXPECT_TRUE(d[0] == exp_front);
 }
 

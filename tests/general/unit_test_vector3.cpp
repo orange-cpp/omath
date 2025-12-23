@@ -12,39 +12,39 @@ using namespace omath;
 
 TEST(Vector3More, ConstructorsAndEquality)
 {
-    Vector3<float> a;
+    const Vector3<float> a;
     EXPECT_EQ(a.x, 0.f);
     EXPECT_EQ(a.y, 0.f);
     EXPECT_EQ(a.z, 0.f);
 
-    Vector3<float> b{1.f, 2.f, 3.f};
+    const Vector3<float> b{1.f, 2.f, 3.f};
     EXPECT_EQ(b.x, 1.f);
     EXPECT_EQ(b.y, 2.f);
     EXPECT_EQ(b.z, 3.f);
 
-    Vector3<float> c = b;
+    const Vector3<float> c = b;
     EXPECT_EQ(c, b);
 }
 
 TEST(Vector3More, ArithmeticAndDotCross)
 {
-    Vector3<float> a{1.f, 0.f, 0.f};
-    Vector3<float> b{0.f, 1.f, 0.f};
-    auto c = a + b;
+    const Vector3<float> a{1.f, 0.f, 0.f};
+    const Vector3<float> b{0.f, 1.f, 0.f};
+    const auto c = a + b;
     constexpr Vector3<float> expect_c{1.f,1.f,0.f};
     EXPECT_EQ(c, expect_c);
 
-    auto d = a - b;
+    const auto d = a - b;
     constexpr Vector3<float> expect_d{1.f,-1.f,0.f};
     EXPECT_EQ(d, expect_d);
 
-    auto e = a * 2.f;
+    const auto e = a * 2.f;
     constexpr Vector3<float> expect_e{2.f,0.f,0.f};
     EXPECT_EQ(e, expect_e);
 
     EXPECT_FLOAT_EQ(a.dot(b), 0.f);
     // manual cross product check
-    auto cr = Vector3<float>{ a.y * b.z - a.z * b.y,
+    const auto cr = Vector3<float>{ a.y * b.z - a.z * b.y,
                               a.z * b.x - a.x * b.z,
                               a.x * b.y - a.y * b.x };
     constexpr Vector3<float> expect_cr{0.f,0.f,1.f};
@@ -53,14 +53,14 @@ TEST(Vector3More, ArithmeticAndDotCross)
 
 TEST(Vector3More, NormalizationEdgeCases)
 {
-    Vector3<double> z{0.0,0.0,0.0};
-    auto zn = z.normalized();
+    const Vector3<double> z{0.0,0.0,0.0};
+    const auto zn = z.normalized();
     EXPECT_DOUBLE_EQ(zn.x, 0.0);
     EXPECT_DOUBLE_EQ(zn.y, 0.0);
     EXPECT_DOUBLE_EQ(zn.z, 0.0);
 
-    Vector3<double> v{3.0,4.0,0.0};
-    auto vn = v.normalized();
+    const Vector3<double> v{3.0,4.0,0.0};
+    const auto vn = v.normalized();
     EXPECT_NEAR(vn.x, 0.6, 1e-12);
     EXPECT_NEAR(vn.y, 0.8, 1e-12);
 }

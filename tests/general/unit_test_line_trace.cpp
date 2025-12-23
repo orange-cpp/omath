@@ -19,9 +19,9 @@ namespace
     // -----------------------------------------------------------------------------
     // Constants & helpers
     // -----------------------------------------------------------------------------
-    constexpr float kTol = 1e-5f;
+    constexpr float k_tol = 1e-5f;
 
-    bool VecEqual(const Vec3& a, const Vec3& b, float tol = kTol)
+    bool vec_equal(const Vec3& a, const Vec3& b, const float tol = k_tol)
     {
         return std::fabs(a.x - b.x) < tol &&
                std::fabs(a.y - b.y) < tol &&
@@ -58,8 +58,8 @@ namespace
 
     TEST_P(CanTraceLineParam, VariousRays)
     {
-        const auto& p = GetParam();
-        EXPECT_EQ(LineTracer::can_trace_line(p.ray, triangle), p.expected_clear);
+        const auto& [ray, expected_clear] = GetParam();
+        EXPECT_EQ(LineTracer::can_trace_line(ray, triangle), expected_clear);
     }
 
     INSTANTIATE_TEST_SUITE_P(
@@ -85,8 +85,8 @@ namespace
         constexpr Vec3 expected{0.3f, 0.3f, 0.f};
 
         const Vec3 hit = LineTracer::get_ray_hit_point(ray, triangle);
-        ASSERT_FALSE(VecEqual(hit, ray.end));
-        EXPECT_TRUE(VecEqual(hit, expected));
+        ASSERT_FALSE(vec_equal(hit, ray.end));
+        EXPECT_TRUE(vec_equal(hit, expected));
     }
 
     // -----------------------------------------------------------------------------

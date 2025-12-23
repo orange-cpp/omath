@@ -31,16 +31,16 @@ TEST(Vector3ScalarOps, InPlaceScalarOperators)
 
 TEST(Vector4BinaryOps, ElementWiseMulDiv)
 {
-    Vector4<float> a{2.f, 4.f, 6.f, 8.f};
-    Vector4<float> b{1.f, 2.f, 3.f, 4.f};
+    constexpr Vector4<float> a{2.f, 4.f, 6.f, 8.f};
+    constexpr Vector4<float> b{1.f, 2.f, 3.f, 4.f};
 
-    auto m = a * b;
+    constexpr auto m = a * b;
     EXPECT_FLOAT_EQ(m.x, 2.f);
     EXPECT_FLOAT_EQ(m.y, 8.f);
     EXPECT_FLOAT_EQ(m.z, 18.f);
     EXPECT_FLOAT_EQ(m.w, 32.f);
 
-    auto d = a / b;
+    constexpr auto d = a / b;
     EXPECT_FLOAT_EQ(d.x, 2.f);
     EXPECT_FLOAT_EQ(d.y, 2.f);
     EXPECT_FLOAT_EQ(d.z, 2.f);

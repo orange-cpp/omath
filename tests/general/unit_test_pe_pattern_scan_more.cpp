@@ -24,7 +24,7 @@ TEST(unit_test_pe_pattern_scan_more, InvalidDosHeader)
     data[0] = 'N'; data[1] = 'Z';
     ASSERT_TRUE(write_bytes(path, data));
 
-    auto res = PePatternScanner::scan_for_pattern_in_file(path, "55 8B EC", ".text");
+    const auto res = PePatternScanner::scan_for_pattern_in_file(path, "55 8B EC", ".text");
     EXPECT_FALSE(res.has_value());
 }
 
@@ -35,13 +35,13 @@ TEST(unit_test_pe_pattern_scan_more, InvalidNtSignature)
     // valid DOS header
     data[0] = 'M'; data[1] = 'Z';
     // point e_lfanew to 0x80
-    std::uint32_t e_lfanew = 0x80;
+    const std::uint32_t e_lfanew = 0x80;
     std::memcpy(data.data()+0x3C, &e_lfanew, sizeof(e_lfanew));
     // write garbage at e_lfanew (not 'PE\0\0')
     data[e_lfanew + 0] = 'X'; data[e_lfanew + 1] = 'Y'; data[e_lfanew + 2] = 'Z'; data[e_lfanew + 3] = 'W';
     ASSERT_TRUE(write_bytes(path, data));
 
-    auto res = PePatternScanner::scan_for_pattern_in_file(path, "55 8B EC", ".text");
+    const auto res = PePatternScanner::scan_for_pattern_in_file(path, "55 8B EC", ".text");
     EXPECT_FALSE(res.has_value());
 }
 
@@ -89,10 +89,10 @@ TEST(unit_test_pe_pattern_scan_more, LoadedModuleScanFinds)
     const std::uint32_t bufsize = 0x400 + size_code;
     std::vector<std::uint8_t> buf(bufsize, 0);
     // DOS header
-    auto dos = reinterpret_cast<DosHeader*>(buf.data());
+    const auto dos = reinterpret_cast<DosHeader*>(buf.data());
     dos->e_magic = 0x5A4D; dos->e_lfanew = 0x80;
     // NT headers
-    auto nt = reinterpret_cast<ImageNtHeadersX64*>(buf.data() + dos->e_lfanew);
+    const auto nt = reinterpret_cast<ImageNtHeadersX64*>(buf.data() + dos->e_lfanew);
     nt->signature = 0x4550; // 'PE\0\0'
     nt->file_header.machine = 0x8664; nt->file_header.num_sections = 1;
     nt->optional_header.magic = 0x020B; // x64
@@ -102,6 +102,6 @@ TEST(unit_test_pe_pattern_scan_more, LoadedModuleScanFinds)
     // place code at base_of_code
     std::memcpy(buf.data() + base_of_code, pattern_bytes.data(), pattern_bytes.size());
 
-    auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE AD BE EF");
+    const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE AD BE EF");
     EXPECT_TRUE(res.has_value());
 }

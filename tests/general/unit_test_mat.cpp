@@ -154,12 +154,12 @@ TEST_F(UnitTestMat, AssignmentOperator_Move)
 // Test static methods
 TEST_F(UnitTestMat, StaticMethod_ToScreenMat)
 {
-    Mat<4, 4> screenMat = Mat<4, 4>::to_screen_mat(800.0f, 600.0f);
-    EXPECT_FLOAT_EQ(screenMat.at(0, 0), 400.0f);
-    EXPECT_FLOAT_EQ(screenMat.at(1, 1), -300.0f);
-    EXPECT_FLOAT_EQ(screenMat.at(3, 0), 400.0f);
-    EXPECT_FLOAT_EQ(screenMat.at(3, 1), 300.0f);
-    EXPECT_FLOAT_EQ(screenMat.at(3, 3), 1.0f);
+    Mat<4, 4> screen_mat = Mat<4, 4>::to_screen_mat(800.0f, 600.0f);
+    EXPECT_FLOAT_EQ(screen_mat.at(0, 0), 400.0f);
+    EXPECT_FLOAT_EQ(screen_mat.at(1, 1), -300.0f);
+    EXPECT_FLOAT_EQ(screen_mat.at(3, 0), 400.0f);
+    EXPECT_FLOAT_EQ(screen_mat.at(3, 1), 300.0f);
+    EXPECT_FLOAT_EQ(screen_mat.at(3, 3), 1.0f);
 }
 
 
@@ -220,8 +220,8 @@ TEST(UnitTestMatStandalone, Equanity)
     constexpr omath::Vector3<float> left_handed = {0, 2, 10};
     constexpr omath::Vector3<float> right_handed = {0, 2, -10};
 
-    auto proj_left_handed = omath::mat_perspective_left_handed(90.f, 16.f / 9.f, 0.1, 1000);
-    auto proj_right_handed = omath::mat_perspective_right_handed(90.f, 16.f / 9.f, 0.1, 1000);
+    const auto proj_left_handed = omath::mat_perspective_left_handed(90.f, 16.f / 9.f, 0.1, 1000);
+    const auto proj_right_handed = omath::mat_perspective_right_handed(90.f, 16.f / 9.f, 0.1, 1000);
 
     auto ndc_left_handed = proj_left_handed * omath::mat_column_from_vector(left_handed);
     auto ndc_right_handed = proj_right_handed * omath::mat_column_from_vector(right_handed);
@@ -233,7 +233,7 @@ TEST(UnitTestMatStandalone, Equanity)
 }
 TEST(UnitTestMatStandalone, MatPerspectiveLeftHanded)
 {
-    auto perspective_proj = mat_perspective_left_handed(90.f, 16.f/9.f, 0.1f, 1000.f);
+    const auto perspective_proj = mat_perspective_left_handed(90.f, 16.f/9.f, 0.1f, 1000.f);
     auto projected = perspective_proj
                              * mat_column_from_vector<float>({0, 0, 0.1001});
 

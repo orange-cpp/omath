@@ -25,7 +25,7 @@ namespace
 
 TEST(UnitTestAngle, DefaultConstructor_IsZeroDegrees)
 {
-    Deg a; // default ctor
+    const Deg a; // default ctor
     EXPECT_FLOAT_EQ(*a, 0.0f);
     EXPECT_FLOAT_EQ(a.as_degrees(), 0.0f);
 }

@@ -17,7 +17,7 @@ static std::vector<std::uint8_t> make_fake_module(std::uint32_t base_of_code,
 
     // DOS header: e_magic at 0, e_lfanew at offset 0x3C
     buf[0] = 0x4D; buf[1] = 0x5A; // 'M' 'Z' (little-endian 0x5A4D)
-    std::uint32_t le = e_lfanew;
+    const std::uint32_t le = e_lfanew;
     std::memcpy(buf.data() + 0x3C, &le, sizeof(le));
 
     // NT signature at e_lfanew
@@ -45,25 +45,25 @@ static std::vector<std::uint8_t> make_fake_module(std::uint32_t base_of_code,
 
 TEST(PePatternScanLoaded, FindsPatternAtBase)
 {
-    std::vector<std::uint8_t> code = {0x90, 0x01, 0x02, 0x03, 0x04};
+    const std::vector<std::uint8_t> code = {0x90, 0x01, 0x02, 0x03, 0x04};
     auto buf = make_fake_module(0x200, static_cast<std::uint32_t>(code.size()), code);
 
-    auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "90 01 02");
+    const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "90 01 02");
     ASSERT_TRUE(res.has_value());
     // address should point somewhere in our buffer; check offset
-    uintptr_t addr = res.value();
-    uintptr_t base = reinterpret_cast<uintptr_t>(buf.data());
+    const uintptr_t addr = res.value();
+    const uintptr_t base = reinterpret_cast<uintptr_t>(buf.data());
     EXPECT_EQ(addr - base, 0x200u);
 }
 
 TEST(PePatternScanLoaded, WildcardMatches)
 {
-    std::vector<std::uint8_t> code = {0xDE, 0xAD, 0xBE, 0xEF};
+    const std::vector<std::uint8_t> code = {0xDE, 0xAD, 0xBE, 0xEF};
     auto buf = make_fake_module(0x300, static_cast<std::uint32_t>(code.size()), code);
 
-    auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE ?? BE");
+    const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE ?? BE");
     ASSERT_TRUE(res.has_value());
-    uintptr_t addr = res.value();
-    uintptr_t base = reinterpret_cast<uintptr_t>(buf.data());
+    const uintptr_t addr = res.value();
+    const uintptr_t base = reinterpret_cast<uintptr_t>(buf.data());
     EXPECT_EQ(addr - base, 0x300u);
 }
