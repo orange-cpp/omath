@@ -158,4 +158,4 @@ if (auto aim = solver.maybe_calculate_aim_point(proj, tgt)) {
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 24 Dec 2025*

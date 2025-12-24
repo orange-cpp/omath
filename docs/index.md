@@ -230,7 +230,7 @@ OMath is open source and welcomes contributions! See [CONTRIBUTING.md](https://g
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 24 Dec 2025*
 
 <!----------------------------------{ Images }--------------------------------->
 [APEX Preview]: images/showcase/apex.png

@@ -67,4 +67,4 @@ auto aim = engine->maybe_calculate_aim_point(projectile, tgt);
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 24 Dec 2025*

@@ -297,4 +297,4 @@ static Vector2   from_im_vec2(const ImVec2&) noexcept;
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 24 Dec 2025*

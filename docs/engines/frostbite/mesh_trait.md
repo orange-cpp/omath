@@ -116,4 +116,4 @@ namespace omath::frostbite_engine {
 
 ---
 
-*Last updated: 13 Nov 2025*
+*Last updated: 24 Dec 2025*

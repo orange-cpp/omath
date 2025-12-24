@@ -162,4 +162,4 @@ REQUIRE(C::from_degrees(25).as_degrees()   == 20.f);
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 24 Dec 2025*

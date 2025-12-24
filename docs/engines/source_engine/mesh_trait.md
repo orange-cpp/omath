@@ -179,4 +179,4 @@ primitives::Mesh<Mat4X4, ViewAngles, MeshTrait, float> verbose_mesh(vbo, vao);
 
 ---
 
-*Last updated: 13 Nov 2025*
+*Last updated: 24 Dec 2025*

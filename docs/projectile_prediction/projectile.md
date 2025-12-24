@@ -93,4 +93,4 @@ If `m_gravity_scale == 0`, engines usually fall back to straight-line (no-drop) 
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 24 Dec 2025*

@@ -139,4 +139,4 @@ Working at this level is inherently unsafe; be deliberate:
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 24 Dec 2025*

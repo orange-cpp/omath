@@ -152,4 +152,4 @@ auto res = PePatternScanner::scan_for_pattern_in_file(
 
 ---
 
-*Last updated: 31 Oct 2025*
+*Last updated: 24 Dec 2025*

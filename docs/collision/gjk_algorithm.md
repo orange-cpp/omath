@@ -213,4 +213,4 @@ concept GjkVector = requires(const V& a, const V& b) {
 
 ---
 
-*Last updated: 13 Nov 2025*
+*Last updated: 24 Dec 2025*

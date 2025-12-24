@@ -250,4 +250,4 @@ static Vector4<float> from_im_vec4(const ImVec4&) noexcept; // see note for pref
 
 ---
 
-*Last updated: 31 Oct 2025*
+*Last updated: 24 Dec 2025*
