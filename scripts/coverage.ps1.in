@@ -1,0 +1,132 @@
+# scripts/coverage.ps1.in
+# Windows coverage script using OpenCppCoverage
+
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$SourceDir,
+    
+    [Parameter(Mandatory=$true)]
+    [string]$BinaryDir,
+    
+    [string]$TestBinary = "",
+    [switch]$Cobertura,
+    [switch]$Html
+)
+
+$ErrorActionPreference = "Stop"
+
+# CMake-injected variables
+$LCOV_IGNORE_ERRORS = '@LCOV_IGNORE_ERRORS@'
+
+# Resolve paths
+$SourceDir = Resolve-Path $SourceDir
+$BinaryDir = Resolve-Path $BinaryDir
+
+Write-Host "[*] Source directory: $SourceDir" -ForegroundColor Cyan
+Write-Host "[*] Binary directory: $BinaryDir" -ForegroundColor Cyan
+
+# Find test binary
+if (-not $TestBinary) {
+    $searchPaths = @(
+        "$BinaryDir\Debug\unit_tests.exe",
+        "$BinaryDir\Release\unit_tests.exe",
+        "$BinaryDir\unit_tests.exe",
+        "$SourceDir\out\Debug\unit_tests.exe",
+        "$SourceDir\out\Release\unit_tests.exe"
+    )
+    
+    foreach ($path in $searchPaths) {
+        if (Test-Path $path) {
+            $TestBinary = $path
+            break
+        }
+    }
+}
+
+if (-not $TestBinary -or -not (Test-Path $TestBinary)) {
+    Write-Error "unit_tests.exe not found. Searched: $($searchPaths -join ', ')"
+    exit 1
+}
+
+$TestBinary = Resolve-Path $TestBinary
+Write-Host "[*] Test binary: $TestBinary" -ForegroundColor Cyan
+
+# Check for OpenCppCoverage
+$opencppcov = Get-Command "OpenCppCoverage" -ErrorAction SilentlyContinue
+if (-not $opencppcov) {
+    # Try common installation paths
+    $possiblePaths = @(
+        "$env:ProgramFiles\OpenCppCoverage\OpenCppCoverage.exe",
+        "${env:ProgramFiles(x86)}\OpenCppCoverage\OpenCppCoverage.exe",
+        "$env:LOCALAPPDATA\Programs\OpenCppCoverage\OpenCppCoverage.exe"
+    )
+    
+    foreach ($path in $possiblePaths) {
+        if (Test-Path $path) {
+            $opencppcov = Get-Item $path
+            break
+        }
+    }
+}
+
+if (-not $opencppcov) {
+    Write-Host @"
+OpenCppCoverage not found!
+
+Install it from: https://github.com/OpenCppCoverage/OpenCppCoverage/releases
+
+Or via Chocolatey:
+    choco install opencppcoverage
+
+Or via winget:
+    winget install OpenCppCoverage.OpenCppCoverage
+"@ -ForegroundColor Red
+    exit 1
+}
+
+$OpenCppCoveragePath = if ($opencppcov.Source) { $opencppcov.Source } else { $opencppcov.FullName }
+Write-Host "[*] Using OpenCppCoverage: $OpenCppCoveragePath" -ForegroundColor Cyan
+
+# Create output directory
+$CoverageDir = Join-Path $BinaryDir "coverage"
+if (-not (Test-Path $CoverageDir)) {
+    New-Item -ItemType Directory -Path $CoverageDir | Out-Null
+}
+
+# Build OpenCppCoverage arguments
+$coverageArgs = @(
+    "--sources", "$SourceDir\include",
+    "--sources", "$SourceDir\source",
+    "--excluded_sources", "*\tests\*",
+    "--excluded_sources", "*\googletest\*",
+    "--excluded_sources", "*\gtest\*",
+    "--excluded_sources", "*\_deps\*",
+    "--excluded_sources", "*\vcpkg_installed\*",
+    "--export_type", "html:$CoverageDir",
+    "--export_type", "cobertura:$CoverageDir\coverage.xml",
+    "--cover_children",
+    "--"
+)
+
+Write-Host "[*] Running OpenCppCoverage..." -ForegroundColor Cyan
+Write-Host "    Command: $OpenCppCoveragePath $($coverageArgs -join ' ') $TestBinary"
+
+& $OpenCppCoveragePath @coverageArgs $TestBinary
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "OpenCppCoverage exited with code $LASTEXITCODE (tests may have failed)"
+}
+
+# Check outputs
+$htmlIndex = Join-Path $CoverageDir "index.html"
+$coberturaXml = Join-Path $CoverageDir "coverage.xml"
+
+if (Test-Path $htmlIndex) {
+    Write-Host "[*] HTML coverage report: $htmlIndex" -ForegroundColor Green
+}
+
+if (Test-Path $coberturaXml) {
+    Write-Host "[*] Cobertura XML report: $coberturaXml" -ForegroundColor Green
+}
+
+Write-Host "[*] Coverage collection complete!" -ForegroundColor Green
