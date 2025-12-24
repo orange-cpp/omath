@@ -5,6 +5,7 @@ project(omath VERSION ${OMATH_VERSION} LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 include(CheckCXXCompilerFlag)
+include(cmake/Coverage.cmake)
 
 if (MSVC)
     check_cxx_compiler_flag("/arch:AVX2" COMPILER_SUPPORTS_AVX2)
@@ -23,7 +24,7 @@ option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OF
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" ON)
-
+option(OMATH_ENABLE_COVERAGE "Enable coverage" OFF)
 
 if (VCPKG_MANIFEST_FEATURES)
     foreach (omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
@@ -145,6 +146,9 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 if (OMATH_BUILD_TESTS)
     add_subdirectory(tests)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_BUILD_TESTS)
+    if(OMATH_ENABLE_COVERAGE)
+        omath_setup_coverage(${PROJECT_NAME})
+    endif()
 endif ()
 
 if (OMATH_BUILD_BENCHMARK)
