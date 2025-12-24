@@ -139,12 +139,10 @@ namespace omath::collision
         [[nodiscard]]
         static constexpr V any_perp(const V& v)
         {
-            // If v is not parallel to x-axis, cross with x works
-            if (const auto d = v.cross(V{1, 0, 0}); !near_zero(d))
-                return d;
-            
-            // v is parallel to x-axis (v = (a,0,0)), so v × (0,1,0) = (0,0,a) ≠ 0
-            return v.cross(V{0, 1, 0});
+            for (const auto& dir : {V{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})
+                if (const auto d = v.cross(dir); !near_zero(d))
+                    return d;
+            std::unreachable();
         }
 
         [[nodiscard]]
