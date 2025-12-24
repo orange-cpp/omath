@@ -26,7 +26,7 @@ TEST(SimplexTest, HandleLineCollinearWithXAxis)
     simplex.push_front(Vec3{-1, 0, 0});
     
     Vec3 direction{};
-    simplex.handle(direction);
+    std::ignore = simplex.handle(direction);
     
     EXPECT_NEAR(direction.x, 0.f, 1e-6f);
 }
