@@ -21,6 +21,11 @@ else() # GTest is being linked as vcpkg package
     target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main omath::omath)
 endif()
 
+if(OMATH_ENABLE_COVERAGE)
+    include(${CMAKE_SOURCE_DIR}/cmake/Coverage.cmake)
+    omath_setup_coverage(${PROJECT_NAME})
+endif()
+
 # Skip test discovery for Android/iOS builds or when cross-compiling - binaries cannot run on host
 if (NOT (ANDROID OR IOS OR EMSCRIPTEN))
     gtest_discover_tests(${PROJECT_NAME})
