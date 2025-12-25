@@ -5,7 +5,9 @@ project(omath VERSION ${OMATH_VERSION} LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 include(CheckCXXCompilerFlag)
+
 include(cmake/Coverage.cmake)
+include(cmake/Valgrind.cmake)
 
 if (MSVC)
     check_cxx_compiler_flag("/arch:AVX2" COMPILER_SUPPORTS_AVX2)
@@ -61,6 +63,8 @@ if (${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: ImGUI integration feature status ${OMATH_IMGUI_INTEGRATION}")
     message(STATUS "[${PROJECT_NAME}]: Legacy features support ${OMATH_ENABLE_LEGACY}")
     message(STATUS "[${PROJECT_NAME}]: Building using vcpkg ${OMATH_BUILD_VIA_VCPKG}")
+    message(STATUS "[${PROJECT_NAME}]: Coverage feature status ${OMATH_ENABLE_COVERAGE}")
+    message(STATUS "[${PROJECT_NAME}]: Valgrind feature status ${OMATH_ENABLE_VALGRIND}")
 endif ()
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
@@ -142,6 +146,7 @@ if(EMSCRIPTEN)
 endif()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+
 
 if (OMATH_BUILD_TESTS)
     add_subdirectory(tests)

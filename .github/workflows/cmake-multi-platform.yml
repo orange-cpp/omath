@@ -145,9 +145,9 @@ jobs:
             cmake-build/build/${{ matrix.preset }}/**/*.log
             ${{ env.VCPKG_ROOT }}/buildtrees/**/*.log
 
-  ##############################################################################
-  # 2)  Windows  –  MSVC / Ninja
-  ##############################################################################
+##############################################################################
+# 2)  Windows  –  MSVC / Ninja
+##############################################################################
   windows-build-and-test:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
@@ -188,7 +188,12 @@ jobs:
 
       - name: Configure (cmake --preset)
         shell: bash
-        run: cmake --preset ${{ matrix.preset }} -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=OFF -DOMATH_ENABLE_COVERAGE=OFF -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+        run: |
+          cmake --preset ${{ matrix.preset }} \
+            -DOMATH_BUILD_TESTS=ON \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DOMATH_ENABLE_COVERAGE=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
 
       - name: Build
         shell: bash
@@ -198,35 +203,121 @@ jobs:
         shell: bash
         run: ./out/Release/unit_tests.exe
 
-      - name: Install OpenCppCoverage with Chocolatey
+      ##########################################################################
+      # Coverage (x64-windows only)
+      ##########################################################################
+      - name: Install LLVM
         if: ${{ matrix.triplet == 'x64-windows' }}
-        run: choco install opencppcoverage -y
+        run: |
+          choco install llvm -y
+
+      - name: Clean Build Directory for Coverage
+        if: ${{ matrix.triplet == 'x64-windows' }}
+        shell: pwsh
+        run: |
+          $buildDir = "cmake-build/build/${{ matrix.preset }}"
+          if (Test-Path $buildDir) {
+            Write-Host "Cleaning build directory to prevent compiler conflict: $buildDir"
+            Remove-Item -Path $buildDir -Recurse -Force
+          }
 
       - name: Build Debug for Coverage
         if: ${{ matrix.triplet == 'x64-windows' }}
         shell: bash
         run: |
           cmake --preset ${{ matrix.preset }} \
+            -DCMAKE_C_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe" \
+            -DCMAKE_CXX_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe" \
+            -DCMAKE_LINKER="C:/Program Files/LLVM/bin/lld-link.exe" \
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
             -DOMATH_ENABLE_COVERAGE=ON \
+            -DOMATH_THREAT_WARNING_AS_ERROR=OFF \
             -DCMAKE_BUILD_TYPE=Debug \
             -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
           cmake --build cmake-build/build/${{ matrix.preset }} --config Debug --target unit_tests omath
 
-      - name: Run Coverage
+      - name: Run Tests (Generates .profraw)
+        if: ${{ matrix.triplet == 'x64-windows' }}
+        shell: pwsh
+        env:
+          LLVM_PROFILE_FILE: "cmake-build/build/${{ matrix.preset }}/unit_tests.profraw"
+        run: |
+          ./out/Debug/unit_tests.exe
+
+      - name: Process Coverage (llvm-profdata & llvm-cov)
         if: ${{ matrix.triplet == 'x64-windows' }}
         shell: pwsh
         run: |
-          $env:Path = "C:\Program Files\OpenCppCoverage;$env:Path"
-          cmake --build cmake-build/build/${{ matrix.preset }} --target coverage --config Debug
-        
-      - name: Upload Coverage
+          $BUILD_DIR = "cmake-build/build/${{ matrix.preset }}"
+          $EXE_PATH = "./out/Debug/unit_tests.exe"
+          
+          # 1. Merge raw profile data (essential step)
+          & "C:/Program Files/LLVM/bin/llvm-profdata.exe" merge `
+            -sparse "$BUILD_DIR/unit_tests.profraw" `
+            -o "$BUILD_DIR/unit_tests.profdata"
+
+          # 2. Export to LCOV format
+          #    NOTE: We explicitly ignore vcpkg_installed and system headers
+          & "C:/Program Files/LLVM/bin/llvm-cov.exe" export "$EXE_PATH" `
+            -instr-profile="$BUILD_DIR/unit_tests.profdata" `
+            -format=lcov `
+            -ignore-filename-regex="vcpkg_installed|external|tests" `
+            > "$BUILD_DIR/lcov.info"
+
+          if (Test-Path "$BUILD_DIR/lcov.info") {
+            Write-Host "✅ LCOV info created at $BUILD_DIR/lcov.info"
+          } else {
+            Write-Error "Failed to create LCOV info"
+            exit 1
+          }
+
+      - name: Install LCOV (for genhtml)
+        if: ${{ matrix.triplet == 'x64-windows' }}
+        run: choco install lcov -y
+
+      - name: Generate HTML Report
+        if: ${{ matrix.triplet == 'x64-windows' }}
+        shell: bash
+        run: |
+          BUILD_DIR="cmake-build/build/${{ matrix.preset }}"
+          LCOV_INFO="${BUILD_DIR}/lcov.info"
+          HTML_DIR="${BUILD_DIR}/coverage-html"
+
+          # Fix paths for genhtml (Perl hates backslashes)
+          sed -i 's|\\|/|g' "${LCOV_INFO}"
+          
+          # Locate genhtml provided by 'choco install lcov'
+          # It is typically in ProgramData/chocolatey/lib/lcov/tools/bin
+          GENHTML=$(find /c/ProgramData/chocolatey -name genhtml -print -quit)
+          
+          if [ -z "$GENHTML" ]; then
+            echo "Error: genhtml executable not found"
+            exit 1
+          fi
+          
+          echo "Using genhtml: $GENHTML"
+          mkdir -p "$HTML_DIR"
+          
+          # Run genhtml
+          # Added --demangle-cpp if your version supports it, otherwise remove it
+          perl "$GENHTML" \
+            "${LCOV_INFO}" \
+            --output-directory "$HTML_DIR" \
+            --title "OMath Coverage Report" \
+            --legend \
+            --show-details \
+            --branch-coverage \
+            --ignore-errors source
+            
+          echo "✅ LCOV HTML report generated at $HTML_DIR"
+
+      - name: Upload Coverage (HTML Report)
         if: ${{ matrix.triplet == 'x64-windows' }}
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report-windows
-          path: cmake-build/build/${{ matrix.preset }}/coverage/
+          name: coverage-html-windows
+          path: cmake-build/build/${{ matrix.preset }}/coverage-html/
 
       - name: Upload logs on failure
         if: ${{ failure() }}
@@ -662,3 +753,61 @@ jobs:
           path: |
             cmake-build/build/${{ matrix.preset }}/**/*.log
             ${{ env.VCPKG_ROOT }}/buildtrees/**/*.log
+
+
+  ##############################################################################
+  # 9)  Valgrind Memory Check
+  ##############################################################################
+  valgrind-memory-check:
+    name: Valgrind Analysis (All Targets)
+    runs-on: ubuntu-latest
+    needs: [linux-build-and-test]
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    steps:
+      - name: Install toolchain
+        shell: bash
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          sudo add-apt-repository -y "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main"
+          sudo apt-get update
+          sudo apt-get install -y git build-essential cmake ninja-build \
+            zip unzip curl pkg-config ca-certificates \
+            clang-21 lld-21 libc++-21-dev libc++abi-21-dev \
+            llvm-21 valgrind libxmu-dev libxi-dev libgl-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+          sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
+          sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: |
+          cmake --preset linux-release-vcpkg \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DOMATH_BUILD_EXAMPLES=OFF \
+            -DOMATH_BUILD_TESTS=ON \
+            -DOMATH_BUILD_BENCHMARK=ON \
+            -DOMATH_ENABLE_VALGRIND=ON \
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;benchmark"
+
+      - name: Build All Targets
+        shell: bash
+        run: cmake --build cmake-build/build/linux-release-vcpkg
+
+      - name: Run Valgrind (All Registered Targets)
+        shell: bash
+        working-directory: cmake-build/build/linux-release-vcpkg
+        run: |
+          cmake --build . --target valgrind_all

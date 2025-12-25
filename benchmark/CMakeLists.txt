@@ -17,3 +17,7 @@ else()
     find_package(benchmark CONFIG REQUIRED) # Benchmark is being linked as vcpkg package
     target_link_libraries(${PROJECT_NAME} PRIVATE benchmark::benchmark omath)
 endif ()
+
+if(OMATH_ENABLE_VALGRIND)
+    omath_setup_valgrind(${PROJECT_NAME})
+endif()
