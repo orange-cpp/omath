@@ -10,7 +10,8 @@ struct DegenerateCollider
 {
     using VectorType = Vector3f;
     // returns furthest point along dir
-    VectorType find_abs_furthest_vertex_position(const VectorType& dir) const noexcept
+    [[nodiscard]]
+    static VectorType find_abs_furthest_vertex_position(const VectorType& dir) noexcept
     {
         // Always return points on a small circle in XY plane so some faces become degenerate
         if (dir.x > 0.5f) return {0.01f, 0.f, 0.f};
