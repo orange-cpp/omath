@@ -6,8 +6,20 @@ function(omath_setup_coverage TARGET_NAME)
         return()
     endif()
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
-        # Apply to ALL configs when coverage is enabled (not just Debug)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND MSVC)
+        target_compile_options(${TARGET_NAME} PRIVATE
+            -fprofile-instr-generate
+            -fcoverage-mapping
+            /Zi
+        )
+        target_link_options(${TARGET_NAME} PRIVATE
+            -fprofile-instr-generate
+            -fcoverage-mapping
+            /DEBUG:FULL
+            /INCREMENTAL:NO
+            /PROFILE
+        )
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
         target_compile_options(${TARGET_NAME} PRIVATE
             -fprofile-instr-generate
             -fcoverage-mapping
@@ -18,7 +30,6 @@ function(omath_setup_coverage TARGET_NAME)
             -fprofile-instr-generate
             -fcoverage-mapping
         )
-
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${TARGET_NAME} PRIVATE
             --coverage
@@ -28,68 +39,22 @@ function(omath_setup_coverage TARGET_NAME)
         target_link_options(${TARGET_NAME} PRIVATE
             --coverage
         )
-
-    elseif(MSVC)
-        target_compile_options(${TARGET_NAME} PRIVATE
-            /Zi
-            /Od
-            /Ob0
-        )
-        target_link_options(${TARGET_NAME} PRIVATE
-            /DEBUG:FULL
-            /INCREMENTAL:NO
-        )
     endif()
 
-    # Create coverage target only once
     if(TARGET coverage)
         return()
     endif()
 
-    if(MSVC OR MINGW)
-        # Windows: OpenCppCoverage
-        find_program(OPENCPPCOVERAGE_EXECUTABLE 
-            NAMES OpenCppCoverage OpenCppCoverage.exe
-            PATHS
-                "$ENV{ProgramFiles}/OpenCppCoverage"
-                "$ENV{ProgramW6432}/OpenCppCoverage"
-                "C:/Program Files/OpenCppCoverage"
-            DOC "Path to OpenCppCoverage executable"
-        )
-
-        if(NOT OPENCPPCOVERAGE_EXECUTABLE)
-            message(WARNING "OpenCppCoverage not found. Install with: choco install opencppcoverage")
-            set(OPENCPPCOVERAGE_EXECUTABLE "C:/Program Files/OpenCppCoverage/OpenCppCoverage.exe")
-        else()
-            message(STATUS "Found OpenCppCoverage: ${OPENCPPCOVERAGE_EXECUTABLE}")
-        endif()
-
-        file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}" COVERAGE_ROOT_PATH)
-        file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/coverage" COVERAGE_OUTPUT_PATH)
-        file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/coverage.xml" COVERAGE_XML_PATH)
-        file(TO_NATIVE_PATH "${OPENCPPCOVERAGE_EXECUTABLE}" OPENCPPCOVERAGE_NATIVE)
-
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND MSVC)
+        message(STATUS "MSVC detected: Use VS Code Coverage from CI workflow")
         add_custom_target(coverage
             DEPENDS unit_tests
-            COMMAND "${OPENCPPCOVERAGE_NATIVE}"
-                --verbose
-                --sources "${COVERAGE_ROOT_PATH}"
-                --modules "${COVERAGE_ROOT_PATH}"
-                --excluded_sources "*\\tests\\*"
-                --excluded_sources "*\\gtest\\*"
-                --excluded_sources "*\\googletest\\*"
-                --excluded_sources "*\\_deps\\*"
-                --excluded_sources "*\\vcpkg_installed\\*"
-                --export_type "html:${COVERAGE_OUTPUT_PATH}"
-                --export_type "cobertura:${COVERAGE_XML_PATH}"
-                --cover_children
-                -- "$<TARGET_FILE:unit_tests>"
+            COMMAND $<TARGET_FILE:unit_tests>
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-            COMMENT "Running OpenCppCoverage"
+            COMMENT "Running tests for coverage (use VS Code Coverage from CI)"
         )
 
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
-        # Linux/macOS: LLVM coverage via script
         add_custom_target(coverage
             DEPENDS unit_tests
             COMMAND bash "${CMAKE_SOURCE_DIR}/scripts/coverage-llvm.sh"
@@ -102,7 +67,6 @@ function(omath_setup_coverage TARGET_NAME)
         )
 
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        # GCC: lcov/gcov
         add_custom_target(coverage
             DEPENDS unit_tests
             COMMAND $<TARGET_FILE:unit_tests> || true
