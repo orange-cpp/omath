@@ -8,38 +8,50 @@
 class Player final
 {
 public:
-    virtual int foo() {return 1;}
-    virtual int bar() {return 2;}
+    [[nodiscard]] virtual int foo() const
+    {
+        return 1;
+    }
+    [[nodiscard]] virtual int bar() const
+    {
+        return 2;
+    }
     omath::Vector3<float> m_origin{1.f, 2.f, 3.f};
     int m_health{123};
 };
 
-class RevPlayer : omath::rev_eng::InternalReverseEngineeredObject
+class RevPlayer final : omath::rev_eng::InternalReverseEngineeredObject
 {
 public:
-    omath::Vector3<float> get_origin()
+    [[nodiscard]]
+    omath::Vector3<float> get_origin() const
     {
         return get_by_offset<omath::Vector3<float>>(sizeof(std::uintptr_t));
     }
-    int get_health()
+
+    [[nodiscard]]
+    int get_health() const
     {
-        return get_by_offset<int>(sizeof(std::uintptr_t)+sizeof(omath::Vector3<float>));
+        return get_by_offset<int>(sizeof(std::uintptr_t) + sizeof(omath::Vector3<float>));
     }
 
-    int rev_foo()
+    [[nodiscard]]
+    int rev_foo() const
     {
         return call_virtual_method<0, int>();
     }
-    int rev_bar()
+
+    [[nodiscard]]
+    int rev_bar() const
     {
         return call_virtual_method<1, int>();
     }
+
     [[nodiscard]] int rev_bar_const() const
     {
         return call_virtual_method<1, int>();
     }
 };
-
 
 TEST(unit_test_reverse_enineering, read_test)
 {
