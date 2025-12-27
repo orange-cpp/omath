@@ -32,10 +32,8 @@ TEST(EpaInternal, SolveHandlesSmallPolytope)
     params.max_iterations = 16;
     params.tolerance = 1e-6f;
 
-    const auto result = EpaDummy::solve(a, b, s, params);
-
     // Should either return a valid result or gracefully return nullopt
-    if (result)
+    if (const auto result = EpaDummy::solve(a, b, s, params))
     {
         EXPECT_TRUE(std::isfinite(result->depth));
         EXPECT_TRUE(std::isfinite(result->normal.x));

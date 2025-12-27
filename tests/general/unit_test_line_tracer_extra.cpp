@@ -29,9 +29,8 @@ TEST(LineTracerExtra, HitOnEdge)
 {
     constexpr Triangle<Vector3<float>> tri({0,0,0},{1,0,0},{0,1,0});
     constexpr Ray ray{ {0.0f,0.0f,1.f}, {0.0f,0.0f,0.f}, false };
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
     // hitting exact vertex/edge may be considered miss; ensure function handles without crash
-    if (hit != ray.end)
+    if (const auto hit = LineTracer::get_ray_hit_point(ray, tri); hit != ray.end)
     {
         EXPECT_NEAR(hit.x, 0.0f, 1e-6f);
         EXPECT_NEAR(hit.y, 0.0f, 1e-6f);
