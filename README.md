@@ -2,7 +2,7 @@
 
 ![banner](docs/images/logos/omath_logo_macro.png)
 
-![Static Badge](https://img.shields.io/badge/license-libomath-orange)
+![GitHub License](https://img.shields.io/github/license/orange-cpp/omath)
 ![GitHub contributors](https://img.shields.io/github/contributors/orange-cpp/omath)
 ![GitHub top language](https://img.shields.io/github/languages/top/orange-cpp/omath)
 ![GitHub repo size](https://img.shields.io/github/repo-size/orange-cpp/omath)
