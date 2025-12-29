@@ -23,10 +23,15 @@ add_executable(example_glfw3 example_glfw3.cpp)
 set_target_properties(example_glfw3 PROPERTIES CXX_STANDARD 26
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
-
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
 )
 
 find_package(GLEW REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(example_glfw3 PRIVATE omath::omath GLEW::GLEW glfw)
+
+if(OMATH_ENABLE_VALGRIND)
+        omath_setup_valgrind(example_projection_matrix_builder)
+        omath_setup_valgrind(example_signature_scan)
+        omath_setup_valgrind(example_glfw3)
+endif()

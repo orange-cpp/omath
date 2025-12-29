@@ -49,6 +49,13 @@ namespace
     {
         Ray ray;
         bool expected_clear; // true => segment does NOT hit the triangle
+        friend std::ostream& operator<<(std::ostream& os, const TraceCase& tc)
+        {
+            os << "{ RayStart: (" << tc.ray.start.x << ", " << tc.ray.start.y << ", " << tc.ray.start.z << "), "
+               << "RayEnd: (" << tc.ray.end.x << ", " << tc.ray.end.y << ", " << tc.ray.end.z << "), "
+               << "Expected: " << (tc.expected_clear ? "True" : "False") << " }";
+            return os;
+        }
     };
 
     class CanTraceLineParam : public LineTracerFixture,
