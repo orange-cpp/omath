@@ -753,3 +753,61 @@ jobs:
           path: |
             cmake-build/build/${{ matrix.preset }}/**/*.log
             ${{ env.VCPKG_ROOT }}/buildtrees/**/*.log
+
+
+  ##############################################################################
+  # 9)  Valgrind Memory Check
+  ##############################################################################
+  valgrind-memory-check:
+    name: Valgrind Analysis (All Targets)
+    runs-on: ubuntu-latest
+    needs: [linux-build-and-test]
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    steps:
+      - name: Install toolchain
+        shell: bash
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          sudo add-apt-repository -y "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main"
+          sudo apt-get update
+          sudo apt-get install -y git build-essential cmake ninja-build \
+            zip unzip curl pkg-config ca-certificates \
+            clang-21 lld-21 libc++-21-dev libc++abi-21-dev \
+            llvm-21 valgrind libxmu-dev libxi-dev libgl-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+          sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
+          sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: |
+          cmake --preset linux-release-vcpkg \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DOMATH_BUILD_EXAMPLES=OFF \
+            -DOMATH_BUILD_TESTS=ON \
+            -DOMATH_BUILD_BENCHMARK=ON \
+            -DOMATH_ENABLE_VALGRIND=ON \
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;benchmark"
+
+      - name: Build All Targets
+        shell: bash
+        run: cmake --build cmake-build/build/linux-release-vcpkg
+
+      - name: Run Valgrind (All Registered Targets)
+        shell: bash
+        working-directory: cmake-build/build/linux-release-vcpkg
+        run: |
+          cmake --build . --target valgrind_all

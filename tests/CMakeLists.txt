@@ -26,6 +26,10 @@ if(OMATH_ENABLE_COVERAGE)
     omath_setup_coverage(${PROJECT_NAME})
 endif()
 
+if(OMATH_ENABLE_VALGRIND)
+    omath_setup_valgrind(${PROJECT_NAME})
+endif()
+
 # Skip test discovery for Android/iOS builds or when cross-compiling - binaries cannot run on host
 if (NOT (ANDROID OR IOS OR EMSCRIPTEN))
     gtest_discover_tests(${PROJECT_NAME})
