@@ -9,7 +9,7 @@
 
 using Mesh = omath::source_engine::Mesh;
 using Collider = omath::source_engine::MeshCollider;
-using GJK = omath::collision::GjkAlgorithm<Collider>;
+using Gjk = omath::collision::GjkAlgorithm<Collider>;
 using EPA = omath::collision::Epa<Collider>;
 
 TEST(UnitTestEpa, TestCollisionTrue)
@@ -37,15 +37,15 @@ TEST(UnitTestEpa, TestCollisionTrue)
     Collider A(a), B(b);
 
     // GJK
-    auto gjk = GJK::is_collide_with_simplex_info(A, B);
-    ASSERT_TRUE(gjk.hit) << "GJK should report collision";
+    auto [hit, simplex] = Gjk::is_collide_with_simplex_info(A, B);
+    ASSERT_TRUE(hit) << "GJK should report collision";
 
     // EPA
     EPA::Params params;
     auto pool = std::make_shared<std::pmr::monotonic_buffer_resource>(1024);
     params.max_iterations = 64;
     params.tolerance = 1e-4f;
-    auto epa = EPA::solve(A, B, gjk.simplex, params, *pool);
+    auto epa = EPA::solve(A, B, simplex, params, *pool);
     ASSERT_TRUE(epa.has_value()) << "EPA should converge";
 
     // Normal is unit
@@ -70,8 +70,8 @@ TEST(UnitTestEpa, TestCollisionTrue)
 
     Collider B_plus(b_plus), B_minus(b_minus);
 
-    const bool sep_plus = !GJK::is_collide_with_simplex_info(A, B_plus).hit;
-    const bool sep_minus = !GJK::is_collide_with_simplex_info(A, B_minus).hit;
+    const bool sep_plus = !Gjk::is_collide_with_simplex_info(A, B_plus).hit;
+    const bool sep_minus = !Gjk::is_collide_with_simplex_info(A, B_minus).hit;
 
     // Exactly one direction should separate
     EXPECT_NE(sep_plus, sep_minus) << "Exactly one of ±penetration must separate";
@@ -81,12 +81,12 @@ TEST(UnitTestEpa, TestCollisionTrue)
 
     Mesh b_resolved = b;
     b_resolved.set_origin(b_resolved.get_origin() + resolve);
-    EXPECT_FALSE(GJK::is_collide(A, Collider(b_resolved))) << "Resolved position should be non-colliding";
+    EXPECT_FALSE(Gjk::is_collide(A, Collider(b_resolved))) << "Resolved position should be non-colliding";
 
     // Moving the other way should still collide
     Mesh b_wrong = b;
     b_wrong.set_origin(b_wrong.get_origin() - resolve);
-    EXPECT_TRUE(GJK::is_collide(A, Collider(b_wrong)));
+    EXPECT_TRUE(Gjk::is_collide(A, Collider(b_wrong)));
 }
 TEST(UnitTestEpa, TestCollisionTrue2)
 {
@@ -112,7 +112,7 @@ TEST(UnitTestEpa, TestCollisionTrue2)
     Collider A(a), B(b);
 
     // --- GJK must detect collision and provide simplex ---
-    auto gjk = GJK::is_collide_with_simplex_info(A, B);
+    auto gjk = Gjk::is_collide_with_simplex_info(A, B);
     ASSERT_TRUE(gjk.hit) << "GJK should report collision for overlapping cubes";
     // --- EPA penetration ---
     EPA::Params params;
@@ -139,11 +139,11 @@ TEST(UnitTestEpa, TestCollisionTrue2)
     // Apply once: B + pen must separate; the opposite must still collide
     Mesh b_resolved = b;
     b_resolved.set_origin(b_resolved.get_origin() + pen * margin);
-    EXPECT_FALSE(GJK::is_collide(A, Collider(b_resolved))) << "Applying penetration should separate";
+    EXPECT_FALSE(Gjk::is_collide(A, Collider(b_resolved))) << "Applying penetration should separate";
 
     Mesh b_wrong = b;
     b_wrong.set_origin(b_wrong.get_origin() - pen * margin);
-    EXPECT_TRUE(GJK::is_collide(A, Collider(b_wrong))) << "Opposite direction should still intersect";
+    EXPECT_TRUE(Gjk::is_collide(A, Collider(b_wrong))) << "Opposite direction should still intersect";
 
     // Some book-keeping sanity
     EXPECT_GT(epa->iterations, 0);
