@@ -8,6 +8,7 @@
 #include <omath/projection/camera.hpp>
 #include <print>
 #include <random>
+#include <chrono>
 
 TEST(UnitTestProjection, Projection)
 {
@@ -53,7 +54,8 @@ TEST(UnitTestProjection, ScreenToNdcBottomLeft)
 
 TEST(UnitTestProjection, ScreenToWorldTopLeftCorner)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
 
     std::uniform_real_distribution dist_x(1.f, 1900.f);
     std::uniform_real_distribution dist_y(1.f, 1070.f);
@@ -77,7 +79,8 @@ TEST(UnitTestProjection, ScreenToWorldTopLeftCorner)
 
 TEST(UnitTestProjection, ScreenToWorldBottomLeftCorner)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
 
     std::uniform_real_distribution dist_x(1.f, 1900.f);
     std::uniform_real_distribution dist_y(1.f, 1070.f);

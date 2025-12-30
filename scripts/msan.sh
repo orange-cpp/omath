@@ -54,7 +54,9 @@ cmake --preset "${PRESET}" \
   -DOMATH_BUILD_TESTS=ON \
   -DVCPKG_MANIFEST_FEATURES="tests" \
   -DVCPKG_OVERLAY_TRIPLETS="$(pwd)/cmake/triplets" \
-  -DVCPKG_TARGET_TRIPLET="${TRIPLET}"
+  -DVCPKG_TARGET_TRIPLET="${TRIPLET}" \
+  -DCMAKE_CXX_FLAGS="-fsanitize=memory -stdlib=libc++" \
+  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=memory -stdlib=libc++ -lc++abi"
 
 echo "----------------------------------------------------"
 echo "Building Targets..."

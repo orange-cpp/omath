@@ -6,6 +6,7 @@
 #include <omath/engines/opengl_engine/constants.hpp>
 #include <omath/engines/opengl_engine/formulas.hpp>
 #include <random>
+#include <chrono>
 
 TEST(unit_test_opengl, ForwardVector)
 {
@@ -103,7 +104,8 @@ TEST(unit_test_opengl, CameraSetAndGetOrigin)
 }
 TEST(unit_test_opengl_engine, loook_at_random_all_axis)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
@@ -134,7 +136,8 @@ TEST(unit_test_opengl_engine, loook_at_random_all_axis)
 
 TEST(unit_test_opengl_engine, loook_at_random_x_axis)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
@@ -164,7 +167,8 @@ TEST(unit_test_opengl_engine, loook_at_random_x_axis)
 
 TEST(unit_test_opengl_engine, loook_at_random_y_axis)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
@@ -194,7 +198,8 @@ TEST(unit_test_opengl_engine, loook_at_random_y_axis)
 
 TEST(unit_test_opengl_engine, loook_at_random_z_axis)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
