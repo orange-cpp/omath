@@ -853,10 +853,12 @@ jobs:
           sudo apt-get install -y git build-essential cmake ninja-build \
                  zip unzip curl pkg-config ca-certificates \
                  clang-21 lld-21 libc++-21-dev libc++abi-21-dev \
-                 llvm-21
+                 llvm-21 clang-tidy-21 clang-tools-21
           sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
           sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
           sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
+          echo "CLANG_TIDY_PATH=/usr/bin/clang-tidy-21" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -890,5 +892,4 @@ jobs:
           export ASAN_OPTIONS=detect_leaks=1:symbolize=1
           export TSAN_OPTIONS=second_deadlock_stack=1
           export MSAN_OPTIONS=poison_in_free=1
-          
           ./out/Release/unit_tests
