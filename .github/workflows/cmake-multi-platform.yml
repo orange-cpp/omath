@@ -830,9 +830,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: Linux (ASan + UBSan)
-            sanitizer_flag: -DOMATH_ASAN=ON -DOMATH_UBSAN=ON
+          - name: Linux (ASan)
+            sanitizer_flag: -DOMATH_ASAN=ON
             triplet: x64-linux-asan
+          - name: Linux (UBSan)
+            sanitizer_flag: -DOMATH_UBSAN=ON
+            triplet: x64-linux-ubsan
           - name: Linux (MSan)
             sanitizer_flag: -DOMATH_MSAN=ON
             triplet: x64-linux-msan
@@ -879,7 +882,11 @@ jobs:
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             ${{ matrix.sanitizer_flag }} \
             -DOMATH_BUILD_TESTS=ON \
-            -DVCPKG_MANIFEST_FEATURES="tests"
+            -DVCPKG_MANIFEST_FEATURES="tests" \
+            -DVCPKG_OVERLAY_TRIPLETS="${{ github.workspace }}/cmake/triplets" \
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
+            -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++"
 
       - name: Build
         shell: bash
@@ -890,6 +897,7 @@ jobs:
         run: |
           # Set specific runtime options for better reporting
           export ASAN_OPTIONS=detect_leaks=1:symbolize=1
+          export UBSAN_OPTIONS=print_stacktrace=1
           export TSAN_OPTIONS=second_deadlock_stack=1
           export MSAN_OPTIONS=poison_in_free=1
           ./out/RelWithDebInfo/unit_tests
