@@ -166,7 +166,7 @@ namespace
                 {
                     auto& [file_header, section_header] = header;
                     file.seekg(0, std::ios_base::beg);
-                    if (!file.read(reinterpret_cast<char*>(&file_header), sizeof(file_header)))
+                    if (!file.read(reinterpret_cast<char*>(&file_header), sizeof(file_header))) [[unlikely]]
                         return std::nullopt;
 
                     const std::streamoff shstr_off =
@@ -174,14 +174,14 @@ namespace
                             + static_cast<std::streamoff>(file_header.e_shstrndx) * sizeof(section_header);
                     file.seekg(shstr_off, std::ios_base::beg);
 
-                    if (!file.read(reinterpret_cast<char*>(&section_header), sizeof(section_header)))
+                    if (!file.read(reinterpret_cast<char*>(&section_header), sizeof(section_header))) [[unlikely]]
                         return std::nullopt;
 
                     std::vector<char> shstrtab(section_header.sh_size);
 
                     file.seekg(section_header.sh_offset, std::ios_base::beg);
 
-                    if (!file.read(shstrtab.data(), static_cast<std::streamsize>(shstrtab.size())))
+                    if (!file.read(shstrtab.data(), static_cast<std::streamsize>(shstrtab.size()))) [[unlikely]]
                         return std::nullopt;
 
                     for (std::uint16_t i = 0; i < file_header.e_shnum; ++i)
@@ -210,7 +210,7 @@ namespace
 
                         file.seekg(static_cast<std::streamoff>(out.raw_base_addr), std::ios_base::beg);
                         if (!file.read(reinterpret_cast<char*>(out.data.data()),
-                                       static_cast<std::streamsize>(out.data.size())))
+                                       static_cast<std::streamsize>(out.data.size()))) [[unlikely]]
                             return std::nullopt;
 
                         return out;
