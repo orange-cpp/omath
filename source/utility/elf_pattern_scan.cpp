@@ -221,10 +221,16 @@ namespace
 namespace omath
 {
 
+    std::optional<std::uintptr_t>
+    ElfPatternScanner::scan_for_pattern_in_loaded_module([[maybe_unused]] const void* module_base_address,
+                                                         [[maybe_unused]] const std::string_view& pattern)
+    {
+        return std::nullopt;
+    }
     std::optional<ElfSectionScanResult>
     ElfPatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
-                                                [[maybe_unused]] const std::string_view& pattern,
-                                                [[maybe_unused]] const std::string_view& target_section_name)
+                                                const std::string_view& pattern,
+                                                const std::string_view& target_section_name)
     {
         const auto pe_section = get_elf_section_by_name(path_to_file, target_section_name);
 
@@ -241,7 +247,5 @@ namespace omath
         return ElfSectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
                                     .raw_base_addr = pe_section->raw_base_addr,
                                     .target_offset = offset};
-
-        return std::nullopt;
     }
 } // namespace omath
