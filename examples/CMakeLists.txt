@@ -31,7 +31,8 @@ find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(example_glfw3 PRIVATE omath::omath GLEW::GLEW glfw)
 
 if(OMATH_ENABLE_VALGRIND)
-        omath_setup_valgrind(example_projection_matrix_builder)
-        omath_setup_valgrind(example_signature_scan)
+        # Disable valgrind for examples with std::cin
+        #omath_setup_valgrind(example_projection_matrix_builder)
+        #omath_setup_valgrind(example_signature_scan)
         omath_setup_valgrind(example_glfw3)
 endif()

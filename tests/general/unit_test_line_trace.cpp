@@ -101,7 +101,7 @@ namespace
     // -----------------------------------------------------------------------------
     TEST_F(LineTracerFixture, DistantTriangleClear)
     {
-        constexpr Ray short_ray{.start=.start={0.f, 0.f, 0.f}, .end=.end={0.f, 0.f, 1.f}};
+        constexpr Ray short_ray{.start={0.f, 0.f, 0.f}, .end={0.f, 0.f, 1.f}};
         constexpr Triangle<Vec3> distant{{1000.f, 1000.f, 1000.f},
                                          {1001.f, 1000.f, 1000.f},
                                          {1000.f, 1001.f, 1000.f}};
@@ -113,7 +113,7 @@ namespace
     {
         constexpr omath::Triangle<Vector3<float>> triangle{{2, 0, 0}, {2, 2, 0}, {2, 2, 2}};
 
-        constexpr Ray ray{.start=.start={}, .end=.end={1.0, 0, 0}, .infinite_length=.infinite_length=false};
+        constexpr Ray ray{.start={}, .end={1.0, 0, 0}, .infinite_length=false};
 
         EXPECT_TRUE(omath::collision::LineTracer::can_trace_line(ray, triangle));
     }
@@ -121,7 +121,7 @@ namespace
     {
         constexpr omath::Triangle<Vector3<float>> triangle{{2, 0, 0}, {2, 2, 0}, {2, 2, 2}};
 
-        constexpr Ray ray{.start=.start={}, .end=.end={2.1, 0, 0}, .infinite_length=.infinite_length=false};
+        constexpr Ray ray{.start={}, .end={2.1, 0, 0}, .infinite_length=false};
         EXPECT_FALSE(omath::collision::LineTracer::can_trace_line(ray, triangle));
     }
 } // namespace

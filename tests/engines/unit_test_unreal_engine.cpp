@@ -108,7 +108,7 @@ TEST(unit_test_unreal_engine, CameraSetAndGetFov)
 
 TEST(unit_test_unreal_engine, CameraSetAndGetOrigin)
 {
-    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=.m_width=1920.f, .m_height=.m_height=1080.f}, {}, 0.01f, 1000.f);
+    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, {}, 0.01f, 1000.f);
 
     EXPECT_EQ(cam.get_origin(), omath::Vector3<float>{});
     cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(50.f));
@@ -153,7 +153,7 @@ TEST(unit_test_unreal_engine, loook_at_random_x_axis)
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=.m_width=1920.f, .m_height=.m_height=1080.f}, fov, 0.001f, 10000.f);
+    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.001f, 10000.f);
 
     std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)
