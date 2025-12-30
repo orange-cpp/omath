@@ -1,11 +1,7 @@
 #pragma once
 #include "simplex.hpp"
 #include <algorithm>
-#include <array>
 #include <cmath>
-#include <cstdint>
-#include <limits>
-#include <memory>
 #include <memory_resource>
 #include <queue>
 #include <utility>

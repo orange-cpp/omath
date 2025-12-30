@@ -7,6 +7,7 @@
 #include <omath/engines/unreal_engine/formulas.hpp>
 #include <print>
 #include <random>
+#include <chrono>
 
 TEST(unit_test_unreal_engine, ForwardVector)
 {
@@ -67,10 +68,11 @@ TEST(unit_test_unreal_engine, UpVector)
 TEST(unit_test_unreal_engine, ProjectTargetMovedFromCamera)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
-    const auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.01f, 1000.f);
+    const auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1280.f, .m_height=720.f}, fov, 0.01f, 1000.f);
 
-    for (float distance = 0.02f; distance < 100.f; distance += 0.01f)
+    for (int i = 2; i < 10000; ++i)
     {
+        const float distance = static_cast<float>(i) * 0.01f;
         const auto projected = cam.world_to_screen({distance, 0, 0});
 
         EXPECT_TRUE(projected.has_value());
@@ -85,10 +87,11 @@ TEST(unit_test_unreal_engine, ProjectTargetMovedFromCamera)
 TEST(unit_test_unreal_engine, ProjectTargetMovedFromCameraBehind)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
-    const auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.01f, 10000.f);
+    const auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1280.f, .m_height=720.f}, fov, 0.01f, 10000.f);
 
-    for (float distance = 0.02f; distance < 9000.f; distance += 100.f)
+    for (int i = 0; i < 90; ++i)
     {
+        const float distance = 0.02f + static_cast<float>(i) * 100.f;
         const auto projected = cam.world_to_screen({-distance, 0, 0});
 
         EXPECT_FALSE(projected.has_value());
@@ -98,7 +101,7 @@ TEST(unit_test_unreal_engine, ProjectTargetMovedFromCameraBehind)
 TEST(unit_test_unreal_engine, CameraSetAndGetFov)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.01f, 1000.f);
 
     EXPECT_EQ(cam.get_field_of_view().as_degrees(), 90.f);
     cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(50.f));
@@ -108,7 +111,7 @@ TEST(unit_test_unreal_engine, CameraSetAndGetFov)
 
 TEST(unit_test_unreal_engine, CameraSetAndGetOrigin)
 {
-    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
+    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, {}, 0.01f, 1000.f);
 
     EXPECT_EQ(cam.get_origin(), omath::Vector3<float>{});
     cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(50.f));
@@ -118,11 +121,12 @@ TEST(unit_test_unreal_engine, CameraSetAndGetOrigin)
 
 TEST(unit_test_unreal_engine, loook_at_random_all_axis)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.001f, 10000.f);
 
 
     std::size_t failed_points = 0;
@@ -149,11 +153,12 @@ TEST(unit_test_unreal_engine, loook_at_random_all_axis)
 
 TEST(unit_test_unreal_engine, loook_at_random_x_axis)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.001f, 10000.f);
 
     std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)
@@ -180,11 +185,12 @@ TEST(unit_test_unreal_engine, loook_at_random_x_axis)
 
 TEST(unit_test_unreal_engine, loook_at_random_y_axis)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.001f, 10000.f);
 
     std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)
@@ -211,11 +217,12 @@ TEST(unit_test_unreal_engine, loook_at_random_y_axis)
 
 TEST(unit_test_unreal_engine, loook_at_random_z_axis)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+    auto cam = omath::unreal_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.001f, 10000.f);
 
     std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)

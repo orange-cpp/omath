@@ -8,19 +8,21 @@
 #include <omath/projection/camera.hpp>
 #include <print>
 #include <random>
+#include <chrono>
 
 TEST(UnitTestProjection, Projection)
 {
     constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
-    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {.m_width=1920.f, .m_height=1080.f}, fov,
                                                   0.01f, 1000.f);
 
     const auto projected = cam.world_to_screen({1000.f, 0, 50.f});
     const auto result = cam.screen_to_world(projected.value());
     const auto result2 = cam.world_to_screen(result.value());
 
-    EXPECT_EQ(static_cast<omath::Vector2<float>>(projected.value()),
-              static_cast<omath::Vector2<float>>(result2.value()));
+    const auto p1 = projected.value();
+    const auto p2 = result2.value();
+    EXPECT_EQ(omath::Vector2<float>(p1.x, p1.y), omath::Vector2<float>(p2.x, p2.y));
     EXPECT_NEAR(projected->x, 960.f, 0.001f);
     EXPECT_NEAR(projected->y, 504.f, 0.001f);
     EXPECT_NEAR(projected->z, 1.f, 0.001f);
@@ -28,7 +30,7 @@ TEST(UnitTestProjection, Projection)
 TEST(UnitTestProjection, ScreenToNdcTopLeft)
 {
     constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
-    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {.m_width=1920.f, .m_height=1080.f}, fov,
                                                   0.01f, 1000.f);
     using ScreenStart = omath::source_engine::Camera::ScreenStart;
 
@@ -41,7 +43,7 @@ TEST(UnitTestProjection, ScreenToNdcBottomLeft)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
 
-    const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
+    const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {.m_width=1280.f, .m_height=720.f}, fov, 0.03f, 1000.f);
     using ScreenStart = omath::unity_engine::Camera::ScreenStart;
 
     const auto ndc_bottom_left =
@@ -52,13 +54,14 @@ TEST(UnitTestProjection, ScreenToNdcBottomLeft)
 
 TEST(UnitTestProjection, ScreenToWorldTopLeftCorner)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
 
     std::uniform_real_distribution dist_x(1.f, 1900.f);
     std::uniform_real_distribution dist_y(1.f, 1070.f);
 
     constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
-    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {.m_width=1920.f, .m_height=1080.f}, fov,
                                                   0.01f, 1000.f);
     using ScreenStart = omath::source_engine::Camera::ScreenStart;
 
@@ -76,13 +79,14 @@ TEST(UnitTestProjection, ScreenToWorldTopLeftCorner)
 
 TEST(UnitTestProjection, ScreenToWorldBottomLeftCorner)
 {
-    std::mt19937 gen(std::random_device{}()); // Seed with a non-deterministic source
+    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 gen(seed); // Seed with a non-deterministic source
 
     std::uniform_real_distribution dist_x(1.f, 1900.f);
     std::uniform_real_distribution dist_y(1.f, 1070.f);
 
     constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
-    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {.m_width=1920.f, .m_height=1080.f}, fov,
                                                   0.01f, 1000.f);
     using ScreenStart = omath::source_engine::Camera::ScreenStart;
 

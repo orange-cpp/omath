@@ -37,10 +37,8 @@ TEST(EpaExtra, DegenerateFaceHandled)
     params.max_iterations = 4;
     params.tolerance = 1e-6f;
 
-    const auto result = Epa::solve(a, b, s, params);
-
     // The algorithm should either return a valid result or gracefully exit (not crash)
-    if (result)
+    if (const auto result = Epa::solve(a, b, s, params))
     {
         EXPECT_TRUE(std::isfinite(result->depth));
         EXPECT_TRUE(std::isfinite(result->normal.x));

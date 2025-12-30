@@ -95,7 +95,12 @@ namespace omath
         [[nodiscard]]
         Type cot() const noexcept
         {
-            return cos() / sin();
+            const Type s = sin();
+            if (std::abs(s) < std::numeric_limits<Type>::epsilon())
+            {
+                return std::numeric_limits<Type>::infinity();
+            }
+            return cos() / s;
         }
 
         constexpr Angle& operator+=(const Angle& other) noexcept

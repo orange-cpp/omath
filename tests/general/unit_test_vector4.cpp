@@ -7,7 +7,6 @@
 
 #include <omath/linear_algebra/vector4.hpp>
 #include <gtest/gtest.h>
-#include <limits> // For std::numeric_limits
 
 using namespace omath;
 

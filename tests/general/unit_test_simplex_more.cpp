@@ -132,11 +132,11 @@ TEST(SimplexMore, HandleTriangleFlipWinding)
 
     constexpr auto ab = b - a;
     constexpr auto ac = c - a;
-    const auto abc = ab.cross(ac);
+    constexpr auto abc = ab.cross(ac);
 
     const bool res = s.handle(dir);
     EXPECT_FALSE(res);
-    const auto expected = -abc;
+    constexpr auto expected = -abc;
     EXPECT_NEAR(dir.x, expected.x, 1e-6f);
     EXPECT_NEAR(dir.y, expected.y, 1e-6f);
     EXPECT_NEAR(dir.z, expected.z, 1e-6f);

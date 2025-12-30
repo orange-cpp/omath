@@ -32,8 +32,7 @@ TEST(LinearAlgebraMore2, Vector3NonInlinedHelpers)
 
     // exercise hash specialization for Vector3<float>
     std::hash<Vector3<float>> hasher;
-    auto hv = hasher(v);
-    (void)hv;
+    [[maybe_unused]] auto hv = hasher(v);
 }
 
 TEST(LinearAlgebraMore2, Vector4NonInlinedHelpers)
@@ -59,7 +58,8 @@ TEST(LinearAlgebraMore2, MatNonInlinedAndStringHelpers)
 
     auto maybe_inv = m.inverted();
     EXPECT_TRUE(maybe_inv.has_value());
-    const auto& inv = maybe_inv.value();
+    if (!maybe_inv.has_value()) return;
+    const auto& inv = *maybe_inv;
 
     // m * inv should be identity (approximately)
     auto prod = m * inv;

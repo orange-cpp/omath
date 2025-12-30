@@ -88,9 +88,8 @@ TEST(TraitTests, Frostbite_Pred_And_Mesh_And_Camera)
     expect_matrix_near(m1, m2);
 
     // CameraTrait look at should be callable
-    const auto angles = e::CameraTrait::calc_look_at_angle({0, 0, 0}, {0, 1, 1});
-    (void)angles;
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f);
+    [[maybe_unused]] const auto angles = e::CameraTrait::calc_look_at_angle({0, 0, 0}, {0, 1, 1});
+    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {.m_width=1280.f, .m_height=720.f}, 0.1f, 1000.f);
     const auto expected = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 }
@@ -136,7 +135,7 @@ TEST(TraitTests, IW_Pred_And_Mesh_And_Camera)
     e::ViewAngles va;
     expect_matrix_near(e::MeshTrait::rotation_matrix(va), e::rotation_matrix(va));
 
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(45.f), {1920.f, 1080.f}, 0.1f, 1000.f);
+    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(45.f), {.m_width=1920.f, .m_height=1080.f}, 0.1f, 1000.f);
     const auto expected = e::calc_perspective_projection_matrix(45.f, 1920.f / 1080.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 
@@ -186,7 +185,7 @@ TEST(TraitTests, OpenGL_Pred_And_Mesh_And_Camera)
     e::ViewAngles va;
     expect_matrix_near(e::MeshTrait::rotation_matrix(va), e::rotation_matrix(va));
 
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f);
+    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {.m_width=1280.f, .m_height=720.f}, 0.1f, 1000.f);
     const auto expected = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 
@@ -236,7 +235,7 @@ TEST(TraitTests, Unity_Pred_And_Mesh_And_Camera)
     e::ViewAngles va;
     expect_matrix_near(e::MeshTrait::rotation_matrix(va), e::rotation_matrix(va));
 
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f);
+    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {.m_width=1280.f, .m_height=720.f}, 0.1f, 1000.f);
     const auto expected = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 
@@ -286,7 +285,7 @@ TEST(TraitTests, Unreal_Pred_And_Mesh_And_Camera)
     e::ViewAngles va;
     expect_matrix_near(e::MeshTrait::rotation_matrix(va), e::rotation_matrix(va));
 
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f);
+    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {.m_width=1280.f, .m_height=720.f}, 0.1f, 1000.f);
     const auto expected = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 

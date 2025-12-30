@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstring>
 #include <limits>
+#include <ranges>
 #include <stdexcept>
 namespace omath::pathfinding
 {
@@ -61,8 +62,10 @@ namespace omath::pathfinding
             dump_to_vector(neighbors_count);
 
             // Only serialize up to the clamped count
-            for (std::size_t i = 0; i < clamped_count; ++i)
-                dump_to_vector(neighbors[i]);
+            for (const auto& neighbor : neighbors | std::views::take(clamped_count))
+            {
+                dump_to_vector(neighbor);
+            }
         }
         return raw;
     }

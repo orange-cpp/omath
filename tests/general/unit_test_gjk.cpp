@@ -5,27 +5,27 @@
 #include <gtest/gtest.h>
 #include <omath/collision/gjk_algorithm.hpp>
 #include <omath/engines/source_engine/mesh.hpp>
-namespace
+namespace gjk_test
 {
     const omath::source_engine::Mesh mesh = {
         {
-            { {-1.f, -1.f, -1.f}, {}, {} },
-            { {-1.f, -1.f,  1.f}, {}, {} },
-            { {-1.f,  1.f, -1.f}, {}, {} },
-            { {-1.f,  1.f,  1.f}, {}, {} },
-            { { 1.f,  1.f,  1.f}, {}, {} },
-            { { 1.f,  1.f, -1.f}, {}, {} },
-            { { 1.f, -1.f,  1.f}, {}, {} },
-            { { 1.f, -1.f, -1.f}, {}, {} }
+            { .position={-1.f, -1.f, -1.f}, .normal={}, .uv={} },
+            { .position={-1.f, -1.f,  1.f}, .normal={}, .uv={} },
+            { .position={-1.f,  1.f, -1.f}, .normal={}, .uv={} },
+            { .position={-1.f,  1.f,  1.f}, .normal={}, .uv={} },
+            { .position={ 1.f,  1.f,  1.f}, .normal={}, .uv={} },
+            { .position={ 1.f,  1.f, -1.f}, .normal={}, .uv={} },
+            { .position={ 1.f, -1.f,  1.f}, .normal={}, .uv={} },
+            { .position={ 1.f, -1.f, -1.f}, .normal={}, .uv={} }
         },
         {}
     };
 }
 TEST(UnitTestGjk, TestCollisionTrue)
 {
-    const omath::source_engine::MeshCollider collider_a(mesh);
+    const omath::source_engine::MeshCollider collider_a(gjk_test::mesh);
 
-    auto mesh_b = mesh;
+    auto mesh_b = gjk_test::mesh;
     mesh_b.set_origin({0.f, 0.5f, 0.f});
 
     const omath::source_engine::MeshCollider collider_b(mesh_b);
@@ -38,8 +38,8 @@ TEST(UnitTestGjk, TestCollisionTrue)
 }
 TEST(UnitTestGjk, TestCollisionFalse)
 {
-    const omath::source_engine::MeshCollider collider_a(mesh);
-    auto mesh_b = mesh;
+    const omath::source_engine::MeshCollider collider_a(gjk_test::mesh);
+    auto mesh_b = gjk_test::mesh;
     mesh_b.set_origin({0.f, 2.1f, 0.f});
     const omath::source_engine::MeshCollider collider_b(mesh_b);
 
@@ -51,8 +51,8 @@ TEST(UnitTestGjk, TestCollisionFalse)
 
 TEST(UnitTestGjk, TestCollisionEqualOrigin)
 {
-    const omath::source_engine::MeshCollider collider_a(mesh);
-    const omath::source_engine::MeshCollider collider_b(mesh);
+    const omath::source_engine::MeshCollider collider_a(gjk_test::mesh);
+    const omath::source_engine::MeshCollider collider_b(gjk_test::mesh);
 
     const auto result =
             omath::collision::GjkAlgorithm<omath::source_engine::MeshCollider>::is_collide(collider_a, collider_b);

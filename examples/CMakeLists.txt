@@ -7,6 +7,11 @@ set_target_properties(example_projection_matrix_builder PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
 )
+
+if(MINGW)
+target_link_libraries(example_projection_matrix_builder PRIVATE stdc++exp)
+endif()
+
 target_link_libraries(example_projection_matrix_builder PRIVATE omath::omath)
 
 add_executable(example_signature_scan example_signature_scan.cpp)
@@ -16,6 +21,11 @@ set_target_properties(example_signature_scan PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
 )
+
+if(MINGW)
+target_link_libraries(example_signature_scan PRIVATE stdc++exp)
+endif()
+
 target_link_libraries(example_signature_scan PRIVATE omath::omath)
 
 
@@ -30,8 +40,10 @@ find_package(GLEW REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(example_glfw3 PRIVATE omath::omath GLEW::GLEW glfw)
 
-if(OMATH_ENABLE_VALGRIND)
-        omath_setup_valgrind(example_projection_matrix_builder)
-        omath_setup_valgrind(example_signature_scan)
-        omath_setup_valgrind(example_glfw3)
-endif()
+#if(OMATH_ENABLE_VALGRIND)
+        # Disable valgrind for examples with std::cin
+        #omath_setup_valgrind(example_projection_matrix_builder)
+        #omath_setup_valgrind(example_signature_scan)
+        # Disable since github CI is unable to init GLFW
+        #omath_setup_valgrind(example_glfw3)
+#endif()
