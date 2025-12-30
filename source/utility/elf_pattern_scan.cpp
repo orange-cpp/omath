@@ -1,6 +1,7 @@
 //
 // Created by Vladislav on 30.12.2025.
 //
+#include "omath/utility/pattern_scan.hpp"
 #include <fstream>
 #include <omath/utility/elf_pattern_scan.hpp>
 #include <variant>
@@ -95,15 +96,10 @@ namespace
     struct ElfHeaders
     {
         using FileHeader = std::conditional_t<arch == FILE_ARCH::x64, Elf64_Ehdr, Elf32_Ehdr>;
-        using SectionHeader = std::conditional_t<arch == FILE_ARCH::x64, Elf32_Shdr, Elf32_Shdr>;
+        using SectionHeader = std::conditional_t<arch == FILE_ARCH::x64, Elf64_Shdr, Elf32_Shdr>;
+        FileHeader file_header;
+        SectionHeader section_header;
     };
-    using ElfHeaderVariant = std::variant<Elf64_Ehdr, Elf32_Ehdr>;
-
-    /*[[nodiscard]]
-    std::optional<ElfHeaderVariant> get_elf_header_from_file(std::fstream& file)
-    {
-        return std::nullopt;
-    }*/
     [[nodiscard]]
     bool not_elf_file(std::fstream& file)
     {
@@ -136,114 +132,90 @@ namespace
 
         return std::nullopt;
     }
+    struct ExtractedSection
+    {
+        std::uint64_t virtual_base_addr{};
+        std::uint64_t raw_base_addr{};
+        std::vector<std::byte> data;
+    };
     [[maybe_unused]]
-    std::vector<uint8_t> get_elf_section_by_name(const std::string& path, const std::string& section_name)
+    std::optional<ExtractedSection> get_elf_section_by_name(const std::string& path,
+                                                            const std::string_view& section_name)
     {
         std::fstream file(path, std::ios::binary | std::ios::in);
 
         if (!file.is_open())
-            return {};
+            return std::nullopt;
 
         if (not_elf_file(file))
-            return {};
+            return std::nullopt;
 
         const auto architecture = get_file_arch(file);
 
         if (!architecture.has_value())
-            return {};
+            return std::nullopt;
 
-        auto read_bytes = [&](std::streamoff offset, char* buf, std::size_t sz) -> bool
-        {
-            file.seekg(offset, std::ios::beg);
-            return file.good() && file.read(buf, sz);
-        };
-
-        std::variant<Elf32_Ehdr, Elf64_Ehdr> elf_header;
-
+        std::variant<ElfHeaders<FILE_ARCH::x64>, ElfHeaders<FILE_ARCH::x32>> elf_headers;
         if (architecture.value() == FILE_ARCH::x64)
-            elf_header = Elf64_Ehdr{};
+            elf_headers = ElfHeaders<FILE_ARCH::x64>{};
         else if (architecture.value() == FILE_ARCH::x32)
-            elf_header = Elf32_Ehdr{};
+            elf_headers = ElfHeaders<FILE_ARCH::x32>{};
 
-        std::visit([&file](auto& header)
-        {
-            file.seekg(0, std::ios_base::beg);
-            file.read(reinterpret_cast<char*>(&header), sizeof(header));
-        }, elf_header);
-        if (architecture.value() == FILE_ARCH::x64)
-        {
-            Elf64_Ehdr eh{};
-            if (!read_bytes(0, reinterpret_cast<char*>(&eh), sizeof(eh)))
-                return {};
-
-            // Section header string table header
-            Elf64_Shdr shstr{};
-            std::streamoff shstr_off = static_cast<std::streamoff>(eh.e_shoff)
-                                       + static_cast<std::streamoff>(eh.e_shstrndx) * sizeof(Elf64_Shdr);
-            if (!read_bytes(shstr_off, reinterpret_cast<char*>(&shstr), sizeof(shstr)))
-                return {};
-
-            // Read shstrtab
-            std::vector<char> shstrtab(shstr.sh_size);
-            if (!read_bytes(shstr.sh_offset, shstrtab.data(), shstrtab.size()))
-                return {};
-
-            for (uint16_t i = 0; i < eh.e_shnum; ++i)
-            {
-                Elf64_Shdr sh{};
-                std::streamoff off =
-                        static_cast<std::streamoff>(eh.e_shoff) + static_cast<std::streamoff>(i) * sizeof(Elf64_Shdr);
-                if (!read_bytes(off, reinterpret_cast<char*>(&sh), sizeof(sh)))
-                    return {};
-                const char* name = (sh.sh_name < shstrtab.size()) ? &shstrtab[sh.sh_name] : nullptr;
-                if (!name)
-                    continue;
-                if (section_name == name)
+        return std::visit(
+                [&](auto& header) -> std::optional<ExtractedSection>
                 {
-                    std::vector<uint8_t> data(sh.sh_size);
-                    if (!read_bytes(sh.sh_offset, reinterpret_cast<char*>(data.data()), data.size()))
-                        return {};
-                    return data;
-                }
-            }
-        }
-        else
-        { // 32-bit
-            Elf32_Ehdr eh{};
-            if (!read_bytes(0, reinterpret_cast<char*>(&eh), sizeof(eh)))
-                return {};
+                    auto& [file_header, section_header] = header;
+                    file.seekg(0, std::ios_base::beg);
+                    if (!file.read(reinterpret_cast<char*>(&file_header), sizeof(file_header)))
+                        return std::nullopt;
 
-            Elf32_Shdr shstr{};
-            std::streamoff shstr_off = static_cast<std::streamoff>(eh.e_shoff)
-                                       + static_cast<std::streamoff>(eh.e_shstrndx) * sizeof(Elf32_Shdr);
-            if (!read_bytes(shstr_off, reinterpret_cast<char*>(&shstr), sizeof(shstr)))
-                return {};
+                    std::streamoff shstr_off =
+                            static_cast<std::streamoff>(file_header.e_shoff)
+                            + static_cast<std::streamoff>(file_header.e_shstrndx) * sizeof(section_header);
+                    file.seekg(shstr_off, std::ios_base::beg);
 
-            std::vector<char> shstrtab(shstr.sh_size);
-            if (!read_bytes(shstr.sh_offset, shstrtab.data(), shstrtab.size()))
-                return {};
+                    if (!file.read(reinterpret_cast<char*>(&section_header), sizeof(section_header)))
+                        return std::nullopt;
 
-            for (uint16_t i = 0; i < eh.e_shnum; ++i)
-            {
-                Elf32_Shdr sh{};
-                std::streamoff off =
-                        static_cast<std::streamoff>(eh.e_shoff) + static_cast<std::streamoff>(i) * sizeof(Elf32_Shdr);
-                if (!read_bytes(off, reinterpret_cast<char*>(&sh), sizeof(sh)))
-                    return {};
-                const char* name = (sh.sh_name < shstrtab.size()) ? &shstrtab[sh.sh_name] : nullptr;
-                if (!name)
-                    continue;
-                if (section_name == name)
-                {
-                    std::vector<uint8_t> data(sh.sh_size);
-                    if (!read_bytes(sh.sh_offset, reinterpret_cast<char*>(data.data()), data.size()))
-                        return {};
-                    return data;
-                }
-            }
-        }
+                    std::vector<char> shstrtab(section_header.sh_size);
 
-        return {}; // Not found or error
+                    file.seekg(section_header.sh_offset, std::ios_base::beg);
+
+                    if (!file.read(shstrtab.data(), shstrtab.size()))
+                        return std::nullopt;
+
+                    for (std::uint16_t i = 0; i < file_header.e_shnum; ++i)
+                    {
+                        decltype(section_header) current_section{};
+                        const std::streamoff off = static_cast<std::streamoff>(file_header.e_shoff)
+                                                   + static_cast<std::streamoff>(i) * sizeof(current_section);
+
+                        file.seekg(off, std::ios_base::beg);
+                        if (!file.read(reinterpret_cast<char*>(&current_section), sizeof(current_section)))
+                            return std::nullopt;
+
+                        if (current_section.sh_name >= shstrtab.size())
+                            continue;
+
+                        const std::string_view name = &shstrtab[current_section.sh_name];
+                        if (section_name != name)
+                            continue;
+
+                        ExtractedSection out;
+
+                        out.virtual_base_addr = current_section.sh_addr;
+                        out.raw_base_addr = current_section.sh_offset;
+                        out.data.resize(current_section.sh_size);
+
+                        file.seekg(out.raw_base_addr, std::ios_base::beg);
+                        if (!file.read(reinterpret_cast<char*>(out.data.data()), out.data.size()))
+                            return std::nullopt;
+
+                        return out;
+                    }
+                    return std::nullopt;
+                },
+                elf_headers);
     }
 } // namespace
 namespace omath
@@ -254,7 +226,21 @@ namespace omath
                                                 [[maybe_unused]] const std::string_view& pattern,
                                                 [[maybe_unused]] const std::string_view& target_section_name)
     {
-        [[maybe_unused]] auto _ = get_elf_section_by_name(path_to_file, ".text");
+        const auto pe_section = get_elf_section_by_name(path_to_file, target_section_name);
+
+        if (!pe_section.has_value())
+            return std::nullopt;
+
+        const auto scan_result =
+                PatternScanner::scan_for_pattern(pe_section->data.cbegin(), pe_section->data.cend(), pattern);
+
+        if (scan_result == pe_section->data.cend())
+            return std::nullopt;
+        const auto offset = std::distance(pe_section->data.begin(), scan_result);
+
+        return ElfSectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
+                                    .raw_base_addr = pe_section->raw_base_addr,
+                                    .target_offset = offset};
 
         return std::nullopt;
     }
