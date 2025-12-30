@@ -7,6 +7,11 @@ set_target_properties(example_projection_matrix_builder PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
 )
+
+if(MINGW)
+target_link_libraries(example_projection_matrix_builder PRIVATE stdc++exp)
+endif()
+
 target_link_libraries(example_projection_matrix_builder PRIVATE omath::omath)
 
 add_executable(example_signature_scan example_signature_scan.cpp)
@@ -16,6 +21,11 @@ set_target_properties(example_signature_scan PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
 )
+
+if(MINGW)
+target_link_libraries(example_signature_scan PRIVATE stdc++exp)
+endif()
+
 target_link_libraries(example_signature_scan PRIVATE omath::omath)
 
 
