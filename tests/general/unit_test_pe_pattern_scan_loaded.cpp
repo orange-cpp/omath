@@ -21,7 +21,9 @@ static std::vector<std::uint8_t> make_fake_module(std::uint32_t base_of_code,
     constexpr std::uint32_t section_header_size = 40;
     constexpr std::uint32_t text_characteristics = 0x60000020; // code | execute | read
 
-    const std::uint32_t total_size = section_table_off + section_header_size + size_code + 0x100;
+    const std::uint32_t headers_end = section_table_off + section_header_size;
+    const std::uint32_t code_end = base_of_code + size_code;
+    const std::uint32_t total_size = std::max(headers_end, code_end) + 0x100; // leave some padding
     std::vector<std::uint8_t> buf(total_size, 0);
 
     auto w16 = [&](std::size_t off, std::uint16_t v) { std::memcpy(buf.data() + off, &v, sizeof(v)); };
@@ -49,8 +51,8 @@ static std::vector<std::uint8_t> make_fake_module(std::uint32_t base_of_code,
     w64(opt_off + 24, 0);              // ImageBase
     w32(opt_off + 32, 0x1000);         // SectionAlignment
     w32(opt_off + 36, 0x200);          // FileAlignment
-    w32(opt_off + 56, base_of_code + size_code);              // SizeOfImage
-    w32(opt_off + 60, section_table_off + section_header_size); // SizeOfHeaders
+    w32(opt_off + 56, code_end);       // SizeOfImage (simple upper bound)
+    w32(opt_off + 60, headers_end);    // SizeOfHeaders
     w32(opt_off + 108, 0);             // NumberOfRvaAndSizes (0 directories)
 
     // Section header (.text) at section_table_off
@@ -67,7 +69,6 @@ static std::vector<std::uint8_t> make_fake_module(std::uint32_t base_of_code,
         std::memcpy(buf.data() + base_of_code, code_bytes.data(), code_bytes.size());
 
     return buf;
-
 }
 
 TEST(PePatternScanLoaded, FindsPatternAtBase)
