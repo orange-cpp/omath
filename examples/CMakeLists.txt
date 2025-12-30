@@ -44,5 +44,6 @@ if(OMATH_ENABLE_VALGRIND)
         # Disable valgrind for examples with std::cin
         #omath_setup_valgrind(example_projection_matrix_builder)
         #omath_setup_valgrind(example_signature_scan)
-        omath_setup_valgrind(example_glfw3)
+        # Disable since github CI is unable to init GLFW
+        #omath_setup_valgrind(example_glfw3)
 endif()
