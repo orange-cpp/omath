@@ -12,7 +12,7 @@
 namespace omath::pathfinding
 {
 
-    enum Error
+    enum class Error
     {
     };
 

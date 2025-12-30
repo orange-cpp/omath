@@ -3,23 +3,23 @@ cmake_minimum_required(VERSION 3.26)
 file(READ VERSION OMATH_VERSION)
 project(omath VERSION ${OMATH_VERSION} LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 include(CMakePackageConfigHelpers)
 include(CheckCXXCompilerFlag)
+include(CMakeDependentOption)
 
 include(cmake/Coverage.cmake)
 include(cmake/Valgrind.cmake)
 
-if (MSVC)
-    check_cxx_compiler_flag("/arch:AVX2" COMPILER_SUPPORTS_AVX2)
-else ()
-    check_cxx_compiler_flag("-mavx2" COMPILER_SUPPORTS_AVX2)
-endif ()
 
 option(OMATH_BUILD_TESTS "Build unit tests" OFF)
 option(OMATH_BUILD_BENCHMARK "Build benchmarks" OFF)
 option(OMATH_THREAT_WARNING_AS_ERROR "Set highest level of warnings and force compiler to treat them as errors" ON)
 option(OMATH_BUILD_AS_SHARED_LIBRARY "Build Omath as .so or .dll" OFF)
-option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ${COMPILER_SUPPORTS_AVX2})
+option(OMATH_USE_AVX2 "Omath will use AVX2 to boost performance" ON)
 option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types to imgui types" OFF)
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OFF)
@@ -28,12 +28,36 @@ option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" O
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" ON)
 option(OMATH_ENABLE_COVERAGE "Enable coverage" OFF)
 
+if(OMATH_USE_AVX2)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+    find_package(AVX2)
+    if(TARGET SIMD::AVX2)
+        set(HAS_AVX2 ON)
+    else()
+        set(HAS_AVX2 OFF)
+    endif()
+endif()
+
+if(LINUX)
+    option(OMATH_ENABLE_LINTING "Run clang-tidy on source files" ON)
+    find_program(CLANG_TIDY_PATH NAMES "clang-tidy-21" "clang-tidy")
+    cmake_dependent_option(
+        OMATH_ENABLE_LINTING "Enable running clang-tidy on sources during compilation" ON
+        "CLANG_TIDY_PATH" OFF)
+    if(OMATH_ENABLE_LINTING)
+        set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_PATH};--config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy")
+    elseif(NOT CLANG_TIDY_PATH)
+        message(WARNING "clang-tidy was not detected, "
+                        "so source code linting is disabled")
+    endif()
+endif()
+
 if (VCPKG_MANIFEST_FEATURES)
     foreach (omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
         if (omath_feature STREQUAL "imgui")
             set(OMATH_IMGUI_INTEGRATION ON)
         elseif (omath_feature STREQUAL "avx2")
-            set(OMATH_USE_AVX2 ${COMPILER_SUPPORTS_AVX2})
+            set(OMATH_USE_AVX2 ${HAS_AVX2})
         elseif (omath_feature STREQUAL "tests")
             set(OMATH_BUILD_TESTS ON)
         elseif (omath_feature STREQUAL "benchmark")
@@ -45,8 +69,11 @@ if (VCPKG_MANIFEST_FEATURES)
     endforeach ()
 endif ()
 
-if (OMATH_USE_AVX2 AND NOT COMPILER_SUPPORTS_AVX2)
+if (OMATH_USE_AVX2 AND NOT HAS_AVX2)
     message(WARNING "OMATH_USE_AVX2 requested, but compiler/target does not support AVX2. Disabling.")
+    set(OMATH_USE_AVX2 OFF CACHE BOOL "Omath will use AVX2 to boost performance" FORCE)
+elseif (EMSCRIPTEN AND OMATH_USE_AVX2 AND HAS_AVX2)
+    message(WARNING "OMATH_USE_AVX2 requested, but WASM support AVX2 feature is not implemented. Disabling.")
     set(OMATH_USE_AVX2 OFF CACHE BOOL "Omath will use AVX2 to boost performance" FORCE)
 endif ()
 
@@ -140,7 +167,9 @@ if (OMATH_USE_AVX2)
     endif ()
 endif ()
 
-if(EMSCRIPTEN)
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /EHsc)
+elseif(EMSCRIPTEN)
     target_compile_options(${PROJECT_NAME} PUBLIC -fexceptions)
     target_link_options(${PROJECT_NAME} PUBLIC -fexceptions)
 endif()
@@ -181,7 +210,6 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>   # Use this path when building the project
         $<INSTALL_INTERFACE:include>                             # Use this path when the project is installed
 )
-
 
 # Installation rules
 

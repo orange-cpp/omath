@@ -14,40 +14,40 @@ namespace omath::primitives
 
         // corner layout (0‑3 bottom, 4‑7 top)
         std::array<Vector3<float>, 8> p;
-        p[0] = bottom + (dir_forward + dir_right) * side_size; // front‑right‑bottom
-        p[1] = bottom + (dir_forward - dir_right) * side_size; // front‑left‑bottom
-        p[2] = bottom + (-dir_forward + dir_right) * side_size; // back‑right‑bottom
-        p[3] = bottom + (-dir_forward - dir_right) * side_size; // back‑left‑bottom
-        p[4] = top + (dir_forward + dir_right) * side_size; // front‑right‑top
-        p[5] = top + (dir_forward - dir_right) * side_size; // front‑left‑top
-        p[6] = top + (-dir_forward + dir_right) * side_size; // back‑right‑top
-        p[7] = top + (-dir_forward - dir_right) * side_size; // back‑left‑top
+        std::get<0>(p) = bottom + (dir_forward + dir_right) * side_size; // front‑right‑bottom
+        std::get<1>(p) = bottom + (dir_forward - dir_right) * side_size; // front‑left‑bottom
+        std::get<2>(p) = bottom + (-dir_forward + dir_right) * side_size; // back‑right‑bottom
+        std::get<3>(p) = bottom + (-dir_forward - dir_right) * side_size; // back‑left‑bottom
+        std::get<4>(p) = top + (dir_forward + dir_right) * side_size; // front‑right‑top
+        std::get<5>(p) = top + (dir_forward - dir_right) * side_size; // front‑left‑top
+        std::get<6>(p) = top + (-dir_forward + dir_right) * side_size; // back‑right‑top
+        std::get<7>(p) = top + (-dir_forward - dir_right) * side_size; // back‑left‑top
 
         std::array<Triangle<Vector3<float>>, 12> poly;
 
         // bottom face (+Y up ⇒ wind CW when viewed from above)
-        poly[0] = {p[0], p[2], p[3]};
-        poly[1] = {p[0], p[3], p[1]};
+        std::get<0>(poly) = {std::get<0>(p), std::get<2>(p), std::get<3>(p)};
+        std::get<1>(poly) = {std::get<0>(p), std::get<3>(p), std::get<1>(p)};
 
         // top face
-        poly[2] = {p[4], p[7], p[6]};
-        poly[3] = {p[4], p[5], p[7]};
+        std::get<2>(poly) = {std::get<4>(p), std::get<7>(p), std::get<6>(p)};
+        std::get<3>(poly) = {std::get<4>(p), std::get<5>(p), std::get<7>(p)};
 
         // front face
-        poly[4] = {p[0], p[5], p[1]};
-        poly[5] = {p[0], p[4], p[5]};
+        std::get<4>(poly) = {std::get<0>(p), std::get<5>(p), std::get<1>(p)};
+        std::get<5>(poly) = {std::get<0>(p), std::get<4>(p), std::get<5>(p)};
 
         // right face
-        poly[6] = {p[0], p[6], p[2]};
-        poly[7] = {p[0], p[4], p[6]};
+        std::get<6>(poly) = {std::get<0>(p), std::get<6>(p), std::get<2>(p)};
+        std::get<7>(poly) = {std::get<0>(p), std::get<4>(p), std::get<6>(p)};
 
         // back face
-        poly[8] = {p[2], p[7], p[3]};
-        poly[9] = {p[2], p[6], p[7]};
+        std::get<8>(poly) = {std::get<2>(p), std::get<7>(p), std::get<3>(p)};
+        std::get<9>(poly) = {std::get<2>(p), std::get<6>(p), std::get<7>(p)};
 
         // left face
-        poly[10] = {p[1], p[7], p[5]};
-        poly[11] = {p[1], p[3], p[7]};
+        std::get<10>(poly) = {std::get<1>(p), std::get<7>(p), std::get<5>(p)};
+        std::get<11>(poly) = {std::get<1>(p), std::get<3>(p), std::get<7>(p)};
 
         return poly;
     }

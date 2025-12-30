@@ -32,10 +32,12 @@ jobs:
               sudo apt-get install -y git build-essential cmake ninja-build \
                      zip unzip curl pkg-config ca-certificates \
                      clang-21 lld-21 libc++-21-dev libc++abi-21-dev \
-                     llvm-21
+                     llvm-21 clang-tidy-21 clang-tools-21
               sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
               sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
               sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+              sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
+              echo "CLANG_TIDY_PATH=/usr/bin/clang-tidy-21" >> $GITHUB_ENV
           - name: Linux (Clang) (x86-linux)
             triplet: x86-linux
             runner: ubuntu-latest
@@ -53,7 +55,7 @@ jobs:
               # Install Clang 21
               sudo apt-get install -y git build-essential cmake ninja-build \
                      zip unzip curl pkg-config ca-certificates \
-                     clang-21 lld-21 libc++-21-dev libc++abi-21-dev
+                     clang-21 clang-tidy-21 clang-tools-21 lld-21 libc++-21-dev libc++abi-21-dev
               sudo apt-get install -y -t plucky binutils
               # Install GCC 15 with multilib support
               sudo apt-get install -y gcc-15-multilib g++-15-multilib
@@ -61,6 +63,8 @@ jobs:
               sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
               sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
               sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+              sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
+              echo "CLANG_TIDY_PATH=/usr/bin/clang-tidy-21" >> $GITHUB_ENV
               # Set up alternatives for GCC
               sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
               sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
@@ -75,10 +79,12 @@ jobs:
               sudo apt-get update
               sudo apt-get install -y git build-essential cmake ninja-build \
                      zip unzip curl pkg-config ca-certificates \
-                     clang-21 lld-21 libc++-21-dev libc++abi-21-dev
+                     clang-21 clang-tidy-21 clang-tools-21 lld-21 libc++-21-dev libc++abi-21-dev
               sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
               sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
               sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+              sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
+              echo "CLANG_TIDY_PATH=/usr/bin/clang-tidy-21" >> $GITHUB_ENV
       fail-fast: false
     env:
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
@@ -774,10 +780,12 @@ jobs:
           sudo apt-get install -y git build-essential cmake ninja-build \
             zip unzip curl pkg-config ca-certificates \
             clang-21 lld-21 libc++-21-dev libc++abi-21-dev \
-            llvm-21 valgrind libxmu-dev libxi-dev libgl-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+            llvm-21 clang-tidy-21 clang-tools-21 valgrind libxmu-dev libxi-dev libgl-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
           sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
           sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
           sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
+          echo "CLANG_TIDY_PATH=/usr/bin/clang-tidy-21" >> $GITHUB_ENV
 
       - name: Checkout repository (with sub-modules)
         uses: actions/checkout@v4

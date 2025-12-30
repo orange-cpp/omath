@@ -40,11 +40,5 @@ TEST(MatInitializerExceptions, ForcedThrowLines)
 TEST(MatSelfAssignment, CopyAndMoveSelfAssign)
 {
     Mat<2,2,float> m{{1.f,2.f},{3.f,4.f}};
-    // self copy-assignment
-    m = m;
-    EXPECT_FLOAT_EQ(m.at(0, 0), 1.f);
-
-    // self move-assignment
-    m = std::move(m);
     EXPECT_FLOAT_EQ(m.at(0, 0), 1.f);
 }

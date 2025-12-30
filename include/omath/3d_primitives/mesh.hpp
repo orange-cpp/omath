@@ -6,7 +6,6 @@
 #include <omath/linear_algebra/mat.hpp>
 #include <omath/linear_algebra/vector3.hpp>
 #include <utility>
-#include <variant>
 #include <vector>
 
 namespace omath::primitives

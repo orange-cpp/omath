@@ -6,7 +6,6 @@
 #include <cfloat> // For FLT_MAX, FLT_MIN
 #include <cmath>
 #include <gtest/gtest.h>
-#include <limits> // For std::numeric_limits
 
 using namespace omath;
 
@@ -22,7 +21,7 @@ TEST(Vector3More, ConstructorsAndEquality)
     EXPECT_EQ(b.y, 2.f);
     EXPECT_EQ(b.z, 3.f);
 
-    const Vector3<float> c = b;
+    constexpr Vector3<float> c = b;
     EXPECT_EQ(c, b);
 }
 
@@ -30,21 +29,21 @@ TEST(Vector3More, ArithmeticAndDotCross)
 {
     constexpr Vector3<float> a{1.f, 0.f, 0.f};
     constexpr Vector3<float> b{0.f, 1.f, 0.f};
-    const auto c = a + b;
+    constexpr auto c = a + b;
     constexpr Vector3<float> expect_c{1.f,1.f,0.f};
     EXPECT_EQ(c, expect_c);
 
-    const auto d = a - b;
+    constexpr auto d = a - b;
     constexpr Vector3<float> expect_d{1.f,-1.f,0.f};
     EXPECT_EQ(d, expect_d);
 
-    const auto e = a * 2.f;
+    constexpr auto e = a * 2.f;
     constexpr Vector3<float> expect_e{2.f,0.f,0.f};
     EXPECT_EQ(e, expect_e);
 
     EXPECT_FLOAT_EQ(a.dot(b), 0.f);
     // manual cross product check
-    const auto cr = Vector3<float>{ a.y * b.z - a.z * b.y,
+    constexpr auto cr = Vector3<float>{ a.y * b.z - a.z * b.y,
                               a.z * b.x - a.x * b.z,
                               a.x * b.y - a.y * b.x };
     constexpr Vector3<float> expect_cr{0.f,0.f,1.f};
@@ -324,7 +323,7 @@ TEST_F(UnitTestVector3, Addition_WithInfinity)
 
 TEST_F(UnitTestVector3, Subtraction_WithInfinity)
 {
-    constexpr Vector3 v_inf(INFINITY, INFINITY, INFINITY);
+    const Vector3 v_inf(INFINITY, INFINITY, INFINITY);
     const Vector3 result = v1 - v_inf;
     EXPECT_TRUE(std::isinf(result.x));
     EXPECT_TRUE(std::isinf(result.y));

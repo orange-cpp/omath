@@ -11,7 +11,6 @@
 #include <cmath>
 #include <expected>
 #include <omath/trigonometry/angle.hpp>
-#include <type_traits>
 
 #ifdef OMATH_BUILD_TESTS
 // ReSharper disable CppInconsistentNaming
@@ -185,10 +184,10 @@ namespace omath::projection
                 auto clip = get_view_projection_matrix()
                             * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(point);
                 return std::array<float, 4>{
-                        clip.at(0, 0), // x
-                        clip.at(1, 0), // y
-                        clip.at(2, 0), // z
-                        clip.at(3, 0) // w
+                        clip.at(0, 0),  // x
+                        clip.at(1, 0),  // y
+                        clip.at(2, 0),  // z
+                        clip.at(3, 0)   // w
                 };
             };
 
@@ -197,16 +196,30 @@ namespace omath::projection
             const auto c2 = to_clip(triangle.m_vertex3);
 
             // If all vertices are behind the camera (w <= 0), trivially reject
-            if (c0[3] <= 0.f && c1[3] <= 0.f && c2[3] <= 0.f)
+            if (std::get<3>(c0) <= 0.f && std::get<3>(c1) <= 0.f && std::get<3>(c2) <= 0.f)
                 return true;
 
             // Helper: all three vertices outside the same clip plane
             auto all_outside_plane = [](const int axis, const std::array<float, 4>& a, const std::array<float, 4>& b,
-                                        const std::array<float, 4>& c, const bool positive_side)
+                                            const std::array<float, 4>& c, const bool positive_side)
             {
-                if (positive_side)
-                    return a[axis] > a[3] && b[axis] > b[3] && c[axis] > c[3];
-                return a[axis] < -a[3] && b[axis] < -b[3] && c[axis] < -c[3];
+                auto compare = [&](auto index_const) {
+                    constexpr size_t i = index_const;
+                    if (positive_side)
+                        return std::get<i>(a) > std::get<3>(a) &&
+                               std::get<i>(b) > std::get<3>(b) &&
+                               std::get<i>(c) > std::get<3>(c);
+                    return std::get<i>(a) < -std::get<3>(a) &&
+                           std::get<i>(b) < -std::get<3>(b) &&
+                           std::get<i>(c) < -std::get<3>(c);
+                };
+
+                switch (axis) {
+                case 0: return compare(std::integral_constant<size_t, 0>{});
+                case 1: return compare(std::integral_constant<size_t, 1>{});
+                case 2: return compare(std::integral_constant<size_t, 2>{});
+                default: return false;
+                }
             };
 
             // Clip volume in clip space (OpenGL-style):
@@ -214,7 +227,7 @@ namespace omath::projection
             // -w <= y <= w
             // -w <= z <= w
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 3; ++i)
             {
                 if (all_outside_plane(i, c0, c1, c2, false))
                     return true; // x < -w (left)
