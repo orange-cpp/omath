@@ -261,7 +261,7 @@ namespace
 
         const auto nt_headers = get_nt_header_from_file(file, dos_header);
 
-        if (!nt_headers)
+        if (!nt_headers) [[unlikely]]
             return std::nullopt;
 
         if (invalid_nt_header_file(nt_headers.value())) [[unlikely]]
@@ -314,7 +314,7 @@ namespace omath
 
         auto nt_header_variant = get_nt_header_from_loaded_module(module_base_address);
 
-        if (!nt_header_variant)
+        if (!nt_header_variant) [[unlikely]]
             return std::nullopt;
 
         return std::visit(
@@ -343,7 +343,7 @@ namespace omath
     {
         const auto pe_section = extract_section_from_pe_file(path_to_file, target_section_name);
 
-        if (!pe_section.has_value())
+        if (!pe_section.has_value()) [[unlikely]]
             return std::nullopt;
 
         const auto scan_result =

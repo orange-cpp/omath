@@ -12,15 +12,15 @@
 namespace
 {
     // Common
-    constexpr uint8_t EI_NIDENT = 16;
-    constexpr uint8_t EI_CLASS = 4;
+    constexpr uint8_t ei_nident = 16;
+    constexpr uint8_t ei_class = 4;
 
-    constexpr uint8_t ELFCLASS32 = 1;
-    constexpr uint8_t ELFCLASS64 = 2;
+    constexpr uint8_t elfclass32 = 1;
+    constexpr uint8_t elfclass64 = 2;
     // ReSharper disable CppDeclaratorNeverUsed
-    struct Elf32_Ehdr
+    struct Elf32Ehdr final
     {
-        unsigned char e_ident[EI_NIDENT];
+        unsigned char e_ident[ei_nident];
         uint16_t e_type;
         uint16_t e_machine;
         uint32_t e_version;
@@ -36,9 +36,9 @@ namespace
         uint16_t e_shstrndx;
     };
 
-    struct Elf64_Ehdr
+    struct Elf64Ehdr final
     {
-        unsigned char e_ident[EI_NIDENT];
+        unsigned char e_ident[ei_nident];
         uint16_t e_type;
         uint16_t e_machine;
         uint32_t e_version;
@@ -54,7 +54,7 @@ namespace
         uint16_t e_shstrndx;
     };
 
-    struct Elf32_Shdr
+    struct Elf32Shdr final
     {
         uint32_t sh_name;
         uint32_t sh_type;
@@ -68,7 +68,7 @@ namespace
         uint32_t sh_entsize;
     };
 
-    struct Elf64_Shdr
+    struct Elf64Shdr final
     {
         uint32_t sh_name;
         uint32_t sh_type;
@@ -95,8 +95,8 @@ namespace
     template<FileArch arch>
     struct ElfHeaders
     {
-        using FileHeader = std::conditional_t<arch == FileArch::x64, Elf64_Ehdr, Elf32_Ehdr>;
-        using SectionHeader = std::conditional_t<arch == FileArch::x64, Elf64_Shdr, Elf32_Shdr>;
+        using FileHeader = std::conditional_t<arch == FileArch::x64, Elf64Ehdr, Elf32Ehdr>;
+        using SectionHeader = std::conditional_t<arch == FileArch::x64, Elf64Shdr, Elf32Shdr>;
         FileHeader file_header;
         SectionHeader section_header;
     };
@@ -117,17 +117,17 @@ namespace
     [[nodiscard]]
     std::optional<FileArch> get_file_arch(std::fstream& file)
     {
-        std::array<char, EI_NIDENT> e_ident{};
+        std::array<char, ei_nident> e_ident{};
         const std::streampos back_up_pose = file.tellg();
 
         file.seekg(0, std::ios_base::beg);
         file.read(e_ident.data(), e_ident.size());
         file.seekg(back_up_pose, std::ios_base::beg);
 
-        if (e_ident[EI_CLASS] == ELFCLASS64)
+        if (e_ident[ei_class] == elfclass64)
             return FileArch::x64;
 
-        if (e_ident[EI_CLASS] == ELFCLASS32)
+        if (e_ident[ei_class] == elfclass32)
             return FileArch::x32;
 
         return std::nullopt;
@@ -144,15 +144,15 @@ namespace
     {
         std::fstream file(path, std::ios::binary | std::ios::in);
 
-        if (!file.is_open())
+        if (!file.is_open()) [[unlikely]]
             return std::nullopt;
 
-        if (not_elf_file(file))
+        if (not_elf_file(file)) [[unlikely]]
             return std::nullopt;
 
         const auto architecture = get_file_arch(file);
 
-        if (!architecture.has_value())
+        if (!architecture.has_value()) [[unlikely]]
             return std::nullopt;
 
         std::variant<ElfHeaders<FileArch::x64>, ElfHeaders<FileArch::x32>> elf_headers;
@@ -236,7 +236,7 @@ namespace omath
     {
         const auto pe_section = get_elf_section_by_name(path_to_file, target_section_name);
 
-        if (!pe_section.has_value())
+        if (!pe_section.has_value()) [[unlikely]]
             return std::nullopt;
 
         const auto scan_result =
