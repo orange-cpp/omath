@@ -19,7 +19,7 @@ static bool write_bytes(const std::string& path, const std::vector<std::uint8_t>
 
 TEST(unit_test_pe_pattern_scan_more, InvalidDosHeader)
 {
-    constexpr std::string_view path = "./test_bad_dos.bin";
+    const std::string path = "./test_bad_dos.bin";
     std::vector<std::uint8_t> data(128, 0);
     // write wrong magic
     data[0] = 'N';
@@ -32,7 +32,7 @@ TEST(unit_test_pe_pattern_scan_more, InvalidDosHeader)
 
 TEST(unit_test_pe_pattern_scan_more, InvalidNtSignature)
 {
-    constexpr std::string_view path = "./test_bad_nt.bin";
+    const std::string path = "./test_bad_nt.bin";
     std::vector<std::uint8_t> data(256, 0);
     // valid DOS header
     data[0] = 'M';
@@ -54,7 +54,7 @@ TEST(unit_test_pe_pattern_scan_more, InvalidNtSignature)
 TEST(unit_test_pe_pattern_scan_more, SectionNotFound)
 {
     // reuse minimal writer but with section named .data and search .text
-    constexpr std::string_view path = "./test_section_not_found.bin";
+    const std::string path = "./test_section_not_found.bin";
     std::ofstream f(path.data(), std::ios::binary);
     ASSERT_TRUE(f.is_open());
     // DOS

@@ -59,7 +59,8 @@ TEST(LinearAlgebraMore2, MatNonInlinedAndStringHelpers)
 
     auto maybe_inv = m.inverted();
     EXPECT_TRUE(maybe_inv.has_value());
-    const auto& inv = maybe_inv.value();
+    if (!maybe_inv.has_value()) return;
+    const auto& inv = *maybe_inv;
 
     // m * inv should be identity (approximately)
     auto prod = m * inv;

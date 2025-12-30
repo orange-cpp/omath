@@ -50,11 +50,11 @@ echo "----------------------------------------------------"
 
 cmake --preset linux-release-vcpkg \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DOMATH_BUILD_EXAMPLES=OFF \
+    -DOMATH_BUILD_EXAMPLES=ON \
     -DOMATH_BUILD_TESTS=ON \
     -DOMATH_BUILD_BENCHMARK=ON \
     -DOMATH_ENABLE_VALGRIND=ON \
-    -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;benchmark"
+    -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;benchmark;examples"
 
 echo "----------------------------------------------------"
 echo "Building Targets..."

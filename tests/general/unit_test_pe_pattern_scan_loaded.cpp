@@ -51,7 +51,8 @@ TEST(PePatternScanLoaded, FindsPatternAtBase)
     const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "90 01 02");
     ASSERT_TRUE(res.has_value());
     // address should point somewhere in our buffer; check offset
-    const uintptr_t addr = res.value();
+    if (!res.has_value()) return;
+    const uintptr_t addr = *res;
     const uintptr_t base = reinterpret_cast<uintptr_t>(buf.data());
     EXPECT_EQ(addr - base, 0x200u);
 }
@@ -63,7 +64,8 @@ TEST(PePatternScanLoaded, WildcardMatches)
 
     const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE ?? BE");
     ASSERT_TRUE(res.has_value());
-    const uintptr_t addr = res.value();
+    if (!res.has_value()) return;
+    const uintptr_t addr = *res;
     const uintptr_t base = reinterpret_cast<uintptr_t>(buf.data());
     EXPECT_EQ(addr - base, 0x300u);
 }

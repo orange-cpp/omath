@@ -19,8 +19,9 @@ TEST(UnitTestProjection, Projection)
     const auto result = cam.screen_to_world(projected.value());
     const auto result2 = cam.world_to_screen(result.value());
 
-    EXPECT_EQ(static_cast<omath::Vector2<float>>(projected.value()),
-              static_cast<omath::Vector2<float>>(result2.value()));
+    const auto p1 = projected.value();
+    const auto p2 = result2.value();
+    EXPECT_EQ(omath::Vector2<float>(p1.x, p1.y), omath::Vector2<float>(p2.x, p2.y));
     EXPECT_NEAR(projected->x, 960.f, 0.001f);
     EXPECT_NEAR(projected->y, 504.f, 0.001f);
     EXPECT_NEAR(projected->z, 1.f, 0.001f);

@@ -69,8 +69,9 @@ TEST(unit_test_frostbite_engine, ProjectTargetMovedFromCamera)
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
     const auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {.m_width=1280.f, .m_height=720.f}, fov, 0.01f, 1000.f);
 
-    for (float distance = 0.02f; distance < 100.f; distance += 0.01f)
+    for (int i = 2; i < 10000; ++i)
     {
+        const float distance = static_cast<float>(i) * 0.01f;
         const auto projected = cam.world_to_screen({0, 0, distance});
 
         EXPECT_TRUE(projected.has_value());

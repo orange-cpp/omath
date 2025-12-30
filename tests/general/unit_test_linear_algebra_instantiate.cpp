@@ -15,17 +15,17 @@ TEST(LinearAlgebraInstantiate, Vector3AndVector4AndMatCoverage) {
     Vector3<float> b{4.f, 5.f, 6.f};
 
     // call various methods
-    volatile float d0 = a.distance_to_sqr(b);
-    volatile float d1 = a.dot(b);
-    volatile auto c = a.cross(b);
+    volatile float d0 = a.distance_to_sqr(b); (void)d0;
+    volatile float d1 = a.dot(b); (void)d1;
+    volatile auto c = a.cross(b); (void)c;
     auto tup = a.as_tuple();
-    volatile bool dir = a.point_to_same_direction(b);
+    volatile bool dir = a.point_to_same_direction(b); (void)dir;
 
     // non-inlined helpers
-    volatile float ln = a.length();
-    auto ang = a.angle_between(b);
-    volatile bool perp = a.is_perpendicular(b, 0.1f);
-    volatile auto anorm = a.normalized();
+    volatile float ln = a.length(); (void)ln;
+    auto ang = a.angle_between(b); (void)ang;
+    volatile bool perp = a.is_perpendicular(b, 0.1f); (void)perp;
+    volatile auto anorm = a.normalized(); (void)anorm;
 
     // formatter and hash instantiations (char only)
     (void)std::format("{}", a);
@@ -33,39 +33,39 @@ TEST(LinearAlgebraInstantiate, Vector3AndVector4AndMatCoverage) {
 
     // Vector4 usage
     Vector4<float> v4{1.f, -2.f, 3.f, -4.f};
-    volatile float v4len = v4.length();
-    volatile float v4sum = v4.sum();
+    volatile float v4len = v4.length(); (void)v4len;
+    volatile float v4sum = v4.sum(); (void)v4sum;
     v4.clamp(-2.f, 2.f);
     (void)std::format("{}", v4);
     (void)std::hash<Vector4<float>>{}(v4);
 
     // Mat usage: instantiate several sizes and store orders
     Mat<1,1> m1{{42.f}};
-    volatile float m1det = m1.determinant();
+    volatile float m1det = m1.determinant(); (void)m1det;
 
     Mat<2,2> m2{{{1.f,2.f},{3.f,4.f}}};
     volatile float det2 = m2.determinant();
-    auto tr2 = m2.transposed();
-    auto minor00 = m2.minor(0,0);
-    auto algc = m2.alg_complement(0,1);
+    auto tr2 = m2.transposed(); (void)tr2;
+    auto minor00 = m2.minor(0,0); (void)minor00;
+    auto algc = m2.alg_complement(0,1); (void)algc;
     auto rarr = m2.raw_array();
     auto inv2 = m2.inverted();
 
     Mat<3,3> m3{{{1.f,2.f,3.f},{4.f,5.f,6.f},{7.f,8.f,9.f}}};
-    volatile float det3 = m3.determinant();
-    auto strip = m3.strip(0,0);
-    auto min = m3.minor(2,2);
+    volatile float det3 = m3.determinant(); (void)det3;
+    auto strip = m3.strip(0,0); (void)strip;
+    auto min = m3.minor(2,2); (void)min;
 
     // to_string/wstring/u8string and to_screen_mat
-    auto s = m2.to_string();
-    auto ws = m2.to_wstring();
-    auto u8s = m2.to_u8string();
+    auto s = m2.to_string(); (void)s;
+    auto ws = m2.to_wstring(); (void)ws;
+    auto u8s = m2.to_u8string(); (void)u8s;
     auto screen = Mat<4,4>::to_screen_mat(800.f, 600.f);
 
     // call non-inlined mat helpers
-    volatile auto det = m2.determinant();
-    volatile auto inv = m2.inverted();
-    volatile auto trans = m2.transposed();
+    volatile auto det = m2.determinant(); (void)det;
+    volatile auto inv = m2.inverted(); (void)inv;
+    volatile auto trans = m2.transposed(); (void)trans;
     volatile auto raw = m2.raw_array();
 
     // simple sanity checks (not strict, only to use values)

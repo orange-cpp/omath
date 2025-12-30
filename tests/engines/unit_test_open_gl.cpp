@@ -66,8 +66,9 @@ TEST(unit_test_opengl, ProjectTargetMovedFromCamera)
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     const auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.01f, 1000.f);
 
-    for (float distance = -10.f; distance > -1000.f; distance -= 0.01f)
+    for (int i = 1000; i < 100000; ++i)
     {
+        const float distance = -static_cast<float>(i) * 0.01f;
         const auto projected = cam.world_to_screen({0, 0, distance});
 
         EXPECT_TRUE(projected.has_value());

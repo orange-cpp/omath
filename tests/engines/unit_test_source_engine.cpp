@@ -68,8 +68,9 @@ TEST(unit_test_source_engine, ProjectTargetMovedFromCamera)
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     const auto cam = omath::source_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.01f, 1000.f);
 
-    for (float distance = 0.02f; distance < 1000.f; distance += 0.01f)
+    for (int i = 2; i < 100000; ++i)
     {
+        const float distance = static_cast<float>(i) * 0.01f;
         const auto projected = cam.world_to_screen({distance, 0, 0});
 
         EXPECT_TRUE(projected.has_value());
@@ -88,8 +89,9 @@ TEST(unit_test_source_engine, ProjectTargetMovedUp)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.01f, 1000.f);
 
     auto prev = 1080.f;
-    for (float distance = 0.0f; distance < 10.f; distance += 1.f)
+    for (int i = 0; i < 10; ++i)
     {
+        const float distance = static_cast<float>(i);
         const auto projected = cam.world_to_screen({100.f, 0, distance});
         EXPECT_TRUE(projected.has_value());
 
