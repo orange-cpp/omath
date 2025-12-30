@@ -169,7 +169,7 @@ namespace
                     if (!file.read(reinterpret_cast<char*>(&file_header), sizeof(file_header)))
                         return std::nullopt;
 
-                    std::streamoff shstr_off =
+                    const std::streamoff shstr_off =
                             static_cast<std::streamoff>(file_header.e_shoff)
                             + static_cast<std::streamoff>(file_header.e_shstrndx) * sizeof(section_header);
                     file.seekg(shstr_off, std::ios_base::beg);
