@@ -68,7 +68,23 @@ namespace omath
         constexpr Vector4& operator/=(const Type& value) noexcept
         {
             Vector3<Type>::operator/=(value);
-            w /= value;
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                if (value == static_cast<Type>(0))
+                {
+                    const Type inf = std::numeric_limits<Type>::infinity();
+                    const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                    w = (w == static_cast<Type>(0)) ? nan : ((w > static_cast<Type>(0)) ? inf : -inf);
+                }
+                else
+                {
+                    w /= value;
+                }
+            }
+            else
+            {
+                w /= value;
+            }
 
             return *this;
         }
@@ -76,7 +92,23 @@ namespace omath
         constexpr Vector4& operator/=(const Vector4& other) noexcept
         {
             Vector3<Type>::operator/=(other);
-            w /= other.w;
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                if (other.w == static_cast<Type>(0))
+                {
+                    const Type inf = std::numeric_limits<Type>::infinity();
+                    const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                    w = (w == static_cast<Type>(0)) ? nan : ((w > static_cast<Type>(0)) ? inf : -inf);
+                }
+                else
+                {
+                    w /= other.w;
+                }
+            }
+            else
+            {
+                w /= other.w;
+            }
             return *this;
         }
 
@@ -144,12 +176,37 @@ namespace omath
         [[nodiscard]]
         constexpr Vector4 operator/(const Type& value) const noexcept
         {
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                if (value == static_cast<Type>(0))
+                {
+                    const Type inf = std::numeric_limits<Type>::infinity();
+                    const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                    return {
+                        (this->x == static_cast<Type>(0)) ? nan : ((this->x > static_cast<Type>(0)) ? inf : -inf),
+                        (this->y == static_cast<Type>(0)) ? nan : ((this->y > static_cast<Type>(0)) ? inf : -inf),
+                        (this->z == static_cast<Type>(0)) ? nan : ((this->z > static_cast<Type>(0)) ? inf : -inf),
+                        (w == static_cast<Type>(0)) ? nan : ((w > static_cast<Type>(0)) ? inf : -inf)
+                    };
+                }
+            }
             return {this->x / value, this->y / value, this->z / value, w / value};
         }
 
         [[nodiscard]]
         constexpr Vector4 operator/(const Vector4& other) const noexcept
         {
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                const Type inf = std::numeric_limits<Type>::infinity();
+                const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                return {
+                    (other.x == static_cast<Type>(0)) ? ((this->x == static_cast<Type>(0)) ? nan : ((this->x > static_cast<Type>(0)) ? inf : -inf)) : this->x / other.x,
+                    (other.y == static_cast<Type>(0)) ? ((this->y == static_cast<Type>(0)) ? nan : ((this->y > static_cast<Type>(0)) ? inf : -inf)) : this->y / other.y,
+                    (other.z == static_cast<Type>(0)) ? ((this->z == static_cast<Type>(0)) ? nan : ((this->z > static_cast<Type>(0)) ? inf : -inf)) : this->z / other.z,
+                    (other.w == static_cast<Type>(0)) ? ((w == static_cast<Type>(0)) ? nan : ((w > static_cast<Type>(0)) ? inf : -inf)) : w / other.w
+                };
+            }
             return {this->x / other.x, this->y / other.y, this->z / other.z, w / other.w};
         }
 

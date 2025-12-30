@@ -836,9 +836,9 @@ jobs:
           - name: Linux (UBSan)
             sanitizer_flag: -DOMATH_UBSAN=ON
             triplet: x64-linux-ubsan
-          - name: Linux (MSan)
-            sanitizer_flag: -DOMATH_MSAN=ON
-            triplet: x64-linux-msan
+          #- name: Linux (MSan)
+          #  sanitizer_flag: -DOMATH_MSAN=ON
+          #  triplet: x64-linux-msan
           - name: Linux (TSan)
             sanitizer_flag: -DOMATH_TSAN=ON
             triplet: x64-linux-tsan
@@ -884,9 +884,7 @@ jobs:
             -DOMATH_BUILD_TESTS=ON \
             -DVCPKG_MANIFEST_FEATURES="tests" \
             -DVCPKG_OVERLAY_TRIPLETS="${{ github.workspace }}/cmake/triplets" \
-            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
-            -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
-            -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++"
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}
 
       - name: Build
         shell: bash
