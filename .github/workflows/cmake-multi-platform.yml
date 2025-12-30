@@ -892,4 +892,4 @@ jobs:
           export ASAN_OPTIONS=detect_leaks=1:symbolize=1
           export TSAN_OPTIONS=second_deadlock_stack=1
           export MSAN_OPTIONS=poison_in_free=1
-          ./out/Release/unit_tests
+          ./out/RelWithDebInfo/unit_tests
