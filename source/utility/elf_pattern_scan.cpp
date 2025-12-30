@@ -98,13 +98,15 @@ namespace
     [[nodiscard]]
     bool not_elf_file(std::fstream& file)
     {
-        std::array<char, EI_NIDENT+1> elf_signature{};
+        constexpr std::string_view valid_elf_signature = "\x7F" "ELF";
+        std::array<char, valid_elf_signature.size()+1> elf_signature{};
         const std::streampos back_up_pose = file.tellg();
+
         file.seekg(0, std::ios_base::beg);
-        file.read(elf_signature.data(), EI_NIDENT);
+        file.read(elf_signature.data(), 4);
         file.seekg(back_up_pose, std::ios_base::beg);
 
-        return std::string_view{elf_signature.data(), 4} !=  "\x7F" "ELF";
+        return std::string_view{elf_signature.data(), 4} != valid_elf_signature;
     }
     [[maybe_unused]]
     std::vector<uint8_t> GetElfSectionByName(const std::string& path, const std::string& section_name)
