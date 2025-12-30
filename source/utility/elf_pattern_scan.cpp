@@ -181,7 +181,7 @@ namespace
 
                     file.seekg(section_header.sh_offset, std::ios_base::beg);
 
-                    if (!file.read(shstrtab.data(), shstrtab.size()))
+                    if (!file.read(shstrtab.data(), static_cast<std::streamsize>(shstrtab.size())))
                         return std::nullopt;
 
                     for (std::uint16_t i = 0; i < file_header.e_shnum; ++i)
@@ -208,8 +208,9 @@ namespace
                         out.raw_base_addr = current_section.sh_offset;
                         out.data.resize(current_section.sh_size);
 
-                        file.seekg(out.raw_base_addr, std::ios_base::beg);
-                        if (!file.read(reinterpret_cast<char*>(out.data.data()), out.data.size()))
+                        file.seekg(static_cast<std::streamoff>(out.raw_base_addr), std::ios_base::beg);
+                        if (!file.read(reinterpret_cast<char*>(out.data.data()),
+                                       static_cast<std::streamsize>(out.data.size())))
                             return std::nullopt;
 
                         return out;
