@@ -4,7 +4,7 @@
 // /Users/vladislav/Downloads/valencia
 #include <gtest/gtest.h>
 #include <omath/utility/elf_pattern_scan.hpp>
-
+#include <print>
 TEST(unit_test_elf_pattern_scan_file, ScanMissingPattern)
 {
     constexpr std::string_view path = "/Users/vladislav/Downloads/crackme";

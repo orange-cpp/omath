@@ -224,10 +224,115 @@ namespace omath
 {
 
     std::optional<std::uintptr_t>
-    ElfPatternScanner::scan_for_pattern_in_loaded_module([[maybe_unused]] const void* module_base_address,
-                                                         [[maybe_unused]] const std::string_view& pattern)
+    ElfPatternScanner::scan_for_pattern_in_loaded_module(const void* module_base_address,
+                                                         const std::string_view& pattern,
+                                                         const std::string_view& target_section_name)
     {
-        return std::nullopt;
+        if (module_base_address == nullptr)
+            return std::nullopt;
+
+        const auto* base = static_cast<const std::byte*>(module_base_address);
+
+        // Validate ELF signature.
+        constexpr std::string_view valid_elf_signature = "\x7F"
+                                                         "ELF";
+        if (std::string_view{reinterpret_cast<const char*>(base), valid_elf_signature.size()} != valid_elf_signature)
+            return std::nullopt;
+
+        // Detect architecture.
+        const auto ei_class_value = static_cast<uint8_t>(base[ei_class]);
+        const auto arch = ei_class_value == elfclass64   ? FileArch::x64
+                          : ei_class_value == elfclass32 ? FileArch::x32
+                                                         : std::optional<FileArch>{};
+        if (!arch.has_value())
+            return std::nullopt;
+
+        auto scan_x64 = [&]() -> std::optional<std::uintptr_t>
+        {
+            using FileHeader = Elf64Ehdr;
+            using SectionHeader = Elf64Shdr;
+
+            const auto* file_header = reinterpret_cast<const FileHeader*>(base);
+
+            const auto shstrtab_off = static_cast<std::size_t>(file_header->e_shoff)
+                                      + static_cast<std::size_t>(file_header->e_shstrndx) * sizeof(SectionHeader);
+            const auto* shstrtab_hdr = reinterpret_cast<const SectionHeader*>(base + shstrtab_off);
+            const auto* shstrtab =
+                    reinterpret_cast<const char*>(base + static_cast<std::size_t>(shstrtab_hdr->sh_offset));
+            const auto shstrtab_size = static_cast<std::size_t>(shstrtab_hdr->sh_size);
+
+            for (std::uint16_t i = 0; i < file_header->e_shnum; ++i)
+            {
+                const auto section_off = static_cast<std::size_t>(file_header->e_shoff)
+                                         + static_cast<std::size_t>(i) * sizeof(SectionHeader);
+                const auto* section = reinterpret_cast<const SectionHeader*>(base + section_off);
+
+                if (section->sh_name >= shstrtab_size || section->sh_size == 0)
+                    continue;
+
+                const std::string_view name{shstrtab + section->sh_name};
+                if (name != target_section_name)
+                    continue;
+
+                const auto* section_begin = base + static_cast<std::size_t>(section->sh_addr);
+                const auto* section_end = section_begin + static_cast<std::size_t>(section->sh_size);
+
+                const auto scan_result = PatternScanner::scan_for_pattern(section_begin, section_end, pattern);
+
+                if (scan_result == section_end)
+                    return std::nullopt;
+
+                return reinterpret_cast<std::uintptr_t>(scan_result);
+            }
+
+            return std::nullopt;
+        };
+
+        auto scan_x32 = [&]() -> std::optional<std::uintptr_t>
+        {
+            using FileHeader = Elf32Ehdr;
+            using SectionHeader = Elf32Shdr;
+
+            const auto* file_header = reinterpret_cast<const FileHeader*>(base);
+
+            const auto shstrtab_off = static_cast<std::size_t>(file_header->e_shoff)
+                                      + static_cast<std::size_t>(file_header->e_shstrndx) * sizeof(SectionHeader);
+            const auto* shstrtab_hdr = reinterpret_cast<const SectionHeader*>(base + shstrtab_off);
+            const auto* shstrtab =
+                    reinterpret_cast<const char*>(base + static_cast<std::size_t>(shstrtab_hdr->sh_offset));
+            const auto shstrtab_size = static_cast<std::size_t>(shstrtab_hdr->sh_size);
+
+            for (std::uint16_t i = 0; i < file_header->e_shnum; ++i)
+            {
+                const auto section_off = static_cast<std::size_t>(file_header->e_shoff)
+                                         + static_cast<std::size_t>(i) * sizeof(SectionHeader);
+                const auto* section = reinterpret_cast<const SectionHeader*>(base + section_off);
+
+                if (section->sh_name >= shstrtab_size || section->sh_size == 0)
+                    continue;
+
+                const std::string_view name{shstrtab + section->sh_name};
+                if (name != target_section_name)
+                    continue;
+
+                const auto* section_begin = base + static_cast<std::size_t>(section->sh_addr);
+                const auto* section_end = section_begin + static_cast<std::size_t>(section->sh_size);
+
+                const auto scan_result = PatternScanner::scan_for_pattern(section_begin, section_end, pattern);
+
+                if (scan_result == section_end)
+                    return std::nullopt;
+
+                return reinterpret_cast<std::uintptr_t>(scan_result);
+            }
+
+            return std::nullopt;
+        };
+
+        if (arch == FileArch::x64)
+            return scan_x64();
+
+        return scan_x32();
     }
     std::optional<ElfSectionScanResult>
     ElfPatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
