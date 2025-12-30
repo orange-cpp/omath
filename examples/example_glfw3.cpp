@@ -239,8 +239,8 @@ int main()
 
     // flatten EBO to GL indices
     std::vector<GLuint> flatIndices;
-    flatIndices.reserve(cube.m_vertex_array_object.size() * 3);
-    for (const auto& tri : cube.m_vertex_array_object)
+    flatIndices.reserve(cube.m_element_buffer_object.size() * 3);
+    for (const auto& tri : cube.m_element_buffer_object)
     {
         flatIndices.push_back(tri.x);
         flatIndices.push_back(tri.y);
