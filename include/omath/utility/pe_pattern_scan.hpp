@@ -19,8 +19,9 @@ namespace omath
     {
     public:
         [[nodiscard]]
-        static std::optional<std::uintptr_t> scan_for_pattern_in_loaded_module(const void* module_base_address,
-                                                                               const std::string_view& pattern);
+        static std::optional<std::uintptr_t>
+        scan_for_pattern_in_loaded_module(const void* module_base_address, const std::string_view& pattern,
+                                          const std::string_view& target_section_name = ".text");
 
         [[nodiscard]]
         static std::optional<PeSectionScanResult>
