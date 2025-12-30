@@ -17,7 +17,7 @@ namespace
 
     constexpr uint8_t ELFCLASS32 = 1;
     constexpr uint8_t ELFCLASS64 = 2;
-
+    // ReSharper disable CppDeclaratorNeverUsed
     struct Elf32_Ehdr
     {
         unsigned char e_ident[EI_NIDENT];
@@ -81,22 +81,22 @@ namespace
         uint64_t sh_addralign;
         uint64_t sh_entsize;
     };
-
+    // ReSharper restore CppDeclaratorNeverUsed
 #pragma pack(pop)
 } // namespace
 
 namespace
 {
-    enum class FILE_ARCH : std::int8_t
+    enum class FileArch : std::int8_t
     {
         x32,
         x64,
     };
-    template<FILE_ARCH arch>
+    template<FileArch arch>
     struct ElfHeaders
     {
-        using FileHeader = std::conditional_t<arch == FILE_ARCH::x64, Elf64_Ehdr, Elf32_Ehdr>;
-        using SectionHeader = std::conditional_t<arch == FILE_ARCH::x64, Elf64_Shdr, Elf32_Shdr>;
+        using FileHeader = std::conditional_t<arch == FileArch::x64, Elf64_Ehdr, Elf32_Ehdr>;
+        using SectionHeader = std::conditional_t<arch == FileArch::x64, Elf64_Shdr, Elf32_Shdr>;
         FileHeader file_header;
         SectionHeader section_header;
     };
@@ -115,7 +115,7 @@ namespace
         return std::string_view{elf_signature.data(), 4} != valid_elf_signature;
     }
     [[nodiscard]]
-    std::optional<FILE_ARCH> get_file_arch(std::fstream& file)
+    std::optional<FileArch> get_file_arch(std::fstream& file)
     {
         std::array<char, EI_NIDENT> e_ident{};
         const std::streampos back_up_pose = file.tellg();
@@ -125,10 +125,10 @@ namespace
         file.seekg(back_up_pose, std::ios_base::beg);
 
         if (e_ident[EI_CLASS] == ELFCLASS64)
-            return FILE_ARCH::x64;
+            return FileArch::x64;
 
         if (e_ident[EI_CLASS] == ELFCLASS32)
-            return FILE_ARCH::x32;
+            return FileArch::x32;
 
         return std::nullopt;
     }
@@ -155,11 +155,11 @@ namespace
         if (!architecture.has_value())
             return std::nullopt;
 
-        std::variant<ElfHeaders<FILE_ARCH::x64>, ElfHeaders<FILE_ARCH::x32>> elf_headers;
-        if (architecture.value() == FILE_ARCH::x64)
-            elf_headers = ElfHeaders<FILE_ARCH::x64>{};
-        else if (architecture.value() == FILE_ARCH::x32)
-            elf_headers = ElfHeaders<FILE_ARCH::x32>{};
+        std::variant<ElfHeaders<FileArch::x64>, ElfHeaders<FileArch::x32>> elf_headers;
+        if (architecture.value() == FileArch::x64)
+            elf_headers = ElfHeaders<FileArch::x64>{};
+        else if (architecture.value() == FileArch::x32)
+            elf_headers = ElfHeaders<FileArch::x32>{};
 
         return std::visit(
                 [&](auto& header) -> std::optional<ExtractedSection>
@@ -197,6 +197,7 @@ namespace
                         if (current_section.sh_name >= shstrtab.size())
                             continue;
 
+                        // ReSharper disable once CppTooWideScopeInitStatement
                         const std::string_view name = &shstrtab[current_section.sh_name];
                         if (section_name != name)
                             continue;
