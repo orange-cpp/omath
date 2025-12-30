@@ -132,7 +132,7 @@ namespace
 
         return std::nullopt;
     }
-    struct ExtractedSection
+    struct ExtractedSection final
     {
         std::uint64_t virtual_base_addr{};
         std::uint64_t raw_base_addr{};
