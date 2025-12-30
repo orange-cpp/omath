@@ -270,8 +270,7 @@ namespace omath
                 if (section->sh_name >= shstrtab_size || section->sh_size == 0)
                     continue;
 
-                const std::string_view name{shstrtab + section->sh_name};
-                if (name != target_section_name)
+                if (std::string_view{shstrtab + section->sh_name} != target_section_name)
                     continue;
 
                 const auto* section_begin = base + static_cast<std::size_t>(section->sh_addr);
