@@ -88,8 +88,7 @@ TEST(TraitTests, Frostbite_Pred_And_Mesh_And_Camera)
     expect_matrix_near(m1, m2);
 
     // CameraTrait look at should be callable
-    const auto angles = e::CameraTrait::calc_look_at_angle({0, 0, 0}, {0, 1, 1});
-    (void)angles;
+    [[maybe_unused]] const auto angles = e::CameraTrait::calc_look_at_angle({0, 0, 0}, {0, 1, 1});
     const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {.m_width=1280.f, .m_height=720.f}, 0.1f, 1000.f);
     const auto expected = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);

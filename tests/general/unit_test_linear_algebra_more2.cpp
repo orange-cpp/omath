@@ -32,8 +32,7 @@ TEST(LinearAlgebraMore2, Vector3NonInlinedHelpers)
 
     // exercise hash specialization for Vector3<float>
     std::hash<Vector3<float>> hasher;
-    auto hv = hasher(v);
-    (void)hv;
+    [[maybe_unused]] auto hv = hasher(v);
 }
 
 TEST(LinearAlgebraMore2, Vector4NonInlinedHelpers)
