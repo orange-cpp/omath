@@ -44,6 +44,14 @@ echo "----------------------------------------------------"
 echo "Starting Configuration (Debug Build with Valgrind)..."
 echo "----------------------------------------------------"
 
+# Set Clang compiler if not already set
+if [[ "${CC:-}" != *"clang"* ]]; then
+    export CC=/usr/bin/clang
+fi
+if [[ "${CXX:-}" != *"clang"* ]]; then
+    export CXX=/usr/bin/clang++
+fi
+
 # --- 2. Configure (CMake) ---
 # We force CMAKE_BUILD_TYPE=Debug even though the preset says 'release'
 # to ensure Valgrind has access to debug symbols (line numbers).

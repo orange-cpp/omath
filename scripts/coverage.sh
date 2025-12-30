@@ -45,6 +45,14 @@ echo "----------------------------------------------------"
 echo "Starting Configuration (Coverage Build)..."
 echo "----------------------------------------------------"
 
+# Set Clang compiler if not already set
+if [[ "${CC:-}" != *"clang"* ]]; then
+    export CC=/usr/bin/clang
+fi
+if [[ "${CXX:-}" != *"clang"* ]]; then
+    export CXX=/usr/bin/clang++
+fi
+
 # --- 2. Configure (CMake) ---
 cmake --preset "${PRESET}" \
   -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
