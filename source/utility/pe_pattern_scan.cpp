@@ -309,8 +309,6 @@ namespace omath
                                                         const std::string_view& pattern,
                                                         const std::string_view& target_section_name)
     {
-        const auto desired_section = target_section_name.empty() ? std::string_view{".text"} : target_section_name;
-
         const auto base_address = reinterpret_cast<std::uintptr_t>(module_base_address);
         const auto* base_bytes = static_cast<const std::byte*>(module_base_address);
 
@@ -328,7 +326,7 @@ namespace omath
             return std::nullopt;
 
         return std::visit(
-                [base_bytes, base_address, lfanew = dos_header->e_lfanew, &desired_section,
+                [base_bytes, base_address, lfanew = dos_header->e_lfanew, &target_section_name,
                  &pattern](const auto& nt_header) -> std::optional<std::uintptr_t>
                 {
                     constexpr std::size_t signature_size = sizeof(nt_header.signature);
@@ -340,9 +338,8 @@ namespace omath
                     for (std::size_t i = 0; i < nt_header.file_header.num_sections; ++i)
                     {
                         const auto* section = section_table + i;
-                        const std::string_view name{section->name};
 
-                        if (name != desired_section || section->size_raw_data == 0)
+                        if (std::string_view{section->name} != target_section_name || section->size_raw_data == 0)
                             continue;
 
                         const auto section_size = section->virtual_size != 0
