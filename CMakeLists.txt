@@ -13,7 +13,7 @@ include(CMakeDependentOption)
 
 include(cmake/Coverage.cmake)
 include(cmake/Valgrind.cmake)
-
+include(cmake/Sanitize.cmake)
 
 option(OMATH_BUILD_TESTS "Build unit tests" OFF)
 option(OMATH_BUILD_BENCHMARK "Build benchmarks" OFF)

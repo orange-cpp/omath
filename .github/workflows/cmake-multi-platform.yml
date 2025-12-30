@@ -819,3 +819,76 @@ jobs:
         working-directory: cmake-build/build/linux-release-vcpkg
         run: |
           cmake --build . --target valgrind_all
+
+  ##############################################################################
+  # 10) Linux Sanitizers (ASan, MSan, TSan, UBSan)
+  ##############################################################################
+  linux-sanitizers:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    needs: [linux-build-and-test]
+    strategy:
+      matrix:
+        include:
+          - name: Linux (ASan + UBSan)
+            sanitizer_flag: -DOMATH_ASAN=ON -DOMATH_UBSAN=ON
+            triplet: x64-linux-asan
+          - name: Linux (MSan)
+            sanitizer_flag: -DOMATH_MSAN=ON
+            triplet: x64-linux-msan
+          - name: Linux (TSan)
+            sanitizer_flag: -DOMATH_TSAN=ON
+            triplet: x64-linux-tsan
+      fail-fast: false
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      MSAN_SYMBOLIZER_PATH: /usr/bin/llvm-symbolizer-21
+    steps:
+      - name: Install Toolchain (Clang 21)
+        shell: bash
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          sudo add-apt-repository -y "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main"
+          sudo apt-get update
+          sudo apt-get install -y git build-essential cmake ninja-build \
+                 zip unzip curl pkg-config ca-certificates \
+                 clang-21 lld-21 libc++-21-dev libc++abi-21-dev \
+                 llvm-21
+          sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
+          sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake)
+        shell: bash
+        run: |
+          cmake --preset linux-release-vcpkg \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            ${{ matrix.sanitizer_flag }} \
+            -DOMATH_BUILD_TESTS=ON \
+            -DVCPKG_MANIFEST_FEATURES="tests"
+
+      - name: Build
+        shell: bash
+        run: cmake --build cmake-build/build/linux-release-vcpkg --target unit_tests
+
+      - name: Run unit_tests with Sanitizer
+        shell: bash
+        run: |
+          # Set specific runtime options for better reporting
+          export ASAN_OPTIONS=detect_leaks=1:symbolize=1
+          export TSAN_OPTIONS=second_deadlock_stack=1
+          export MSAN_OPTIONS=poison_in_free=1
+          
+          ./out/Release/unit_tests
