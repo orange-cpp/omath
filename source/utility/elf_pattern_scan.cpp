@@ -13,11 +13,9 @@ namespace
     // Common
     constexpr uint8_t EI_NIDENT = 16;
     constexpr uint8_t EI_CLASS = 4;
-    constexpr uint8_t EI_DATA = 5;
 
-    //constexpr uint8_t ELFCLASS32 = 1;
+    constexpr uint8_t ELFCLASS32 = 1;
     constexpr uint8_t ELFCLASS64 = 2;
-    constexpr uint8_t ELFDATA2LSB = 1;
 
     struct Elf32_Ehdr
     {
@@ -88,6 +86,17 @@ namespace
 
 namespace
 {
+    enum class FILE_ARCH : std::int8_t
+    {
+        x32,
+        x64,
+    };
+    template<FILE_ARCH arch>
+    struct ElfHeaders
+    {
+        using FileHeader = std::conditional_t<arch == FILE_ARCH::x64, Elf64_Ehdr, Elf32_Ehdr>;
+        using SectionHeader = std::conditional_t<arch == FILE_ARCH::x64, Elf32_Shdr, Elf32_Shdr>;
+    };
     using ElfHeaderVariant = std::variant<Elf64_Ehdr, Elf32_Ehdr>;
 
     /*[[nodiscard]]
@@ -98,8 +107,9 @@ namespace
     [[nodiscard]]
     bool not_elf_file(std::fstream& file)
     {
-        constexpr std::string_view valid_elf_signature = "\x7F" "ELF";
-        std::array<char, valid_elf_signature.size()+1> elf_signature{};
+        constexpr std::string_view valid_elf_signature = "\x7F"
+                                                         "ELF";
+        std::array<char, valid_elf_signature.size() + 1> elf_signature{};
         const std::streampos back_up_pose = file.tellg();
 
         file.seekg(0, std::ios_base::beg);
@@ -108,32 +118,59 @@ namespace
 
         return std::string_view{elf_signature.data(), 4} != valid_elf_signature;
     }
-    [[maybe_unused]]
-    std::vector<uint8_t> GetElfSectionByName(const std::string& path, const std::string& section_name)
+    [[nodiscard]]
+    std::optional<FILE_ARCH> get_file_arch(std::fstream& file)
     {
-        std::fstream f(path, std::ios::binary);
-        if (!f)
+        std::array<char, EI_NIDENT> e_ident{};
+        const std::streampos back_up_pose = file.tellg();
+
+        file.seekg(0, std::ios_base::beg);
+        file.read(e_ident.data(), e_ident.size());
+        file.seekg(back_up_pose, std::ios_base::beg);
+
+        if (e_ident[EI_CLASS] == ELFCLASS64)
+            return FILE_ARCH::x64;
+
+        if (e_ident[EI_CLASS] == ELFCLASS32)
+            return FILE_ARCH::x32;
+
+        return std::nullopt;
+    }
+    [[maybe_unused]]
+    std::vector<uint8_t> get_elf_section_by_name(const std::string& path, const std::string& section_name)
+    {
+        std::fstream file(path, std::ios::binary | std::ios::in);
+
+        if (!file.is_open())
+            return {};
+
+        if (not_elf_file(file))
+            return {};
+
+        const auto architecture = get_file_arch(file);
+
+        if (!architecture.has_value())
             return {};
 
         auto read_bytes = [&](std::streamoff offset, char* buf, std::size_t sz) -> bool
         {
-            f.seekg(offset, std::ios::beg);
-            return f.good() && f.read(buf, sz);
+            file.seekg(offset, std::ios::beg);
+            return file.good() && file.read(buf, sz);
         };
 
-        // Read ident
-        unsigned char e_ident[EI_NIDENT] = {};
+        std::variant<Elf32_Ehdr, Elf64_Ehdr> elf_header;
 
-        if (!not_elf_file(f))
-            return {};
+        if (architecture.value() == FILE_ARCH::x64)
+            elf_header = Elf64_Ehdr{};
+        else if (architecture.value() == FILE_ARCH::x32)
+            elf_header = Elf32_Ehdr{};
 
-
-        bool is_64 = (e_ident[EI_CLASS] == ELFCLASS64);
-        bool is_le = (e_ident[EI_DATA] == ELFDATA2LSB);
-        if (!is_le)
-            return {}; // Only little-endian supported here
-
-        if (is_64)
+        std::visit([&file](auto& header)
+        {
+            file.seekg(0, std::ios_base::beg);
+            file.read(reinterpret_cast<char*>(&header), sizeof(header));
+        }, elf_header);
+        if (architecture.value() == FILE_ARCH::x64)
         {
             Elf64_Ehdr eh{};
             if (!read_bytes(0, reinterpret_cast<char*>(&eh), sizeof(eh)))
@@ -217,12 +254,8 @@ namespace omath
                                                 [[maybe_unused]] const std::string_view& pattern,
                                                 [[maybe_unused]] const std::string_view& target_section_name)
     {
-        std::fstream file(path_to_file, std::ios::binary | std::ios::in);
+        [[maybe_unused]] auto _ = get_elf_section_by_name(path_to_file, ".text");
 
-        if (!file.is_open()) [[unlikely]]
-            return std::nullopt;
-
-        [[maybe_unused]] bool flag = not_elf_file(file);
         return std::nullopt;
     }
 } // namespace omath
