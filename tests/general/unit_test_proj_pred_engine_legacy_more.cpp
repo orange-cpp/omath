@@ -40,10 +40,13 @@ TEST(ProjPredLegacyMore, ZeroGravityUsesDirectPitchAndReturnsViewpoint)
 
     const auto res = engine.maybe_calculate_aim_point(proj, target);
     ASSERT_TRUE(res.has_value());
-    const auto v = res.value();
-    EXPECT_NEAR(v.x, 1.f, 1e-6f);
-    EXPECT_NEAR(v.y, 2.f, 1e-6f);
-    EXPECT_NEAR(v.z, 3.f, 1e-6f);
+    if (res.has_value())
+    {
+        const auto v = res.value();
+        EXPECT_NEAR(v.x, 1.f, 1e-6f);
+        EXPECT_NEAR(v.y, 2.f, 1e-6f);
+        EXPECT_NEAR(v.z, 3.f, 1e-6f);
+    }
 }
 
 // Fake trait producing no valid launch angle (root < 0)

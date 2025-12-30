@@ -18,8 +18,8 @@ namespace omath::iw_engine
                                                                     const float time, const float gravity) noexcept
         {
             auto current_pos = projectile.m_origin
-                               + forward_vector({PitchAngle::from_degrees(-pitch), YawAngle::from_degrees(yaw),
-                                                 RollAngle::from_degrees(0)})
+                               + forward_vector({.pitch=PitchAngle::from_degrees(-pitch), .yaw=YawAngle::from_degrees(yaw),
+                                                 .roll=RollAngle::from_degrees(0)})
                                          * projectile.m_launch_speed * time;
             current_pos.z -= (gravity * projectile.m_gravity_scale) * (time * time) * 0.5f;
 
@@ -53,9 +53,11 @@ namespace omath::iw_engine
                                                          Vector3<float> predicted_target_position,
                                                          const std::optional<float> projectile_pitch) noexcept
         {
+            if (!projectile_pitch.has_value()) {
+                return predicted_target_position;
+            }
             const auto delta2d = calc_vector_2d_distance(predicted_target_position - projectile.m_origin);
             const auto height = delta2d * std::tan(angles::degrees_to_radians(projectile_pitch.value()));
-
             return {predicted_target_position.x, predicted_target_position.y, projectile.m_origin.z + height};
         }
         // Due to specification of maybe_calculate_projectile_launch_pitch_angle, pitch angle must be:

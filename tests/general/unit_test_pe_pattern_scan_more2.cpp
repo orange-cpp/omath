@@ -3,6 +3,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <omath/utility/pe_pattern_scan.hpp>
+#include <print>
 #include <vector>
 
 using namespace omath;
@@ -252,10 +253,10 @@ TEST(PePatternScanMore2, PatternAtEndFound)
                 std::cerr << "Extracted section bytes:\n";
                 for (size_t i = 0; i < size_raw_data; i += 16)
                 {
-                    std::fprintf(stderr, "%04zx: ", i);
+                    std::print(stderr, "{:04x}: ", i);
                     for (size_t j = 0; j < 16 && i + j < size_raw_data; ++j)
-                        std::fprintf(stderr, "%02x ", static_cast<uint8_t>(filebuf[ptr_raw_data + i + j]));
-                    std::fprintf(stderr, "\n");
+                        std::print(stderr, "{:02x} ", static_cast<uint8_t>(filebuf[ptr_raw_data + i + j]));
+                    std::println(stderr, "");
                 }
             }
         }

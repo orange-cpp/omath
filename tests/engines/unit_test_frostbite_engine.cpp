@@ -67,7 +67,7 @@ TEST(unit_test_frostbite_engine, UpVector)
 TEST(unit_test_frostbite_engine, ProjectTargetMovedFromCamera)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
-    const auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.01f, 1000.f);
+    const auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {.m_width=1280.f, .m_height=720.f}, fov, 0.01f, 1000.f);
 
     for (float distance = 0.02f; distance < 100.f; distance += 0.01f)
     {
@@ -86,7 +86,7 @@ TEST(unit_test_frostbite_engine, Project)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
 
-    const auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
+    const auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {.m_width=1280.f, .m_height=720.f}, fov, 0.03f, 1000.f);
     const auto proj = cam.world_to_screen<omath::frostbite_engine::Camera::ScreenStart::BOTTOM_LEFT_CORNER>({10.f, 3, 10.f});
 
     EXPECT_NEAR(proj->x, 1263.538, 0.001f);
@@ -96,7 +96,7 @@ TEST(unit_test_frostbite_engine, Project)
 TEST(unit_test_frostbite_engine, CameraSetAndGetFov)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.01f, 1000.f);
 
     EXPECT_EQ(cam.get_field_of_view().as_degrees(), 90.f);
     cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(50.f));
@@ -106,7 +106,7 @@ TEST(unit_test_frostbite_engine, CameraSetAndGetFov)
 
 TEST(unit_test_frostbite_engine, CameraSetAndGetOrigin)
 {
-    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, {}, 0.01f, 1000.f);
+    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, {}, 0.01f, 1000.f);
 
     EXPECT_EQ(cam.get_origin(), omath::Vector3<float>{});
     cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(50.f));
@@ -119,7 +119,7 @@ TEST(unit_test_frostbite_engine, loook_at_random_all_axis)
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.001f, 10000.f);
 
     std::size_t failed_points = 0;
 
@@ -151,7 +151,7 @@ TEST(unit_test_frostbite_engine, loook_at_random_x_axis)
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.001f, 10000.f);
 
     std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)
@@ -181,7 +181,7 @@ TEST(unit_test_frostbite_engine, loook_at_random_y_axis)
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.001f, 10000.f);
 
     std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)
@@ -211,7 +211,7 @@ TEST(unit_test_frostbite_engine, loook_at_random_z_axis)
     std::uniform_real_distribution<float> dist(-1000.f, 1000.f);
 
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
-    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.001f, 10000.f);
+    auto cam = omath::frostbite_engine::Camera({0, 0, 0}, {}, {.m_width=1920.f, .m_height=1080.f}, fov, 0.001f, 10000.f);
 
     std::size_t failed_points = 0;
     for (int i = 0; i < 1000; i++)

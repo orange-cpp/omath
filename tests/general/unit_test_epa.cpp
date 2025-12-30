@@ -16,14 +16,14 @@ TEST(UnitTestEpa, TestCollisionTrue)
 {
     // Unit cube [-1,1]^3
     std::vector<omath::primitives::Vertex<>> vbo = {
-        { {-1.f, -1.f, -1.f}, {}, {} },
-        { {-1.f, -1.f,  1.f}, {}, {} },
-        { {-1.f,  1.f, -1.f}, {}, {} },
-        { {-1.f,  1.f,  1.f}, {}, {} },
-        { { 1.f,  1.f,  1.f}, {}, {} },
-        { { 1.f,  1.f, -1.f}, {}, {} },
-        { { 1.f, -1.f,  1.f}, {}, {} },
-        { { 1.f, -1.f, -1.f}, {}, {} }
+        { .position={-1.f, -1.f, -1.f}, .normal={}, .uv={} },
+        { .position={-1.f, -1.f,  1.f}, .normal={}, .uv={} },
+        { .position={-1.f,  1.f, -1.f}, .normal={}, .uv={} },
+        { .position={-1.f,  1.f,  1.f}, .normal={}, .uv={} },
+        { .position={ 1.f,  1.f,  1.f}, .normal={}, .uv={} },
+        { .position={ 1.f,  1.f, -1.f}, .normal={}, .uv={} },
+        { .position={ 1.f, -1.f,  1.f}, .normal={}, .uv={} },
+        { .position={ 1.f, -1.f, -1.f}, .normal={}, .uv={} }
     };
     std::vector<omath::Vector3<std::uint32_t>> vao; // not needed
 
@@ -91,14 +91,14 @@ TEST(UnitTestEpa, TestCollisionTrue)
 TEST(UnitTestEpa, TestCollisionTrue2)
 {
     std::vector<omath::primitives::Vertex<>> vbo = {
-        { { -1.f, -1.f, -1.f }, {}, {} },
-        { { -1.f, -1.f,  1.f }, {}, {} },
-        { { -1.f,  1.f, -1.f }, {}, {} },
-        { { -1.f,  1.f,  1.f }, {}, {} },
-        { {  1.f,  1.f,  1.f }, {}, {} },
-        { {  1.f,  1.f, -1.f }, {}, {} },
-        { {  1.f, -1.f,  1.f }, {}, {} },
-        { {  1.f, -1.f, -1.f }, {}, {} }
+        { .position={ -1.f, -1.f, -1.f }, .normal={}, .uv={} },
+        { .position={ -1.f, -1.f,  1.f }, .normal={}, .uv={} },
+        { .position={ -1.f,  1.f, -1.f }, .normal={}, .uv={} },
+        { .position={ -1.f,  1.f,  1.f }, .normal={}, .uv={} },
+        { .position={  1.f,  1.f,  1.f }, .normal={}, .uv={} },
+        { .position={  1.f,  1.f, -1.f }, .normal={}, .uv={} },
+        { .position={  1.f, -1.f,  1.f }, .normal={}, .uv={} },
+        { .position={  1.f, -1.f, -1.f }, .normal={}, .uv={} }
     };
     std::vector<omath::Vector3<std::uint32_t>> vao; // not needed
 
