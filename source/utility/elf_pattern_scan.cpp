@@ -6,6 +6,7 @@
 #include <omath/utility/elf_pattern_scan.hpp>
 #include <variant>
 #include <vector>
+#include <array>
 
 #pragma pack(push, 1)
 
