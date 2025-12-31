@@ -140,7 +140,7 @@ namespace
         std::vector<std::byte> data;
     };
     [[maybe_unused]]
-    std::optional<ExtractedSection> get_elf_section_by_name(const std::string& path,
+    std::optional<ExtractedSection> get_elf_section_by_name(const std::filesystem::path& path,
                                                             const std::string_view& section_name)
     {
         std::fstream file(path, std::ios::binary | std::ios::in);
