@@ -206,8 +206,8 @@ namespace
 
                         ExtractedSection out;
 
-                        out.virtual_base_addr = current_section.sh_addr;
-                        out.raw_base_addr = current_section.sh_offset;
+                        out.virtual_base_addr = static_cast<std::uintptr_t>(current_section.sh_addr);
+                        out.raw_base_addr = static_cast<std::uintptr_t>(current_section.sh_offset);
                         out.data.resize(static_cast<std::size_t>(current_section.sh_size));
 
                         file.seekg(static_cast<std::streamoff>(out.raw_base_addr), std::ios_base::beg);
