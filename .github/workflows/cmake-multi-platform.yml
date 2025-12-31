@@ -836,9 +836,9 @@ jobs:
           - name: Linux (UBSan)
             sanitizer_flag: -DOMATH_UBSAN=ON
             triplet: x64-linux-ubsan
-          #- name: Linux (MSan)
-          #  sanitizer_flag: -DOMATH_MSAN=ON
-          #  triplet: x64-linux-msan
+          - name: Linux (MSan)
+            sanitizer_flag: -DOMATH_MSAN=ON
+            triplet: x64-linux-msan
           - name: Linux (TSan)
             sanitizer_flag: -DOMATH_TSAN=ON
             triplet: x64-linux-tsan
@@ -853,10 +853,16 @@ jobs:
           wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
           sudo add-apt-repository -y "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main"
           sudo apt-get update
-          sudo apt-get install -y git build-essential cmake ninja-build \
-                 zip unzip curl pkg-config ca-certificates \
-                 clang-21 lld-21 libc++-21-dev libc++abi-21-dev \
-                 llvm-21 clang-tidy-21 clang-tools-21
+          
+          # Base packages
+          PKG_LIST="git build-essential cmake ninja-build zip unzip curl pkg-config ca-certificates clang-21 lld-21 llvm-21 clang-tidy-21 clang-tools-21"
+          
+          # Conditionally add libc++ dev packages if NOT MSan
+          if [[ "${{ matrix.name }}" != "Linux (MSan)" ]]; then
+            PKG_LIST="$PKG_LIST libc++-21-dev libc++abi-21-dev"
+          fi
+          
+          sudo apt-get install -y $PKG_LIST
           sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
           sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
           sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
@@ -875,20 +881,70 @@ jobs:
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
 
+      - name: Build LLVM (libc++, libc++abi) for MSan
+        if: matrix.name == 'Linux (MSan)'
+        shell: bash
+        run: |
+          git clone --depth=1 --branch llvmorg-21.1.8 https://github.com/llvm/llvm-project
+          cmake -G Ninja -S llvm-project/runtimes -B llvm-project/msan_out \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+                  -DCMAKE_C_COMPILER=clang-21 \
+                  -DCMAKE_CXX_COMPILER=clang++-21 \
+                  -DLLVM_USE_SANITIZER=MemoryWithOrigins \
+                  -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
+                  -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+                  -DLIBCXX_INCLUDE_DOCS=OFF \
+                  -DLIBCXX_INCLUDE_TESTS=OFF \
+                  -DLIBCXXABI_INCLUDE_TESTS=OFF \
+                  -DLIBUNWIND_INCLUDE_TESTS=OFF \
+                  -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/llvm-project/msan_out/install
+          cmake --build llvm-project/msan_out --config Release --target install
+
       - name: Configure (cmake)
         shell: bash
         run: |
-          cmake --preset linux-release-vcpkg \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            ${{ matrix.sanitizer_flag }} \
-            -DOMATH_BUILD_TESTS=ON \
-            -DVCPKG_MANIFEST_FEATURES="tests" \
-            -DVCPKG_OVERLAY_TRIPLETS="${{ github.workspace }}/cmake/triplets" \
-            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}
+          CMAKE_ARGS=(
+            "--preset" "linux-release-vcpkg"
+            "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
+            "${{ matrix.sanitizer_flag }}"
+            "-DOMATH_BUILD_TESTS=ON"
+            "-DVCPKG_MANIFEST_FEATURES=tests"
+            "-DVCPKG_OVERLAY_TRIPLETS=${{ github.workspace }}/cmake/triplets"
+            "-DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}"
+          )
+
+          if [[ "${{ matrix.name }}" == "Linux (MSan)" ]]; then
+            MSAN_PREFIX="${{ github.workspace }}/llvm-project/msan_out/install"
+            
+            # Compiler flags: Include paths, NO linker paths (avoids unused argument errors)
+            MSAN_CXX_FLAGS="-fsanitize=memory -stdlib=libc++ -I${MSAN_PREFIX}/include -I${MSAN_PREFIX}/include/c++/v1"
+            
+            # Linker flags: Linker paths and libraries
+            MSAN_LINKER_FLAGS="-fsanitize=memory -stdlib=libc++ -L${MSAN_PREFIX}/lib -lc++abi"
+            
+            # Update the triplet file to include these flags for vcpkg dependencies
+            # 1. Add include paths to -stdlib=libc++ (affects CXX and LINKER flags in triplet)
+            sed -i "s|-stdlib=libc++|-stdlib=libc++ -I${MSAN_PREFIX}/include -I${MSAN_PREFIX}/include/c++/v1|g" cmake/triplets/x64-linux-msan.cmake
+            # 2. Add library path to -lc++abi (affects LINKER flags in triplet)
+            sed -i "s|-lc++abi|-L${MSAN_PREFIX}/lib -lc++abi|g" cmake/triplets/x64-linux-msan.cmake
+            
+            # Pass to CMake for the main project
+            CMAKE_ARGS+=("-DCMAKE_CXX_FLAGS=${MSAN_CXX_FLAGS}")
+            CMAKE_ARGS+=("-DCMAKE_EXE_LINKER_FLAGS=${MSAN_LINKER_FLAGS}")
+            CMAKE_ARGS+=("-DCMAKE_SHARED_LINKER_FLAGS=${MSAN_LINKER_FLAGS}")
+            CMAKE_ARGS+=("-DCMAKE_MODULE_LINKER_FLAGS=${MSAN_LINKER_FLAGS}")
+          fi
+
+          cmake "${CMAKE_ARGS[@]}"
 
       - name: Build
         shell: bash
-        run: cmake --build cmake-build/build/linux-release-vcpkg --target unit_tests
+        run: |
+          if [[ "${{ matrix.name }}" == "Linux (MSan)" ]]; then
+            export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${{ github.workspace }}/llvm-project/msan_out/install/lib"
+          fi
+          cmake --build cmake-build/build/linux-release-vcpkg --target unit_tests
 
       - name: Run unit_tests with Sanitizer
         shell: bash
@@ -898,4 +954,9 @@ jobs:
           export UBSAN_OPTIONS=print_stacktrace=1
           export TSAN_OPTIONS=second_deadlock_stack=1
           export MSAN_OPTIONS=poison_in_free=1
+          
+          if [[ "${{ matrix.name }}" == "Linux (MSan)" ]]; then
+            export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${{ github.workspace }}/llvm-project/msan_out/install/lib"
+          fi
+
           ./out/RelWithDebInfo/unit_tests
