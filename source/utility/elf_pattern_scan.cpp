@@ -136,8 +136,8 @@ namespace
     }
     struct ExtractedSection final
     {
-        std::uint64_t virtual_base_addr{};
-        std::uint64_t raw_base_addr{};
+        std::uintptr_t virtual_base_addr{};
+        std::uintptr_t raw_base_addr{};
         std::vector<std::byte> data;
     };
     [[maybe_unused]]
@@ -208,7 +208,7 @@ namespace
 
                         out.virtual_base_addr = current_section.sh_addr;
                         out.raw_base_addr = current_section.sh_offset;
-                        out.data.resize(current_section.sh_size);
+                        out.data.resize(static_cast<std::size_t>(current_section.sh_size));
 
                         file.seekg(static_cast<std::streamoff>(out.raw_base_addr), std::ios_base::beg);
                         if (!file.read(reinterpret_cast<char*>(out.data.data()),

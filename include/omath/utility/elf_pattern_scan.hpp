@@ -11,8 +11,8 @@ namespace omath
 {
     struct ElfSectionScanResult
     {
-        std::uint64_t virtual_base_addr;
-        std::uint64_t raw_base_addr;
+        std::uintptr_t virtual_base_addr;
+        std::uintptr_t raw_base_addr;
         std::ptrdiff_t target_offset;
     };
     class ElfPatternScanner final
