@@ -178,7 +178,7 @@ namespace
                     if (!file.read(reinterpret_cast<char*>(&section_header), sizeof(section_header))) [[unlikely]]
                         return std::nullopt;
 
-                    std::vector<char> shstrtab(section_header.sh_size);
+                    std::vector<char> shstrtab(static_cast<std::size_t>(section_header.sh_size));
 
                     file.seekg(section_header.sh_offset, std::ios_base::beg);
 
