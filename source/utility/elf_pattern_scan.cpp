@@ -7,6 +7,7 @@
 #include <variant>
 #include <vector>
 #include <array>
+#include <array>
 
 #pragma pack(push, 1)
 
