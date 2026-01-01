@@ -1,7 +1,6 @@
 //
-// Created by Vlad on 10/7/2025.
+// Created by Vladislav on 30.12.2025.
 //
-
 #pragma once
 #include <cstdint>
 #include <filesystem>
@@ -10,8 +9,7 @@
 #include "section_scan_result.hpp"
 namespace omath
 {
-
-    class PePatternScanner final
+    class ElfPatternScanner final
     {
     public:
         [[nodiscard]]

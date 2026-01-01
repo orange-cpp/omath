@@ -163,6 +163,23 @@ TEST(unit_test_pe_pattern_scan_more, LoadedModuleScanFinds)
         std::uint32_t size_headers; /* keep space */
         std::uint8_t pad[200];
     };
+    struct SectionHeader
+    {
+        char name[8];
+        union
+        {
+            std::uint32_t physical_address;
+            std::uint32_t virtual_size;
+        };
+        std::uint32_t virtual_address;
+        std::uint32_t size_raw_data;
+        std::uint32_t ptr_raw_data;
+        std::uint32_t ptr_relocs;
+        std::uint32_t ptr_line_numbers;
+        std::uint32_t num_relocs;
+        std::uint32_t num_line_numbers;
+        std::uint32_t characteristics;
+    };
     struct ImageNtHeadersX64
     {
         std::uint32_t signature;
@@ -176,22 +193,41 @@ TEST(unit_test_pe_pattern_scan_more, LoadedModuleScanFinds)
 
     const std::uint32_t bufsize = 0x400 + size_code;
     std::vector<std::uint8_t> buf(bufsize, 0);
+
     // DOS header
     const auto dos = reinterpret_cast<DosHeader*>(buf.data());
     dos->e_magic = 0x5A4D;
     dos->e_lfanew = 0x80;
+
     // NT headers
     const auto nt = reinterpret_cast<ImageNtHeadersX64*>(buf.data() + dos->e_lfanew);
     nt->signature = 0x4550; // 'PE\0\0'
     nt->file_header.machine = 0x8664;
     nt->file_header.num_sections = 1;
+    nt->file_header.size_optional_header = static_cast<std::uint16_t>(sizeof(OptionalHeaderX64));
+
     nt->optional_header.magic = 0x020B; // x64
     nt->optional_header.base_of_code = base_of_code;
     nt->optional_header.size_code = size_code;
 
+    // Compute section table offset: e_lfanew + 4 (sig) + FileHeader + OptionalHeader
+    const std::size_t section_table_off =
+        static_cast<std::size_t>(dos->e_lfanew) + 4 + sizeof(FileHeader) + sizeof(OptionalHeaderX64);
+    nt->optional_header.size_headers = static_cast<std::uint32_t>(section_table_off + sizeof(SectionHeader));
+
+    // Section header (.text)
+    const auto sect = reinterpret_cast<SectionHeader*>(buf.data() + section_table_off);
+    std::memset(sect, 0, sizeof(SectionHeader));
+    std::memcpy(sect->name, ".text", 5);
+    sect->virtual_size = size_code;
+    sect->virtual_address = base_of_code;
+    sect->size_raw_data = size_code;
+    sect->ptr_raw_data = base_of_code;
+    sect->characteristics = 0x60000020; // code | execute | read
+
     // place code at base_of_code
     std::memcpy(buf.data() + base_of_code, pattern_bytes.data(), pattern_bytes.size());
 
-    const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE AD BE EF");
+    const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE AD BE EF", ".text");
     EXPECT_TRUE(res.has_value());
 }
