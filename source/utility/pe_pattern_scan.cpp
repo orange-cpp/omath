@@ -290,10 +290,11 @@ namespace
                         file.seekg(current_section.ptr_raw_data, std::ios::beg);
                         file.read(reinterpret_cast<char*>(section_data.data()),
                                   static_cast<std::streamsize>(section_data.size()));
-                        return ExtractedSection{.virtual_base_addr = current_section.virtual_address
-                                                                     + concrete_headers.optional_header.image_base,
-                                                .raw_base_addr = current_section.ptr_raw_data,
-                                                .data = std::move(section_data)};
+                        return ExtractedSection{
+                                .virtual_base_addr = static_cast<std::uintptr_t>(
+                                        current_section.virtual_address + concrete_headers.optional_header.image_base),
+                                .raw_base_addr = static_cast<std::uintptr_t>(current_section.ptr_raw_data),
+                                .data = std::move(section_data)};
                     }
                     return std::nullopt;
                 },
@@ -379,7 +380,7 @@ namespace omath
         const auto offset = std::distance(pe_section->data.begin(), scan_result);
 
         return SectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
-                                   .raw_base_addr = pe_section->raw_base_addr,
-                                   .target_offset = offset};
+                                 .raw_base_addr = pe_section->raw_base_addr,
+                                 .target_offset = offset};
     }
 } // namespace omath
