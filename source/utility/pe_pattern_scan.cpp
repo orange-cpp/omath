@@ -361,7 +361,7 @@ namespace omath
                 },
                 nt_header_variant.value());
     }
-    std::optional<PeSectionScanResult>
+    std::optional<SectionScanResult>
     PePatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
                                                const std::string_view& pattern,
                                                const std::string_view& target_section_name)
@@ -378,7 +378,7 @@ namespace omath
             return std::nullopt;
         const auto offset = std::distance(pe_section->data.begin(), scan_result);
 
-        return PeSectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
+        return SectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
                                    .raw_base_addr = pe_section->raw_base_addr,
                                    .target_offset = offset};
     }

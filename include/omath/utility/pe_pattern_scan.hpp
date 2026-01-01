@@ -7,14 +7,10 @@
 #include <filesystem>
 #include <optional>
 #include <string_view>
+#include "section_scan_result.hpp"
 namespace omath
 {
-    struct PeSectionScanResult
-    {
-        std::uint64_t virtual_base_addr;
-        std::uint64_t raw_base_addr;
-        std::ptrdiff_t target_offset;
-    };
+
     class PePatternScanner final
     {
     public:
@@ -24,7 +20,7 @@ namespace omath
                                           const std::string_view& target_section_name = ".text");
 
         [[nodiscard]]
-        static std::optional<PeSectionScanResult>
+        static std::optional<SectionScanResult>
         scan_for_pattern_in_file(const std::filesystem::path& path_to_file, const std::string_view& pattern,
                                  const std::string_view& target_section_name = ".text");
     };
