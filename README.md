@@ -44,7 +44,7 @@ It provides the latest features, is highly customizable, has all for cheat devel
  </a>
 </div>
 
-## 🚀 Quick Example
+## Quick Example
 
 ```cpp
 #include <omath/omath.hpp>
@@ -69,20 +69,20 @@ if (auto screen = camera.world_to_screen(world_position)) {
 }
 ```
 
-**[➡️ See more examples and tutorials][TUTORIALS]**
+**[See more examples and tutorials][TUTORIALS]**
 
-# ✨ Features
-- **🚀 Efficiency**: Optimized for performance, ensuring quick computations using AVX2.
-- **🎯 Versatility**: Includes a wide array of mathematical functions and algorithms.
-- **✅ Ease of Use**: Simplified interface for convenient integration into various projects.
-- **🎮 Projectile Prediction**: Projectile prediction engine with O(N) algo complexity, that can power you projectile aim-bot.
-- **📐 3D Projection**: No need to find view-projection matrix anymore you can make your own projection pipeline.
-- **💥 Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
-- **📦 No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
-- **🔧 Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
-- **🎯 Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine and canonical OpenGL**.
-- **🌍 Cross platform**: Supports Windows, MacOS and Linux.
-- **🔍 Algorithms**: Has ability to scan for byte pattern with wildcards in PE files/modules, binary slices, works even with Wine apps. 
+# Features
+- **Efficiency**: Optimized for performance, ensuring quick computations using AVX2.
+- **Versatility**: Includes a wide array of mathematical functions and algorithms.
+- **Ease of Use**: Simplified interface for convenient integration into various projects.
+- **Projectile Prediction**: Projectile prediction engine with O(N) algo complexity, that can power you projectile aim-bot.
+- **3D Projection**: No need to find view-projection matrix anymore you can make your own projection pipeline.
+- **Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
+- **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
+- **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
+- **Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine and canonical OpenGL**.
+- **Cross platform**: Supports Windows, MacOS and Linux.
+- **Algorithms**: Has ability to scan for byte pattern with wildcards in PE files/modules, binary slices, works even with Wine apps. 
 <div align = center>
  
 # Gallery
@@ -116,7 +116,7 @@ if (auto screen = camera.world_to_screen(world_position)) {
 
 </div>
 
-## 📚 Documentation
+## Documentation
 
 - **[Getting Started Guide](http://libomath.org/getting_started/)** - Installation and first steps
 - **[API Overview](http://libomath.org/api_overview/)** - Complete API reference
@@ -125,14 +125,14 @@ if (auto screen = camera.world_to_screen(world_position)) {
 - **[Troubleshooting](http://libomath.org/troubleshooting/)** - Solutions to common issues
 - **[Best Practices](http://libomath.org/best_practices/)** - Guidelines for effective usage
 
-## 🤝 Community & Support
+## Community & Support
 
 - **Discord**: [Join our community](https://discord.gg/eDgdaWbqwZ)
 - **Telegram**: [@orangennotes](https://t.me/orangennotes)
 - **Issues**: [Report bugs or request features](https://github.com/orange-cpp/omath/issues)
 - **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
-# 💘 Acknowledgments
+# Acknowledgments
 -  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
 
 <!----------------------------------{ Images }--------------------------------->
