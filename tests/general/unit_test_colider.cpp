@@ -9,8 +9,8 @@ TEST(UnitTestColider, CheckToWorld)
 {
     omath::source_engine::Mesh mesh = {
         std::vector<omath::primitives::Vertex<>>{
-            { { 1.f,  1.f,  1.f }, {}, {} },
-            { {-1.f, -1.f, -1.f }, {}, {} }
+            { .position={ 1.f,  1.f,  1.f }, .normal={}, .uv={} },
+            { .position={-1.f, -1.f, -1.f }, .normal={}, .uv={} }
         },
         {}
     };
@@ -26,8 +26,8 @@ TEST(UnitTestColider, FindFurthestVertex)
 {
     const omath::source_engine::Mesh mesh = {
         {
-            { { 1.f,  1.f,  1.f }, {}, {} },   // position, normal, uv
-            { {-1.f, -1.f, -1.f }, {}, {} }
+            { .position={ 1.f,  1.f,  1.f }, .normal={}, .uv={} },   // position, normal, uv
+            { .position={-1.f, -1.f, -1.f }, .normal={}, .uv={} }
         },
         {}
     };

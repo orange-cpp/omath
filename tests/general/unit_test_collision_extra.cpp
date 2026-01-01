@@ -65,7 +65,7 @@ TEST(CollisionExtra, SimplexTetrahedronInside)
 TEST(CollisionExtra, MeshColliderOriginAndFurthest)
 {
     source_engine::Mesh mesh = {
-            std::vector<primitives::Vertex<>>{{{1.f, 1.f, 1.f}, {}, {}}, {{-1.f, -1.f, -1.f}, {}, {}}}, {}};
+            std::vector<primitives::Vertex<>>{{.position={1.f, 1.f, 1.f}, .normal={}, .uv={}}, {.position={-1.f, -1.f, -1.f}, .normal={}, .uv={}}}, {}};
     mesh.set_origin({0, 2, 0});
     source_engine::MeshCollider collider(mesh);
 
@@ -82,7 +82,7 @@ TEST(CollisionExtra, EPAConvergesOnSimpleCase)
 {
     // Build two simple colliders using simple meshes that overlap
     source_engine::Mesh meshA = {
-            std::vector<primitives::Vertex<>>{{{0.f, 0.f, 0.f}, {}, {}}, {{1.f, 0.f, 0.f}, {}, {}}}, {}};
+            std::vector<primitives::Vertex<>>{{.position={0.f, 0.f, 0.f}, .normal={}, .uv={}}, {.position={1.f, 0.f, 0.f}, .normal={}, .uv={}}}, {}};
     source_engine::Mesh mesh_b = meshA;
     mesh_b.set_origin({0.5f, 0.f, 0.f}); // translate to overlap
 

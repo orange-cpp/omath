@@ -3,7 +3,6 @@
 #include <array>
 #include <cassert>
 #include <initializer_list>
-#include <type_traits>
 
 namespace omath::collision
 {

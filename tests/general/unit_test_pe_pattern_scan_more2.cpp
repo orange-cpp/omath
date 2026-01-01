@@ -3,6 +3,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <omath/utility/pe_pattern_scan.hpp>
+#include <print>
 #include <vector>
 
 using namespace omath;
@@ -151,7 +152,7 @@ TEST(unit_test_pe_pattern_scan_more2, LoadedModuleInvalidOptionalHeaderReturnsNu
 
 TEST(unit_test_pe_pattern_scan_more2, FileX86OptionalHeaderScanFindsPattern)
 {
-    constexpr std::string_view path = "./test_pe_x86.bin";
+    const std::string path = "./test_pe_x86.bin";
     const std::vector<std::uint8_t> pattern = {0xDE, 0xAD, 0xBE, 0xEF};
 
     // Use helper from this file to write a consistent minimal PE file with .text section
@@ -159,6 +160,7 @@ TEST(unit_test_pe_pattern_scan_more2, FileX86OptionalHeaderScanFindsPattern)
 
     const auto res = PePatternScanner::scan_for_pattern_in_file(path, "DE AD BE EF", ".text");
     ASSERT_TRUE(res.has_value());
+    if (!res.has_value()) return;
     EXPECT_GE(res->virtual_base_addr, 0u);
     EXPECT_GE(res->raw_base_addr, 0u);
     EXPECT_EQ(res->target_offset, 0);
@@ -252,10 +254,10 @@ TEST(PePatternScanMore2, PatternAtEndFound)
                 std::cerr << "Extracted section bytes:\n";
                 for (size_t i = 0; i < size_raw_data; i += 16)
                 {
-                    std::fprintf(stderr, "%04zx: ", i);
+                    std::print(stderr, "{:04x}: ", i);
                     for (size_t j = 0; j < 16 && i + j < size_raw_data; ++j)
-                        std::fprintf(stderr, "%02x ", static_cast<uint8_t>(filebuf[ptr_raw_data + i + j]));
-                    std::fprintf(stderr, "\n");
+                        std::print(stderr, "{:02x} ", static_cast<uint8_t>(filebuf[ptr_raw_data + i + j]));
+                    std::println(stderr, "");
                 }
             }
         }

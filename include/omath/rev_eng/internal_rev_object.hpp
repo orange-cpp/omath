@@ -41,8 +41,11 @@ namespace omath::rev_eng
 #else
             using VirtualMethodType = ReturnType (*)(void*, decltype(arg_list)...);
 #endif
-            return (*static_cast<VirtualMethodType**>((void*)(this)))[id](
-                    const_cast<void*>(static_cast<const void*>(this)), arg_list...);
+            auto* this_ptr = const_cast<void*>(static_cast<const void*>(this));
+            auto** vtable_ptr = reinterpret_cast<VirtualMethodType**>(this_ptr);
+            // NOLINTNEXTLINE(clang-analyzer-core.uninitialized.Assign)
+            auto* vtable = *vtable_ptr;
+            return vtable[id](this_ptr, arg_list...);
         }
     };
 } // namespace omath::rev_eng

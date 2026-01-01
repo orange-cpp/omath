@@ -10,8 +10,8 @@ namespace omath::frostbite_engine
     {
         const auto direction = (look_at - cam_origin).normalized();
 
-        return {PitchAngle::from_radians(-std::asin(direction.y)),
-                YawAngle::from_radians(std::atan2(direction.x, direction.z)), RollAngle::from_radians(0.f)};
+        return {.pitch=PitchAngle::from_radians(-std::asin(direction.y)),
+                .yaw=YawAngle::from_radians(std::atan2(direction.x, direction.z)), .roll=RollAngle::from_radians(0.f)};
     }
     Mat4X4 CameraTrait::calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
     {

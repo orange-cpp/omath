@@ -95,7 +95,7 @@ static bool write_minimal_pe_file(const std::string& path, const std::vector<std
 
 TEST(unit_test_pe_pattern_scan_file, ScanFindsPattern)
 {
-    constexpr std::string_view path = "./test_minimal_pe.bin";
+    const std::string path = "./test_minimal_pe.bin";
     const std::vector<std::uint8_t> bytes = {0x55, 0x8B, 0xEC, 0x90, 0x90}; // pattern at offset 0
     ASSERT_TRUE(write_minimal_pe_file(path.data(), bytes));
 
@@ -105,7 +105,7 @@ TEST(unit_test_pe_pattern_scan_file, ScanFindsPattern)
 
 TEST(unit_test_pe_pattern_scan_file, ScanMissingPattern)
 {
-    constexpr std::string_view path = "./test_minimal_pe_2.bin";
+    const std::string path = "./test_minimal_pe_2.bin";
     const std::vector<std::uint8_t> bytes = {0x00, 0x01, 0x02, 0x03};
     ASSERT_TRUE(write_minimal_pe_file(path.data(), bytes));
 

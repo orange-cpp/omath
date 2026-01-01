@@ -240,8 +240,8 @@ TEST(UnitTestColorGrouped_More2, FromHsvCases)
         EXPECT_GE(c.z, -eps);
         EXPECT_LE(c.z, 1.f + eps);
 
-        float mx = std::max({c.x, c.y, c.z});
-        float mn = std::min({c.x, c.y, c.z});
+        const float mx = std::max({c.x, c.y, c.z});
+        const float mn = std::min({c.x, c.y, c.z});
         EXPECT_GE(mx, 0.999f);
         EXPECT_LE(mn, 1e-3f + 1e-4f);
     };

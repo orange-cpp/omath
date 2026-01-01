@@ -7,6 +7,7 @@
 #include <optional>
 #include <span>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 // ReSharper disable CppInconsistentNaming
@@ -61,7 +62,7 @@ namespace omath
             {
                 bool found = true;
 
-                for (std::ptrdiff_t j = 0; j < static_cast<std::ptrdiff_t>(parsed_pattern->size()); j++)
+                for (std::ptrdiff_t j = 0; std::cmp_less(j ,parsed_pattern->size()); j++)
                 {
                     found = parsed_pattern->at(j) == std::nullopt || parsed_pattern->at(j) == *(begin + i + j);
 
