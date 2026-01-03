@@ -273,7 +273,7 @@ namespace omath
                                                          const std::string_view& pattern,
                                                          const std::string_view& target_section_name)
     {
-        if (module_base_address == nullptr)
+        if (module_base_address == nullptr) [[unlikely]]
             return std::nullopt;
 
         const auto* base = static_cast<const std::byte*>(module_base_address);
@@ -289,7 +289,7 @@ namespace omath
         const auto arch = ei_class_value == elfclass64   ? FileArch::x64
                           : ei_class_value == elfclass32 ? FileArch::x32
                                                          : std::optional<FileArch>{};
-        if (!arch.has_value())
+        if (!arch.has_value()) [[unlikely]]
             return std::nullopt;
 
         if (arch == FileArch::x64)
