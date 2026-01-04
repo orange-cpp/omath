@@ -59,13 +59,10 @@ namespace omath::detail
         return splitmix64(base_seed() + 0xD1B54A32D192ED03ull * (Stream + 1));
     }
 
-    // Unbiased bounded uniform using Lemire's method (uses 128-bit multiply)
     [[nodiscard]]
     consteval std::uint64_t bounded_u64(const std::uint64_t x, const std::uint64_t bound)
     {
-        // bound must be > 0
-        __uint128_t m = static_cast<__uint128_t>(x) * static_cast<__uint128_t>(bound);
-        return static_cast<std::uint64_t>(m >> 64);
+        return (x * bound) >> 64;
     }
 
     template<std::int64_t Lo, std::int64_t Hi, std::uint64_t Stream>
@@ -97,7 +94,7 @@ namespace omath::detail
     }
 
     template<std::size_t N, std::uint64_t Seed>
-   [[nodiscard]]
+    [[nodiscard]]
     consteval std::array<std::uint8_t, N> make_array()
     {
         return make_array_impl<N, Seed>(std::make_index_sequence<N>{});
@@ -122,6 +119,7 @@ namespace omath
                 bytes[i] ^= static_cast<std::uint8_t>(key[i % key.size()] + (i * key_size));
             m_is_encrypted = true;
         }
+
     public:
         OMATH_FORCEINLINE constexpr explicit EncryptedVariable(const T& data): m_is_encrypted(false), m_data(data)
         {
