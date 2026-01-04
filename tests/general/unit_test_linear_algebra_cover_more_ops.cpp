@@ -1,7 +1,6 @@
 // Added to increase coverage for vector3/vector4/mat headers
 #include <gtest/gtest.h>
 #include <stdexcept>
-#include <sstream>
 
 #include "omath/linear_algebra/vector3.hpp"
 #include "omath/linear_algebra/vector4.hpp"

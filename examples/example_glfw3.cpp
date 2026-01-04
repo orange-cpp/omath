@@ -252,18 +252,21 @@ int main()
 
     // vertex layout: position / normal / uv (each Vector3<float>)
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexType), (void*)offsetof(VertexType, position));
+    // NOLINTNEXTLINE(modernize-use-nullptr)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexType), (void*)0);
 
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexType), (void*)offsetof(VertexType, normal));
+    // NOLINTNEXTLINE(modernize-use-nullptr)
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexType), (void*)sizeof(VertexType::VectorType));
 
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexType), (void*)offsetof(VertexType, uv));
+    // NOLINTNEXTLINE(modernize-use-nullptr)
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexType), (void*)(sizeof(VertexType::VectorType) * 2));
 
     glBindVertexArray(0);
 
     // ---------- Camera setup ----------
-    omath::projection::ViewPort viewPort{static_cast<float>(SCR_WIDTH), static_cast<float>(SCR_HEIGHT)};
+    omath::projection::ViewPort viewPort{.m_width=static_cast<float>(SCR_WIDTH), .m_height=static_cast<float>(SCR_HEIGHT)};
 
     Vector3<float> camPos{0.f, 0.f, 3.f};
 

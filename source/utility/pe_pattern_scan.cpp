@@ -5,7 +5,6 @@
 #include "omath/utility/pattern_scan.hpp"
 #include <fstream>
 #include <span>
-#include <stdexcept>
 #include <variant>
 
 // Internal PE shit defines
@@ -207,10 +206,9 @@ namespace
     std::optional<NtHeaderVariant> get_nt_header_from_loaded_module(const void* module_base_address)
     {
         const auto module_byte_ptr = static_cast<const std::byte*>(module_base_address);
-        ImageNtHeaders<NtArchitecture::x32_bit> x86_headers{};
         const auto dos_header = static_cast<const DosHeader*>(module_base_address);
 
-        x86_headers = *reinterpret_cast<const ImageNtHeaders<NtArchitecture::x32_bit>*>(module_byte_ptr
+        ImageNtHeaders<NtArchitecture::x32_bit> x86_headers = *reinterpret_cast<const ImageNtHeaders<NtArchitecture::x32_bit>*>(module_byte_ptr
                                                                                         + dos_header->e_lfanew);
 
         if (x86_headers.optional_header.magic == opt_hdr32_magic)

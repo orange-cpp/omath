@@ -70,8 +70,8 @@ namespace omath::pathfinding
         const auto start_vertex = maybe_start_vertex.value();
         const auto end_vertex = maybe_end_vertex.value();
 
-        node_data.emplace(start_vertex, PathNode{std::nullopt, 0.f});
-        open_list.push({start_vertex, start_vertex.distance_to(end_vertex)});
+        node_data.emplace(start_vertex, PathNode{.came_from=std::nullopt, .g_cost=0.f});
+        open_list.push({.position=start_vertex, .f_cost=start_vertex.distance_to(end_vertex)});
 
         while (!open_list.empty())
         {
@@ -103,9 +103,9 @@ namespace omath::pathfinding
 
                 if (node_it == node_data.end() || tentative_g_cost < node_it->second.g_cost)
                 {
-                    node_data[neighbor] = PathNode{current, tentative_g_cost};
+                    node_data[neighbor] = PathNode{.came_from=current, .g_cost=tentative_g_cost};
                     const float f_cost = tentative_g_cost + neighbor.distance_to(end_vertex);
-                    open_list.push({neighbor, f_cost});
+                    open_list.push({.position=neighbor, .f_cost=f_cost});
                 }
             }
         }

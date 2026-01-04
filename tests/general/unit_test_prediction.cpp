@@ -10,8 +10,9 @@ TEST(UnitTestPrediction, PredictionTest)
     const auto viewPoint =
             omath::projectile_prediction::ProjPredEngineLegacy(400, 1.f / 1000.f, 50, 5.f).maybe_calculate_aim_point(proj, target);
 
-
-    const auto [pitch, yaw, _] =omath::source_engine::CameraTrait::calc_look_at_angle(proj.m_origin, viewPoint.value());
+    ASSERT_TRUE(viewPoint.has_value());
+    if (!viewPoint.has_value()) return;
+    const auto [pitch, yaw, _] =omath::source_engine::CameraTrait::calc_look_at_angle(proj.m_origin, *viewPoint);
 
     EXPECT_NEAR(-42.547142, pitch.as_degrees(), 0.01f);
     EXPECT_NEAR(-1.181189, yaw.as_degrees(), 0.01f);

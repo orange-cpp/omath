@@ -119,7 +119,7 @@ namespace omath
         [[nodiscard]]
         static consteval MatSize size() noexcept
         {
-            return {Rows, Columns};
+            return {.rows=Rows, .columns=Columns};
         }
 
         [[nodiscard]]

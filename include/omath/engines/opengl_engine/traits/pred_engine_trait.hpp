@@ -17,8 +17,8 @@ namespace omath::opengl_engine
                                                                     const float time, const float gravity) noexcept
         {
             auto current_pos = projectile.m_origin
-                               + forward_vector({PitchAngle::from_degrees(-pitch), YawAngle::from_degrees(yaw),
-                                                 RollAngle::from_degrees(0)})
+                               + forward_vector({.pitch=PitchAngle::from_degrees(-pitch), .yaw=YawAngle::from_degrees(yaw),
+                                                 .roll=RollAngle::from_degrees(0)})
                                          * projectile.m_launch_speed * time;
             current_pos.y -= (gravity * projectile.m_gravity_scale) * (time * time) * 0.5f;
 

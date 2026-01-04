@@ -6,7 +6,6 @@
 
 #include "omath/trigonometry/angle.hpp"
 #include "omath/linear_algebra/vector2.hpp"
-#include <cstdint>
 #include <expected>
 #include <functional>
 
@@ -75,7 +74,23 @@ namespace omath
         constexpr Vector3& operator/=(const Vector3& other) noexcept
         {
             Vector2<Type>::operator/=(other);
-            z /= other.z;
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                if (other.z == static_cast<Type>(0))
+                {
+                    const Type inf = std::numeric_limits<Type>::infinity();
+                    const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                    z = (z == static_cast<Type>(0)) ? nan : ((z > static_cast<Type>(0)) ? inf : -inf);
+                }
+                else
+                {
+                    z /= other.z;
+                }
+            }
+            else
+            {
+                z /= other.z;
+            }
 
             return *this;
         }
@@ -91,7 +106,23 @@ namespace omath
         constexpr Vector3& operator/=(const Type& value) noexcept
         {
             Vector2<Type>::operator/=(value);
-            z /= value;
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                if (value == static_cast<Type>(0))
+                {
+                    const Type inf = std::numeric_limits<Type>::infinity();
+                    const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                    z = (z == static_cast<Type>(0)) ? nan : ((z > static_cast<Type>(0)) ? inf : -inf);
+                }
+                else
+                {
+                    z /= value;
+                }
+            }
+            else
+            {
+                z /= value;
+            }
 
             return *this;
         }
@@ -198,11 +229,34 @@ namespace omath
 
         [[nodiscard]] constexpr Vector3 operator/(const Type& value) const noexcept
         {
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                if (value == static_cast<Type>(0))
+                {
+                    const Type inf = std::numeric_limits<Type>::infinity();
+                    const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                    return {
+                        (this->x == static_cast<Type>(0)) ? nan : ((this->x > static_cast<Type>(0)) ? inf : -inf),
+                        (this->y == static_cast<Type>(0)) ? nan : ((this->y > static_cast<Type>(0)) ? inf : -inf),
+                        (z == static_cast<Type>(0)) ? nan : ((z > static_cast<Type>(0)) ? inf : -inf)
+                    };
+                }
+            }
             return {this->x / value, this->y / value, z / value};
         }
 
         [[nodiscard]] constexpr Vector3 operator/(const Vector3& other) const noexcept
         {
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                const Type inf = std::numeric_limits<Type>::infinity();
+                const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                return {
+                    (other.x == static_cast<Type>(0)) ? ((this->x == static_cast<Type>(0)) ? nan : ((this->x > static_cast<Type>(0)) ? inf : -inf)) : this->x / other.x,
+                    (other.y == static_cast<Type>(0)) ? ((this->y == static_cast<Type>(0)) ? nan : ((this->y > static_cast<Type>(0)) ? inf : -inf)) : this->y / other.y,
+                    (other.z == static_cast<Type>(0)) ? ((z == static_cast<Type>(0)) ? nan : ((z > static_cast<Type>(0)) ? inf : -inf)) : z / other.z
+                };
+            }
             return {this->x / other.x, this->y / other.y, z / other.z};
         }
 

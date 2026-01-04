@@ -6,6 +6,8 @@
 #include <cmath>
 #include <format>
 #include <tuple>
+#include <limits>
+#include <type_traits>
 
 #ifdef OMATH_IMGUI_INTEGRATION
 #include <imgui.h>
@@ -70,8 +72,18 @@ namespace omath
 
         constexpr Vector2& operator/=(const Vector2& other) noexcept
         {
-            x /= other.x;
-            y /= other.y;
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                const Type inf = std::numeric_limits<Type>::infinity();
+                const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                x = (other.x == static_cast<Type>(0)) ? ((x == static_cast<Type>(0)) ? nan : ((x > static_cast<Type>(0)) ? inf : -inf)) : x / other.x;
+                y = (other.y == static_cast<Type>(0)) ? ((y == static_cast<Type>(0)) ? nan : ((y > static_cast<Type>(0)) ? inf : -inf)) : y / other.y;
+            }
+            else
+            {
+                x /= other.x;
+                y /= other.y;
+            }
 
             return *this;
         }
@@ -86,8 +98,26 @@ namespace omath
 
         constexpr Vector2& operator/=(const Type& value) noexcept
         {
-            x /= value;
-            y /= value;
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                if (value == static_cast<Type>(0))
+                {
+                    const Type inf = std::numeric_limits<Type>::infinity();
+                    const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                    x = (x == static_cast<Type>(0)) ? nan : ((x > static_cast<Type>(0)) ? inf : -inf);
+                    y = (y == static_cast<Type>(0)) ? nan : ((y > static_cast<Type>(0)) ? inf : -inf);
+                }
+                else
+                {
+                    x /= value;
+                    y /= value;
+                }
+            }
+            else
+            {
+                x /= value;
+                y /= value;
+            }
 
             return *this;
         }
@@ -183,6 +213,18 @@ namespace omath
 
         [[nodiscard]] constexpr Vector2 operator/(const Type& value) const noexcept
         {
+            if constexpr (std::is_floating_point_v<Type>)
+            {
+                if (value == static_cast<Type>(0))
+                {
+                    const Type inf = std::numeric_limits<Type>::infinity();
+                    const Type nan = std::numeric_limits<Type>::quiet_NaN();
+                    return {
+                        (x == static_cast<Type>(0)) ? nan : ((x > static_cast<Type>(0)) ? inf : -inf),
+                        (y == static_cast<Type>(0)) ? nan : ((y > static_cast<Type>(0)) ? inf : -inf)
+                    };
+                }
+            }
             return {x / value, y / value};
         }
 

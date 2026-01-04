@@ -1,8 +1,0 @@
-@echo off
-REM scripts/coverage.bat.in
-REM Simple wrapper to run coverage.ps1
-
-set SOURCE_DIR=@CMAKE_SOURCE_DIR@
-set BINARY_DIR=@CMAKE_BINARY_DIR@
-
-powershell -ExecutionPolicy Bypass -File "%BINARY_DIR%\scripts\coverage.ps1" -SourceDir "%SOURCE_DIR%" -BinaryDir "%BINARY_DIR%" %*
