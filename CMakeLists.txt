@@ -27,7 +27,7 @@ option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build 
 option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" ON)
 option(OMATH_ENABLE_COVERAGE "Enable coverage" OFF)
-
+option(OMATH_ENABLE_FORCE_INLINE "Will for compiler to make some functions to be force inlined no matter what" ON)
 if (VCPKG_MANIFEST_FEATURES)
     foreach (omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
         if (omath_feature STREQUAL "imgui")
@@ -110,6 +110,10 @@ endif ()
 
 if (OMATH_ENABLE_LEGACY)
     target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_ENABLE_LEGACY)
+endif ()
+
+if (OMATH_ENABLE_FORCE_INLINE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_ENABLE_FORCE_INLINE)
 endif ()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

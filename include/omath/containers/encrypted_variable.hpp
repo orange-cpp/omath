@@ -6,11 +6,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
-
+#ifdef OMATH_ENABLE_FORCE_INLINE
 #ifdef _MSC_VER
-#define OMATH_FORCEINLINE __forceinline
+#define OMATH_FORCE_INLINE __forceinline
 #else
-#define OMATH_FORCEINLINE __attribute__((always_inline)) inline
+#define OMATH_FORCE_INLINE __attribute__((always_inline)) inline
+#endif
+#else
+#define OMATH_FORCE_INLINE
 #endif
 
 namespace omath::detail
@@ -111,7 +114,7 @@ namespace omath
         bool m_is_encrypted;
         T m_data;
 
-        OMATH_FORCEINLINE constexpr void xor_contained_var_by_key()
+        OMATH_FORCE_INLINE constexpr void xor_contained_var_by_key()
         {
             std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
 
@@ -121,7 +124,7 @@ namespace omath
         }
 
     public:
-        OMATH_FORCEINLINE constexpr explicit EncryptedVariable(const T& data): m_is_encrypted(false), m_data(data)
+        OMATH_FORCE_INLINE constexpr explicit EncryptedVariable(const T& data): m_is_encrypted(false), m_data(data)
         {
             encrypt();
         }
@@ -129,14 +132,14 @@ namespace omath
         {
             return m_is_encrypted;
         }
-        OMATH_FORCEINLINE constexpr void decrypt()
+        OMATH_FORCE_INLINE constexpr void decrypt()
         {
             if (!m_is_encrypted)
                 return;
             xor_contained_var_by_key();
             m_is_encrypted = false;
         }
-        OMATH_FORCEINLINE constexpr void encrypt()
+        OMATH_FORCE_INLINE constexpr void encrypt()
         {
             if (m_is_encrypted)
                 return;
@@ -144,21 +147,21 @@ namespace omath
             m_is_encrypted = true;
         }
         [[nodiscard]]
-        OMATH_FORCEINLINE constexpr T& value()
+        OMATH_FORCE_INLINE constexpr T& value()
         {
             return m_data;
         }
         [[nodiscard]]
-        OMATH_FORCEINLINE constexpr const T& value() const
+        OMATH_FORCE_INLINE constexpr const T& value() const
         {
             return m_data;
         }
-        OMATH_FORCEINLINE ~EncryptedVariable()
+        OMATH_FORCE_INLINE ~EncryptedVariable()
         {
             decrypt();
         }
         [[nodiscard]]
-        OMATH_FORCEINLINE auto drop_anchor()
+        OMATH_FORCE_INLINE auto drop_anchor()
         {
             return VarAnchor{*this};
         }
@@ -168,11 +171,11 @@ namespace omath
     {
     public:
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        OMATH_FORCEINLINE constexpr VarAnchor(EncryptedVarType& var): m_var(var) // NOLINT(*-explicit-constructor)
+        OMATH_FORCE_INLINE constexpr VarAnchor(EncryptedVarType& var): m_var(var) // NOLINT(*-explicit-constructor)
         {
             m_var.decrypt();
         }
-        OMATH_FORCEINLINE constexpr ~VarAnchor()
+        OMATH_FORCE_INLINE constexpr ~VarAnchor()
         {
             m_var.encrypt();
         }
