@@ -193,10 +193,10 @@ namespace
                                                    + static_cast<std::streamoff>(i) * sizeof(current_section);
 
                         file.seekg(off, std::ios_base::beg);
-                        if (!file.read(reinterpret_cast<char*>(&current_section), sizeof(current_section)))
+                        if (!file.read(reinterpret_cast<char*>(&current_section), sizeof(current_section))) [[unlikely]]
                             return std::nullopt;
 
-                        if (current_section.sh_name >= shstrtab.size())
+                        if (current_section.sh_name >= shstrtab.size()) [[unlikely]]
                             continue;
 
                         // ReSharper disable once CppTooWideScopeInitStatement
@@ -319,7 +319,7 @@ namespace omath
         const auto offset = std::distance(pe_section->data.begin(), scan_result);
 
         return SectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
-                                    .raw_base_addr = pe_section->raw_base_addr,
-                                    .target_offset = offset};
+                                 .raw_base_addr = pe_section->raw_base_addr,
+                                 .target_offset = offset};
     }
 } // namespace omath
