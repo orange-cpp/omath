@@ -178,7 +178,7 @@ namespace omath
     };
 
     template<class EncryptedVarType>
-    class VarAnchor
+    class VarAnchor final
     {
     public:
         // ReSharper disable once CppNonExplicitConvertingConstructor
