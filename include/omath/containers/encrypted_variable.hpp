@@ -123,6 +123,8 @@ namespace omath
         }
         OMATH_FORCEINLINE constexpr void decrypt()
         {
+            if (m_is_encrypted)
+                return;
             std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
 
             for (size_t i = 0; i < bytes.size(); ++i)
@@ -131,6 +133,8 @@ namespace omath
         }
         OMATH_FORCEINLINE constexpr void encrypt()
         {
+            if (!m_is_encrypted)
+                return;
             std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
 
             for (size_t i = 0; i < bytes.size(); ++i)
