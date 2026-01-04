@@ -13,11 +13,8 @@
 #define OMATH_FORCEINLINE __attribute__((always_inline)) inline
 #endif
 
-namespace omath
+namespace omath::detail
 {
-    template<class T>
-    class Anchor;
-
     consteval std::uint64_t fnv1a_64(const char* s)
     {
         std::uint64_t h = 14695981039346656037ull;
@@ -84,17 +81,6 @@ namespace omath
     {
         return static_cast<std::uint8_t>(rand_u64(seed, i)); // narrowing is fine/deterministic
     }
-
-    constexpr std::array<std::uint8_t, 6> create_key()
-    {
-        std::array<std::uint8_t, 6> key{};
-
-        for (auto& byte : key)
-        {
-            byte = static_cast<std::uint8_t>(rand_u64<__COUNTER__>());
-        }
-        return key;
-    }
     template<std::size_t N, std::uint64_t Seed, std::size_t... I>
     consteval std::array<std::uint8_t, N> make_array_impl(std::index_sequence<I...>)
     {
@@ -106,6 +92,12 @@ namespace omath
     {
         return make_array_impl<N, Seed>(std::make_index_sequence<N>{});
     }
+} // namespace omath::detail
+
+namespace omath
+{
+    template<class T>
+    class Anchor;
     template<class T, std::size_t key_size, std::array<std::uint8_t, key_size> key>
     class EncryptedVariable final
     {
@@ -141,10 +133,12 @@ namespace omath
                 bytes[i] ^= static_cast<std::uint8_t>(key[i % key.size()] + (i * key_size));
             m_is_encrypted = true;
         }
+        [[nodiscard]]
         OMATH_FORCEINLINE constexpr T& value()
         {
             return m_data;
         }
+        [[nodiscard]]
         OMATH_FORCEINLINE constexpr const T& value() const
         {
             return m_data;
@@ -172,6 +166,6 @@ namespace omath
     };
 } // namespace omath
 
-#define CT_RAND_ARRAY_INT(N)                                                                                           \
-    (::omath::make_array<(N), (::omath::base_seed() ^ static_cast<std::uint64_t>(__COUNTER__))>())
-#define OMATH_DEF_CRYPT_VAR(TYPE, KEY_SIZE) omath::EncryptedVariable<TYPE, KEY_SIZE, CT_RAND_ARRAY_INT(KEY_SIZE)>
+#define OMATH_CT_RAND_ARRAY_BYTE(N)                                                                                    \
+    (::omath::detail::make_array<(N), (::omath::detail::base_seed() ^ static_cast<std::uint64_t>(__COUNTER__))>())
+#define OMATH_DEF_CRYPT_VAR(TYPE, KEY_SIZE) omath::EncryptedVariable<TYPE, KEY_SIZE, OMATH_CT_RAND_ARRAY_BYTE(KEY_SIZE)>
