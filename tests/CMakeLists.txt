@@ -20,7 +20,7 @@ else() # GTest is being linked as vcpkg package
     find_package(GTest CONFIG REQUIRED)
     target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main omath::omath)
 endif()
-target_compile_options(${PROJECT_NAME} PRIVATE -static)
+
 if(OMATH_ENABLE_COVERAGE)
     include(${CMAKE_SOURCE_DIR}/cmake/Coverage.cmake)
     omath_setup_coverage(${PROJECT_NAME})
