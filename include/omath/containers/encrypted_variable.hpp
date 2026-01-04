@@ -152,7 +152,8 @@ namespace omath
     class Anchor
     {
     public:
-        OMATH_FORCEINLINE constexpr Anchor(EncryptedVarType& var): m_var(var)
+        // ReSharper disable once CppNonExplicitConvertingConstructor
+        OMATH_FORCEINLINE constexpr Anchor(EncryptedVarType& var): m_var(var) // NOLINT(*-explicit-constructor)
         {
             m_var.decrypt();
         }
