@@ -6,15 +6,12 @@
 #include <omath/containers/encrypted_variable.hpp>
 TEST(Enc, Test)
 {
-    OMATH_DEF_CRYPT_VAR(omath::Vector3<float>, 128) var{{1.f, 2.f, 3.f}};
-    OMATH_DEF_CRYPT_VAR(omath::Vector3<float>, 128) var2{{1.f, 2.f, 3.f}};
+    constexpr omath::Vector3<float> original = {1.f, 2.f, 3.f};
+    OMATH_DEF_CRYPT_VAR(omath::Vector3<float>, 128) var{original};
     {
-        omath::Anchor _ = {var};
-        omath::Anchor __ = {var2};
+        omath::VarAnchor _ = var.drop_anchor();
 
-        std::println("Decrypted var1: {}", var.value());
-        std::println("Decrypted var2: {}", var2.value());
+        EXPECT_EQ(original, var.value());
     }
-    std::println("Encrypted var1: {}", var.value());
-    std::println("Encrypted var2: {}", var2.value());
+    EXPECT_NE(original, var.value());
 }
