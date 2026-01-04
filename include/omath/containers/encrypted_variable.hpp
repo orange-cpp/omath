@@ -108,30 +108,39 @@ namespace omath
 {
     template<class T>
     class VarAnchor;
+
     template<class T, std::size_t key_size, std::array<std::uint8_t, key_size> key>
     class EncryptedVariable final
     {
-        bool m_is_encrypted;
-        T m_data;
+        using value_type = std::remove_cvref_t<T>;
+
+        bool m_is_encrypted{};
+        value_type m_data{};
 
         OMATH_FORCE_INLINE constexpr void xor_contained_var_by_key()
         {
-            std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
+            // Safe, keeps const-correctness, and avoids reinterpret_cast issues
+            auto bytes = std::as_writable_bytes(std::span<value_type, 1>{&m_data, 1});
 
-            for (size_t i = 0; i < bytes.size(); ++i)
-                bytes[i] ^= static_cast<std::uint8_t>(key[i % key.size()] + (i * key_size));
-            m_is_encrypted = true;
+            for (std::size_t i = 0; i < bytes.size(); ++i)
+            {
+                const std::uint8_t k = static_cast<std::uint8_t>(key[i % key_size] + (i * key_size));
+                bytes[i] ^= static_cast<std::byte>(k);
+            }
         }
 
     public:
-        OMATH_FORCE_INLINE constexpr explicit EncryptedVariable(const T& data): m_is_encrypted(false), m_data(data)
+        OMATH_FORCE_INLINE constexpr explicit EncryptedVariable(const value_type& data)
+            : m_is_encrypted(false), m_data(data)
         {
             encrypt();
         }
+
         [[nodiscard]] constexpr bool is_encrypted() const
         {
             return m_is_encrypted;
         }
+
         OMATH_FORCE_INLINE constexpr void decrypt()
         {
             if (!m_is_encrypted)
@@ -139,6 +148,7 @@ namespace omath
             xor_contained_var_by_key();
             m_is_encrypted = false;
         }
+
         OMATH_FORCE_INLINE constexpr void encrypt()
         {
             if (m_is_encrypted)
@@ -146,32 +156,33 @@ namespace omath
             xor_contained_var_by_key();
             m_is_encrypted = true;
         }
-        [[nodiscard]]
-        OMATH_FORCE_INLINE constexpr T& value()
+
+        [[nodiscard]] OMATH_FORCE_INLINE constexpr value_type& value()
         {
             return m_data;
         }
-        [[nodiscard]]
-        OMATH_FORCE_INLINE constexpr const T& value() const
+        [[nodiscard]] OMATH_FORCE_INLINE constexpr const value_type& value() const
         {
             return m_data;
         }
-        OMATH_FORCE_INLINE ~EncryptedVariable()
+
+        constexpr OMATH_FORCE_INLINE ~EncryptedVariable()
         {
             decrypt();
         }
-        [[nodiscard]]
-        OMATH_FORCE_INLINE auto drop_anchor()
+
+        [[nodiscard]] constexpr OMATH_FORCE_INLINE auto drop_anchor()
         {
             return VarAnchor{*this};
         }
     };
+
     template<class EncryptedVarType>
     class VarAnchor
     {
     public:
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        OMATH_FORCE_INLINE constexpr VarAnchor(EncryptedVarType& var): m_var(var) // NOLINT(*-explicit-constructor)
+        OMATH_FORCE_INLINE constexpr VarAnchor(EncryptedVarType& var): m_var(var)
         {
             m_var.decrypt();
         }
