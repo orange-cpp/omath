@@ -109,11 +109,11 @@ namespace omath
     template<class T, std::size_t key_size, std::array<std::uint8_t, key_size> key>
     class EncryptedVariable final
     {
-        bool m_is_encrypted{};
+        bool m_is_encrypted;
         T m_data;
 
     public:
-        OMATH_FORCEINLINE constexpr explicit EncryptedVariable(const T& data): m_is_encrypted(true), m_data(data)
+        OMATH_FORCEINLINE constexpr explicit EncryptedVariable(const T& data): m_is_encrypted(false), m_data(data)
         {
             encrypt();
         }
@@ -123,7 +123,7 @@ namespace omath
         }
         OMATH_FORCEINLINE constexpr void decrypt()
         {
-            if (m_is_encrypted)
+            if (!m_is_encrypted)
                 return;
             std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
 
@@ -133,7 +133,7 @@ namespace omath
         }
         OMATH_FORCEINLINE constexpr void encrypt()
         {
-            if (!m_is_encrypted)
+            if (m_is_encrypted)
                 return;
             std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
 
