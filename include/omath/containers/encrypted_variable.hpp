@@ -15,6 +15,7 @@
 
 namespace omath::detail
 {
+    [[nodiscard]]
     consteval std::uint64_t fnv1a_64(const char* s)
     {
         std::uint64_t h = 14695981039346656037ull;
@@ -27,6 +28,7 @@ namespace omath::detail
     }
 
     // SplitMix64 mixer (good quality for seeding / scrambling)
+    [[nodiscard]]
     consteval std::uint64_t splitmix64(std::uint64_t x)
     {
         x += 0x9E3779B97F4A7C15ull;
@@ -38,6 +40,7 @@ namespace omath::detail
     // Choose your policy:
     // - If you want reproducible builds, REMOVE __DATE__/__TIME__.
     // - If you want "different each build", keep them.
+    [[nodiscard]]
     consteval std::uint64_t base_seed()
     {
         std::uint64_t h = 0;
@@ -49,6 +52,7 @@ namespace omath::detail
 
     // Produce a "random" 64-bit value for a given stream index (compile-time)
     template<std::uint64_t Stream>
+    [[nodiscard]]
     consteval std::uint64_t rand_u64()
     {
         // Stream is usually __COUNTER__ so each call site differs
@@ -56,7 +60,8 @@ namespace omath::detail
     }
 
     // Unbiased bounded uniform using Lemire's method (uses 128-bit multiply)
-    consteval std::uint64_t bounded_u64(std::uint64_t x, std::uint64_t bound)
+    [[nodiscard]]
+    consteval std::uint64_t bounded_u64(const std::uint64_t x, const std::uint64_t bound)
     {
         // bound must be > 0
         __uint128_t m = static_cast<__uint128_t>(x) * static_cast<__uint128_t>(bound);
@@ -64,30 +69,35 @@ namespace omath::detail
     }
 
     template<std::int64_t Lo, std::int64_t Hi, std::uint64_t Stream>
-    consteval std::int64_t rand_uint8t()
+    [[nodiscard]]
+    consteval std::int64_t rand_uint8_t()
     {
         static_assert(Lo <= Hi);
         const std::uint64_t span = static_cast<std::uint64_t>(Hi - Lo) + 1ull;
         const std::uint64_t r = rand_u64<Stream>();
         return static_cast<std::int64_t>(bounded_u64(r, span)) + Lo;
     }
-    consteval std::uint64_t rand_u64(std::uint64_t seed, std::uint64_t i)
+    [[nodiscard]]
+    consteval std::uint64_t rand_u64(const std::uint64_t seed, const std::uint64_t i)
     {
         return splitmix64(seed + 0xD1B54A32D192ED03ull * (i + 1ull));
     }
 
     // Convert to int (uses low 32 bits; you can also use high bits if you prefer)
-    consteval std::uint8_t rand_uint8t(std::uint64_t seed, std::uint64_t i)
+    [[nodiscard]]
+    consteval std::uint8_t rand_uint8t(const std::uint64_t seed, const std::uint64_t i)
     {
         return static_cast<std::uint8_t>(rand_u64(seed, i)); // narrowing is fine/deterministic
     }
     template<std::size_t N, std::uint64_t Seed, std::size_t... I>
+    [[nodiscard]]
     consteval std::array<std::uint8_t, N> make_array_impl(std::index_sequence<I...>)
     {
         return {rand_uint8t(Seed, static_cast<std::uint64_t>(I))...};
     }
 
     template<std::size_t N, std::uint64_t Seed>
+   [[nodiscard]]
     consteval std::array<std::uint8_t, N> make_array()
     {
         return make_array_impl<N, Seed>(std::make_index_sequence<N>{});
@@ -104,6 +114,14 @@ namespace omath
         bool m_is_encrypted;
         T m_data;
 
+        OMATH_FORCEINLINE constexpr void xor_contained_var_by_key()
+        {
+            std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
+
+            for (size_t i = 0; i < bytes.size(); ++i)
+                bytes[i] ^= static_cast<std::uint8_t>(key[i % key.size()] + (i * key_size));
+            m_is_encrypted = true;
+        }
     public:
         OMATH_FORCEINLINE constexpr explicit EncryptedVariable(const T& data): m_is_encrypted(false), m_data(data)
         {
@@ -117,20 +135,14 @@ namespace omath
         {
             if (!m_is_encrypted)
                 return;
-            std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
-
-            for (size_t i = 0; i < bytes.size(); ++i)
-                bytes[i] ^= static_cast<std::uint8_t>(key[i % key.size()] + (i * key_size));
+            xor_contained_var_by_key();
             m_is_encrypted = false;
         }
         OMATH_FORCEINLINE constexpr void encrypt()
         {
             if (m_is_encrypted)
                 return;
-            std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
-
-            for (size_t i = 0; i < bytes.size(); ++i)
-                bytes[i] ^= static_cast<std::uint8_t>(key[i % key.size()] + (i * key_size));
+            xor_contained_var_by_key();
             m_is_encrypted = true;
         }
         [[nodiscard]]
