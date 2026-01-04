@@ -97,7 +97,7 @@ namespace omath::detail
 namespace omath
 {
     template<class T>
-    class Anchor;
+    class VarAnchor;
     template<class T, std::size_t key_size, std::array<std::uint8_t, key_size> key>
     class EncryptedVariable final
     {
@@ -147,17 +147,22 @@ namespace omath
         {
             decrypt();
         }
+        [[nodiscard]]
+        OMATH_FORCEINLINE auto drop_anchor()
+        {
+            return VarAnchor{*this};
+        }
     };
     template<class EncryptedVarType>
-    class Anchor
+    class VarAnchor
     {
     public:
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        OMATH_FORCEINLINE constexpr Anchor(EncryptedVarType& var): m_var(var) // NOLINT(*-explicit-constructor)
+        OMATH_FORCEINLINE constexpr VarAnchor(EncryptedVarType& var): m_var(var) // NOLINT(*-explicit-constructor)
         {
             m_var.decrypt();
         }
-        OMATH_FORCEINLINE constexpr ~Anchor()
+        OMATH_FORCEINLINE constexpr ~VarAnchor()
         {
             m_var.encrypt();
         }
