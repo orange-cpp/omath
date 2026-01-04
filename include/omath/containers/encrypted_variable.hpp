@@ -125,18 +125,16 @@ namespace omath
         {
             std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
 
-            for (auto& byte : bytes)
-                for (const auto key_byte : key)
-                    byte ^= key_byte;
+            for (size_t i = 0; i < bytes.size(); ++i)
+                bytes[i] ^= static_cast<std::uint8_t>(key[i % key.size()] + (i * key_size));
             m_is_encrypted = false;
         }
-       OMATH_FORCEINLINE constexpr void encrypt()
+        OMATH_FORCEINLINE constexpr void encrypt()
         {
             std::span bytes{reinterpret_cast<std::uint8_t*>(&m_data), sizeof(m_data)};
 
-            for (auto& byte : bytes)
-                for (const auto key_byte : key)
-                    byte ^= key_byte;
+            for (size_t i = 0; i < bytes.size(); ++i)
+                bytes[i] ^= static_cast<std::uint8_t>(key[i % key.size()] + (i * key_size));
             m_is_encrypted = true;
         }
         OMATH_FORCEINLINE constexpr T& value()
@@ -170,7 +168,6 @@ namespace omath
     };
 } // namespace omath
 
-
-#define CT_RAND_ARRAY_INT(N) \
-(::omath::make_array<(N), (::omath::base_seed() ^ static_cast<std::uint64_t>(__COUNTER__))>())
+#define CT_RAND_ARRAY_INT(N)                                                                                           \
+    (::omath::make_array<(N), (::omath::base_seed() ^ static_cast<std::uint64_t>(__COUNTER__))>())
 #define OMATH_DEF_CRYPT_VAR(TYPE, KEY_SIZE) omath::EncryptedVariable<TYPE, KEY_SIZE, CT_RAND_ARRAY_INT(KEY_SIZE)>
