@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 #include <memory_resource>
+#include <ostream>
 #include <queue>
 #include <utility>
 #include <vector>
@@ -86,6 +87,7 @@ namespace omath::collision
                 // Converged if we can’t push the face closer than tolerance
                 if (p_dist - face.d <= params.tolerance)
                 {
+                    std::println("Vectex size {}, Faces size {}",vertexes.size(), faces.size());
                     out.normal = face.n;
                     out.depth = face.d; // along unit normal
                     out.iterations = it + 1;
@@ -118,7 +120,6 @@ namespace omath::collision
 
             if (faces.empty())
                 return std::nullopt;
-
             const auto best = *std::ranges::min_element(faces, [](const auto& first, const auto& second)
                                                         { return first.d < second.d; });
             out.normal = best.n;

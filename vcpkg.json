@@ -30,7 +30,8 @@
       "description": "Build benchmarks",
       "dependencies": [
         "glfw3",
-        "glew"
+        "glew",
+        "tinygltf"
       ]
     },
     "imgui": {
