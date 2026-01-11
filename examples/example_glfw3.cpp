@@ -1,20 +1,24 @@
-// main.cpp
+// main.cpp  (textured + improved shadows + film grain + chromatic aberration)
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define TINYGLTF_NOEXCEPTION
 #define JSON_NOEXCEPTION
 
-#include <cmath>
-#include <cstdint>
-#include <iostream>
-#include <stdexcept>
-#include <vector>
-
-// --- OpenGL / windowing ---
 #include <GL/glew.h> // GLEW must come before GLFW
 #include <GLFW/glfw3.h>
 #include <tiny_gltf.h>
+
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <memory_resource>
+#include <print>
+#include <stdexcept>
+#include <vector>
 
 // --- your math / engine stuff ---
 #include "omath/3d_primitives/mesh.hpp"
@@ -31,38 +35,39 @@
 using omath::Vector3;
 
 // ---------------- TYPE ALIASES ----------------
-
-// Your 4x4 matrix type
 using Mat4x4 = omath::opengl_engine::Mat4X4;
-
-// Rotation angles for the Mesh
 using RotationAngles = omath::opengl_engine::ViewAngles;
 
-// Vertex: pos/normal = Vector3<float>, uv = Vector2<float>
 using VertexType = omath::primitives::Vertex<Vector3<float>, omath::Vector2<float>>;
 using MeshType = omath::opengl_engine::Mesh;
 using MyCamera = omath::opengl_engine::Camera;
 using Idx = Vector3<std::uint32_t>;
 
-// ---------------- SHADERS (TEXTURED) ----------------
+// ===================== SHADERS =====================
 
+// ---- Main pass: textured + shadows ----
 static const char* vertexShaderSource = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aUv;
 
-uniform mat4 uMVP;
+uniform mat4 uMVP;        // viewProj
 uniform mat4 uModel;
+uniform mat4 uLightSpace; // light VP
 
 out vec3 vNormal;
 out vec2 vUv;
+out vec4 vFragPosLightSpace;
 
 void main() {
-    // world-space normal (assuming no non-uniform scale)
     vNormal = mat3(uModel) * aNormal;
     vUv = aUv;
-    gl_Position = uMVP * uModel * vec4(aPos, 1.0);
+
+    vec4 worldPos = uModel * vec4(aPos, 1.0);
+    vFragPosLightSpace = uLightSpace * worldPos;
+
+    gl_Position = uMVP * worldPos;
 }
 )";
 
@@ -70,25 +75,144 @@ static const char* fragmentShaderSource = R"(
 #version 330 core
 in vec3 vNormal;
 in vec2 vUv;
+in vec4 vFragPosLightSpace;
 
 uniform sampler2D uTexture;
+uniform sampler2DShadow uShadowMap; // hardware compare
+uniform vec3 uLightDir;
 
 out vec4 FragColor;
 
-void main() {
+float ShadowPCF(vec4 fragPosLightSpace, vec3 N, vec3 L)
+{
+    vec3 proj = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    proj = proj * 0.5 + 0.5;
+
+    // outside map => lit
+    if (proj.z > 1.0 || proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0)
+        return 0.0;
+
+    // slope-scaled bias
+    float bias = max(0.0012 * (1.0 - dot(N, L)), 0.00035);
+
+    vec2 texel = 1.0 / vec2(textureSize(uShadowMap, 0));
+    float shadow = 0.0;
+
+    // 5x5 PCF
+    for (int x = -2; x <= 2; ++x)
+    for (int y = -2; y <= 2; ++y)
+    {
+        vec2 uv = proj.xy + vec2(x, y) * texel;
+        // sampler2DShadow: returns "lit amount" in [0..1], so shadow = 1 - lit
+        float lit = texture(uShadowMap, vec3(uv, (proj.z - bias)));
+        shadow += (1.0 - lit);
+    }
+
+    shadow /= 25.0;
+    return shadow;
+}
+
+void main()
+{
     vec3 baseColor = texture(uTexture, vUv).rgb;
 
-    // simple directional light
     vec3 N = normalize(vNormal);
-    vec3 L = normalize(vec3(0.3, 0.6, 0.7));
-    float diff = max(dot(N, L), 0.2); // some ambient floor
+    vec3 L = normalize(uLightDir);
 
-    FragColor = vec4(baseColor * diff, 1.0);
+    float ambient = 0.20;
+    float diff = max(dot(N, L), 0.0);
+
+    float shadow = ShadowPCF(vFragPosLightSpace, N, L);
+
+    vec3 lit = baseColor * (ambient + (1.0 - shadow) * diff);
+    FragColor = vec4(lit, 1.0);
 }
 )";
 
-// ---------------- GL helpers ----------------
+// ---- Shadow pass: depth only ----
+static const char* shadowVertexShaderSource = R"(
+#version 330 core
+layout (location = 0) in vec3 aPos;
 
+uniform mat4 uLightSpace;
+uniform mat4 uModel;
+
+void main() {
+    gl_Position = uLightSpace * uModel * vec4(aPos, 1.0);
+}
+)";
+
+static const char* shadowFragmentShaderSource = R"(
+#version 330 core
+void main() { }
+)";
+
+// ---- Post: fullscreen triangle ----
+static const char* postVertexShaderSource = R"(
+#version 330 core
+out vec2 vUv;
+
+const vec2 pos[3] = vec2[](
+    vec2(-1.0, -1.0),
+    vec2( 3.0, -1.0),
+    vec2(-1.0,  3.0)
+);
+
+void main() {
+    gl_Position = vec4(pos[gl_VertexID], 0.0, 1.0);
+    vUv = pos[gl_VertexID] * 0.5 + 0.5;
+}
+)";
+
+static const char* postFragmentShaderSource = R"(
+#version 330 core
+in vec2 vUv;
+
+uniform sampler2D uScene;
+uniform vec2 uResolution;
+uniform float uTime;
+
+// tweakables
+uniform float uChromaticStrength; // 0.002..0.004
+uniform float uGrainStrength;     // 0.03..0.06
+uniform float uGrainSize;         // 1.5..2.5
+
+out vec4 FragColor;
+
+float hash21(vec2 p)
+{
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}
+
+void main()
+{
+    vec2 uv = vUv;
+
+    // Chromatic aberration (radial)
+    vec2 center = vec2(0.5, 0.5);
+    vec2 d = uv - center;
+    float r2 = dot(d, d);
+    vec2 shift = d * (uChromaticStrength * (0.5 + 2.0 * r2));
+
+    float r = texture(uScene, uv + shift).r;
+    float g = texture(uScene, uv).g;
+    float b = texture(uScene, uv - shift).b;
+
+    vec3 col = vec3(r, g, b);
+
+    // Film grain
+    vec2 px = uv * (uResolution / max(uGrainSize, 0.0001));
+    float n = hash21(px + vec2(uTime * 60.0, uTime * 30.0));
+    float grain = (n - 0.5) * 2.0; // [-1,1]
+    col += grain * uGrainStrength;
+
+    FragColor = vec4(col, 1.0);
+}
+)";
+
+// ===================== GL HELPERS =====================
 GLuint compileShader(GLenum type, const char* src)
 {
     GLuint shader = glCreateShader(type);
@@ -106,11 +230,8 @@ GLuint compileShader(GLenum type, const char* src)
     return shader;
 }
 
-GLuint createShaderProgram()
+static GLuint linkProgram(GLuint vs, GLuint fs, const char* label)
 {
-    GLuint vs = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
-    GLuint fs = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-
     GLuint prog = glCreateProgram();
     glAttachShader(prog, vs);
     glAttachShader(prog, fs);
@@ -122,9 +243,36 @@ GLuint createShaderProgram()
     {
         char log[1024];
         glGetProgramInfoLog(prog, sizeof(log), nullptr, log);
-        std::cerr << "Program link error: " << log << std::endl;
+        std::cerr << label << " link error: " << log << std::endl;
     }
+    return prog;
+}
 
+GLuint createShaderProgram()
+{
+    GLuint vs = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+    GLuint fs = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    GLuint prog = linkProgram(vs, fs, "Main program");
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+    return prog;
+}
+
+GLuint createShadowProgram()
+{
+    GLuint vs = compileShader(GL_VERTEX_SHADER, shadowVertexShaderSource);
+    GLuint fs = compileShader(GL_FRAGMENT_SHADER, shadowFragmentShaderSource);
+    GLuint prog = linkProgram(vs, fs, "Shadow program");
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+    return prog;
+}
+
+GLuint createPostProgram()
+{
+    GLuint vs = compileShader(GL_VERTEX_SHADER, postVertexShaderSource);
+    GLuint fs = compileShader(GL_FRAGMENT_SHADER, postFragmentShaderSource);
+    GLuint prog = linkProgram(vs, fs, "Post program");
     glDeleteShader(vs);
     glDeleteShader(fs);
     return prog;
@@ -135,13 +283,11 @@ void framebuffer_size_callback(GLFWwindow* /*window*/, int w, int h)
     glViewport(0, 0, w, h);
 }
 
-// ---------------- tinygltf helpers ----------------
-
+// ===================== TINYGLTF HELPERS =====================
 static const unsigned char* get_accessor_data_ptr(const tinygltf::Model& model, const tinygltf::Accessor& accessor)
 {
     const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
     const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-
     return buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
 }
 
@@ -172,8 +318,7 @@ static uint32_t read_index(const unsigned char* data, int componentType)
     }
 }
 
-// ---------------- Node world transform (translation + scale) ----------------
-
+// ===================== NODE TRANSFORM (translation + scale) =====================
 static float vec3_length(float x, float y, float z)
 {
     return std::sqrt(x * x + y * y + z * z);
@@ -191,36 +336,26 @@ static void compute_node_world_transform_recursive(const tinygltf::Model& model,
 {
     const tinygltf::Node& node = model.nodes[nodeIndex];
 
-    // ----- local translation -----
     Vector3<float> localTrans{0.f, 0.f, 0.f};
-
-    // ----- local scale -----
     Vector3<float> localScale{1.f, 1.f, 1.f};
 
     if (node.matrix.size() == 16)
     {
-        // glTF matrix is column-major
         const auto& m = node.matrix;
 
-        // translation from last column
         localTrans.x = static_cast<float>(m[12]);
         localTrans.y = static_cast<float>(m[13]);
         localTrans.z = static_cast<float>(m[14]);
 
-        // approximate scale = length of basis vectors
         float sx = vec3_length(static_cast<float>(m[0]), static_cast<float>(m[1]), static_cast<float>(m[2]));
         float sy = vec3_length(static_cast<float>(m[4]), static_cast<float>(m[5]), static_cast<float>(m[6]));
         float sz = vec3_length(static_cast<float>(m[8]), static_cast<float>(m[9]), static_cast<float>(m[10]));
 
-        if (sx > 0.f)
-            localScale.x = sx;
-        if (sy > 0.f)
-            localScale.y = sy;
-        if (sz > 0.f)
-            localScale.z = sz;
+        if (sx > 0.f) localScale.x = sx;
+        if (sy > 0.f) localScale.y = sy;
+        if (sz > 0.f) localScale.z = sz;
     }
 
-    // node.translation overrides matrix translation if present
     if (node.translation.size() == 3)
     {
         localTrans.x = static_cast<float>(node.translation[0]);
@@ -228,7 +363,6 @@ static void compute_node_world_transform_recursive(const tinygltf::Model& model,
         localTrans.z = static_cast<float>(node.translation[2]);
     }
 
-    // node.scale overrides matrix scale if present
     if (node.scale.size() == 3)
     {
         localScale.x = static_cast<float>(node.scale[0]);
@@ -236,24 +370,20 @@ static void compute_node_world_transform_recursive(const tinygltf::Model& model,
         localScale.z = static_cast<float>(node.scale[2]);
     }
 
-    // ----- accumulate to world -----
     Vector3<float> worldScale{parentScale.x * localScale.x, parentScale.y * localScale.y, parentScale.z * localScale.z};
-
-    // (ignoring scale influence on translation; good enough for simple setups)
     Vector3<float> worldTrans{parentTrans.x + localTrans.x, parentTrans.y + localTrans.y, parentTrans.z + localTrans.z};
 
     outWorld[nodeIndex] = NodeWorldTransform{worldTrans, worldScale};
 
     for (int childIdx : node.children)
-    {
         compute_node_world_transform_recursive(model, childIdx, worldTrans, worldScale, outWorld);
-    }
 }
 
 static std::vector<NodeWorldTransform> compute_all_node_world_transforms(const tinygltf::Model& model)
 {
     std::vector<NodeWorldTransform> world(
-            model.nodes.size(), NodeWorldTransform{Vector3<float>{0.f, 0.f, 0.f}, Vector3<float>{1.f, 1.f, 1.f}});
+        model.nodes.size(),
+        NodeWorldTransform{Vector3<float>{0.f, 0.f, 0.f}, Vector3<float>{1.f, 1.f, 1.f}});
 
     if (model.nodes.empty())
         return world;
@@ -272,27 +402,29 @@ static std::vector<NodeWorldTransform> compute_all_node_world_transforms(const t
         const tinygltf::Scene& scene = model.scenes[sceneIndex];
         for (int rootNodeIdx : scene.nodes)
         {
-            compute_node_world_transform_recursive(model, rootNodeIdx,
-                                                   Vector3<float>{0.f, 0.f, 0.f}, // parent translation
-                                                   Vector3<float>{1.f, 1.f, 1.f}, // parent scale
-                                                   world);
+            compute_node_world_transform_recursive(
+                model, rootNodeIdx,
+                Vector3<float>{0.f, 0.f, 0.f},
+                Vector3<float>{1.f, 1.f, 1.f},
+                world);
         }
     }
     else
     {
-        // No scenes defined: treat all nodes as roots
         for (size_t i = 0; i < model.nodes.size(); ++i)
         {
-            compute_node_world_transform_recursive(model, static_cast<int>(i), Vector3<float>{0.f, 0.f, 0.f},
-                                                   Vector3<float>{1.f, 1.f, 1.f}, world);
+            compute_node_world_transform_recursive(
+                model, static_cast<int>(i),
+                Vector3<float>{0.f, 0.f, 0.f},
+                Vector3<float>{1.f, 1.f, 1.f},
+                world);
         }
     }
 
     return world;
 }
 
-// ---------------- Load meshes/primitives per node (origin + scale) ----------------
-
+// ===================== LOAD GLB MESHES =====================
 static void load_glb_meshes(const std::string& filename, tinygltf::Model& outModel, std::vector<MeshType>& outMeshes,
                             std::vector<int>& outTextureIndices)
 {
@@ -312,16 +444,14 @@ static void load_glb_meshes(const std::string& filename, tinygltf::Model& outMod
     outMeshes.clear();
     outTextureIndices.clear();
 
-    // Precompute world translation + scale for all nodes
     std::vector<NodeWorldTransform> nodeWorld = compute_all_node_world_transforms(model);
-
     int primitiveIndexGlobal = 0;
 
-    // Iterate over ALL nodes that reference a mesh
     for (size_t nodeIndex = 0; nodeIndex < model.nodes.size(); ++nodeIndex)
     {
         const tinygltf::Node& node = model.nodes[nodeIndex];
         std::println("{}", node.name);
+
         if (node.mesh < 0 || node.mesh >= static_cast<int>(model.meshes.size()))
             continue;
 
@@ -329,6 +459,7 @@ static void load_glb_meshes(const std::string& filename, tinygltf::Model& outMod
         const NodeWorldTransform& nodeTf = nodeWorld[nodeIndex];
         const Vector3<float>& nodeOrigin = nodeTf.translation;
         const Vector3<float>& nodeScale = nodeTf.scale;
+
         for (const tinygltf::Primitive& prim : gltfMesh.primitives)
         {
             if (prim.mode != TINYGLTF_MODE_TRIANGLES)
@@ -337,7 +468,6 @@ static void load_glb_meshes(const std::string& filename, tinygltf::Model& outMod
                 continue;
             }
 
-            // POSITION (required)
             auto posIt = prim.attributes.find("POSITION");
             if (posIt == prim.attributes.end())
             {
@@ -358,22 +488,19 @@ static void load_glb_meshes(const std::string& filename, tinygltf::Model& outMod
 
             std::vector<VertexType> vbo(vertexCount);
 
-            // NORMAL (optional)
             const unsigned char* nrmBase = nullptr;
             size_t nrmStride = 0;
             auto nrmIt = prim.attributes.find("NORMAL");
             if (nrmIt != prim.attributes.end())
             {
                 const tinygltf::Accessor& nrmAccessor = model.accessors[nrmIt->second];
-                if (nrmAccessor.type == TINYGLTF_TYPE_VEC3
-                    && nrmAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT)
+                if (nrmAccessor.type == TINYGLTF_TYPE_VEC3 && nrmAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT)
                 {
                     nrmBase = get_accessor_data_ptr(model, nrmAccessor);
                     nrmStride = get_accessor_stride(model, nrmAccessor);
                 }
             }
 
-            // TEXCOORD_0 (optional, vec2)
             const unsigned char* uvBase = nullptr;
             size_t uvStride = 0;
             auto uvIt = prim.attributes.find("TEXCOORD_0");
@@ -387,7 +514,6 @@ static void load_glb_meshes(const std::string& filename, tinygltf::Model& outMod
                 }
             }
 
-            // Fill VBO
             for (size_t i = 0; i < vertexCount; ++i)
             {
                 VertexType v{};
@@ -418,9 +544,7 @@ static void load_glb_meshes(const std::string& filename, tinygltf::Model& outMod
                 vbo[i] = v;
             }
 
-            // Build triangle EBO (Vector3<uint32_t>)
             std::vector<Idx> ebo;
-
             if (prim.indices >= 0)
             {
                 const tinygltf::Accessor& idxAccessor = model.accessors[prim.indices];
@@ -451,9 +575,7 @@ static void load_glb_meshes(const std::string& filename, tinygltf::Model& outMod
                 {
                     ebo.reserve(vertexCount / 3);
                     for (uint32_t i = 0; i + 2 < vertexCount; i += 3)
-                    {
                         ebo.emplace_back(Idx{i, i + 1, i + 2});
-                    }
                 }
             }
 
@@ -463,35 +585,24 @@ static void load_glb_meshes(const std::string& filename, tinygltf::Model& outMod
                 continue;
             }
 
-            // ---- Decide which texture index to use for this primitive ----
             int textureIndex = -1;
-
-            // 1) Try material → baseColorTexture.index
             if (prim.material >= 0 && prim.material < static_cast<int>(model.materials.size()))
             {
                 const tinygltf::Material& mat = model.materials[prim.material];
                 if (mat.pbrMetallicRoughness.baseColorTexture.index >= 0)
-                {
                     textureIndex = mat.pbrMetallicRoughness.baseColorTexture.index;
-                }
             }
-
-            // 2) If that failed but there are textures, map primitive index to textures round-robin
             if (textureIndex < 0 && !model.textures.empty())
-            {
                 textureIndex = primitiveIndexGlobal % static_cast<int>(model.textures.size());
-            }
 
             outTextureIndices.push_back(textureIndex);
 
-            // Create MeshType and store it, with origin & scale from node transform
             MeshType mesh{std::move(vbo), std::move(ebo)};
-            mesh.set_origin(nodeOrigin); // origin from glTF node
-            mesh.set_scale(nodeScale); // scale from glTF node
-            mesh.set_rotation(RotationAngles{}); // keep your rotation system
+            mesh.set_origin(nodeOrigin);
+            mesh.set_scale(nodeScale);
+            mesh.set_rotation(RotationAngles{});
 
             outMeshes.emplace_back(std::move(mesh));
-
             ++primitiveIndexGlobal;
         }
     }
@@ -502,16 +613,19 @@ static void load_glb_meshes(const std::string& filename, tinygltf::Model& outMod
     outModel = std::move(model);
 }
 
-// ---------------- Texture creation from glTF ----------------
-
+// ===================== TEXTURES =====================
 static GLuint create_default_white_texture()
 {
     GLuint tex = 0;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
 
-    unsigned char white[4] = {(std::uint8_t)(rand() % 255), (std::uint8_t)(rand() % 255), (std::uint8_t)(rand() % 255),
-                              255};
+    unsigned char white[4] = {
+        (std::uint8_t)(rand() % 255),
+        (std::uint8_t)(rand() % 255),
+        (std::uint8_t)(rand() % 255),
+        255};
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -544,7 +658,6 @@ static GLuint create_texture_from_image(const tinygltf::Image& image)
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0, format, GL_UNSIGNED_BYTE, image.image.data());
-
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -555,7 +668,6 @@ static GLuint create_texture_from_image(const tinygltf::Image& image)
     return glTex;
 }
 
-// textureIndex is an index into model.textures
 static GLuint create_texture_from_gltf(const tinygltf::Model& model, int textureIndex)
 {
     const tinygltf::Image* image = nullptr;
@@ -565,16 +677,11 @@ static GLuint create_texture_from_gltf(const tinygltf::Model& model, int texture
         const tinygltf::Texture& tex = model.textures[textureIndex];
         int imageIndex = tex.source;
         if (imageIndex >= 0 && imageIndex < static_cast<int>(model.images.size()))
-        {
             image = &model.images[imageIndex];
-        }
     }
 
-    // Fallback: if textureIndex invalid or texture had no image, use first image if available
     if (!image && !model.images.empty())
-    {
         image = &model.images[0];
-    }
 
     if (!image)
         return create_default_white_texture();
@@ -582,11 +689,100 @@ static GLuint create_texture_from_gltf(const tinygltf::Model& model, int texture
     return create_texture_from_image(*image);
 }
 
-// ---------------- MAIN ----------------
+// ===================== MINIMAL MATH FOR LIGHT MATRICES =====================
+struct Mat4f
+{
+    float m[16];
+};
 
+static Mat4f mat4_identity()
+{
+    Mat4f r{};
+    r.m[0] = 1.f;
+    r.m[5] = 1.f;
+    r.m[10] = 1.f;
+    r.m[15] = 1.f;
+    return r;
+}
+
+static Mat4f mat4_mul(const Mat4f& a, const Mat4f& b)
+{
+    Mat4f r{};
+    // column-major multiply: r = a*b
+    for (int c = 0; c < 4; ++c)
+    for (int rr = 0; rr < 4; ++rr)
+    {
+        r.m[c * 4 + rr] =
+            a.m[0 * 4 + rr] * b.m[c * 4 + 0] +
+            a.m[1 * 4 + rr] * b.m[c * 4 + 1] +
+            a.m[2 * 4 + rr] * b.m[c * 4 + 2] +
+            a.m[3 * 4 + rr] * b.m[c * 4 + 3];
+    }
+    return r;
+}
+
+static float v3_dot(Vector3<float> a, Vector3<float> b)
+{
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+static Vector3<float> v3_cross(Vector3<float> a, Vector3<float> b)
+{
+    return Vector3<float>{
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x};
+}
+
+static Vector3<float> v3_norm(Vector3<float> v)
+{
+    float len = std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    if (len <= 0.0f)
+        return Vector3<float>{0, 0, 0};
+    return Vector3<float>{v.x / len, v.y / len, v.z / len};
+}
+
+static Mat4f mat4_ortho(float l, float r, float b, float t, float n, float f)
+{
+    Mat4f m{};
+    m.m[0] = 2.f / (r - l);
+    m.m[5] = 2.f / (t - b);
+    m.m[10] = -2.f / (f - n);
+    m.m[12] = -(r + l) / (r - l);
+    m.m[13] = -(t + b) / (t - b);
+    m.m[14] = -(f + n) / (f - n);
+    m.m[15] = 1.f;
+    return m;
+}
+
+static Mat4f mat4_lookAt(Vector3<float> eye, Vector3<float> center, Vector3<float> up)
+{
+    Vector3<float> f = v3_norm(Vector3<float>{center.x - eye.x, center.y - eye.y, center.z - eye.z});
+    Vector3<float> s = v3_norm(v3_cross(f, up));
+    Vector3<float> u = v3_cross(s, f);
+
+    Mat4f m = mat4_identity();
+    m.m[0] = s.x;
+    m.m[4] = s.y;
+    m.m[8] = s.z;
+
+    m.m[1] = u.x;
+    m.m[5] = u.y;
+    m.m[9] = u.z;
+
+    m.m[2] = -f.x;
+    m.m[6] = -f.y;
+    m.m[10] = -f.z;
+
+    m.m[12] = -v3_dot(s, eye);
+    m.m[13] = -v3_dot(u, eye);
+    m.m[14] = v3_dot(f, eye);
+    return m;
+}
+
+// ===================== MAIN =====================
 int main(int argc, char** argv)
 {
-    // filename from CLI or default
     std::string glbFile = (argc > 1) ? argv[1] : "untitled.glb";
 
     // ---------- GLFW init ----------
@@ -606,7 +802,7 @@ int main(int argc, char** argv)
     constexpr int SCR_WIDTH = 800;
     constexpr int SCR_HEIGHT = 600;
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "omath glTF multi-mesh (textured)", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "omath glTF (shadows + post)", nullptr, nullptr);
     if (!window)
     {
         std::cerr << "Failed to create GLFW window\n";
@@ -616,14 +812,13 @@ int main(int argc, char** argv)
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    //glfwSwapInterval(0);
+
     // ---------- GLEW init ----------
     glewExperimental = GL_TRUE;
     GLenum glewErr = glewInit();
     if (glewErr != GLEW_OK)
     {
-        std::cerr << "Failed to initialize GLEW: " << reinterpret_cast<const char*>(glewGetErrorString(glewErr))
-                  << "\n";
+        std::cerr << "Failed to initialize GLEW: " << reinterpret_cast<const char*>(glewGetErrorString(glewErr)) << "\n";
         glfwTerminate();
         return -1;
     }
@@ -634,9 +829,9 @@ int main(int argc, char** argv)
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    // ---------- Load GLB meshes (CPU side) ----------
+    // ---------- Load GLB meshes ----------
     std::vector<MeshType> meshes;
-    std::vector<int> textureIndices; // per-primitive texture index
+    std::vector<int> textureIndices;
     tinygltf::Model gltfModel;
 
     try
@@ -665,13 +860,11 @@ int main(int argc, char** argv)
     glGenBuffers(static_cast<GLsizei>(meshCount), ebos.data());
 
     using Collider = omath::collision::MeshCollider<MeshType>;
-
     std::vector<Collider> colliders;
-
+    colliders.reserve(meshCount);
     for (const auto& mesh : meshes)
-    {
         colliders.emplace_back(mesh);
-    }
+
     using ColliderInterface = omath::collision::ColliderInterface<omath::Vector3<float>>;
 
     for (size_t i = 0; i < meshCount; ++i)
@@ -680,12 +873,12 @@ int main(int argc, char** argv)
 
         glBindVertexArray(vaos[i]);
 
-        // VBO
         glBindBuffer(GL_ARRAY_BUFFER, vbos[i]);
-        glBufferData(GL_ARRAY_BUFFER, mesh.m_vertex_buffer.size() * sizeof(VertexType), mesh.m_vertex_buffer.data(),
+        glBufferData(GL_ARRAY_BUFFER,
+                     mesh.m_vertex_buffer.size() * sizeof(VertexType),
+                     mesh.m_vertex_buffer.data(),
                      GL_STATIC_DRAW);
 
-        // Flatten triangle EBO (Vector3<uint32_t>) to scalar index buffer
         flatIndices[i].reserve(mesh.m_element_buffer_object.size() * 3);
         for (const auto& tri : mesh.m_element_buffer_object)
         {
@@ -694,12 +887,12 @@ int main(int argc, char** argv)
             flatIndices[i].push_back(tri.z);
         }
 
-        // EBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebos[i]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, flatIndices[i].size() * sizeof(GLuint), flatIndices[i].data(),
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                     flatIndices[i].size() * sizeof(GLuint),
+                     flatIndices[i].data(),
                      GL_STATIC_DRAW);
 
-        // vertex layout: position / normal / uv
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexType), (void*)offsetof(VertexType, position));
 
@@ -711,13 +904,71 @@ int main(int argc, char** argv)
 
         glBindVertexArray(0);
 
-        // Texture for this mesh (based on its texture index)
         textures[i] = create_texture_from_gltf(gltfModel, textureIndices[i]);
     }
 
+    // ---------- Shadow map FBO (improved quality) ----------
+    constexpr int SHADOW_W = 4096;
+    constexpr int SHADOW_H = 4096;
+
+    GLuint shadowFBO = 0;
+    GLuint shadowDepthTex = 0;
+
+    glGenFramebuffers(1, &shadowFBO);
+    glGenTextures(1, &shadowDepthTex);
+
+    glBindTexture(GL_TEXTURE_2D, shadowDepthTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, SHADOW_W, SHADOW_H, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float border[] = {1.f, 1.f, 1.f, 1.f};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+
+    // hardware depth compare for sampler2DShadow
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowDepthTex, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "Shadow framebuffer not complete!\n";
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // ---------- Scene FBO for post-processing (color + depth) ----------
+    GLuint sceneFBO = 0;
+    GLuint sceneColorTex = 0;
+    GLuint sceneDepthRBO = 0;
+
+    glGenFramebuffers(1, &sceneFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
+
+    glGenTextures(1, &sceneColorTex);
+    glBindTexture(GL_TEXTURE_2D, sceneColorTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColorTex, 0);
+
+    glGenRenderbuffers(1, &sceneDepthRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, sceneDepthRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, sceneDepthRBO);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "Scene framebuffer not complete!\n";
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     // ---------- Camera setup ----------
     omath::projection::ViewPort viewPort{static_cast<float>(SCR_WIDTH), static_cast<float>(SCR_HEIGHT)};
-
     Vector3<float> camPos{0.f, 1.0f, 6.f};
 
     float nearPlane = 0.1f;
@@ -726,57 +977,74 @@ int main(int argc, char** argv)
 
     MyCamera camera{camPos, {}, viewPort, fov, nearPlane, farPlane};
 
-    // ---------- Shader ----------
+    // ---------- Programs ----------
     GLuint shaderProgram = createShaderProgram();
     GLint uMvpLoc = glGetUniformLocation(shaderProgram, "uMVP");
     GLint uModelLoc = glGetUniformLocation(shaderProgram, "uModel");
     GLint uTexLoc = glGetUniformLocation(shaderProgram, "uTexture");
+    GLint uLightSpaceLoc = glGetUniformLocation(shaderProgram, "uLightSpace");
+    GLint uShadowMapLoc = glGetUniformLocation(shaderProgram, "uShadowMap");
+    GLint uLightDirLoc = glGetUniformLocation(shaderProgram, "uLightDir");
 
-    static float old_frame_time = glfwGetTime();
+    GLuint shadowProgram = createShadowProgram();
+    GLint sh_uLightSpace = glGetUniformLocation(shadowProgram, "uLightSpace");
+    GLint sh_uModel = glGetUniformLocation(shadowProgram, "uModel");
 
+    GLuint postProgram = createPostProgram();
+    GLint postSceneLoc = glGetUniformLocation(postProgram, "uScene");
+    GLint postResLoc = glGetUniformLocation(postProgram, "uResolution");
+    GLint postTimeLoc = glGetUniformLocation(postProgram, "uTime");
+    GLint postChromLoc = glGetUniformLocation(postProgram, "uChromaticStrength");
+    GLint postGrainLoc = glGetUniformLocation(postProgram, "uGrainStrength");
+    GLint postSizeLoc = glGetUniformLocation(postProgram, "uGrainSize");
+
+    // core profile needs a VAO bound for glDrawArrays, even with gl_VertexID
+    GLuint postVAO = 0;
+    glGenVertexArrays(1, &postVAO);
+
+    static float old_frame_time = (float)glfwGetTime();
     auto cam_collider = colliders.at(0);
-    // ---------- Main loop ----------
-    // without fallback memory allocation on heap
 
-    static std::array<std::byte, 1024*8> buf;
-    std::pmr::monotonic_buffer_resource pool_stack{buf.data(), buf.size(),
-                                             std::pmr::null_memory_resource()};
+    // without fallback memory allocation on heap
+    static std::array<std::byte, 1024 * 8> buf;
+    std::pmr::monotonic_buffer_resource pool_stack{buf.data(), buf.size(), std::pmr::null_memory_resource()};
+
+    static int lastW = SCR_WIDTH;
+    static int lastH = SCR_HEIGHT;
 
     while (!glfwWindowShouldClose(window))
     {
-        float currentTime = glfwGetTime();
+        float currentTime = (float)glfwGetTime();
         float deltaTime = currentTime - old_frame_time;
         old_frame_time = currentTime;
+
         glfwPollEvents();
 
+        // ---------- Movement ----------
         auto y = camera.get_origin().y;
         float speed = 40.f;
+
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        {
             camera.set_origin(camera.get_origin()
                               + omath::opengl_engine::forward_vector(camera.get_view_angles()) * speed * deltaTime);
-        }
 
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        {
             camera.set_origin(camera.get_origin()
                               - omath::opengl_engine::forward_vector(camera.get_view_angles()) * speed * deltaTime);
-        }
+
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        {
             camera.set_origin(camera.get_origin()
                               + omath::opengl_engine::right_vector(camera.get_view_angles()) * speed * deltaTime);
-        }
+
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        {
             camera.set_origin(camera.get_origin()
                               - omath::opengl_engine::right_vector(camera.get_view_angles()) * speed * deltaTime);
-        }
+
         auto new_origin = camera.get_origin();
         new_origin.y = y;
-
         camera.set_origin(new_origin);
-        float look_speed = 60;
+
+        float look_speed = 60.f;
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
         {
             auto view_angles = camera.get_view_angles();
@@ -789,7 +1057,6 @@ int main(int argc, char** argv)
             view_angles.pitch -= omath::opengl_engine::PitchAngle::from_degrees(look_speed * deltaTime);
             camera.set_view_angles(view_angles);
         }
-
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
         {
             auto view_angles = camera.get_view_angles();
@@ -802,19 +1069,21 @@ int main(int argc, char** argv)
             view_angles.yaw -= omath::opengl_engine::YawAngle::from_degrees(look_speed * deltaTime);
             camera.set_view_angles(view_angles);
         }
+
         cam_collider.set_origin(camera.get_origin());
 
+        // ---------- Collision ----------
         bool on_ground = false;
 
-        for (int b = 0; b < colliders.size(); b++)
+        for (int b = 0; b < (int)colliders.size(); b++)
         {
             auto& collider_a = cam_collider;
             auto& collider_b = colliders.at(b);
 
             if (&collider_a == &collider_b)
                 continue;
-            auto info = omath::collision::GjkAlgorithm<ColliderInterface>::is_collide_with_simplex_info(collider_a,
-                                                                                                        collider_b);
+
+            auto info = omath::collision::GjkAlgorithm<ColliderInterface>::is_collide_with_simplex_info(collider_a, collider_b);
             if (!info.hit)
                 continue;
 
@@ -824,68 +1093,172 @@ int main(int argc, char** argv)
             const auto deg = result->penetration_vector.angle_between(omath::opengl_engine::k_abs_up)->as_degrees();
             on_ground |= deg > 150.f;
 
-            //DO NOT PUSH OBJECT AWAY, NEED TO KEEP IT INSIDE OTHER OBJECTS TO
-            //CHECK IF PLAYER STANDS ON SOMETHING
-            if (std::abs(result->penetration_vector.y) <= 0.15 && deg > 150)
+            if (std::abs(result->penetration_vector.y) <= 0.15f && deg > 150.f)
                 continue;
-            collider_a.set_origin(collider_a.get_origin() - result->penetration_vector * 1.005);
-            camera.set_origin(camera.get_origin() - result->penetration_vector * 1.005);
+
+            collider_a.set_origin(collider_a.get_origin() - result->penetration_vector * 1.005f);
+            camera.set_origin(camera.get_origin() - result->penetration_vector * 1.005f);
         }
+
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && on_ground)
         {
-            cam_collider.set_origin(cam_collider.get_origin() + omath::opengl_engine::k_abs_up * 5);
-            camera.set_origin(cam_collider.get_origin() + omath::opengl_engine::k_abs_up * 5);
+            cam_collider.set_origin(cam_collider.get_origin() + omath::opengl_engine::k_abs_up * 5.f);
+            camera.set_origin(cam_collider.get_origin() + omath::opengl_engine::k_abs_up * 5.f);
             on_ground = false;
         }
 
         if (!on_ground)
         {
-            cam_collider.set_origin(cam_collider.get_origin() - omath::opengl_engine::k_abs_up * 5 * deltaTime);
-            camera.set_origin(cam_collider.get_origin() - omath::opengl_engine::k_abs_up * 5 * deltaTime);
+            cam_collider.set_origin(cam_collider.get_origin() - omath::opengl_engine::k_abs_up * 5.f * deltaTime);
+            camera.set_origin(cam_collider.get_origin() - omath::opengl_engine::k_abs_up * 5.f * deltaTime);
         }
+
+        // ---------- Framebuffer size / resize scene FBO ----------
         int fbW = 0, fbH = 0;
         glfwGetFramebufferSize(window, &fbW, &fbH);
-        glViewport(0, 0, fbW, fbH);
+        if (fbW <= 0 || fbH <= 0)
+        {
+            // window minimized; skip rendering this frame
+            glfwSwapBuffers(window);
+            continue;
+        }
+
+        if (fbW != lastW || fbH != lastH)
+        {
+            lastW = fbW;
+            lastH = fbH;
+
+            glBindTexture(GL_TEXTURE_2D, sceneColorTex);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, fbW, fbH, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+            glBindRenderbuffer(GL_RENDERBUFFER, sceneDepthRBO);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fbW, fbH);
+        }
 
         viewPort.m_width = static_cast<float>(fbW);
         viewPort.m_height = static_cast<float>(fbH);
         camera.set_view_port(viewPort);
 
+        // ---------- Build light-space matrix (sun) ----------
+        Vector3<float> lightDir = v3_norm(Vector3<float>{0.3f, 0.6f, 0.7f}); // towards light
+        Vector3<float> center = camera.get_origin();
+
+        Vector3<float> lightPos{
+            center.x - lightDir.x * 80.f,
+            center.y - lightDir.y * 80.f,
+            center.z - lightDir.z * 80.f};
+
+        Mat4f lightProj = mat4_ortho(-80.f, 80.f, -80.f, 80.f, 1.f, 200.f);
+        Mat4f lightView = mat4_lookAt(lightPos, center, Vector3<float>{0.f, 1.f, 0.f});
+        Mat4f lightSpace = mat4_mul(lightProj, lightView);
+
+        // ===================== 1) SHADOW PASS =====================
+        glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+        glViewport(0, 0, SHADOW_W, SHADOW_H);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        // big acne reducer
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(2.0f, 4.0f);
+
+        // optional (often helps further)
+        glCullFace(GL_FRONT);
+
+        glUseProgram(shadowProgram);
+        glUniformMatrix4fv(sh_uLightSpace, 1, GL_FALSE, lightSpace.m);
+
+        for (size_t i = 0; i < meshCount; ++i)
+        {
+            const Mat4x4 model = meshes[i].get_to_world_matrix();
+            glUniformMatrix4fv(sh_uModel, 1, GL_FALSE, model.raw_array().data());
+
+            glBindVertexArray(vaos[i]);
+            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(flatIndices[i].size()), GL_UNSIGNED_INT, nullptr);
+        }
+
+        glCullFace(GL_BACK);
+        glDisable(GL_POLYGON_OFFSET_FILL);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // ===================== 2) SCENE PASS (to sceneFBO) =====================
+        glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
+        glViewport(0, 0, fbW, fbH);
+
         glClearColor(0.1f, 0.15f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         const Mat4x4& viewProj = camera.get_view_projection_matrix();
+
         glUseProgram(shaderProgram);
 
-        const float* mvpPtr = viewProj.raw_array().data();
-        glUniformMatrix4fv(uMvpLoc, 1, GL_FALSE, mvpPtr);
+        glUniformMatrix4fv(uMvpLoc, 1, GL_FALSE, viewProj.raw_array().data());
+        glUniformMatrix4fv(uLightSpaceLoc, 1, GL_FALSE, lightSpace.m);
+        glUniform3f(uLightDirLoc, lightDir.x, lightDir.y, lightDir.z);
 
+        // shadow map on unit 1
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, shadowDepthTex);
+        glUniform1i(uShadowMapLoc, 1);
+
+        // base texture on unit 0
         glActiveTexture(GL_TEXTURE0);
         glUniform1i(uTexLoc, 0);
 
-        // Render all meshes
         for (size_t i = 0; i < meshCount; ++i)
         {
-            MeshType& mesh = meshes[i];
+            const Mat4x4 model = meshes[i].get_to_world_matrix();
+            glUniformMatrix4fv(uModelLoc, 1, GL_FALSE, model.raw_array().data());
 
-            const Mat4x4 model = mesh.get_to_world_matrix();
-            const float* modelPtr = model.raw_array().data();
-            glUniformMatrix4fv(uModelLoc, 1, GL_FALSE, modelPtr);
-
+            glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, textures[i]);
-            glBindVertexArray(vaos[i]);
 
+            glBindVertexArray(vaos[i]);
             glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(flatIndices[i].size()), GL_UNSIGNED_INT, nullptr);
         }
 
-        if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS)
-        {
-            std::println("FPS: {}", (int)(1 / deltaTime));
-        }
+        // ===================== 3) POST PASS (to screen) =====================
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, fbW, fbH);
+
+        glDisable(GL_DEPTH_TEST);
+
+        glUseProgram(postProgram);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sceneColorTex);
+        glUniform1i(postSceneLoc, 0);
+
+        glUniform2f(postResLoc, (float)fbW, (float)fbH);
+        glUniform1f(postTimeLoc, currentTime);
+
+        // tweak values here
+        glUniform1f(postChromLoc, 0.010f);
+        glUniform1f(postGrainLoc, 0.000f);
+        glUniform1f(postSizeLoc, 1.8f);
+
+        glBindVertexArray(postVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        glEnable(GL_DEPTH_TEST);
+
+        if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS && deltaTime > 0.0f)
+            std::println("FPS: {}", (int)(1.f / deltaTime));
+
         glfwSwapBuffers(window);
     }
 
     // ---------- Cleanup ----------
+    glDeleteVertexArrays(1, &postVAO);
+    glDeleteProgram(postProgram);
+
+    glDeleteFramebuffers(1, &sceneFBO);
+    glDeleteTextures(1, &sceneColorTex);
+    glDeleteRenderbuffers(1, &sceneDepthRBO);
+
+    glDeleteFramebuffers(1, &shadowFBO);
+    glDeleteTextures(1, &shadowDepthTex);
+    glDeleteProgram(shadowProgram);
+
     for (size_t i = 0; i < meshCount; ++i)
     {
         glDeleteTextures(1, &textures[i]);
