@@ -1,5 +1,7 @@
 add_rules("mode.debug", "mode.release")
+
 add_rules("utils.install.cmake_importfiles")
+add_rules("utils.install.pkgconfig_importfiles")
 
 set_version("4.6.1", {soname = "4.6"})
 set_languages("cxx23")
