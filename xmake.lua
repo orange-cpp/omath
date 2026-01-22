@@ -52,7 +52,7 @@ if has_config("tests") then
 end
 
 target("omath")
-    set_kind("shared")
+    set_kind("static")
     add_files("source/**.cpp")
     add_includedirs("include", {public = true})
     add_headerfiles("include/(**.hpp)", {prefixdir = "omath"})
