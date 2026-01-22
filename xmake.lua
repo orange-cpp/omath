@@ -10,8 +10,6 @@ set_warnings("all")
 option("avx2")
     set_default(true)
     set_showmenu(true)
-    add_defines("OMATH_ENABLE_AVX2")
-    add_vectorexts("avx2")
 
     after_check(function (option)
         import("core.base.cpu")
@@ -22,7 +20,6 @@ option_end()
 option("imgui")
     set_default(true)
     set_showmenu(true)
-    add_defines("OMATH_IMGUI_INTEGRATION")
 option_end()
 
 option("examples")
@@ -30,12 +27,28 @@ option("examples")
     set_showmenu(true)
 option_end()
 
+option("tests")
+    set_default(true)
+    set_showmenu(true)
+option_end()
+
+if has_config("avx2") then
+    add_defines("OMATH_ENABLE_AVX2")
+    add_vectorexts("avx2")
+end
+
 if has_config("imgui") then
+    add_defines("OMATH_IMGUI_INTEGRATION")
     add_requires("imgui")
+    add_packages("imgui")
 end
 
 if has_config("examples") then
     add_requires("glew", "glfw")
+end
+
+if has_config("tests") then
+    add_requires("gtest")
 end
 
 target("omath")
@@ -43,9 +56,6 @@ target("omath")
     add_files("source/**.cpp")
     add_includedirs("include", {public = true})
     add_headerfiles("include/(**.hpp)", {prefixdir = "omath"})
-    if has_config("imgui") then
-        add_packages("imgui")
-    end
     on_config(function (target)
         if has_config("avx2") then
             cprint("${green} ✔️ AVX2 supported")
@@ -75,3 +85,29 @@ target("example_glfw3")
     add_deps("omath")
     add_packages("glew", "glfw")
     set_enabled(has_config("examples"))
+
+for _, file in ipairs(os.files("tests/**.cpp")) do
+    local name = path.basename(file)
+    target(name)
+        set_languages("cxx23")
+        set_kind("binary")
+        add_files(file, "tests/main.cpp")
+        add_deps("omath")
+        add_packages("gtest")
+        add_defines("OMATH_BUILD_TESTS")
+        add_tests("default")
+        set_default(false)
+        set_enabled(has_config("tests"))
+end
+
+task("check")
+    on_run(function ()
+        import("core.project.task")
+        for _, file in ipairs(os.files("tests/**.cpp")) do
+            local name = path.basename(file)
+            task.run("run", {target = name})
+        end
+    end)
+    set_menu {
+        usage = "xmake check", description = "Run tests !", options = {}
+    }
