@@ -3,14 +3,30 @@
 //
 
 #pragma once
+#include "mesh.hpp"
+#include "omath/engines/opengl_engine/camera.hpp"
+#include "omath/engines/opengl_engine/mesh.hpp"
+#include "omath/engines/opengl_engine/traits/mesh_trait.hpp"
 #include "omath/linear_algebra/triangle.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 #include <array>
 
 namespace omath::primitives
 {
+    template<class PlaneMeshType>
     [[nodiscard]]
-    std::array<Triangle<Vector3<float>>, 2> create_plane(const Vector3<float>& vertex_a,
-                                                          const Vector3<float>& vertex_b,
-                                                          const Vector3<float>& direction, float size) noexcept;
-}
+    PlaneMeshType create_plane(const Vector3<float>& vertex_a, const Vector3<float>& vertex_b,
+                           const Vector3<float>& direction, const float size) noexcept
+    {
+        const auto second_vertex_a = vertex_a + direction * size;
+        const auto second_vertex_b = vertex_b + direction * size;
+
+        std::array<Vector3<float>, 4> grid = {vertex_a, vertex_b, second_vertex_a, second_vertex_b};
+
+        std::array<Vector3<std::uint32_t>, 2> poly;
+        poly[0] = {1, 1, 2};
+        poly[1] = {0, 1, 3};
+
+        return PlaneMeshType(std::move(grid), std::move(poly));
+    }
+} // namespace omath::primitives
