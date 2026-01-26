@@ -13,11 +13,9 @@
 
 namespace omath::primitives
 {
-    using PlaneMesh = Mesh<opengl_engine::Mat4X4, opengl_engine::ViewAngles, opengl_engine::MeshTrait, Vertex<>,
-                           std::array<Vector3<float>, 4>, std::array<Vector3<std::uint32_t>, 2>>;
     template<class PlaneMeshType>
     [[nodiscard]]
-    PlaneMesh create_plane(const Vector3<float>& vertex_a, const Vector3<float>& vertex_b,
+    PlaneMeshType create_plane(const Vector3<float>& vertex_a, const Vector3<float>& vertex_b,
                            const Vector3<float>& direction, const float size) noexcept
     {
         const auto second_vertex_a = vertex_a + direction * size;
