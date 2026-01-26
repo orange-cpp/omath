@@ -13,7 +13,7 @@
 namespace omath::primitives
 {
     using BoxMesh = Mesh<opengl_engine::Mat4X4, opengl_engine::ViewAngles, opengl_engine::MeshTrait, Vertex<>,
-                         std::array<Vertex<>, 8>, std::array<Vector3<std::uint32_t>, 12>>;
+                         std::array<Vector3<float>, 8>, std::array<Vector3<std::uint32_t>, 12>>;
 
     template<class BoxMeshType = BoxMesh>
     [[nodiscard]]
