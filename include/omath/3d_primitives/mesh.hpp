@@ -101,7 +101,6 @@ namespace omath::primitives
 
         [[nodiscard]]
         VectorType vertex_position_to_world_space(const Vector3<float>& vertex_position) const
-        requires HasPosition<VertexType>
         {
             auto abs_vec = get_to_world_matrix()
                            * mat_column_from_vector<typename Mat4X4::ContainedType, Mat4X4::get_store_ordering()>(
@@ -112,11 +111,16 @@ namespace omath::primitives
 
         [[nodiscard]]
         Triangle<VectorType> make_face_in_world_space(const Ebo::const_iterator vao_iterator) const
-        requires HasPosition<VertexType>
         {
-            return {vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->x).position),
-                    vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->y).position),
-                    vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->z).position)};
+            if constexpr (HasPosition<VertexType>)
+            {
+                return {vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->x).position),
+                        vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->y).position),
+                        vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->z).position)};
+            }
+            return {vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->x)),
+                    vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->y)),
+                    vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->z))};
         }
 
     private:
