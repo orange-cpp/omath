@@ -13,5 +13,5 @@ namespace omath::frostbite_engine
                                      std::array<Vector3<std::uint32_t>, 12>>;
 
     using PlaneMesh = primitives::Mesh<Mat4X4, ViewAngles, MeshTrait, primitives::Vertex<>,
-                           std::array<Vector3<float>, 4>, std::array<Vector3<std::uint32_t>, 2>>;
+                                       std::array<Vector3<float>, 4>, std::array<Vector3<std::uint32_t>, 2>>;
 } // namespace omath::frostbite_engine
