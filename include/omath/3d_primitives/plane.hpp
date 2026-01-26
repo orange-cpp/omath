@@ -29,6 +29,6 @@ namespace omath::primitives
         poly[0] = {1, 1, 2};
         poly[1] = {0, 1, 3};
 
-        return PlaneMesh(std::move(grid), std::move(poly));
+        return PlaneMeshType(std::move(grid), std::move(poly));
     }
 } // namespace omath::primitives
