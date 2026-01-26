@@ -25,7 +25,8 @@ namespace omath::primitives
     template<typename T> concept HasNormal = requires(T vertex) { vertex.normal; };
     template<typename T> concept HasUv = requires(T vertex) { vertex.uv; };
 
-    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class VertType = Vertex<>>
+    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class VertType = Vertex<>,
+             class VboType = std::vector<VertType>, class EboType = std::vector<Vector3<std::uint32_t>>>
     class Mesh final
     {
     public:
@@ -33,8 +34,8 @@ namespace omath::primitives
         using VertexType = VertType;
 
     private:
-        using Vbo = std::vector<VertexType>;
-        using Ebo = std::vector<Vector3<std::uint32_t>>;
+        using Vbo = VboType;
+        using Ebo = EboType;
 
     public:
         Vbo m_vertex_buffer;
@@ -102,7 +103,9 @@ namespace omath::primitives
         VectorType vertex_position_to_world_space(const Vector3<float>& vertex_position) const
         requires HasPosition<VertexType>
         {
-            auto abs_vec = get_to_world_matrix() * mat_column_from_vector<typename Mat4X4::ContainedType, Mat4X4::get_store_ordering()>(vertex_position);
+            auto abs_vec = get_to_world_matrix()
+                           * mat_column_from_vector<typename Mat4X4::ContainedType, Mat4X4::get_store_ordering()>(
+                                   vertex_position);
 
             return {abs_vec.at(0, 0), abs_vec.at(1, 0), abs_vec.at(2, 0)};
         }
