@@ -14,7 +14,8 @@
 namespace omath::primitives
 {
     using PlaneMesh = Mesh<opengl_engine::Mat4X4, opengl_engine::ViewAngles, opengl_engine::MeshTrait, Vertex<>,
-                           std::array<Vector3<float>, 4>, std::array<Vector3<std::uint32_t>, 6>>;
+                           std::array<Vector3<float>, 4>, std::array<Vector3<std::uint32_t>, 2>>;
+    template<class PlaneMeshType>
     [[nodiscard]]
     PlaneMesh create_plane(const Vector3<float>& vertex_a, const Vector3<float>& vertex_b,
                            const Vector3<float>& direction, const float size) noexcept
@@ -24,8 +25,9 @@ namespace omath::primitives
 
         std::array<Vector3<float>, 4> grid = {vertex_a, vertex_b, second_vertex_a, second_vertex_b};
 
-        std::array<Vector3<std::uint32_t>, 6> poly;
-        poly[0] = {};
+        std::array<Vector3<std::uint32_t>, 2> poly;
+        poly[0] = {1, 1, 2};
+        poly[1] = {0, 1, 3};
 
         return PlaneMesh(std::move(grid), std::move(poly));
     }
