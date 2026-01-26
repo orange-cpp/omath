@@ -25,7 +25,7 @@ namespace omath::primitives
     template<typename T> concept HasNormal = requires(T vertex) { vertex.normal; };
     template<typename T> concept HasUv = requires(T vertex) { vertex.uv; };
 
-    template<class Mat4X4, class RotationAngles, class MeshTypeTrait, class VertType = Vertex<>>
+    template<class Mat4X4, class RotationAnglesType, class MeshTypeTrait, class VertType = Vertex<>>
     class Mesh final
     {
     public:
@@ -62,7 +62,7 @@ namespace omath::primitives
             m_to_world_matrix = std::nullopt;
         }
 
-        void set_rotation(const RotationAngles& new_rotation_angles)
+        void set_rotation(const RotationAnglesType& new_rotation_angles)
         {
             m_rotation_angles = new_rotation_angles;
             m_to_world_matrix = std::nullopt;
@@ -81,7 +81,7 @@ namespace omath::primitives
         }
 
         [[nodiscard]]
-        const RotationAngles& get_rotation_angles() const
+        const RotationAnglesType& get_rotation_angles() const
         {
             return m_rotation_angles;
         }
@@ -102,7 +102,9 @@ namespace omath::primitives
         VectorType vertex_position_to_world_space(const Vector3<float>& vertex_position) const
         requires HasPosition<VertexType>
         {
-            auto abs_vec = get_to_world_matrix() * mat_column_from_vector<typename Mat4X4::ContainedType, Mat4X4::get_store_ordering()>(vertex_position);
+            auto abs_vec = get_to_world_matrix()
+                           * mat_column_from_vector<typename Mat4X4::ContainedType, Mat4X4::get_store_ordering()>(
+                                   vertex_position);
 
             return {abs_vec.at(0, 0), abs_vec.at(1, 0), abs_vec.at(2, 0)};
         }
@@ -120,7 +122,7 @@ namespace omath::primitives
         VectorType m_origin;
         VectorType m_scale;
 
-        RotationAngles m_rotation_angles;
+        RotationAnglesType m_rotation_angles;
 
         mutable std::optional<Mat4X4> m_to_world_matrix;
     };
