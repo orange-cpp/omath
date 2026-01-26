@@ -63,7 +63,7 @@ namespace omath::primitives
             m_to_world_matrix = std::nullopt;
         }
 
-        void set_rotation(const RotationAngles& new_rotation_angles)
+        void set_rotation(const RotationAnglesType& new_rotation_angles)
         {
             m_rotation_angles = new_rotation_angles;
             m_to_world_matrix = std::nullopt;
@@ -82,7 +82,7 @@ namespace omath::primitives
         }
 
         [[nodiscard]]
-        const RotationAngles& get_rotation_angles() const
+        const RotationAnglesType& get_rotation_angles() const
         {
             return m_rotation_angles;
         }
@@ -127,7 +127,7 @@ namespace omath::primitives
         VectorType m_origin;
         VectorType m_scale;
 
-        RotationAngles m_rotation_angles;
+        RotationAnglesType m_rotation_angles;
 
         mutable std::optional<Mat4X4> m_to_world_matrix;
     };
