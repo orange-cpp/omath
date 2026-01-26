@@ -9,5 +9,5 @@
 
 namespace omath::unity_engine
 {
-    using Camera =  projection::Camera<Mat4X4, ViewAngles, CameraTrait>;
+    using Camera = projection::Camera<Mat4X4, ViewAngles, CameraTrait>;
 } // namespace omath::unity_engine
