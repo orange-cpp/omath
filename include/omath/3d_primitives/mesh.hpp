@@ -31,7 +31,7 @@ namespace omath::primitives
     {
     public:
         using VectorType = VertType::VectorType;
-        using VertexType = VertType;
+        using VertexType = VboType::value_type;
 
     private:
         using Vbo = VboType;
