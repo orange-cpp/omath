@@ -12,14 +12,10 @@
 
 namespace omath::primitives
 {
-    using BoxMesh = Mesh<opengl_engine::Mat4X4, opengl_engine::ViewAngles, opengl_engine::MeshTrait, Vertex<>,
-                         std::array<Vector3<float>, 8>, std::array<Vector3<std::uint32_t>, 12>>;
-
-    template<class BoxMeshType = BoxMesh>
+    template<class BoxMeshType>
     [[nodiscard]]
-    BoxMeshType
-    create_box(const Vector3<float>& top, const Vector3<float>& bottom, const Vector3<float>& dir_forward,
-               const Vector3<float>& dir_right, const float ratio = 4.f) noexcept
+    BoxMeshType create_box(const Vector3<float>& top, const Vector3<float>& bottom, const Vector3<float>& dir_forward,
+                           const Vector3<float>& dir_right, const float ratio = 4.f) noexcept
     {
         const auto height = top.distance_to(bottom);
         const auto side_size = height / ratio;
