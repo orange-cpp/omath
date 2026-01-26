@@ -13,14 +13,20 @@
 
 namespace omath::primitives
 {
-    using PlaneMesh = Mesh<opengl_engine::Mat4X4, opengl_engine::ViewAngles, opengl_engine::MeshTrait, Vector3<float>,
-                           std::array<Vertex<>, 8>, std::array<Vector3<std::uint32_t>, 12>>;
+    using PlaneMesh = Mesh<opengl_engine::Mat4X4, opengl_engine::ViewAngles, opengl_engine::MeshTrait, Vertex<>,
+                           std::array<Vector3<float>, 4>, std::array<Vector3<std::uint32_t>, 6>>;
     [[nodiscard]]
-    std::array<Triangle<Vector3<float>>, 2> create_plane(const Vector3<float>& vertex_a, const Vector3<float>& vertex_b,
-                                                         const Vector3<float>& direction, float size) noexcept
+    PlaneMesh create_plane(const Vector3<float>& vertex_a, const Vector3<float>& vertex_b,
+                           const Vector3<float>& direction, const float size) noexcept
     {
         const auto second_vertex_a = vertex_a + direction * size;
-        return std::array{Triangle{second_vertex_a, vertex_a, vertex_b},
-                          Triangle{second_vertex_a, vertex_b + direction * size, vertex_b}};
+        const auto second_vertex_b = vertex_b + direction * size;
+
+        std::array<Vector3<float>, 4> grid = {vertex_a, vertex_b, second_vertex_a, second_vertex_b};
+
+        std::array<Vector3<std::uint32_t>, 6> poly;
+        poly[0] = {};
+
+        return PlaneMesh(std::move(grid), std::move(poly));
     }
 } // namespace omath::primitives
