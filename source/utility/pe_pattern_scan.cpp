@@ -237,7 +237,7 @@ namespace
                           variant);
     }
 
-    struct ExtractedSection
+    struct ExtractedSection final
     {
         std::uintptr_t virtual_base_addr;
         std::uintptr_t raw_base_addr;
