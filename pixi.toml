@@ -1,0 +1,51 @@
+[workspace]
+name = "omath"
+version = "5.7.0"
+description = "Cross-platform modern general purpose math library written in C++23 that suitable for cheat/game development."
+authors = [
+    "orange-cpp <orange_github@proton.me>"
+]
+
+license = "Zlib"
+license-file = "LICENSE"
+readme = "README.md"
+documentation = "http://libomath.org"
+repository = "https://github.com/orange-cpp/omath"
+
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64", "linux-aarch64", "osx-64", "osx-arm64"]
+
+[tasks]
+format = { cwd = "pixi", cmd = "cmake -P fmt.cmake" }
+configure = { cmd = "cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DOMATH_USE_AVX2=OFF -DOMATH_IMGUI_INTEGRATION=ON -DOMATH_BUILD_TESTS=ON -DOMATH_BUILD_BENCHMARK=ON -DOMATH_BUILD_EXAMPLES=ON .", depends-on = ["format"] }
+build = { cmd = "cmake --build build --config Debug -j", depends-on = ["configure"] }
+examples = { cwd = "pixi", cmd = "cmake -DCMAKE_BUILD_TYPE=Debug -P run.examples.cmake", depends-on = ["build"] }
+tests = { cwd = "pixi", cmd = "cmake -DCMAKE_BUILD_TYPE=Debug -P run.unit.tests.cmake", depends-on = ["build"] }
+benchmark = { cwd = "pixi", cmd = "cmake -DCMAKE_BUILD_TYPE=Debug -P run.benchmark.cmake", depends-on = ["build"] }
+
+[dependencies]
+benchmark = ">=1.9.5,<2"
+ccache = ">=4.12.2,<5"
+cmake = ">=4.2.3,<5"
+cmake-format = ">=0.6.13,<0.7"
+cxx-compiler = ">=1.11.0,<2"
+imgui = ">=1.92.3,<2"
+gtest = ">=1.17.0,<2"
+glew = ">=2.3.0,<3"
+glfw = ">=3.4,<4"
+ninja = ">=1.13.2,<2"
+
+[target.linux-64.dependencies]
+mesa-libgl-devel-cos7-x86_64 = ">=18.3.4,<19"
+
+[target.win-64.dependencies]
+mesa-libgl-devel-cos7-x86_64 = ">=18.3.4,<19"
+
+[target.osx-64.dependencies]
+mesa-libgl-devel-cos7-x86_64 = ">=18.3.4,<19"
+
+[target.osx-arm64.dependencies]
+mesa-libgl-devel-cos7-aarch64 = ">=18.3.4,<19"
+
+[target.linux-aarch64.dependencies]
+mesa-libgl-devel-cos7-aarch64 = ">=18.3.4,<19"

@@ -1,0 +1,25 @@
+format:
+  line_width: 100
+  tab_size: 4
+  use_tabchars: false
+  max_subgroups_hwrap: 3
+  max_pargs_hwrap: 5
+  separate_ctrl_name_with_space: false
+  separate_fn_name_with_space: false
+  dangle_parens: false
+  dangle_align: child
+  line_ending: unix
+  command_case: canonical
+  keyword_case: upper
+  enable_sort: true
+  autosort: true
+markup:
+  bullet_char: "*"
+  enum_char: .
+  enable_markup: false
+additional_commands:
+  target_link_libraries:
+    kwargs:
+      PUBLIC: "*"
+      SHARED: "*"
+      PRIVATE: "*"
