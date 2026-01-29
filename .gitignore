@@ -6,7 +6,3 @@
 /build/
 /clang-coverage/
 *.gcov
-*.bin
-# pixi environments
-.pixi/*
-!.pixi/config.toml
