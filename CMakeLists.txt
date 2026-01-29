@@ -24,7 +24,6 @@ option(OMATH_IMGUI_INTEGRATION "Omath will define method to convert omath types 
 option(OMATH_BUILD_EXAMPLES "Build example projects with you can learn & play" OFF)
 option(OMATH_STATIC_MSVC_RUNTIME_LIBRARY "Force Omath to link static runtime" OFF)
 option(OMATH_SUPRESS_SAFETY_CHECKS "Supress some safety checks in release build to improve general performance" ON)
-option(OMATH_USE_UNITY_BUILD "Will enable unity build to speed up compilation" OFF)
 option(OMATH_ENABLE_LEGACY "Will enable legacy classes that MUST be used ONLY for backward compatibility" ON)
 option(OMATH_ENABLE_COVERAGE "Enable coverage" OFF)
 option(OMATH_ENABLE_FORCE_INLINE "Will for compiler to make some functions to be force inlined no matter what" ON)
@@ -121,12 +120,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON)
-
-if (OMATH_USE_UNITY_BUILD)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-            UNITY_BUILD ON
-            UNITY_BUILD_BATCH_SIZE 20)
-endif ()
 
 if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
     set_target_properties(${PROJECT_NAME} PROPERTIES
