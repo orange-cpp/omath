@@ -58,3 +58,12 @@ mesa-libgl-devel-cos7-aarch64 = ">=18.3.4,<19"
 
 [target.linux-aarch64.dependencies]
 mesa-libgl-devel-cos7-aarch64 = ">=18.3.4,<19"
+xorg-x11-server-xvfb-cos7-aarch64 = ">=1.20.4,<2"
+
+[target.linux-aarch64.activation.env]
+__GLX_VENDOR_LIBRARY_NAME = "mesa"
+EGL_PLATFORM = "x11"
+GLFW_PLATFORM = "x11"
+
+[target.linux-aarch64.tasks]
+examples = { cwd = "pixi", cmd = "xvfb-run -a -s '-screen 0 1024x768x24 +extension GLX +render' cmake -DCMAKE_BUILD_TYPE=Debug -P run.examples.cmake", depends-on = ["build"] }
