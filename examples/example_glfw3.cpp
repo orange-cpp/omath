@@ -120,9 +120,14 @@ int main()
         return -1;
     }
 
+    std::cout << "GLFW Version: " << glfwGetVersionString() << "\n";
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // Force GLX context creation API to ensure compatibility with GLEW
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
+
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
@@ -141,15 +146,30 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // Check if context is valid using standard GL
+    const GLubyte* renderer = glGetString(GL_RENDERER);
+    const GLubyte* version = glGetString(GL_VERSION);
+    if (renderer && version) {
+        std::cout << "Renderer: " << renderer << "\n";
+        std::cout << "OpenGL version supported: " << version << "\n";
+    } else {
+        std::cerr << "Failed to get GL_RENDERER or GL_VERSION. Context might be invalid.\n";
+    }
+
     // ---------- GLEW init ----------
     glewExperimental = GL_TRUE;
     GLenum glewErr = glewInit();
     if (glewErr != GLEW_OK)
     {
-        std::cerr << "Failed to initialize GLEW: " << reinterpret_cast<const char*>(glewGetErrorString(glewErr))
-                  << "\n";
-        glfwTerminate();
-        return -1;
+        // Ignore NO_GLX_DISPLAY if we have a valid context
+        if (glewErr == GLEW_ERROR_NO_GLX_DISPLAY && renderer) {
+             std::cerr << "GLEW warning: " << glewGetErrorString(glewErr) << " (Ignored because context seems valid)\n";
+        } else {
+            std::cerr << "Failed to initialize GLEW: " << reinterpret_cast<const char*>(glewGetErrorString(glewErr))
+                    << "\n";
+            glfwTerminate();
+            return -1;
+        }
     }
 
     // ---------- GL state ----------
