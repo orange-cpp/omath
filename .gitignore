@@ -7,6 +7,8 @@
 /clang-coverage/
 *.gcov
 *.bin
+# pixi lock
+pixi.lock
 # pixi environments
 .pixi/*
 !.pixi/config.toml
