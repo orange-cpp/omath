@@ -227,7 +227,7 @@ namespace
 
     [[nodiscard]]
     std::optional<ExtractedSection> get_macho_section_by_name(const std::filesystem::path& path,
-                                                               const std::string_view& section_name)
+                                                              const std::string_view& section_name)
     {
         std::fstream file(path, std::ios::binary | std::ios::in);
 
@@ -244,8 +244,7 @@ namespace
 
         if (arch.value() == MachOArch::x64)
             return extract_section_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(file, section_name);
-        else
-            return extract_section_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(file, section_name);
+        return extract_section_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(file, section_name);
     }
 
     template<typename HeaderType, typename SegmentType, typename SectionType, std::uint32_t segment_cmd>
@@ -310,8 +309,8 @@ namespace omath
         std::memcpy(&magic, base, sizeof(magic));
 
         if (magic == mh_magic_64 || magic == mh_cigam_64)
-            return scan_in_module_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(
-                    base, pattern, target_section_name);
+            return scan_in_module_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(base, pattern,
+                                                                                                 target_section_name);
 
         if (magic == mh_magic_32 || magic == mh_cigam_32)
             return scan_in_module_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(base, pattern,
