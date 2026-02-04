@@ -22,6 +22,7 @@ namespace
     constexpr std::uint32_t lc_segment = 0x1;
     constexpr std::uint32_t lc_segment_64 = 0x19;
 
+    // ReSharper disable CppDeclaratorNeverUsed
     // Mach-O header for 32-bit
     struct MachHeader32 final
     {
@@ -118,7 +119,7 @@ namespace
         std::uint32_t reserved2;
         std::uint32_t reserved3;
     };
-
+    // ReSharper enable CppDeclaratorNeverUsed
 #pragma pack(pop)
 
     enum class MachOArch : std::int8_t
