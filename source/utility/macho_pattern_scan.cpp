@@ -194,6 +194,11 @@ namespace
             if (!file.read(reinterpret_cast<char*>(&segment), sizeof(segment))) [[unlikely]]
                 return std::nullopt;
 
+            if (!segment.nsects)
+            {
+                cmd_offset += static_cast<std::streamoff>(lc.cmdsize);
+                continue;
+            }
             std::streamoff sect_offset = cmd_offset + static_cast<std::streamoff>(sizeof(segment));
 
             for (std::uint32_t j = 0; j < segment.nsects; ++j)
