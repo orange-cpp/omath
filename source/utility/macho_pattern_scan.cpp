@@ -22,6 +22,7 @@ namespace
     constexpr std::uint32_t lc_segment = 0x1;
     constexpr std::uint32_t lc_segment_64 = 0x19;
 
+    // ReSharper disable CppDeclaratorNeverUsed
     // Mach-O header for 32-bit
     struct MachHeader32 final
     {
@@ -118,7 +119,7 @@ namespace
         std::uint32_t reserved2;
         std::uint32_t reserved3;
     };
-
+    // ReSharper enable CppDeclaratorNeverUsed
 #pragma pack(pop)
 
     enum class MachOArch : std::int8_t
@@ -183,42 +184,48 @@ namespace
             if (!file.read(reinterpret_cast<char*>(&lc), sizeof(lc))) [[unlikely]]
                 return std::nullopt;
 
-            if (lc.cmd == segment_cmd)
+            if (lc.cmd != segment_cmd)
             {
-                SegmentType segment{};
-                file.seekg(cmd_offset, std::ios_base::beg);
-                if (!file.read(reinterpret_cast<char*>(&segment), sizeof(segment))) [[unlikely]]
+                cmd_offset += static_cast<std::streamoff>(lc.cmdsize);
+                continue;
+            }
+            SegmentType segment{};
+            file.seekg(cmd_offset, std::ios_base::beg);
+            if (!file.read(reinterpret_cast<char*>(&segment), sizeof(segment))) [[unlikely]]
+                return std::nullopt;
+
+            if (!segment.nsects)
+            {
+                cmd_offset += static_cast<std::streamoff>(lc.cmdsize);
+                continue;
+            }
+            std::streamoff sect_offset = cmd_offset + static_cast<std::streamoff>(sizeof(segment));
+
+            for (std::uint32_t j = 0; j < segment.nsects; ++j)
+            {
+                SectionType section{};
+                file.seekg(sect_offset, std::ios_base::beg);
+                if (!file.read(reinterpret_cast<char*>(&section), sizeof(section))) [[unlikely]]
                     return std::nullopt;
 
-                std::streamoff sect_offset = cmd_offset + static_cast<std::streamoff>(sizeof(segment));
-
-                for (std::uint32_t j = 0; j < segment.nsects; ++j)
+                if (get_section_name(section.sectname) != section_name)
                 {
-                    SectionType section{};
-                    file.seekg(sect_offset, std::ios_base::beg);
-                    if (!file.read(reinterpret_cast<char*>(&section), sizeof(section))) [[unlikely]]
-                        return std::nullopt;
-
-                    if (get_section_name(section.sectname) == section_name)
-                    {
-                        ExtractedSection out;
-                        out.virtual_base_addr = static_cast<std::uintptr_t>(section.addr);
-                        out.raw_base_addr = static_cast<std::uintptr_t>(section.offset);
-                        out.data.resize(static_cast<std::size_t>(section.size));
-
-                        file.seekg(static_cast<std::streamoff>(section.offset), std::ios_base::beg);
-                        if (!file.read(reinterpret_cast<char*>(out.data.data()),
-                                       static_cast<std::streamsize>(out.data.size()))) [[unlikely]]
-                            return std::nullopt;
-
-                        return out;
-                    }
-
                     sect_offset += static_cast<std::streamoff>(sizeof(section));
+                    continue;
                 }
-            }
 
-            cmd_offset += static_cast<std::streamoff>(lc.cmdsize);
+                ExtractedSection out;
+                out.virtual_base_addr = static_cast<std::uintptr_t>(section.addr);
+                out.raw_base_addr = static_cast<std::uintptr_t>(section.offset);
+                out.data.resize(static_cast<std::size_t>(section.size));
+
+                file.seekg(static_cast<std::streamoff>(section.offset), std::ios_base::beg);
+                if (!file.read(reinterpret_cast<char*>(out.data.data()), static_cast<std::streamsize>(out.data.size())))
+                        [[unlikely]]
+                    return std::nullopt;
+
+                return out;
+            }
         }
 
         return std::nullopt;
@@ -226,7 +233,7 @@ namespace
 
     [[nodiscard]]
     std::optional<ExtractedSection> get_macho_section_by_name(const std::filesystem::path& path,
-                                                               const std::string_view& section_name)
+                                                              const std::string_view& section_name)
     {
         std::fstream file(path, std::ios::binary | std::ios::in);
 
@@ -243,8 +250,7 @@ namespace
 
         if (arch.value() == MachOArch::x64)
             return extract_section_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(file, section_name);
-        else
-            return extract_section_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(file, section_name);
+        return extract_section_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(file, section_name);
     }
 
     template<typename HeaderType, typename SegmentType, typename SectionType, std::uint32_t segment_cmd>
@@ -259,32 +265,31 @@ namespace
         {
             const auto* lc = reinterpret_cast<const LoadCommand*>(base + cmd_offset);
 
-            if (lc->cmd == segment_cmd)
+            if (lc->cmd != segment_cmd)
             {
-                const auto* segment = reinterpret_cast<const SegmentType*>(base + cmd_offset);
-                std::size_t sect_offset = cmd_offset + sizeof(SegmentType);
-
-                for (std::uint32_t j = 0; j < segment->nsects; ++j)
-                {
-                    const auto* section = reinterpret_cast<const SectionType*>(base + sect_offset);
-
-                    if (get_section_name(section->sectname) == target_section_name && section->size > 0)
-                    {
-                        const auto* section_begin = base + static_cast<std::size_t>(section->addr);
-                        const auto* section_end = section_begin + static_cast<std::size_t>(section->size);
-
-                        const auto scan_result =
-                                omath::PatternScanner::scan_for_pattern(section_begin, section_end, pattern);
-
-                        if (scan_result != section_end)
-                            return reinterpret_cast<std::uintptr_t>(scan_result);
-                    }
-
-                    sect_offset += sizeof(SectionType);
-                }
+                cmd_offset += lc->cmdsize;
+                continue;
             }
+            const auto* segment = reinterpret_cast<const SegmentType*>(base + cmd_offset);
+            std::size_t sect_offset = cmd_offset + sizeof(SegmentType);
 
-            cmd_offset += lc->cmdsize;
+            for (std::uint32_t j = 0; j < segment->nsects; ++j)
+            {
+                const auto* section = reinterpret_cast<const SectionType*>(base + sect_offset);
+
+                if (get_section_name(section->sectname) != target_section_name && section->size > 0)
+                {
+                    sect_offset += sizeof(SectionType);
+                    continue;
+                }
+                const auto* section_begin = base + static_cast<std::size_t>(section->addr);
+                const auto* section_end = section_begin + static_cast<std::size_t>(section->size);
+
+                const auto scan_result = omath::PatternScanner::scan_for_pattern(section_begin, section_end, pattern);
+
+                if (scan_result != section_end)
+                    return reinterpret_cast<std::uintptr_t>(scan_result);
+            }
         }
 
         return std::nullopt;
@@ -309,8 +314,8 @@ namespace omath
         std::memcpy(&magic, base, sizeof(magic));
 
         if (magic == mh_magic_64 || magic == mh_cigam_64)
-            return scan_in_module_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(
-                    base, pattern, target_section_name);
+            return scan_in_module_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(base, pattern,
+                                                                                                 target_section_name);
 
         if (magic == mh_magic_32 || magic == mh_cigam_32)
             return scan_in_module_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(base, pattern,
