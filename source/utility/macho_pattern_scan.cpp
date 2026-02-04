@@ -259,32 +259,31 @@ namespace
         {
             const auto* lc = reinterpret_cast<const LoadCommand*>(base + cmd_offset);
 
-            if (lc->cmd == segment_cmd)
+            if (lc->cmd != segment_cmd)
             {
-                const auto* segment = reinterpret_cast<const SegmentType*>(base + cmd_offset);
-                std::size_t sect_offset = cmd_offset + sizeof(SegmentType);
-
-                for (std::uint32_t j = 0; j < segment->nsects; ++j)
-                {
-                    const auto* section = reinterpret_cast<const SectionType*>(base + sect_offset);
-
-                    if (get_section_name(section->sectname) == target_section_name && section->size > 0)
-                    {
-                        const auto* section_begin = base + static_cast<std::size_t>(section->addr);
-                        const auto* section_end = section_begin + static_cast<std::size_t>(section->size);
-
-                        const auto scan_result =
-                                omath::PatternScanner::scan_for_pattern(section_begin, section_end, pattern);
-
-                        if (scan_result != section_end)
-                            return reinterpret_cast<std::uintptr_t>(scan_result);
-                    }
-
-                    sect_offset += sizeof(SectionType);
-                }
+                cmd_offset += lc->cmdsize;
+                continue;
             }
+            const auto* segment = reinterpret_cast<const SegmentType*>(base + cmd_offset);
+            std::size_t sect_offset = cmd_offset + sizeof(SegmentType);
 
-            cmd_offset += lc->cmdsize;
+            for (std::uint32_t j = 0; j < segment->nsects; ++j)
+            {
+                const auto* section = reinterpret_cast<const SectionType*>(base + sect_offset);
+
+                if (get_section_name(section->sectname) != target_section_name && section->size > 0)
+                {
+                    sect_offset += sizeof(SectionType);
+                    continue;
+                }
+                const auto* section_begin = base + static_cast<std::size_t>(section->addr);
+                const auto* section_end = section_begin + static_cast<std::size_t>(section->size);
+
+                const auto scan_result = omath::PatternScanner::scan_for_pattern(section_begin, section_end, pattern);
+
+                if (scan_result != section_end)
+                    return reinterpret_cast<std::uintptr_t>(scan_result);
+            }
         }
 
         return std::nullopt;
