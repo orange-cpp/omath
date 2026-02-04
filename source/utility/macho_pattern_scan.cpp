@@ -184,42 +184,43 @@ namespace
             if (!file.read(reinterpret_cast<char*>(&lc), sizeof(lc))) [[unlikely]]
                 return std::nullopt;
 
-            if (lc.cmd == segment_cmd)
+            if (lc.cmd != segment_cmd)
             {
-                SegmentType segment{};
-                file.seekg(cmd_offset, std::ios_base::beg);
-                if (!file.read(reinterpret_cast<char*>(&segment), sizeof(segment))) [[unlikely]]
+                cmd_offset += static_cast<std::streamoff>(lc.cmdsize);
+                continue;
+            }
+            SegmentType segment{};
+            file.seekg(cmd_offset, std::ios_base::beg);
+            if (!file.read(reinterpret_cast<char*>(&segment), sizeof(segment))) [[unlikely]]
+                return std::nullopt;
+
+            std::streamoff sect_offset = cmd_offset + static_cast<std::streamoff>(sizeof(segment));
+
+            for (std::uint32_t j = 0; j < segment.nsects; ++j)
+            {
+                SectionType section{};
+                file.seekg(sect_offset, std::ios_base::beg);
+                if (!file.read(reinterpret_cast<char*>(&section), sizeof(section))) [[unlikely]]
                     return std::nullopt;
 
-                std::streamoff sect_offset = cmd_offset + static_cast<std::streamoff>(sizeof(segment));
-
-                for (std::uint32_t j = 0; j < segment.nsects; ++j)
+                if (get_section_name(section.sectname) != section_name)
                 {
-                    SectionType section{};
-                    file.seekg(sect_offset, std::ios_base::beg);
-                    if (!file.read(reinterpret_cast<char*>(&section), sizeof(section))) [[unlikely]]
-                        return std::nullopt;
-
-                    if (get_section_name(section.sectname) == section_name)
-                    {
-                        ExtractedSection out;
-                        out.virtual_base_addr = static_cast<std::uintptr_t>(section.addr);
-                        out.raw_base_addr = static_cast<std::uintptr_t>(section.offset);
-                        out.data.resize(static_cast<std::size_t>(section.size));
-
-                        file.seekg(static_cast<std::streamoff>(section.offset), std::ios_base::beg);
-                        if (!file.read(reinterpret_cast<char*>(out.data.data()),
-                                       static_cast<std::streamsize>(out.data.size()))) [[unlikely]]
-                            return std::nullopt;
-
-                        return out;
-                    }
-
                     sect_offset += static_cast<std::streamoff>(sizeof(section));
+                    continue;
                 }
-            }
 
-            cmd_offset += static_cast<std::streamoff>(lc.cmdsize);
+                ExtractedSection out;
+                out.virtual_base_addr = static_cast<std::uintptr_t>(section.addr);
+                out.raw_base_addr = static_cast<std::uintptr_t>(section.offset);
+                out.data.resize(static_cast<std::size_t>(section.size));
+
+                file.seekg(static_cast<std::streamoff>(section.offset), std::ios_base::beg);
+                if (!file.read(reinterpret_cast<char*>(out.data.data()), static_cast<std::streamsize>(out.data.size())))
+                        [[unlikely]]
+                    return std::nullopt;
+
+                return out;
+            }
         }
 
         return std::nullopt;
