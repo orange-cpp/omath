@@ -14,7 +14,7 @@ TEST(LineTracerMore, ParallelRayReturnsEnd)
     constexpr Triangle3 tri(Vector3<float>{0.f,0.f,0.f}, Vector3<float>{1.f,0.f,0.f}, Vector3<float>{0.f,1.f,0.f});
     Ray ray; ray.start = {0.f,0.f,1.f}; ray.end = {1.f,0.f,1.f};
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
 
@@ -24,7 +24,7 @@ TEST(LineTracerMore, UOutOfRangeReturnsEnd)
     constexpr Triangle3 tri(Vector3<float>{0.f,0.f,0.f}, Vector3<float>{1.f,0.f,0.f}, Vector3<float>{0.f,1.f,0.f});
     Ray ray; ray.start = {-1.f,-1.f,-1.f}; ray.end = {-0.5f,-1.f,1.f};
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
 
@@ -34,7 +34,7 @@ TEST(LineTracerMore, VOutOfRangeReturnsEnd)
     constexpr Triangle3 tri(Vector3<float>{0.f,0.f,0.f}, Vector3<float>{1.f,0.f,0.f}, Vector3<float>{0.f,1.f,0.f});
     Ray ray; ray.start = {2.f,2.f,-1.f}; ray.end = {2.f,2.f,1.f};
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
 
@@ -43,7 +43,7 @@ TEST(LineTracerMore, THitTooSmallReturnsEnd)
     constexpr Triangle3 tri(Vector3<float>{0.f,0.f,0.f}, Vector3<float>{1.f,0.f,0.f}, Vector3<float>{0.f,1.f,0.f});
     Ray ray; ray.start = {0.f,0.f,0.0000000001f}; ray.end = {0.f,0.f,1.f};
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
 
@@ -53,7 +53,7 @@ TEST(LineTracerMore, THitGreaterThanOneReturnsEnd)
     // Choose a ray and compute t_hit locally to assert consistency
     Ray ray; ray.start = {0.f,0.f,-1.f}; ray.end = {0.f,0.f,-0.5f};
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
 
     constexpr float k_epsilon = std::numeric_limits<float>::epsilon();
     constexpr auto side_a = tri.side_a_vector();
@@ -87,7 +87,7 @@ TEST(LineTracerMore, InfiniteLengthWithSmallTHitReturnsEnd)
     // Create triangle slightly behind so t_hit <= eps
     tri = tri2;
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
 
@@ -96,7 +96,7 @@ TEST(LineTracerMore, SuccessfulHitReturnsPoint)
     constexpr Triangle3 tri(Vector3<float>{0.f,0.f,0.f}, Vector3<float>{1.f,0.f,0.f}, Vector3<float>{0.f,1.f,0.f});
     Ray ray; ray.start = {0.1f,0.1f,-1.f}; ray.end = {0.1f,0.1f,1.f};
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_NE(hit, ray.end);
     // Hit should be on plane z=0 and near x=0.1,y=0.1
     EXPECT_NEAR(hit.z, 0.f, 1e-6f);

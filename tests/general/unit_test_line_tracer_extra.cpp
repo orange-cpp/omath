@@ -10,7 +10,7 @@ TEST(LineTracerExtra, MissParallel)
 {
     constexpr Triangle<Vector3<float>> tri({0,0,0},{1,0,0},{0,1,0});
     constexpr Ray ray{ {0.3f,0.3f,1.f}, {0.3f,0.3f,2.f}, false }; // parallel above triangle
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
 
@@ -18,7 +18,7 @@ TEST(LineTracerExtra, HitCenter)
 {
     constexpr Triangle<Vector3<float>> tri({0,0,0},{1,0,0},{0,1,0});
     constexpr Ray ray{ {0.3f,0.3f,-1.f}, {0.3f,0.3f,1.f}, false };
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     ASSERT_FALSE(hit == ray.end);
     EXPECT_NEAR(hit.x, 0.3f, 1e-6f);
     EXPECT_NEAR(hit.y, 0.3f, 1e-6f);
@@ -30,7 +30,7 @@ TEST(LineTracerExtra, HitOnEdge)
     constexpr Triangle<Vector3<float>> tri({0,0,0},{1,0,0},{0,1,0});
     constexpr Ray ray{ {0.0f,0.0f,1.f}, {0.0f,0.0f,0.f}, false };
     // hitting exact vertex/edge may be considered miss; ensure function handles without crash
-    if (const auto hit = LineTracer::get_ray_hit_point(ray, tri); hit != ray.end)
+    if (const auto hit = LineTracer<>::get_ray_hit_point(ray, tri); hit != ray.end)
     {
         EXPECT_NEAR(hit.x, 0.0f, 1e-6f);
         EXPECT_NEAR(hit.y, 0.0f, 1e-6f);
@@ -42,6 +42,6 @@ TEST(LineTracerExtra, InfiniteRayIgnoredIfBehind)
     constexpr Triangle<Vector3<float>> tri({0,0,0},{1,0,0},{0,1,0});
     // Ray pointing away but infinite_length true should be ignored
     constexpr Ray ray{ {0.5f,0.5f,-1.f}, {0.5f,0.5f,-2.f}, true };
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
