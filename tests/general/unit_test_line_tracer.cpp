@@ -15,9 +15,9 @@ TEST(LineTracerTests, ParallelRayReturnsEnd)
     ray.end = Vector3<float>{1.f,1.f,1.f};
 
     // For a ray parallel to the triangle plane the algorithm should return ray.end
-    const auto hit = omath::collision::LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = omath::collision::LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_TRUE(hit == ray.end);
-    EXPECT_TRUE(omath::collision::LineTracer::can_trace_line(ray, tri));
+    EXPECT_TRUE(omath::collision::LineTracer<>::can_trace_line(ray, tri));
 }
 
 TEST(LineTracerTests, MissesTriangleReturnsEnd)
@@ -27,7 +27,7 @@ TEST(LineTracerTests, MissesTriangleReturnsEnd)
     ray.start = Vector3<float>{2.f,2.f,-1.f};
     ray.end = Vector3<float>{2.f,2.f,1.f}; // passes above the triangle area
 
-    const auto hit = omath::collision::LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = omath::collision::LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_TRUE(hit == ray.end);
 }
 
@@ -38,7 +38,7 @@ TEST(LineTracerTests, HitTriangleReturnsPointInsideSegment)
     ray.start = Vector3<float>{0.25f,0.25f,-1.f};
     ray.end = Vector3<float>{0.25f,0.25f,1.f};
 
-    const auto hit = omath::collision::LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = omath::collision::LineTracer<>::get_ray_hit_point(ray, tri);
     // Should return a point between start and end (z approximately 0)
     EXPECT_NE(hit, ray.end);
     EXPECT_NEAR(hit.z, 0.f, 1e-4f);
@@ -60,6 +60,6 @@ TEST(LineTracerTests, InfiniteLengthEarlyOut)
 
     // If t_hit <= epsilon the algorithm should return ray.end when infinite_length is true.
     // Using start on the triangle plane should produce t_hit <= epsilon.
-    const auto hit = omath::collision::LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = omath::collision::LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_TRUE(hit == ray.end);
 }
