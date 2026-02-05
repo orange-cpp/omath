@@ -130,7 +130,7 @@ namespace omath::collision
 
         template<class V>
         [[nodiscard]]
-        static constexpr bool near_zero(const V& v, const float eps = 1e-7f)
+        static constexpr bool near_zero(const V& v, const float eps = 1e-7f) noexcept
         {
             return v.dot(v) <= eps * eps;
         }
@@ -146,7 +146,7 @@ namespace omath::collision
         }
 
         [[nodiscard]]
-        constexpr bool handle_line(VectorType& direction)
+        constexpr bool handle_line(VectorType& direction) noexcept
         {
             const auto& a = m_points[0];
             const auto& b = m_points[1];
@@ -158,21 +158,11 @@ namespace omath::collision
             {
                 // ReSharper disable once CppTooWideScopeInitStatement
                 auto n = ab.cross(ao); // Needed to valid handle collision if colliders placed at same origin pos
-                if (near_zero(n))
-                {
-                    // collinear: origin lies on ray AB (often on segment), pick any perp to escape
-                    direction = any_perp(ab);
-                }
-                else
-                {
-                    direction = n.cross(ab);
-                }
+                direction = near_zero(n) ? any_perp(ab) : n.cross(ab);
+                return false;
             }
-            else
-            {
-                *this = {a};
-                direction = ao;
-            }
+            *this = {a};
+            direction = ao;
             return false;
         }
 

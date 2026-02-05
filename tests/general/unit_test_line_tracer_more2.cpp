@@ -14,7 +14,7 @@ TEST(LineTracerMore2, UGreaterThanOneReturnsEnd)
     // choose ray so barycentric u > 1
     Ray ray; ray.start = {2.f, -1.f, -1.f}; ray.end = {2.f, -1.f, 1.f};
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
 
@@ -24,7 +24,7 @@ TEST(LineTracerMore2, VGreaterThanOneReturnsEnd)
     // choose ray so barycentric v > 1
     Ray ray; ray.start = {-1.f, 2.f, -1.f}; ray.end = {-1.f, 2.f, 1.f};
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
 
@@ -34,7 +34,7 @@ TEST(LineTracerMore2, UPlusVGreaterThanOneReturnsEnd)
     // Ray aimed so u+v > 1 (outside triangle region)
     Ray ray; ray.start = {1.f, 1.f, -1.f}; ray.end = {1.f, 1.f, 1.f};
 
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
 
@@ -52,6 +52,6 @@ TEST(LineTracerMore2, ZeroLengthRayHandled)
     Ray ray; ray.start = {0.f,0.f,0.f}; ray.end = {0.f,0.f,0.f};
 
     // Zero-length ray: direction length == 0; algorithm should handle without crash
-    const auto hit = LineTracer::get_ray_hit_point(ray, tri);
+    const auto hit = LineTracer<>::get_ray_hit_point(ray, tri);
     EXPECT_EQ(hit, ray.end);
 }
