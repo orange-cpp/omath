@@ -19,6 +19,8 @@ namespace
     constexpr std::uint32_t lc_segment = 0x1;
     constexpr std::uint32_t lc_segment_64 = 0x19;
 
+    constexpr std::string_view segment_name = "__TEXT";
+    constexpr std::string_view section_name = "__text";
 #pragma pack(push, 1)
     struct MachHeader64
     {
@@ -117,7 +119,6 @@ namespace
         constexpr std::size_t segment_size = sizeof(SegmentCommand64);
         constexpr std::size_t section_size = sizeof(Section64);
         constexpr std::size_t load_cmd_size = segment_size + section_size;
-
         // Section data will start after headers
         const std::size_t section_offset = header_size + load_cmd_size;
 
@@ -138,7 +139,7 @@ namespace
         SegmentCommand64 segment{};
         segment.cmd = lc_segment_64;
         segment.cmdsize = static_cast<std::uint32_t>(load_cmd_size);
-        std::strncpy(segment.segname, "__TEXT", 16);
+        std::ranges::copy(segment_name, segment.segname);
         segment.vmaddr = 0x100000000;
         segment.vmsize = section_bytes.size();
         segment.fileoff = section_offset;
@@ -152,8 +153,8 @@ namespace
 
         // Create section
         Section64 section{};
-        std::strncpy(section.sectname, "__text", 16);
-        std::strncpy(section.segname, "__TEXT", 16);
+        std::ranges::copy(section_name, section.sectname);
+        std::ranges::copy(segment_name, segment.segname);
         section.addr = 0x100000000;
         section.size = section_bytes.size();
         section.offset = static_cast<std::uint32_t>(section_offset);
@@ -188,7 +189,7 @@ namespace
         constexpr std::size_t load_cmd_size = segment_size + section_size;
 
         // Section data will start after headers
-        const std::size_t section_offset = header_size + load_cmd_size;
+        constexpr std::size_t section_offset = header_size + load_cmd_size;
 
         // Create Mach-O header
         MachHeader32 header{};
@@ -206,7 +207,7 @@ namespace
         SegmentCommand32 segment{};
         segment.cmd = lc_segment;
         segment.cmdsize = static_cast<std::uint32_t>(load_cmd_size);
-        std::strncpy(segment.segname, "__TEXT", 16);
+        std::ranges::copy(segment_name, segment.segname);
         segment.vmaddr = 0x1000;
         segment.vmsize = static_cast<std::uint32_t>(section_bytes.size());
         segment.fileoff = static_cast<std::uint32_t>(section_offset);
@@ -220,8 +221,8 @@ namespace
 
         // Create section
         Section32 section{};
-        std::strncpy(section.sectname, "__text", 16);
-        std::strncpy(section.segname, "__TEXT", 16);
+        std::ranges::copy(section_name, section.sectname);
+        std::ranges::copy(segment_name, segment.segname);
         section.addr = 0x1000;
         section.size = static_cast<std::uint32_t>(section_bytes.size());
         section.offset = static_cast<std::uint32_t>(section_offset);
