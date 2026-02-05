@@ -12,5 +12,5 @@ TEST(test, test)
             {0.f, 30.f, 0.f}, {}, omath::opengl_engine::k_abs_forward, omath::opengl_engine::k_abs_right);
 
     omath::collision::Ray ray{.start = {0, 0, 0}, .end = {-100, 0, 0}};
-    std::ignore = omath::collision::LineTracer::get_ray_hit_point(ray, result);
+    std::ignore = omath::collision::LineTracer<>::get_ray_hit_point(ray, result);
 }
