@@ -34,6 +34,7 @@ namespace omath::collision
     class LineTracer final
     {
         using TriangleType = Triangle<typename RayType::VectorType>;
+
     public:
         LineTracer() = delete;
 
@@ -88,7 +89,7 @@ namespace omath::collision
 
         template<class MeshType>
         [[nodiscard]]
-        static auto get_ray_hit_point(const RayType& ray, const MeshType& mesh) noexcept
+        constexpr static auto get_ray_hit_point(const RayType& ray, const MeshType& mesh) noexcept
         {
             auto mesh_hit = ray.end;
 
