@@ -1,6 +1,6 @@
 site_name: OMATH Docs
 theme:
-  name: darkly
+  name: material
 extra_css:
   - styles/center.css
   - styles/custom-header.css

@@ -34,6 +34,8 @@ gtest = ">=1.17.0,<2"
 glew = ">=2.3.0,<3"
 glfw = ">=3.4,<4"
 ninja = ">=1.13.2,<2"
+mkdocs = ">=1.6.1,<2"
+mkdocs-material = ">=9.7.1,<10"
 
 [target.linux-64.dependencies]
 mesa-libgl-devel-cos7-x86_64 = ">=18.3.4,<19"
