@@ -1,8 +1,12 @@
 site_name: OMATH Docs
 theme:
-  name: darkly
+  name: material
+  palette:
+    scheme: slate
+    primary: deep orange
+    accent: orange
+  font:
+    text: Roboto Condensed
 extra_css:
   - styles/fonts.css
   - styles/center.css
-  - styles/custom-header.css
-  - styles/links.css
