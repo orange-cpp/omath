@@ -177,3 +177,70 @@
 .md-typeset img {
   border-radius: 10px;
 }
+
+/* ============================================================
+   Dynamic Liquid Glass — mouse-tracking specular highlight
+   ============================================================ */
+
+/* Shared: every glass surface gets a hidden radial-light overlay
+   that becomes visible when JS adds the .glass-active class and
+   sets --glass-x / --glass-y custom properties. */
+.md-header,
+.md-content,
+.md-sidebar__scrollwrap,
+.highlight,
+.md-search__form,
+.md-footer {
+  position: relative;
+  overflow: hidden;
+}
+
+.md-header::after,
+.md-content::after,
+.md-sidebar__scrollwrap::after,
+.highlight::after,
+.md-search__form::after,
+.md-footer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    circle 220px at var(--glass-x, 50%) var(--glass-y, 50%),
+    rgba(255, 200, 120, 0.10) 0%,
+    rgba(255, 152, 0, 0.04) 40%,
+    transparent 70%
+  );
+  z-index: 1;
+}
+
+.md-header.glass-active::after,
+.md-content.glass-active::after,
+.md-sidebar__scrollwrap.glass-active::after,
+.highlight.glass-active::after,
+.md-search__form.glass-active::after,
+.md-footer.glass-active::after {
+  opacity: 1;
+}
+
+/* Keep header text / nav icons above the overlay */
+.md-header > *,
+.md-content > *,
+.md-sidebar__scrollwrap > *,
+.md-search__form > *,
+.md-footer > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Highlight code blocks get a slightly brighter spot */
+.highlight.glass-active::after {
+  background: radial-gradient(
+    circle 180px at var(--glass-x, 50%) var(--glass-y, 50%),
+    rgba(255, 200, 120, 0.12) 0%,
+    rgba(255, 152, 0, 0.05) 35%,
+    transparent 65%
+  );
+}

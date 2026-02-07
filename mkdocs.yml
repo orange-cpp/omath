@@ -15,3 +15,5 @@ extra_css:
   - styles/fonts.css
   - styles/center.css
   - styles/liquid-glass.css
+extra_javascript:
+  - javascripts/liquid-glass.js
