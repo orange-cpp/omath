@@ -38,6 +38,12 @@
   border-radius: 0 var(--glass-radius) var(--glass-radius) 0;
 }
 
+/* Remove the gradient mask at the top of the table of contents */
+.md-sidebar__scrollwrap {
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
+
 /* active nav item — subtle glass highlight */
 .md-nav__item--active > .md-nav__link {
   background: var(--glass-accent) !important;
@@ -125,6 +131,25 @@
   backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 10px !important;
+}
+
+/* search results / output — liquid glass */
+.md-search__output {
+  background: rgba(30, 30, 30, 0.70) !important;
+  -webkit-backdrop-filter: saturate(160%) blur(var(--glass-blur));
+  backdrop-filter: saturate(160%) blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 0 0 var(--glass-radius) var(--glass-radius);
+  box-shadow: var(--glass-shadow);
+}
+
+.md-search-result__link {
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.md-search-result__link:hover {
+  background: var(--glass-bg-hover) !important;
 }
 
 /* ---------- footer ---------- */
