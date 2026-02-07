@@ -26,50 +26,50 @@ namespace omath::source_engine
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
     [[nodiscard]]
-    constexpr FloatingType hammer_units_to_centimeters(const FloatingType& hammer_units)
+    constexpr FloatingType units_to_centimeters(const FloatingType& units)
     {
-        constexpr auto centimeter_in_hammer_unit = static_cast<FloatingType>(2.54);
-        return hammer_units * centimeter_in_hammer_unit;
+        constexpr auto centimeter_in_unit = static_cast<FloatingType>(2.54);
+        return units * centimeter_in_unit;
     }
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
     [[nodiscard]]
-    constexpr FloatingType hammer_units_to_meters(const FloatingType& hammer_units)
+    constexpr FloatingType units_to_meters(const FloatingType& units)
     {
-        return hammer_units_to_centimeters(hammer_units) / static_cast<FloatingType>(100);
+        return units_to_centimeters(units) / static_cast<FloatingType>(100);
     }
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
     [[nodiscard]]
-    constexpr FloatingType hammer_units_to_kilometers(const FloatingType& hammer_units)
+    constexpr FloatingType units_to_kilometers(const FloatingType& units)
     {
-        return hammer_units_to_meters(hammer_units) / static_cast<FloatingType>(1000);
+        return units_to_meters(units) / static_cast<FloatingType>(1000);
     }
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
     [[nodiscard]]
-    constexpr FloatingType centimeters_to_hammer_units(const FloatingType& centimeters)
+    constexpr FloatingType centimeters_to_units(const FloatingType& centimeters)
     {
-        constexpr auto centimeter_in_hammer_unit = static_cast<FloatingType>(2.54);
-        return centimeters / centimeter_in_hammer_unit;
+        constexpr auto centimeter_in_unit = static_cast<FloatingType>(2.54);
+        return centimeters / centimeter_in_unit;
     }
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
     [[nodiscard]]
-    constexpr FloatingType meters_to_hammer_units(const FloatingType& meters)
+    constexpr FloatingType meters_to_units(const FloatingType& meters)
     {
-        return centimeters_to_hammer_units(meters * static_cast<FloatingType>(100));
+        return centimeters_to_units(meters * static_cast<FloatingType>(100));
     }
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
     [[nodiscard]]
-    constexpr FloatingType kilometers_to_hammer_units(const FloatingType& kilometers)
+    constexpr FloatingType kilometers_to_units(const FloatingType& kilometers)
     {
-        return meters_to_hammer_units(kilometers * static_cast<FloatingType>(1000));
+        return meters_to_units(kilometers * static_cast<FloatingType>(1000));
     }
 } // namespace omath::source_engine
