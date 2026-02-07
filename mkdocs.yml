@@ -2,6 +2,7 @@ site_name: OMATH Docs
 theme:
   name: darkly
 extra_css:
+  - styles/fonts.css
   - styles/center.css
   - styles/custom-header.css
   - styles/links.css
