@@ -14,3 +14,4 @@ markdown_extensions:
 extra_css:
   - styles/fonts.css
   - styles/center.css
+  - styles/liquid-glass.css
