@@ -7,6 +7,10 @@ theme:
     accent: orange
   font:
     text: Roboto Condensed
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
 extra_css:
   - styles/fonts.css
   - styles/center.css
