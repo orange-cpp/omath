@@ -29,7 +29,7 @@ set_target_properties(
 find_package(OpenGL)
 find_package(GLEW REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
-target_link_libraries(example_glfw3 PRIVATE omath::omath GLEW::GLEW glfw OpenGL::OpenGL)
+target_link_libraries(example_glfw3 PRIVATE omath::omath GLEW::GLEW glfw OpenGL::GL)
 
 if(OMATH_ENABLE_VALGRIND)
     omath_setup_valgrind(example_projection_matrix_builder)
