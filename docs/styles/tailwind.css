@@ -986,17 +986,16 @@ a:hover { color: #cfe8ff; }
 }
 
 /* ------------------------------------------------------------------
-   EMERGENCY RESTORE: ensure left-sidebar nested lists are visible and
-   interactive. This overrides previous compact/collapse rules so the
-   theme's dropdown behavior is restored. Remove this block once you
-   confirm dropdowns work and we can rework compact behavior safely.
+   Controlled restore: reveal nested lists ONLY when the parent is
+   explicitly open/active. Previously we enabled all lists which caused
+   large vertical gaps. Keep this narrow so collapsed lists remain hidden
+   until the user clicks to open them.
   ------------------------------------------------------------------ */
-.md-nav--primary .md-nav__list,
-.md-sidebar--primary .md-nav--primary .md-nav__item .md-nav__list,
 .md-sidebar--primary .md-nav--primary .md-nav__item.omath-open > .md-nav__list,
-.md-sidebar--primary .md-nav--primary .md-nav__item[aria-expanded="true"] > .md-nav__list {
+.md-sidebar--primary .md-nav--primary .md-nav__item[aria-expanded="true"] > .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__item.md-nav__item--active > .md-nav__list {
   display: block !important;
-  max-height: none !important;
+  max-height: 1000px !important;
   height: auto !important;
   opacity: 1 !important;
   pointer-events: auto !important;
@@ -1601,6 +1600,23 @@ a:hover { color: #cfe8ff; }
     min-width: 44px !important;
   }
 }
+
+/* Adjust left-sidebar vertical spacing: restore a pleasant, readable gap
+   between items while keeping the overall compact layout. These rules
+   intentionally override the earlier "zero-gap"/aggressive blocks and are
+   placed near the end to ensure they take precedence. Tweak the px values
+   below to increase/decrease spacing. */
+.md-sidebar--primary .md-nav--primary .md-nav__list > li + li {
+  margin-top: 6px !important; /* top-level item gap */
+}
+.md-sidebar--primary .md-nav__list .md-nav__list > li + li {
+  margin-top: 4px !important; /* nested list gap */
+}
+.md-sidebar--primary .md-nav__link {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
 
 
 
