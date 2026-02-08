@@ -901,4 +901,51 @@ a:hover { color: #cfe8ff; }
   opacity: 0.12 !important;
 }
 
+/* Right sidebar: ensure subitems stay inside the panel and align left
+   Target `.md-nav__item` so nested li elements don't overflow the border. */
+.md-sidebar--secondary .md-nav__list,
+.md-sidebar--secondary .md-nav__list ul {
+  box-sizing: border-box !important;
+  padding-left: 0.5rem !important; /* keep child lists indented but inside border */
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+.md-sidebar--secondary .md-nav__item {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.md-sidebar--secondary .md-nav__link,
+.md-sidebar--secondary .md-nav__item .md-nav__link {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding-left: 0.6rem !important; /* align text more to the left */
+  padding-right: 0.6rem !important;
+  text-align: left !important;
+  white-space: normal !important;
+}
+
+/* If the theme applies card-like backgrounds to inner nav items, make sure
+   their radius and padding keep content inside the parent's border */
+.md-sidebar--secondary .md-nav__list > li > .md-nav__link,
+.md-sidebar--secondary .md-nav--secondary .md-card,
+.md-sidebar--secondary .md-nav--secondary .md-admonition {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  padding-left: 0.6rem !important;
+  padding-right: 0.6rem !important;
+  margin: 0 !important;
+}
+
+/* Ensure chevrons/icons for nested items don't push text out of bounds */
+.md-sidebar--secondary .md-nav__link::after,
+.md-sidebar--secondary .md-nav__link .md-nav__icon {
+  margin-left: 8px !important;
+  float: right !important;
+}
+
 
