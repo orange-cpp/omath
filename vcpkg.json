@@ -27,10 +27,11 @@
       ]
     },
     "examples": {
-      "description": "Build benchmarks",
+      "description": "Build examples",
       "dependencies": [
         "glfw3",
-        "glew"
+        "glew",
+        "opengl"
       ]
     },
     "imgui": {
