@@ -10,4 +10,6 @@ extra_css:
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/cpp.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/cmake.min.js
   - scripts/highlight-init.js
