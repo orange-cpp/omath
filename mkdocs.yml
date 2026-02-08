@@ -15,3 +15,7 @@ extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/lua.min.js
   - https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js
   - scripts/highlight-init.js
+
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.highlight

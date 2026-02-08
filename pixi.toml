@@ -72,3 +72,4 @@ examples = { cwd = "pixi", cmd = "xvfb-run -a -s '-screen 0 1024x768x24 +extensi
 
 [pypi-dependencies]
 pytailwindcss = ">=0.3.0, <0.4"
+pymdown-extensions = "*"
