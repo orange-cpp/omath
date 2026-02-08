@@ -226,6 +226,88 @@ body {
   color: var(--muted) !important;
 }
 
+/* Polished left-panel logo + title — compact, aligned, and legible */
+.md-sidebar--primary .md-nav__title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  margin: 6px 0 8px 0 !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)) !important;
+  border-radius: 10px !important;
+}
+
+.md-sidebar--primary .md-nav__title .md-logo {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 14px rgba(2,6,23,0.12) !important;
+}
+
+/* Title text to the right of logo — bold and slightly spaced */
+.md-sidebar--primary .md-nav__title {
+  color: #052235 !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.4px !important;
+}
+
+/* If the title text appears as a separate element, ensure it doesn't wrap weirdly */
+.md-sidebar--primary .md-nav__title .md-ellipsis {
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+/* Make logo and title responsive: slightly smaller on narrow screens */
+@media (max-width: 900px) {
+  .md-sidebar--primary .md-nav__title { padding: 6px 8px !important; }
+  .md-sidebar--primary .md-nav__title .md-logo { width:40px !important; height:40px !important; }
+  .md-sidebar--primary .md-nav__title { font-size: 13px !important; }
+}
+
+/* FINAL TWEAK: compact row layout, logo left, title vertically centered */
+.md-sidebar--primary .md-nav__title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 6px 10px !important;
+  margin: 6px 0 !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)) !important;
+  border-radius: 8px !important;
+}
+.md-sidebar--primary .md-nav__title .md-logo {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  background-size: contain !important;
+  background-position: center !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 14px rgba(2,6,23,0.12) !important;
+}
+/* style the title text (the plain text node will inherit from .md-nav__title)
+   but also target .md-ellipsis if present */
+.md-sidebar--primary .md-nav__title,
+.md-sidebar--primary .md-nav__title .md-ellipsis {
+  color: #052235 !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: none !important;
+}
+
+/* keep it compact on small screens */
+@media (max-width: 900px) {
+  .md-sidebar--primary .md-nav__title { padding: 6px 8px !important; }
+  .md-sidebar--primary .md-nav__title .md-logo { width:36px !important; height:36px !important; }
+  .md-sidebar--primary .md-nav__title, .md-sidebar--primary .md-nav__title .md-ellipsis { font-size: 13px !important; }
+}
+
+
+
 /* Ensure TOC links use same ellipsis/truncation behavior */
 .md-table-of-contents .md-ellipsis { display: block; }
 
@@ -525,6 +607,35 @@ body {
   border-radius: 1rem !important;
   box-shadow: 0 12px 34px rgba(2,6,23,0.10) !important;
 }
+
+/* Improved logo + title placement: compact row with icon left and text right */
+.md-sidebar--primary .md-nav__title {
+  height: auto !important;
+  padding: 6px 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  justify-content: flex-start !important;
+  border-radius: 8px !important;
+  margin-bottom: 6px !important;
+}
+.md-sidebar--primary .md-nav__title .md-logo {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 16px rgba(2,6,23,0.08) !important;
+}
+.md-sidebar--primary .md-nav__title {
+  font-size: 14px !important;
+  color: #052235 !important;
+  font-weight: 700 !important;
+}
+.md-sidebar--primary .md-nav__title .md-ellipsis { display: inline-block !important; }
+
 
 /* hide the textual label inside left nav title */
 .md-sidebar--primary .md-nav__title .md-ellipsis { display: none !important; }
@@ -1417,6 +1528,63 @@ a:hover { color: #cfe8ff; }
 .md-sidebar--primary .md-nav--primary .md-nav__list > li + li { margin-top: 2px !important; }
 
 /* End aggressive override */
+
+
+
+
+/* ------------------------------------------------------------------
+   User tweak: ensure "OMATH Docs" label is visible, larger, and sits
+   to the right of the logo image. This block is intentionally specific
+   and placed at the end so it overrides earlier aggressive compact rules.
+  ------------------------------------------------------------------ */
+.md-sidebar--primary .md-nav__title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 6px 8px !important;
+  margin: 4px 0 !important;
+  justify-content: flex-start !important;
+  height: auto !important;
+}
+
+.md-sidebar--primary .md-nav__title .md-logo {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 22px rgba(2,6,23,0.10) !important;
+}
+
+/* Show the title text next to the logo and make it prominent */
+.md-sidebar--primary .md-nav__title .md-ellipsis,
+.md-sidebar--primary .md-nav__title > .md-ellipsis,
+.md-sidebar--primary .md-nav__title > span,
+.md-sidebar--primary .md-nav__title > .md-nav__title-text {
+  display: inline-block !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  color: #04203a !important;
+  letter-spacing: 0.4px !important;
+  line-height: 1 !important;
+  text-transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 900px) {
+  .md-sidebar--primary .md-nav__title .md-ellipsis,
+  .md-sidebar--primary .md-nav__title > .md-ellipsis {
+    font-size: 18px !important;
+  }
+  .md-sidebar--primary .md-nav__title .md-logo {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+  }
+}
 
 
 
