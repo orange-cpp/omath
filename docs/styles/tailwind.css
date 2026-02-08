@@ -766,15 +766,16 @@ a:hover { color: #cfe8ff; }
 
 /* Minimal, non-invasive table override: subtle liquid glass for MkDocs tables */
 .md-typeset__table {
-  border-radius: 0.75rem;
+  border-radius: 0.9rem;
   overflow: hidden;
-  padding: 0.5rem;
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 10px 40px rgba(2,6,23,0.08), inset 0 1px 0 rgba(255,255,255,0.02);
-  margin: 0.8rem auto;
+  padding: 0.35rem;
+  /* darker, richer base so the table reads as dark glass */
+  background: linear-gradient(180deg, rgba(6,10,18,0.96), rgba(8,12,20,0.92));
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 18px 64px rgba(2,6,23,0.44), inset 0 1px 0 rgba(255,255,255,0.01);
+  margin: 1rem auto;
   display: block;
   max-width: 100%;
   position: relative;
@@ -783,33 +784,97 @@ a:hover { color: #cfe8ff; }
   content: '';
   position: absolute;
   left: 0; right: 0; top: 0;
-  height: 42%;
+  height: 28%;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
-  mix-blend-mode: screen;
+  /* very subtle sheen only — avoid brightening center area */
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+  mix-blend-mode: normal;
+  opacity: 0.18;
 }
 .md-typeset__table table { width: 100%; max-width: 100%; border-collapse: separate; border-spacing: 0; margin: 0; }
-.md-typeset__table thead { background: rgba(255,255,255,0.02); }
-.md-typeset__table th, .md-typeset__table td { padding: 0.75rem 1rem; vertical-align: middle; }
-.md-typeset__table tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+.md-typeset__table thead { background: rgba(255,255,255,0.01); }
+.md-typeset__table th, .md-typeset__table td { padding: 0.85rem 1.1rem; vertical-align: middle; color: rgba(255,255,255,0.94); }
+.md-typeset__table tbody tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
+.md-typeset__table tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* style inline code in first column as dark glass pills */
 .md-typeset__table td:first-child code, .md-typeset__table th:first-child code {
   display: inline-block;
-  padding: 0.6rem 0.9rem;
-  background: rgba(6,12,24,0.9);
+  padding: 0.5rem 0.85rem;
+  background: linear-gradient(180deg, rgba(10,16,30,0.95), rgba(6,12,24,0.95));
   color: #e6eef6;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 24px rgba(2,6,23,0.28);
+  border-radius: 0.6rem;
+  box-shadow: 0 8px 22px rgba(2,6,23,0.38), inset 0 -6px 18px rgba(0,0,0,0.25);
   font-weight: 600;
 }
 
-/* make header cells subtle and slightly elevated */
+/* make header cells dark and slightly elevated */
 .md-typeset__table thead th {
-  color: var(--muted);
+  color: #bfdcff;
   font-weight: 700;
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Broad overrides: ensure all theme table variants use the dark liquid-glass styling */
+:where(.md-typeset, .md-content, .md-main) table,
+:where(.md-typeset, .md-content, .md-main) .md-typeset__table,
+.md-typeset__table table {
+  background: transparent !important;
+  border-collapse: separate !important;
+  width: 100% !important;
+  color: rgba(255,255,255,0.94) !important;
+}
+
+:where(.md-typeset, .md-content, .md-main) table thead th,
+:where(.md-typeset, .md-content, .md-main) table th,
+:where(.md-typeset, .md-content, .md-main) table td {
+  background: transparent !important;
+  color: rgba(255,255,255,0.92) !important;
+  padding: 0.85rem 1.1rem !important;
+  vertical-align: middle !important;
+  border: none !important;
+}
+
+/* Wrap raw tables with the same glass panel visuals by targeting their parent block if present */
+:where(.md-typeset, .md-content, .md-main) .md-typeset__table,
+:where(.md-typeset, .md-content, .md-main) .md-typeset__table-wrapper,
+:where(.md-typeset, .md-content, .md-main) .table-wrapper {
+  border-radius: 0.9rem !important;
+  overflow: hidden !important;
+  padding: 0.35rem !important;
+  background: linear-gradient(180deg, rgba(6,10,18,0.96), rgba(8,12,20,0.92)) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+  box-shadow: 0 18px 64px rgba(2,6,23,0.44), inset 0 1px 0 rgba(255,255,255,0.01) !important;
+  margin: 1rem auto !important;
+  display: block !important;
+  max-width: 100% !important;
+  position: relative !important;
+}
+
+/* Ensure code pills and inline code remain visible */
+:where(.md-typeset, .md-content, .md-main) table td code,
+:where(.md-typeset, .md-content, .md-main) table th code {
+  background: linear-gradient(180deg, rgba(10,16,30,0.98), rgba(6,12,24,0.98)) !important;
+  color: #f3f7fb !important;
+  padding: 0.45rem 0.8rem !important;
+  border-radius: 0.55rem !important;
+  box-shadow: 0 8px 22px rgba(2,6,23,0.38) !important;
+  font-weight: 600 !important;
+}
+
+/* Make table borders subtle but present to separate rows */
+:where(.md-typeset, .md-content, .md-main) table tbody tr td,
+:where(.md-typeset, .md-content, .md-main) table thead th {
+  border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* Reduce bright sheen globally */
+:where(.md-typeset, .md-content, .md-main) .md-typeset__table:before,
+:where(.md-typeset, .md-content, .md-main) .table-wrapper:before {
+  opacity: 0.12 !important;
 }
 
 
