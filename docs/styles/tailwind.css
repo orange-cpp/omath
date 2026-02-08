@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --lg-bg-1: rgba(86,125,244,0.12);
+  --panel-bg: rgba(255,255,255,0.14);
+  --panel-border: rgba(255,255,255,0.12);
+  --muted: rgba(15,23,42,0.65);
+  --text: rgba(10,20,30,0.98);
+  --accent: #4ea3ff;
+}
+
+/* Typographic / font choices */
+body, .md-typeset {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  color: var(--text);
+}
+
+h1,h2,h3,h4,h5,h6, .md-header__title {
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  color: var(--text);
+}
+
+/* page background: softened gradient with subtle light spots */
+body {
+  min-height: 100vh;
+  background: linear-gradient(180deg,#5b86e5 0%, #7db4ff 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Main content container - glass panel with stronger contrast behind text */
+.md-main, .md-content {
+  background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.12));
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-radius: 1rem;
+  box-shadow: 0 18px 50px rgba(2,6,23,0.14);
+  border: 1px solid var(--panel-border);
+}
+
+/* Typeset: ensure high contrast text and padded reading area */
+.md-typeset {
+  max-width: 980px;
+  margin: 2rem auto;
+  padding: 2.25rem;
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 18px;
+}
+
+/* Sidebar / navigation - slightly darker glass so TOC is readable */
+.md-nav, .md-sidebar--secondary, .md-table-of-contents {
+  background: rgba(255,255,255,0.10);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 28px rgba(2,6,23,0.06);
+  padding: 1rem;
+}
+
+/* Header bar - make the title legible */
+.md-header {
+  background: rgba(255,255,255,0.06);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Headings - stronger, colorful accent */
+.md-typeset h1, .md-typeset h2, .md-typeset h3 {
+  color: #052235;
+  font-weight: 700;
+}
+
+/* Links and accents: brighter and clear */
+a, .md-typeset a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.03);
+}
+
+/* Make links inside cards and panels extra legible */
+.md-alert a, .md-card a, .md-typeset .admonition a, .md-nav a, .md-sidebar--secondary a {
+  color: #2d79c7;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+a:hover { color: #cfe8ff; }
+
+/* Code blocks - dark translucent slab for contrast */
+.md-typeset pre, .md-typeset code, .highlight pre {
+  background: rgba(6,12,24,0.88);
+  color: #e6eef6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid rgba(255,255,255,0.04);
+  overflow: auto;
+}
+
+/* Footer - slightly more opaque bar so it reads */
+.md-footer {
+  background: rgba(255,255,255,0.08);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding: 1rem 2rem;
+}
+
+/* Small screens adjustments */
+@media (max-width: 900px) {
+  .md-typeset { padding: 1rem; margin: 1rem; font-size:16px }
+  .md-nav { display: block; }
+}
+
+/* Mobile drawer / hamburger menu fixes: ensure items are visible and overlay is translucent */
+.md-drawer, .md-drawer__inner, .md-nav, .md-sidebar {
+  background: rgba(255,255,255,0.10) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  color: var(--text) !important;
+}
+
+.md-nav__list, .md-nav__list ul {
+  padding: 0.5rem 0 !important;
+}
+
+.md-nav__link, .md-nav a, .md-nav__title {
+  color: var(--text) !important;
+  display: block !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+}
+
+.md-nav__link--active, .md-nav__link:hover {
+  background: linear-gradient(90deg, rgba(79,123,255,0.12), rgba(125,182,255,0.06)) !important;
+  color: #052235 !important;
+}
+
+/* Ensure the drawer sits above other elements */
+.md-drawer {
+  z-index: 9999 !important;
+}
+
+/* If any nav icons are hidden, ensure visibility */
+.md-nav__link .md-nav__icon, .md-nav__icon {
+  opacity: 1 !important;
+  color: var(--accent) !important;
+}
+
+/* Remove dark dim overlay when mobile drawer is open, make drawer glassy and ensure links clickable */
+.md-overlay {
+  background: transparent !important;
+  z-index: 9988 !important; /* sit below drawer */
+}
+
+.md-drawer {
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.08)) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 18px 40px rgba(2,6,23,0.12) !important;
+  border-right: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Ensure nav items accept pointer events and redirect */
+.md-drawer a, .md-nav__link {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Keep overlay clickable to allow closing by clicking outside, but visually transparent */
+.md-overlay[aria-hidden="false"] {
+  background: rgba(0,0,0,0.02) !important;
+}
+
+/* Ensure overlay does not block pointer events to drawer links */
+.md-overlay {
+  pointer-events: none !important;
+}
+
+/* Allow drawer itself and its children to receive pointer events */
+.md-drawer, .md-drawer * {
+  pointer-events: auto !important;
+}
+
+/* Make hamburger icon and close button more prominent and liquid glass styled */
+.md-header .md-icon {
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.08);
+  color: var(--text);
+}
+
+/* Increase nav item font size and spacing for touch targets */
+.md-nav__link, .md-nav__title {
+  font-size: 18px !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+
+

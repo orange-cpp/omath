@@ -69,3 +69,6 @@ GLFW_PLATFORM = "x11"
 
 [target.linux-aarch64.tasks]
 examples = { cwd = "pixi", cmd = "xvfb-run -a -s '-screen 0 1024x768x24 +extension GLX +render' cmake -DCMAKE_BUILD_TYPE=Debug -P run.examples.cmake", depends-on = ["build"] }
+
+[pypi-dependencies]
+pytailwindcss = ">=0.3.0, <0.4"
