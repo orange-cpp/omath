@@ -6,7 +6,8 @@
       try{
         var elsScss = document.querySelectorAll('[class*\="language-scss"]');
         var elsRuby = document.querySelectorAll('[class*\="language-ruby"]');
-        var CMAKE_RE = /\b(CMAKE_|set\(|find_package\(|target_link_libraries\(|add_executable\(|add_library\(|target_compile_options\(|include_directories\(|target_include_directories\()\b/;
+        // Match common CMake tokens (no trailing word-boundary since some tokens include punctuation)
+        var CMAKE_RE = /\b(?:CMAKE_|set\(|find_package\(|target_link_libraries\(|add_executable\(|add_library\(|target_compile_options\(|include_directories\(|target_include_directories\()/;
         var CPP_RE = /\b(std::|#include|template|int\s+main|auto\s+[a-zA-Z0-9_]+\s*=|->)\b/; // avoid matching bare '::'
 
         for(var i=0;i<elsScss.length;i++){
@@ -83,19 +84,25 @@
             }
           }catch(e){}
         }
-        // final pass: pick up inline <code> elements that have no class and assume cpp
+        // final pass: pick up inline <code> elements that have no class.
+        // Try to detect CMake first, otherwise fall back to C++ highlighting.
         try{
           var inlineCodes = document.querySelectorAll('code:not([class]), code[class=""]');
           for(var k=0;k<inlineCodes.length;k++){
             try{
               var c = inlineCodes[k];
-              // set class to hljs language-cpp
-              c.className = 'hljs language-cpp';
               var txt3 = c.textContent || '';
+              if(CMAKE_RE.test(txt3)){
+                c.className = 'hljs language-cmake';
+              } else {
+                c.className = 'hljs language-cpp';
+              }
+
               if(window.hljs){
                 try{
-                  if(hljs.getLanguage && hljs.getLanguage('cpp')){
-                    var rr = hljs.highlight(txt3, { language: 'cpp', ignoreIllegals: true });
+                  var lang = /language-(\w+)/.exec(c.className);
+                  if(lang && hljs.getLanguage && hljs.getLanguage(lang[1])){
+                    var rr = hljs.highlight(txt3, { language: lang[1], ignoreIllegals: true });
                     c.innerHTML = rr.value;
                   } else if(hljs.highlightElement){ c.textContent = txt3; hljs.highlightElement(c); }
                 }catch(e){}
