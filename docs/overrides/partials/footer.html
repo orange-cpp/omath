@@ -4,19 +4,47 @@
     'use strict';
     function replaceScssToCmake(){
       try{
-        var els = document.querySelectorAll('[class*=\"language-scss\"]');
+        var els = document.querySelectorAll('[class*\="language-scss"],[class*\="language-ruby"]');
+        var CMAKE_RE = /\b(CMAKE_|set\(|find_package\(|target_link_libraries\(|add_executable\(|add_library\(|target_compile_options\(|include_directories\(|target_include_directories\()\b/;
+        var CPP_RE = /\b(std::|#include|int\s+main|auto\s+[a-zA-Z0-9_]+\s*=|->)\b/; // avoid matching bare '::'
+
         for(var i=0;i<els.length;i++){
           var el = els[i];
           try{
-            el.className = el.className.replace(/language-scss/g, 'language-cmake');
+            var txt = (el.textContent || '');
+
+            // If element is labeled scss and looks like C++ (and does NOT look like CMake), mark as C++
+            if(/language-scss/.test(el.className) && ((CPP_RE.test(txt) || txt.indexOf('//') !== -1) && !CMAKE_RE.test(txt))){
+              el.className = el.className.replace(/language-scss/g, 'language-cpp');
+            }
+            // Otherwise, if it looks like CMake, mark as CMake
+            else if(/language-scss/.test(el.className) && CMAKE_RE.test(txt)){
+              el.className = el.className.replace(/language-scss/g, 'language-cmake');
+            }
+
+            // If an element is currently marked as cmake but its content looks like C++ (and not CMake), demote to cpp
+            if(/language-cmake/.test(el.className) && ((CPP_RE.test(txt) || txt.indexOf('//') !== -1) && !CMAKE_RE.test(txt))){
+              el.className = el.className.replace(/language-cmake/g, 'language-cpp');
+            }
+
             if(el.classList && !el.classList.contains('hljs')) el.classList.add('hljs');
+
             if(window.hljs){
               try{
-                var txt = el.textContent || '';
-                if(hljs.getLanguage && hljs.getLanguage('cmake')){
-                  var r = hljs.highlight(txt, { language: 'cmake', ignoreIllegals: true });
-                  el.innerHTML = r.value;
-                } else if(hljs.highlightElement){ el.textContent = txt; hljs.highlightElement(el); }
+                if(/language-cmake/.test(el.className)){
+                  if(hljs.getLanguage && hljs.getLanguage('cmake')){
+                    var r = hljs.highlight(txt, { language: 'cmake', ignoreIllegals: true });
+                    el.innerHTML = r.value;
+                  } else if(hljs.highlightElement){ el.textContent = txt; hljs.highlightElement(el); }
+                } else if(/language-cpp/.test(el.className) || /language-c\+\+/.test(el.className)){
+                  if(hljs.getLanguage && hljs.getLanguage('cpp')){
+                    var r2 = hljs.highlight(txt, { language: 'cpp', ignoreIllegals: true });
+                    el.innerHTML = r2.value;
+                  } else if(hljs.highlightElement){ el.textContent = txt; hljs.highlightElement(el); }
+                } else {
+                  // fallback highlight
+                  if(hljs.highlightElement) { el.textContent = txt; hljs.highlightElement(el); }
+                }
               }catch(e){}
             }
           }catch(e){}
