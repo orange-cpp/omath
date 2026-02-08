@@ -569,7 +569,7 @@ UnityCamera camera{pos, SourceAngles{}}; // Wrong!
 
 - [Getting Started Guide](getting_started.md)
 - [Installation Instructions](install.md)
-- [Examples Directory](../examples/)
+- [Examples Directory](examples/index.md)
 - Individual module documentation in respective folders
 
 ---

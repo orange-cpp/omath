@@ -34,6 +34,8 @@ gtest = ">=1.17.0,<2"
 glew = ">=2.3.0,<3"
 glfw = ">=3.4,<4"
 ninja = ">=1.13.2,<2"
+mkdocs = ">=1.6.1,<2"
+mkdocs-material = ">=9.7.1,<10"
 
 [target.linux-64.dependencies]
 mesa-libgl-devel-cos7-x86_64 = ">=18.3.4,<19"
@@ -67,3 +69,7 @@ GLFW_PLATFORM = "x11"
 
 [target.linux-aarch64.tasks]
 examples = { cwd = "pixi", cmd = "xvfb-run -a -s '-screen 0 1024x768x24 +extension GLX +render' cmake -DCMAKE_BUILD_TYPE=Debug -P run.examples.cmake", depends-on = ["build"] }
+
+[pypi-dependencies]
+pytailwindcss = ">=0.3.0, <0.4"
+pymdown-extensions = "*"

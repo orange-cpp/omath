@@ -1,0 +1,122 @@
+{# Override footer to inject final scss->cmake replacer after all scripts #}
+<script>
+  (function(){
+    'use strict';
+    function replaceScssToCmake(){
+      try{
+        var elsScss = document.querySelectorAll('[class*\="language-scss"]');
+        var elsRuby = document.querySelectorAll('[class*\="language-ruby"]');
+        // Match common CMake tokens (no trailing word-boundary since some tokens include punctuation)
+        var CMAKE_RE = /\b(?:CMAKE_|set\(|find_package\(|target_link_libraries\(|add_executable\(|add_library\(|target_compile_options\(|include_directories\(|target_include_directories\()/;
+        var CPP_RE = /\b(std::|#include|template|int\s+main|auto\s+[a-zA-Z0-9_]+\s*=|->)\b/; // avoid matching bare '::'
+
+        for(var i=0;i<elsScss.length;i++){
+          var el = elsScss[i];
+          try{
+            var txt = (el.textContent || '');
+            // If element is labeled scss and looks like C++ (and does NOT look like CMake), mark as C++
+            if(/language-scss/.test(el.className) && ((CPP_RE.test(txt) || txt.indexOf('//') !== -1) && !CMAKE_RE.test(txt))){
+              el.className = el.className.replace(/language-scss/g, 'language-cpp');
+            }
+            // Otherwise, if it looks like CMake, mark as CMake
+            else if(/language-scss/.test(el.className) && CMAKE_RE.test(txt)){
+              el.className = el.className.replace(/language-scss/g, 'language-cmake');
+            }
+
+            // If an element is currently marked as cmake but its content looks like C++ (and not CMake), demote to cpp
+            if(/language-cmake/.test(el.className) && ((CPP_RE.test(txt) || txt.indexOf('//') !== -1) && !CMAKE_RE.test(txt))){
+              el.className = el.className.replace(/language-cmake/g, 'language-cpp');
+            }
+
+            if(el.classList && !el.classList.contains('hljs')) el.classList.add('hljs');
+
+            if(window.hljs){
+              try{
+                if(/language-cmake/.test(el.className)){
+                  if(hljs.getLanguage && hljs.getLanguage('cmake')){
+                    var r = hljs.highlight(txt, { language: 'cmake', ignoreIllegals: true });
+                    el.innerHTML = r.value;
+                  } else if(hljs.highlightElement){ el.textContent = txt; hljs.highlightElement(el); }
+                } else if(/language-cpp/.test(el.className) || /language-c\+\+/.test(el.className)){
+                  if(hljs.getLanguage && hljs.getLanguage('cpp')){
+                    var r2 = hljs.highlight(txt, { language: 'cpp', ignoreIllegals: true });
+                    el.innerHTML = r2.value;
+                  } else if(hljs.highlightElement){ el.textContent = txt; hljs.highlightElement(el); }
+                } else {
+                  // fallback highlight
+                  if(hljs.highlightElement) { el.textContent = txt; hljs.highlightElement(el); }
+                }
+              }catch(e){}
+            }
+          }catch(e){}
+        }
+
+        // second pass: apply the same relabeling logic to elements that were detected as ruby
+        for(var j=0;j<elsRuby.length;j++){
+          var el2 = elsRuby[j];
+          try{
+            var txt2 = (el2.textContent || '');
+            if(/language-ruby/.test(el2.className) && ((CPP_RE.test(txt2) || txt2.indexOf('//') !== -1) && !CMAKE_RE.test(txt2))){
+              el2.className = el2.className.replace(/language-ruby/g, 'language-cpp');
+            }
+            else if(/language-ruby/.test(el2.className) && CMAKE_RE.test(txt2)){
+              el2.className = el2.className.replace(/language-ruby/g, 'language-cmake');
+            }
+
+            if(el2.classList && !el2.classList.contains('hljs')) el2.classList.add('hljs');
+
+            if(window.hljs){
+              try{
+                if(/language-cmake/.test(el2.className)){
+                  if(hljs.getLanguage && hljs.getLanguage('cmake')){
+                    var r3 = hljs.highlight(txt2, { language: 'cmake', ignoreIllegals: true });
+                    el2.innerHTML = r3.value;
+                  } else if(hljs.highlightElement){ el2.textContent = txt2; hljs.highlightElement(el2); }
+                } else if(/language-cpp/.test(el2.className) || /language-c\+\+/.test(el2.className)){
+                  if(hljs.getLanguage && hljs.getLanguage('cpp')){
+                    var r4 = hljs.highlight(txt2, { language: 'cpp', ignoreIllegals: true });
+                    el2.innerHTML = r4.value;
+                  } else if(hljs.highlightElement){ el2.textContent = txt2; hljs.highlightElement(el2); }
+                } else {
+                  if(hljs.highlightElement) { el2.textContent = txt2; hljs.highlightElement(el2); }
+                }
+              }catch(e){}
+            }
+          }catch(e){}
+        }
+        // final pass: pick up inline <code> elements that have no class.
+        // Try to detect CMake first, otherwise fall back to C++ highlighting.
+        try{
+          var inlineCodes = document.querySelectorAll('code:not([class]), code[class=""]');
+          for(var k=0;k<inlineCodes.length;k++){
+            try{
+              var c = inlineCodes[k];
+              var txt3 = c.textContent || '';
+              if(CMAKE_RE.test(txt3)){
+                c.className = 'hljs language-cmake';
+              } else {
+                c.className = 'hljs language-cpp';
+              }
+
+              if(window.hljs){
+                try{
+                  var lang = /language-(\w+)/.exec(c.className);
+                  if(lang && hljs.getLanguage && hljs.getLanguage(lang[1])){
+                    var rr = hljs.highlight(txt3, { language: lang[1], ignoreIllegals: true });
+                    c.innerHTML = rr.value;
+                  } else if(hljs.highlightElement){ c.textContent = txt3; hljs.highlightElement(c); }
+                }catch(e){}
+              }
+            }catch(e){}
+          }
+        }catch(e){}
+      }catch(e){}
+    }
+
+    // run once after load
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', replaceScssToCmake); else replaceScssToCmake();
+    // also run a very short delayed pass to catch late scripts
+    setTimeout(replaceScssToCmake, 120);
+    setTimeout(replaceScssToCmake, 600);
+  })();
+</script>

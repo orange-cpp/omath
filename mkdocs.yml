@@ -1,7 +1,21 @@
 site_name: OMATH Docs
 theme:
-  name: darkly
+  name: material
+  custom_dir: docs/overrides
 extra_css:
-  - styles/center.css
-  - styles/custom-header.css
-  - styles/links.css
+  - styles/tailwind.generated.css
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/cpp.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/bash.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/cmake.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/lua.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js
+  - scripts/highlight-init.js
+
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.highlight

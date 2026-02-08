@@ -607,8 +607,8 @@ auto scaled = angle1 * 2.0f;
 Now that you've completed these tutorials, explore:
 
 - **[API Overview](api_overview.md)** - Complete API reference
-- **[Engine Documentation](engines/)** - Engine-specific features
-- **[Examples](../examples/)** - More code examples
+- **[Engine Documentation](engines/index.md)** - Engine-specific features
+- **[Examples](examples/index.md)** - More code examples
 - **[Getting Started](getting_started.md)** - Quick start guide
 
 ---
