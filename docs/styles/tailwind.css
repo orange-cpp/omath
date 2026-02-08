@@ -302,6 +302,30 @@ body {
   padding-bottom: 2px !important;
   padding-left: 6px !important;
   padding-right: 6px !important;
+}
+
+/* Hide nested child lists by default so they don't reserve vertical space.
+   Only reveal when the parent has the 'omath-open' class (toggled on click).
+   This ensures dropdown height only appears after explicit click. */
+.md-sidebar--primary .md-nav--primary .md-nav__item .md-nav__list {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+.md-sidebar--primary .md-nav--primary .md-nav__item.omath-open > .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__item.omath-open .md-nav__list {
+  display: block !important;
+  height: auto !important;
+  margin: 0.2rem 0 !important;
+  padding-left: 0.5rem !important;
+}
+
+/* Smooth transition for expansion (optional) */
+.md-sidebar--primary .md-nav--primary .md-nav__item .md-nav__list {
+  transition: height 160ms ease, opacity 140ms ease;
+  padding-right: 6px !important;
   min-height: 0 !important; 
   line-height: 1.05 !important; /* reduced line-height for minimal spacing */
   height: auto !important;
