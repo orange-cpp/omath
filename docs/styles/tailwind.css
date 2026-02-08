@@ -355,7 +355,8 @@ body {
      the main content at 60% of the viewport width. */
   .md-main {
     display: grid !important;
-    grid-template-columns: 20% 60% 20% !important;
+    /* keep three columns but constrain center column for consistent centering */
+    grid-template-columns: minmax(160px, 20%) minmax(0, 60ch) minmax(140px, 20%) !important;
     grid-template-areas: "left main right" !important;
     align-items: start !important;
     gap: 1rem !important;
@@ -378,6 +379,7 @@ body {
     width: 100% !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
+    justify-self: center !important; /* ensure main column centers its content */
   }
 
   .md-sidebar--secondary {
