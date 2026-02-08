@@ -1,7 +1,19 @@
 site_name: OMATH Docs
 theme:
-  name: darkly
+  name: material
+  palette:
+    scheme: slate
+    primary: deep orange
+    accent: orange
+  font:
+    text: Roboto Condensed
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
 extra_css:
+  - styles/fonts.css
   - styles/center.css
-  - styles/custom-header.css
-  - styles/links.css
+  - styles/liquid-glass.css
+extra_javascript:
+  - javascripts/liquid-glass.js
