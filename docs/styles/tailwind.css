@@ -11,6 +11,9 @@
   --muted: rgba(15,23,42,0.65);
   --text: rgba(10,20,30,0.98);
   --accent: #4ea3ff;
+  /* sidebar width variables (moved here to avoid duplicate :root blocks) */
+  --omath-left-sidebar-width: 260px;
+  --omath-right-sidebar-width: 320px;
 }
 
 /* Typographic / font choices */
@@ -254,13 +257,17 @@ body {
   display: flex !important;
   align-items: center !important;
   gap: 0.35rem !important;
-  padding: 0.12rem 0.5rem !important; /* minimal vertical spacing */
+  /* compact padding by default; expanded when opened */
+  padding: 4px 8px !important;
   color: var(--text) !important;
   background: transparent !important;
   border-radius: 0.45rem !important;
   transition: transform .12s ease, background .12s ease !important;
   margin-bottom: 0.06rem !important;
-  font-size: 15px !important;
+  font-size: 14px !important;
+  line-height: 1.15 !important;
+  min-height: 22px !important;
+  padding-left: 0.45rem !important; /* ensure icon and text don't touch edge */
 }
 .md-nav--primary .md-nav__link:hover {
   transform: translateX(2px) !important;
@@ -275,65 +282,49 @@ body {
   box-shadow: 0 4px 12px rgba(2,6,23,0.05) !important;
 }
 
-/* Remove extra spacing on list items and tighten list padding */
-.md-nav--primary .md-nav__link {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.3rem !important;
-  padding: 0.12rem 0.5rem !important; /* minimal vertical spacing */
-  color: var(--text) !important;
-  background: transparent !important;
-  border-radius: 0.45rem !important;
-  transition: transform .12s ease, background .12s ease !important;
-  margin-bottom: 0.06rem !important; /* very small gap between items */
-  font-size: 14px !important;
-  line-height: 1.15 !important;
-  min-height: 28px !important; /* prevent text overlap */
-  padding-left: 0.45rem !important; /* ensure icon and text don't touch edge */
-}
+
 .md-nav--primary .md-nav__item,
 .md-nav--primary .md-nav__item * {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
 
-.md-nav--primary .md-nav__link {
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
-  padding-left: 6px !important;
-  padding-right: 6px !important;
-}
+/* duplicate padding rules consolidated above */
 
 /* Hide nested child lists by default so they don't reserve vertical space.
    Only reveal when the parent has the 'omath-open' class (toggled on click).
    This ensures dropdown height only appears after explicit click. */
 .md-sidebar--primary .md-nav--primary .md-nav__item .md-nav__list {
-  display: none !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
+  /* Compact collapsed state: do not use !important so theme JS may still toggle display
+     We collapse via max-height + opacity which is reversible and won't block theme's toggles */
+  max-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding-left: 0.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height 180ms ease, opacity 140ms ease;
+  font-size: 14px;
+  line-height: 1.05;
 }
 .md-sidebar--primary .md-nav--primary .md-nav__item.omath-open > .md-nav__list,
 .md-sidebar--primary .md-nav--primary .md-nav__item.omath-open .md-nav__list {
-  display: block !important;
-  height: auto !important;
-  margin: 0.2rem 0 !important;
-  padding-left: 0.5rem !important;
+  max-height: 1000px; /* large enough to show items */
+  opacity: 1;
+  pointer-events: auto;
+  margin: 0.2rem 0;
+  padding-left: 0.5rem;
 }
 
-/* Smooth transition for expansion (optional) */
-.md-sidebar--primary .md-nav--primary .md-nav__item .md-nav__list {
-  transition: height 160ms ease, opacity 140ms ease;
-  padding-right: 6px !important;
-  min-height: 0 !important; 
-  line-height: 1.05 !important; /* reduced line-height for minimal spacing */
-  height: auto !important;
-  margin: 0 !important;
-  font-size: 14px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+/* If the theme marks an item as active/open via its own class or aria attributes,
+   respect that and reveal the nested list (avoids interfering with theme JS). */
+.md-sidebar--primary .md-nav--primary .md-nav__item.md-nav__item--active > .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__item[aria-expanded="true"] > .md-nav__list {
+  max-height: 1000px;
+  opacity: 1;
+  pointer-events: auto;
+  margin: 0.2rem 0;
+  padding-left: 0.5rem;
 }
 
 .md-nav--primary .md-nav__toggle,
@@ -344,7 +335,7 @@ body {
 
 .md-nav--primary .md-nav__link .md-nav__icon { margin-right: 6px !important; }
 
-.md-nav--primary .md-nav__link { padding-top: 4px !important; padding-bottom: 4px !important; }
+
 
 /* small icon badge for left links (keeps existing icons visible) */
 .md-nav__icon {
@@ -365,11 +356,7 @@ body {
    - Defaults provided; override by setting the variables in another stylesheet
    - Responsive: on narrow screens sidebars revert to overlay behavior
   ------------------------------------------------------------------ */
-:root {
-  /* sensible defaults, override in custom CSS or inline styles as needed */
-  --omath-left-sidebar-width: 260px;
-  --omath-right-sidebar-width: 320px;
-}
+/* (Sidebar width vars moved to top :root to avoid duplicates) */
 
 /* Apply widths on desktop where sidebars are persistent */
 @media (min-width: 960px) {
@@ -668,6 +655,7 @@ a:hover { color: #cfe8ff; }
 /* Remove dark dim overlay when mobile drawer is open, make drawer glassy and ensure links clickable */
 .md-overlay {
   background: transparent !important;
+  pointer-events: auto !important;
   z-index: 9988 !important; /* sit below drawer */
 }
 
@@ -691,10 +679,7 @@ a:hover { color: #cfe8ff; }
 }
 
 /* Ensure overlay sits under the drawer but remains clickable to close */
-.md-overlay {
-  pointer-events: auto !important;
-  z-index: 9988 !important; /* sit below drawer */
-}
+/* (properties merged into earlier .md-overlay to avoid duplicate selector) */
 
 /* Allow drawer itself and its children to receive pointer events */
 .md-drawer, .md-drawer * {
@@ -762,14 +747,216 @@ a:hover { color: #cfe8ff; }
   font-weight: 700 !important;
   font-size: 14px !important;
   color: #052235 !important;
-  padding: 0.6rem 0.6rem !important;
+  padding: 0.6rem !important;
 }
 
-/* Increase nav item font size and spacing for touch targets */
-.md-nav__link, .md-nav__title {
+/* Increase nav item font size and spacing for top-level touch targets only.
+   Avoid applying these large paddings to nested/dropdown items which would
+   create oversized card-like blocks inside open dropdowns. */
+.md-nav--primary > .md-nav__list > li > .md-nav__link,
+.md-nav__title {
   font-size: 18px !important;
   padding-top: 14px !important;
   padding-bottom: 14px !important;
+}
+
+/* Nested nav links (dropdown items) should be compact and not styled as cards */
+.md-nav__list .md-nav__link {
+  font-size: 14px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Ensure primary sidebar nested list items do not get card-like wrappers */
+.md-sidebar--primary .md-nav__list > li,
+.md-sidebar--primary .md-nav__list > li > .md-nav__link {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Extra safety: remove any accidental large card/panel decorations that
+   could overlay multiple nav items and block clicks. Force nav links to be
+   simple, full-width, and positioned normally so click handlers receive events. */
+.md-sidebar--primary .md-nav__item,
+.md-sidebar--primary .md-nav__item *,
+.md-sidebar--primary .md-nav__link,
+.md-sidebar--primary .md-nav__link * {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Ensure chevrons and icons stay visible above nav backgrounds */
+.md-sidebar--primary .md-nav__icon,
+.md-sidebar--primary .md-nav__toggle {
+  z-index: 2 !important;
+}
+
+/* Neutralize any cards or panels that may appear inside the primary nav.
+   Some theme components render .md-card wrappers — make them plain so they
+   don't create oversized overlay boxes that block nested lists. */
+.md-sidebar--primary .md-card,
+.md-sidebar--primary .md-nav__list .md-card,
+.md-sidebar--primary .md-nav__list .md-admonition,
+.md-sidebar--primary .md-nav__list .md-card *,
+.md-sidebar--primary .md-nav__list .md-admonition * {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  position: static !important;
+  z-index: auto !important;
+  width: 100% !important;
+}
+
+/* If nested nav items accidentally receive large height/width, ensure the
+   child list remains visible and not clipped by an ancestor's padding. */
+.md-sidebar--primary .md-nav__list { overflow: visible !important; }
+
+/* Force nested lists to behave as normal vertical lists (no centering) */
+.md-sidebar--primary .md-nav__list,
+.md-sidebar--primary .md-nav__list > li,
+.md-sidebar--primary .md-nav__list > li > * {
+  display: block !important;
+  text-align: left !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  vertical-align: top !important;
+}
+
+/* Ensure nested nav links fill width and stack vertically */
+.md-sidebar--primary .md-nav__list .md-nav__link {
+  display: block !important;
+  width: 100% !important;
+  padding: 6px 8px !important;
+  box-sizing: border-box !important;
+  text-align: left !important;
+}
+
+/* Prevent any inner wrapper from centering its contents */
+.md-sidebar--primary .md-nav__list .md-card,
+.md-sidebar--primary .md-nav__list .md-card * {
+  display: block !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-align: left !important;
+  align-items: flex-start !important;
+}
+
+/* ------------------------------------------------------------------
+   EMERGENCY RESTORE: ensure left-sidebar nested lists are visible and
+   interactive. This overrides previous compact/collapse rules so the
+   theme's dropdown behavior is restored. Remove this block once you
+   confirm dropdowns work and we can rework compact behavior safely.
+  ------------------------------------------------------------------ */
+.md-nav--primary .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__item .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__item.omath-open > .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__item[aria-expanded="true"] > .md-nav__list {
+  display: block !important;
+  max-height: none !important;
+  height: auto !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  overflow: visible !important;
+  margin: 0.2rem 0 !important;
+  padding-left: 0.5rem !important;
+}
+
+/* Ensure nested links are visible and stacked */
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__link {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 4px 8px !important;
+  text-align: left !important;
+}
+
+/* Final compacting: strip any residual margins/padding on nested lists */
+.md-sidebar--primary .md-nav--primary .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__list ul,
+.md-sidebar--primary .md-nav--primary .md-nav__list > li,
+.md-sidebar--primary .md-nav--primary .md-nav__list > li > * {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Minimal item spacing */
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__link {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  line-height: 1 !important;
+  font-size: 12px !important;
+}
+
+/* Remove extra gap that might come from pseudo-elements or toggles */
+.md-sidebar--primary .md-nav--primary .md-nav__item > .md-nav__link::before,
+.md-sidebar--primary .md-nav--primary .md-nav__item > .md-nav__link::after,
+.md-sidebar--primary .md-nav--primary .md-nav__list::before,
+.md-sidebar--primary .md-nav--primary .md-nav__list::after {
+  content: none !important;
+}
+
+/* Ensure nested icons are small and don't add vertical padding */
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__icon {
+  width: 14px !important;
+  height: 14px !important;
+  margin-right: 6px !important;
+  vertical-align: middle !important;
+}
+
+/* Tighten nested dropdown spacing even more (emergency compact overrides) */
+.md-sidebar--primary .md-nav--primary .md-nav__list > li,
+.md-sidebar--primary .md-nav--primary .md-nav__list > li > * {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__link {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  line-height: 1 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  font-size: 13px !important;
+}
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__link .md-nav__icon,
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__link .md-icon {
+  width: 14px !important;
+  height: 14px !important;
+  margin-right: 6px !important;
+}
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__link .md-ellipsis {
+  display: inline !important;
+}
+
+/* Compact nested list spacing: reduce vertical gaps for dropdown items */
+.md-sidebar--primary .md-nav--primary .md-nav__list > li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__list > li > .md-nav__link {
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+  font-size: 13px !important;
+  line-height: 1.05 !important;
 }
 
 /* Ensure drawer text is always visible and not clipped by decorative text-fill/background-clip */
@@ -782,11 +969,7 @@ a:hover { color: #cfe8ff; }
   z-index: 100001 !important;
 }
 
-/* Make sure drawer and its links receive pointer events and are above overlays */
-.md-drawer {
-  pointer-events: auto !important;
-  z-index: 100000 !important;
-}
+/* (drawer pointer-events/z-index handled earlier to avoid duplicate selectors) */
 
 /* Minimal, non-invasive table override: subtle liquid glass for MkDocs tables */
 .md-typeset__table {
@@ -920,12 +1103,11 @@ a:hover { color: #cfe8ff; }
 
 .md-sidebar--secondary .md-nav__link,
 .md-sidebar--secondary .md-nav__item .md-nav__link {
-  display: block !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  padding-left: 0.6rem !important; /* align text more to the left */
-  padding-right: 0.6rem !important;
-  text-align: left !important;
+  font-family: 'Poppins', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  color: #052235 !important;
+  padding: 0.6rem !important;
   white-space: normal !important;
 }
 
@@ -947,5 +1129,297 @@ a:hover { color: #cfe8ff; }
   margin-left: 8px !important;
   float: right !important;
 }
+
+
+/* FORCE: compact top-level left-sidebar items
+   Some earlier rules increase top-level padding/font-size for touch targets.
+   Enforce minimal spacing for the left column while keeping hover/active styles. */
+.md-sidebar--primary .md-nav--primary > .md-nav__list > li > .md-nav__link,
+.md-sidebar--primary .md-nav--primary > .md-nav__list > li > .md-nav__link.md-nav__link--active {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  padding-left: 6px !important;
+  padding-right: 8px !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  margin-bottom: 0 !important;
+}
+
+/* Also ensure the immediate children (toggles/icons) don't add extra vertical space */
+.md-sidebar--primary .md-nav--primary > .md-nav__list > li > .md-nav__link .md-nav__icon,
+.md-sidebar--primary .md-nav--primary > .md-nav__list > li > .md-nav__link .md-nav__toggle {
+  width: 14px !important;
+  height: 14px !important;
+  margin-right: 6px !important;
+  vertical-align: middle !important;
+}
+
+/* --- ULTRA COMPACT: force minimal vertical spacing for all left-panel items --- */
+/* aggressively remove residual margins/padding that may come from theme or nested wrappers */
+.md-sidebar--primary .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__list ul {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.md-sidebar--primary .md-nav__list > li,
+.md-sidebar--primary .md-nav--primary .md-nav__list > li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Make every nav link as tight as possible */
+.md-sidebar--primary .md-nav__link,
+.md-sidebar--primary .md-nav--primary .md-nav__link,
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__link {
+  display: block !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  line-height: 1 !important;
+  font-size: 12px !important;
+}
+
+/* Remove extra gaps from pseudo-elements or separators */
+.md-sidebar--primary .md-nav--primary .md-nav__item > .md-nav__link::before,
+.md-sidebar--primary .md-nav--primary .md-nav__item > .md-nav__link::after,
+.md-sidebar--primary .md-nav--primary .md-nav__list::before,
+.md-sidebar--primary .md-nav--primary .md-nav__list::after {
+  content: none !important;
+}
+
+/* Reduce top logo/card area vertical gap so list begins sooner */
+.md-sidebar--primary .md-nav__title { margin-bottom: 0.25rem !important; height: auto !important; padding: 0.4rem !important; }
+
+/* collapse any leftover wrappers inside nav items */
+.md-sidebar--primary .md-nav__item .md-card,
+.md-sidebar--primary .md-nav__item .md-admonition {
+  display: block !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* --- ZERO-GAP OVERRIDE: make left sidebar as compact as possible --- */
+/* Reduce outer panel padding so list starts nearer the top */
+.md-sidebar--primary {
+  padding: 0.15rem !important;
+}
+
+/* Tighten logo/title area and reduce space below it */
+.md-sidebar--primary .md-nav__title {
+  margin-bottom: 0.12rem !important;
+  height: auto !important;
+  padding: 0.2rem !important;
+}
+
+/* Remove list paddings and margins */
+.md-sidebar--primary .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__list ul {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.md-sidebar--primary .md-nav--primary .md-nav__list > li,
+.md-sidebar--primary .md-nav__list > li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Make links extremely tight vertically */
+.md-sidebar--primary .md-nav__link,
+.md-sidebar--primary .md-nav--primary .md-nav__link,
+.md-sidebar--primary .md-nav--primary .md-nav__list .md-nav__link {
+  display: block !important;
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  line-height: 1 !important;
+  font-size: 12px !important;
+}
+
+/* Remove separators/pseudo-element gaps */
+.md-sidebar--primary .md-nav--primary .md-nav__item > .md-nav__link::before,
+.md-sidebar--primary .md-nav--primary .md-nav__item > .md-nav__link::after,
+.md-sidebar--primary .md-nav--primary .md-nav__list::before,
+.md-sidebar--primary .md-nav--primary .md-nav__list::after {
+  content: none !important;
+}
+
+/* Reduce spacing between consecutive li elements */
+.md-sidebar--primary .md-nav--primary .md-nav__list > li + li { margin-top: 0 !important; }
+
+/* Shrink toggles/checkboxes/icons so they don't push items apart */
+.md-sidebar--primary .md-nav__toggle,
+.md-sidebar--primary .md-nav__link .md-nav__icon,
+.md-sidebar--primary input[type="checkbox"] {
+  width: 12px !important;
+  height: 12px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+  display: inline-block !important;
+}
+
+/* FINAL: strip remaining card-like wrappers and large paddings inside left nav */
+.md-sidebar--primary .md-nav__list .md-card,
+.md-sidebar--primary .md-nav__list .md-admonition,
+.md-sidebar--primary .md-nav__list .md-card *,
+.md-sidebar--primary .md-nav__list .md-admonition * {
+  /* remove the block wrapper so content flows tightly */
+  display: contents !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Make nested section titles inside lists compact */
+.md-sidebar--primary .md-nav__list .md-nav__title {
+  font-size: 13px !important;
+  padding: 2px 6px !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+/* Ensure nested lists are tight and do not create extra boxed area */
+.md-sidebar--primary .md-nav__list .md-nav__list {
+  margin: 0 !important;
+  padding-left: 0.2rem !important;
+}
+
+/* Very small spacing between top-level entries */
+.md-sidebar--primary .md-nav--primary .md-nav__list > li + li { margin-top: 2px !important; }
+
+/* Tweak checkbox that appears next to section to be compact */
+.md-sidebar--primary input[type="checkbox"] {
+  margin: 0 4px 0 0 !important;
+  transform: translateY(1px) !important;
+}
+
+/* Force any remaining link children to be zero-margin */
+.md-sidebar--primary .md-nav__link * { margin: 0 !important; padding: 0 !important; }
+
+/* Make left-nav links flex rows so checkboxes/icons sit on the same line and
+   do not create extra vertical gaps. Keep links compact and allow wrapping only
+   when necessary (small width). */
+.md-sidebar--primary .md-nav__list > li > .md-nav__link,
+.md-sidebar--primary .md-nav__list > li > a,
+.md-sidebar--primary .md-nav__list .md-nav__link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: normal !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+
+/* Ensure any block children inside links don't force new lines; make them inline */
+.md-sidebar--primary .md-nav__link .md-ellipsis,
+.md-sidebar--primary .md-nav__link .md-nav__title,
+.md-sidebar--primary .md-nav__link .md-card,
+.md-sidebar--primary .md-nav__link .md-admonition {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Very tight spacing for labels next to checkboxes */
+.md-sidebar--primary input[type="checkbox"] + .md-ellipsis,
+.md-sidebar--primary input[type="checkbox"] + .md-nav__link {
+  margin-left: 4px !important;
+}
+
+/* Force nested list headers and toggles to align horizontally, not stacked */
+.md-sidebar--primary .md-nav__item > .md-nav__link .md-nav__toggle {
+  margin-left: auto !important; /* keep toggle to the far right */
+}
+
+/* ------------------ AGGRESSIVE ZERO-SPACING OVERRIDE ------------------ */
+/* WARNING: very high-specificity, globally collapses spacing inside left sidebar
+   to achieve the absolute minimal vertical rhythm. Keep this at the end so it
+   overrides other rules. */
+.md-sidebar--primary, .md-sidebar--primary * {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Force every list / item to be tight */
+.md-sidebar--primary .md-nav__list,
+.md-sidebar--primary .md-nav__list ul,
+.md-sidebar--primary .md-nav--primary .md-nav__list > li,
+.md-sidebar--primary .md-nav--primary .md-nav__list > li > * {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Make all nav links a single compact row */
+.md-sidebar--primary .md-nav__link,
+.md-sidebar--primary .md-nav--primary .md-nav__link,
+.md-sidebar--primary .md-nav__list .md-nav__link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 1px 6px !important;
+  line-height: 1 !important;
+  font-size: 12px !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+/* Reduce space for titles and toggles */
+.md-sidebar--primary .md-nav__title,
+.md-sidebar--primary .md-nav__item .md-nav__title {
+  display: block !important;
+  margin: 0 !important;
+  padding: 2px 6px !important;
+  font-size: 13px !important;
+}
+
+/* Shrink icons, toggles, checkboxes that were creating gaps */
+.md-sidebar--primary .md-nav__icon,
+.md-sidebar--primary .md-nav__toggle,
+.md-sidebar--primary input[type="checkbox"] {
+  width: 12px !important;
+  height: 12px !important;
+  margin: 0 6px 0 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+}
+
+/* If any element is effectively empty (only whitespace), hide it to avoid blank blocks */
+.md-sidebar--primary *:not(svg):not(path):empty {
+  display: none !important;
+}
+
+/* Ensure nested lists don't add extra indentation height */
+.md-sidebar--primary .md-nav__list .md-nav__list {
+  padding-left: 6px !important;
+  margin: 0 !important;
+}
+
+/* Small vertical gap between top-level items (as small as possible) */
+.md-sidebar--primary .md-nav--primary .md-nav__list > li + li { margin-top: 2px !important; }
+
+/* End aggressive override */
+
+
+
+
 
 
