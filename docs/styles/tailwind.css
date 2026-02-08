@@ -63,6 +63,491 @@ body {
   padding: 1rem;
 }
 
+/* Make right sidebar visually match the left sidebar (glass column) */
+.md-sidebar--secondary, .md-table-of-contents, .md-nav--secondary {
+  /* match primary sidebar visuals */
+  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06)) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  box-shadow: 0 18px 40px rgba(2,6,23,0.06) !important;
+  padding: 1rem !important;
+  width: 260px !important;
+}
+
+/* Unify inner layout to match left: full-height rounded column */
+.md-sidebar--secondary .md-sidebar__inner,
+.md-sidebar--secondary .md-sidebar__scrollwrap,
+.md-table-of-contents .md-sidebar__inner,
+.md-table-of-contents .md-sidebar__scrollwrap {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* Remove card-like mini-panels in right sidebar, use simple glass links */
+.md-sidebar--secondary .md-nav__list > li,
+.md-sidebar--secondary .md-nav__list > li > .md-nav__link,
+.md-table-of-contents .md-nav__list > li,
+.md-table-of-contents .md-nav__list > li > .md-nav__link {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0.25rem 0 !important;
+  border-radius: 0.5rem !important;
+  /* use full width of the sidebar and include padding in box size */
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 0.35rem 0.6rem !important;
+}
+
+/* Match left nav link styling: bold, clear color, subtle hover */
+.md-sidebar--secondary .md-nav__link,
+.md-table-of-contents .md-nav__link {
+  color: var(--text) !important;
+  font-weight: 600 !important;
+  display: block !important;
+  padding: 0.6rem 0.6rem !important;
+  text-decoration: none !important;
+}
+
+.md-sidebar--secondary .md-nav__link:hover,
+.md-table-of-contents .md-nav__link:hover {
+  background: linear-gradient(90deg, rgba(79,123,255,0.06), rgba(125,182,255,0.03)) !important;
+  color: #052235 !important;
+}
+
+/* Allow TOC and right-nav text to use more horizontal space and wrap if needed */
+.md-sidebar--secondary .md-nav__link,
+.md-table-of-contents .md-nav__link,
+.md-sidebar--secondary .md-nav__list .md-nav__link .md-ellipsis,
+.md-table-of-contents .md-nav__list .md-nav__link .md-ellipsis {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* Ensure ellipses container fills available width */
+.md-table-of-contents .md-ellipsis,
+.md-sidebar--secondary .md-ellipsis { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+
+/* If there are inner card wrappers, force them to use full width */
+.md-sidebar--secondary .md-nav__list > li > * { width: 100% !important; box-sizing: border-box !important; }
+
+/* Stronger enforcement: make sure the md-nav (secondary) root and all nested
+   wrappers/cards use the full width of the right sidebar. This overrides
+   theme defaults and any preceding rules that might constrain inner cards. */
+.md-sidebar--secondary .md-nav.md-nav--secondary,
+.md-sidebar--secondary .md-nav--secondary,
+.md-sidebar--secondary .md-nav.md-nav--secondary .md-nav__list,
+.md-sidebar--secondary .md-nav--secondary .md-nav__list > li,
+.md-sidebar--secondary .md-nav--secondary .md-nav__list > li > * {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
+
+.md-sidebar--secondary .md-nav--secondary .md-card,
+.md-sidebar--secondary .md-nav--secondary .md-admonition,
+.md-sidebar--secondary .md-nav--secondary .md-nav__link > * {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
+
+/* Make sure inner ellipsis/text containers can grow to full width */
+.md-sidebar--secondary .md-nav--secondary .md-ellipsis,
+.md-sidebar--secondary .md-nav--secondary .md-nav__link .md-ellipsis {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  white-space: normal !important;
+}
+
+/* Show chevron for items that have nested navs (drop-down parents) in right TOC */
+.md-sidebar--secondary .md-nav__item > .md-nav__link::after,
+.md-table-of-contents .md-nav__item > .md-nav__link::after {
+  content: '›';
+  float: right;
+  transform: rotate(0deg);
+  transition: transform .18s ease, opacity .18s ease;
+  opacity: 0.9;
+  color: var(--muted);
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+/* Rotate chevron when section active/open */
+.md-sidebar--secondary .md-nav__item--active > .md-nav__link::after,
+.md-table-of-contents .md-nav__item--active > .md-nav__link::after {
+  transform: rotate(90deg);
+  color: var(--accent);
+}
+
+/* Indent nested lists and style them as collapsible groups */
+.md-sidebar--secondary .md-nav .md-nav__list,
+.md-table-of-contents .md-nav .md-nav__list {
+  padding-left: 0.6rem !important;
+  margin-top: 0.25rem !important;
+}
+
+.md-sidebar--secondary .md-nav .md-nav__item .md-nav__link,
+.md-table-of-contents .md-nav .md-nav__item .md-nav__link {
+  padding-left: 0.9rem !important;
+  font-size: 14px !important;
+  color: var(--muted) !important;
+}
+
+/* Provide subtle background for active nested items */
+.md-sidebar--secondary .md-nav .md-nav__item--active > .md-nav__link,
+.md-table-of-contents .md-nav .md-nav__item--active > .md-nav__link {
+  background: linear-gradient(90deg, rgba(79,123,255,0.08), rgba(125,182,255,0.04)) !important;
+  color: #052235 !important;
+  font-weight: 700 !important;
+}
+
+/* Ensure the chevron does not cover text on narrow screens */
+@media (max-width: 900px) {
+  .md-sidebar--secondary .md-nav__link::after,
+  .md-table-of-contents .md-nav__link::after { display: none !important; }
+}
+
+/* Right sidebar header/title box */
+.md-sidebar--secondary .md-nav__title,
+.md-table-of-contents .md-nav__title {
+  background: rgba(255,255,255,0.14) !important;
+  padding: 0.6rem 0.8rem !important;
+  border-radius: 0.75rem !important;
+  margin-bottom: 0.5rem !important;
+  color: var(--muted) !important;
+}
+
+/* Ensure TOC links use same ellipsis/truncation behavior */
+.md-table-of-contents .md-ellipsis { display: block; }
+
+/* Make right sidebar sticky and aligned visually with left */
+.md-sidebar--secondary {
+  position: sticky !important;
+  top: 1.5rem !important;
+  height: calc(100vh - 3rem) !important;
+  overflow: auto !important;
+}
+
+/* Improved left/right vertical menus (glass cards, spacing, hover, scrollbar) */
+.md-sidebar--primary {
+  width: 240px !important;
+  padding: 0.75rem !important;
+  position: sticky !important;
+  top: 1.25rem !important;
+  height: calc(100vh - 2.5rem) !important;
+  overflow: auto !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)) !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.08) !important;
+}
+
+.md-nav--primary .md-nav__list { display:block !important; }
+
+.md-nav--primary .md-nav__link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  padding: 0.12rem 0.5rem !important; /* minimal vertical spacing */
+  color: var(--text) !important;
+  background: transparent !important;
+  border-radius: 0.45rem !important;
+  transition: transform .12s ease, background .12s ease !important;
+  margin-bottom: 0.06rem !important;
+  font-size: 15px !important;
+}
+.md-nav--primary .md-nav__link:hover {
+  transform: translateX(2px) !important;
+  background: linear-gradient(90deg, rgba(79,123,255,0.05), rgba(125,182,255,0.02)) !important;
+  color: #052235 !important;
+  box-shadow: inset 0 -1px rgba(0,0,0,0.02) !important;
+}
+.md-nav--primary .md-nav__link.md-nav__link--active {
+  background: linear-gradient(90deg, rgba(79,123,255,0.10), rgba(125,182,255,0.04)) !important;
+  color: #052235 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 12px rgba(2,6,23,0.05) !important;
+}
+
+/* Remove extra spacing on list items and tighten list padding */
+.md-nav--primary .md-nav__link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.3rem !important;
+  padding: 0.12rem 0.5rem !important; /* minimal vertical spacing */
+  color: var(--text) !important;
+  background: transparent !important;
+  border-radius: 0.45rem !important;
+  transition: transform .12s ease, background .12s ease !important;
+  margin-bottom: 0.06rem !important; /* very small gap between items */
+  font-size: 14px !important;
+  line-height: 1.15 !important;
+  min-height: 28px !important; /* prevent text overlap */
+  padding-left: 0.45rem !important; /* ensure icon and text don't touch edge */
+}
+.md-nav--primary .md-nav__item,
+.md-nav--primary .md-nav__item * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.md-nav--primary .md-nav__link {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  min-height: 0 !important; 
+  line-height: 1.05 !important; /* reduced line-height for minimal spacing */
+  height: auto !important;
+  margin: 0 !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.md-nav--primary .md-nav__toggle,
+.md-nav--primary .md-nav__link .md-nav__icon {
+  height: 18px !important;
+  width: 18px !important;
+}
+
+.md-nav--primary .md-nav__link .md-nav__icon { margin-right: 6px !important; }
+
+.md-nav--primary .md-nav__link { padding-top: 4px !important; padding-bottom: 4px !important; }
+
+/* small icon badge for left links (keeps existing icons visible) */
+.md-nav__icon {
+  width: 22px !important;
+  height: 22px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255,255,255,0.03) !important;
+  border-radius: 6px !important;
+  color: var(--accent) !important;
+  margin-right: 8px !important; /* adjusted margin for icon spacing */
+}
+
+/* ------------------------------------------------------------------
+   Adjustable sidebar widths
+   - Use CSS variables to set left/right sidebar widths site-wide
+   - Defaults provided; override by setting the variables in another stylesheet
+   - Responsive: on narrow screens sidebars revert to overlay behavior
+  ------------------------------------------------------------------ */
+:root {
+  /* sensible defaults, override in custom CSS or inline styles as needed */
+  --omath-left-sidebar-width: 260px;
+  --omath-right-sidebar-width: 320px;
+}
+
+/* Apply widths on desktop where sidebars are persistent */
+@media (min-width: 960px) {
+  /* Desktop layout defaults were variable-based; override with a strict
+     three-column grid (left 1/5, middle 3/5, right 1/5) for precise layout.
+     This gives left and right panels fixed percentage widths and centers
+     the main content at 60% of the viewport width. */
+  .md-main {
+    display: grid !important;
+    grid-template-columns: 20% 60% 20% !important;
+    grid-template-areas: "left main right" !important;
+    align-items: start !important;
+    gap: 1rem !important;
+    width: 100% !important;
+  }
+
+  .md-sidebar--primary {
+    grid-area: left !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    position: relative !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .md-content,
+  .md-main__inner {
+    grid-area: main !important;
+    margin: 0 !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .md-sidebar--secondary {
+    grid-area: right !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    position: relative !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  /* Ensure nested structure (theme may nest secondary inside .md-main__inner)
+     participates in the grid by making .md-main__inner act as a transparent wrapper */
+  .md-main__inner { display: contents !important; }
+
+  /* More specific selectors to override later width rules that may appear
+     further down the stylesheet. These ensure the grid widths take effect. */
+  .md-main .md-sidebar--primary { width: 100% !important; grid-area: left !important; }
+  .md-main .md-sidebar--secondary { width: 100% !important; grid-area: right !important; }
+  .md-main .md-content { grid-area: main !important; width: 100% !important; }
+}
+
+/* On small screens, fallback to overlay/drawer behavior (no fixed widths) */
+@media (max-width: 959px) {
+  .md-sidebar--primary,
+  .md-sidebar--secondary {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    max-width: 100% !important;
+  }
+
+  .md-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* Extra safety: make sure wide-screen grid is reverted on very small screens */
+@media (max-width: 640px) {
+  .md-main { display: block !important; grid-template-columns: none !important; }
+  .md-sidebar--primary, .md-sidebar--secondary, .md-content { width: auto !important; }
+}
+
+.md-sidebar--secondary {
+  width: 260px !important;
+  padding: 1rem !important;
+  position: sticky !important;
+  top: 1.25rem !important;
+  height: calc(100vh - 2.5rem) !important;
+  overflow: auto !important;
+  border-radius: 1rem !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.04) !important;
+}
+
+.md-nav--secondary .md-nav__title { font-weight:700 !important; color: var(--muted) !important; font-size:14px !important; padding-bottom:.5rem !important; }
+
+.md-nav--secondary .md-nav__link {
+  padding: .45rem .75rem !important;
+  border-radius: .65rem !important;
+  color: var(--text) !important;
+  background: transparent !important;
+  margin-bottom: .4rem !important;
+  display: block !important;
+}
+.md-nav--secondary .md-nav__link:hover {
+  background: rgba(255,255,255,0.04) !important;
+  color: var(--text) !important;
+  transform: translateX(2px) !important;
+}
+
+/* Thin translucent scrollbar in sidebars */
+.md-sidebar__scrollwrap::-webkit-scrollbar, .md-sidebar--secondary::-webkit-scrollbar { width: 8px !important; }
+.md-sidebar__scrollwrap::-webkit-scrollbar-thumb, .md-sidebar--secondary::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18) !important; border-radius: 8px !important; }
+
+/* Compact logo card at top of left nav */
+.md-nav__title .md-logo { display:flex !important; align-items:center !important; gap:.5rem !important; padding:.6rem !important; border-radius:.85rem !important; background: rgba(255,255,255,0.06) !important; box-shadow: 0 8px 20px rgba(2,6,23,0.06) !important; margin-bottom:.8rem !important; }
+
+/* Responsive: collapse sidebars on small screens */
+@media (max-width: 900px) {
+  .md-sidebar--primary, .md-sidebar--secondary { width: auto !important; height: auto !important; position: static !important; box-shadow: none !important; border-radius: 0.6rem !important; }
+  .md-nav--primary .md-nav__link { padding: .9rem 1rem !important; }
+}
+
+/* Replace default SVG logo with repo image and style header/title like modern Apple presentation */
+.md-logo { 
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  display: inline-block !important;
+  background-image: url('/images/logos/omath_logo_nano.png') !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  padding: 0.4rem !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.08) !important;
+}
+
+/* Hide the inline SVG that MkDocs inserts inside the logo anchor */
+.md-logo svg { display: none !important; }
+
+/* Style the left-column site name to look like Apple presentation font: Poppins heavy, tight letter spacing */
+.md-nav__title, .md-header__title {
+  font-family: 'Poppins', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 700 !important;
+  color: #04203a !important;
+  letter-spacing: -0.6px !important;
+  font-size: 16px !important;
+  text-transform: none !important;
+}
+
+/* Left sidebar: make the logo fill the top area and hide the text label */
+.md-sidebar--primary .md-nav__title {
+  height: 140px !important;
+  padding: 0.6rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)) !important;
+  border-radius: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.md-sidebar--primary .md-nav__title .md-logo {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: auto !important;
+  background-size: cover !important;
+  background-position: center !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 12px 34px rgba(2,6,23,0.10) !important;
+}
+
+/* hide the textual label inside left nav title */
+.md-sidebar--primary .md-nav__title .md-ellipsis { display: none !important; }
+
+/* also hide small logo caption for mobile in left sidebar */
+.md-sidebar--primary .md-logo + .md-ellipsis { display:none !important; }
+
+/* Make the small logo caption next to image subtle */
+.md-nav__title .md-ellipsis, .md-header__title .md-ellipsis { display:inline-block !important; vertical-align:middle !important; margin-left:0.6rem !important; }
+
+/* Ensure header logo looks right on small screens */
+@media (max-width:900px) {
+  .md-logo { width:48px !important; height:48px !important; min-width:48px !important; }
+  .md-nav__title, .md-header__title { font-size:15px !important; }
+}
+
+/* Reorder header: hamburger (drawer) -> logo -> title */
+.md-header__inner { display:flex !important; align-items:center !important; }
+.md-header__button.md-icon[for="__drawer"] { order: 1 !important; margin-right: 8px !important; }
+.md-header__title { order: 2 !important; }
+
+/* Hide header logo to avoid duplicate logos across the top — keep only the left-panel logo */
+.md-header__button.md-logo { display: none !important; }
+
+/* Header logo: smaller, centered vertically between hamburger and title */
+.md-header__button.md-logo .md-logo, .md-header__button.md-logo { width:44px !important; height:44px !important; min-width:44px !important; padding:6px !important; border-radius:10px !important; }
+
+/* Left-panel logo: keep larger and inside the left card */
+.md-sidebar .md-nav__title .md-logo, .md-nav__title .md-logo { width:56px !important; height:56px !important; min-width:56px !important; padding:8px !important; }
+
+/* Tweak title placement so label sits nicely next to logo */
+.md-header__title { display:flex !important; align-items:center !important; gap:8px !important; }
+
+/* Ensure search icon stays at the right end as normal */
+.md-header__button.md-icon[for="__search"] { order: 4 !important; margin-left: auto !important; }
+
 /* Header bar - make the title legible */
 .md-header {
   background: rgba(255,255,255,0.06);
@@ -197,6 +682,61 @@ a:hover { color: #cfe8ff; }
   padding: 6px;
   box-shadow: 0 6px 18px rgba(2,6,23,0.08);
   color: var(--text);
+}
+
+/* Replace SVG logos with project PNG and style title (header + left nav) */
+/* Hide original inline SVGs to avoid duplicates */
+.md-header__button.md-logo svg,
+.md-nav__title .md-logo svg {
+  display: none !important;
+}
+
+/* Header: inject PNG logo between hamburger and title using ::before on title */
+.md-header__title::before {
+  content: '';
+  display: inline-block;
+  width: 46px;
+  height: 46px;
+  margin-right: 12px;
+  vertical-align: middle;
+  background-image: url('../images/logos/omath_logo_nano.png');
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(2,6,23,0.12);
+}
+
+/* Header title: Apple-like presentation font and color */
+.md-header__title, .md-header__title .md-ellipsis {
+  font-family: 'Poppins', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 18px !important;
+  letter-spacing: -0.02em !important;
+  color: #052235 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.02) !important;
+}
+
+/* Left nav: replace compact logo with PNG and style label */
+.md-nav__title .md-logo { /* keep existing layout but show background image */
+  width: 58px !important;
+  height: 58px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-image: url('../images/logos/omath_logo_nano.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 20px rgba(2,6,23,0.06) !important;
+  margin-right: 10px !important;
+}
+
+.md-nav__title { /* style left panel title text */
+  font-family: 'Poppins', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  color: #052235 !important;
+  padding: 0.6rem 0.6rem !important;
 }
 
 /* Increase nav item font size and spacing for touch targets */

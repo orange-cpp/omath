@@ -194,7 +194,7 @@ using UnrealCamera = omath::unreal_engine::Camera;
 
 Each engine has its own coordinate system conventions automatically handled.
 
-See: Engine-specific docs in [engines/](engines/) folder
+See: Engine-specific docs in [engines/index.md](engines/index.md) folder
 
 ---
 
@@ -287,8 +287,8 @@ See: [Pattern Scanning](utility/pattern_scan.md)
 Now that you have the basics, explore these topics:
 
 1. **[API Reference](index.md)** - Complete API documentation
-2. **[Examples](../examples/)** - Working code examples
-3. **[Engine-Specific Features](engines/)** - Deep dive into game engine support
+2. **[Examples](examples/index.md)** - Working code examples
+3. **[Engine-Specific Features](engines/index.md)** - Deep dive into game engine support
 4. **[Advanced Topics](#)** - Performance optimization, custom traits, etc.
 
 ---
