@@ -1,0 +1,33 @@
+{# Override footer to inject final scss->cmake replacer after all scripts #}
+<script>
+  (function(){
+    'use strict';
+    function replaceScssToCmake(){
+      try{
+        var els = document.querySelectorAll('[class*=\"language-scss\"]');
+        for(var i=0;i<els.length;i++){
+          var el = els[i];
+          try{
+            el.className = el.className.replace(/language-scss/g, 'language-cmake');
+            if(el.classList && !el.classList.contains('hljs')) el.classList.add('hljs');
+            if(window.hljs){
+              try{
+                var txt = el.textContent || '';
+                if(hljs.getLanguage && hljs.getLanguage('cmake')){
+                  var r = hljs.highlight(txt, { language: 'cmake', ignoreIllegals: true });
+                  el.innerHTML = r.value;
+                } else if(hljs.highlightElement){ el.textContent = txt; hljs.highlightElement(el); }
+              }catch(e){}
+            }
+          }catch(e){}
+        }
+      }catch(e){}
+    }
+
+    // run once after load
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', replaceScssToCmake); else replaceScssToCmake();
+    // also run a very short delayed pass to catch late scripts
+    setTimeout(replaceScssToCmake, 120);
+    setTimeout(replaceScssToCmake, 600);
+  })();
+</script>
