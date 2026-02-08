@@ -8,6 +8,126 @@
 #include <print>
 #include <random>
 
+TEST(unit_test_unity_engine, UnitsToCentimeters_BasicValues)
+{
+    EXPECT_FLOAT_EQ(omath::unity_engine::units_to_centimeters(0.0f), 0.0f);
+    EXPECT_FLOAT_EQ(omath::unity_engine::units_to_centimeters(1.0f), 0.01f);
+    EXPECT_FLOAT_EQ(omath::unity_engine::units_to_centimeters(100.0f), 1.0f);
+    EXPECT_FLOAT_EQ(omath::unity_engine::units_to_centimeters(-250.0f), -2.5f);
+}
+
+TEST(unit_test_unity_engine, UnitsToMeters_BasicValues)
+{
+    EXPECT_DOUBLE_EQ(omath::unity_engine::units_to_meters(0.0), 0.0);
+    EXPECT_DOUBLE_EQ(omath::unity_engine::units_to_meters(1.0), 1.0);
+    EXPECT_DOUBLE_EQ(omath::unity_engine::units_to_meters(123.456), 123.456);
+    EXPECT_DOUBLE_EQ(omath::unity_engine::units_to_meters(-42.0), -42.0);
+}
+
+TEST(unit_test_unity_engine, UnitsToKilometers_BasicValues)
+{
+    EXPECT_NEAR(omath::unity_engine::units_to_kilometers(0.0), 0.0, 1e-15);
+    EXPECT_NEAR(omath::unity_engine::units_to_kilometers(1.0), 0.001, 1e-15);
+    EXPECT_NEAR(omath::unity_engine::units_to_kilometers(1000.0), 1.0, 1e-12);
+    EXPECT_NEAR(omath::unity_engine::units_to_kilometers(-2500.0), -2.5, 1e-12);
+}
+
+TEST(unit_test_unity_engine, CentimetersToUnits_BasicValues)
+{
+    EXPECT_FLOAT_EQ(omath::unity_engine::centimeters_to_units(0.0f), 0.0f);
+    EXPECT_FLOAT_EQ(omath::unity_engine::centimeters_to_units(0.01f), 1.0f);
+    EXPECT_FLOAT_EQ(omath::unity_engine::centimeters_to_units(1.0f), 100.0f);
+    EXPECT_FLOAT_EQ(omath::unity_engine::centimeters_to_units(-2.5f), -250.0f);
+}
+
+TEST(unit_test_unity_engine, MetersToUnits_BasicValues)
+{
+    EXPECT_DOUBLE_EQ(omath::unity_engine::meters_to_units(0.0), 0.0);
+    EXPECT_DOUBLE_EQ(omath::unity_engine::meters_to_units(1.0), 1.0);
+    EXPECT_DOUBLE_EQ(omath::unity_engine::meters_to_units(123.456), 123.456);
+    EXPECT_DOUBLE_EQ(omath::unity_engine::meters_to_units(-42.0), -42.0);
+}
+
+TEST(unit_test_unity_engine, KilometersToUnits_BasicValues)
+{
+    EXPECT_NEAR(omath::unity_engine::kilometers_to_units(0.0), 0.0, 1e-12);
+    EXPECT_NEAR(omath::unity_engine::kilometers_to_units(0.001), 1.0, 1e-12);
+    EXPECT_NEAR(omath::unity_engine::kilometers_to_units(1.0), 1000.0, 1e-9);
+    EXPECT_NEAR(omath::unity_engine::kilometers_to_units(-2.5), -2500.0, 1e-9);
+}
+
+TEST(unit_test_unity_engine, RoundTrip_UnitsCentimeters)
+{
+    constexpr float units_f = 12345.678f;
+    constexpr auto cm_f = omath::unity_engine::units_to_centimeters(units_f);
+    constexpr auto units_f_back = omath::unity_engine::centimeters_to_units(cm_f);
+    EXPECT_NEAR(units_f_back, units_f, 1e-3f);
+
+    constexpr double units_d = -987654.321;
+    constexpr auto cm_d = omath::unity_engine::units_to_centimeters(units_d);
+    constexpr auto units_d_back = omath::unity_engine::centimeters_to_units(cm_d);
+    EXPECT_NEAR(units_d_back, units_d, 1e-9);
+}
+
+TEST(unit_test_unity_engine, RoundTrip_UnitsMeters)
+{
+    constexpr float units_f = 5432.125f;
+    constexpr auto m_f = omath::unity_engine::units_to_meters(units_f);
+    constexpr auto units_f_back = omath::unity_engine::meters_to_units(m_f);
+    EXPECT_FLOAT_EQ(units_f_back, units_f);
+
+    constexpr double units_d = -123456.789;
+    constexpr auto m_d = omath::unity_engine::units_to_meters(units_d);
+    constexpr auto units_d_back = omath::unity_engine::meters_to_units(m_d);
+    EXPECT_DOUBLE_EQ(units_d_back, units_d);
+}
+
+TEST(unit_test_unity_engine, RoundTrip_UnitsKilometers)
+{
+    constexpr float units_f = 100000.0f;
+    constexpr auto km_f = omath::unity_engine::units_to_kilometers(units_f);
+    constexpr auto units_f_back = omath::unity_engine::kilometers_to_units(km_f);
+    EXPECT_NEAR(units_f_back, units_f, 1e-2f);
+
+    constexpr double units_d = -7654321.123;
+    constexpr auto km_d = omath::unity_engine::units_to_kilometers(units_d);
+    constexpr auto units_d_back = omath::unity_engine::kilometers_to_units(km_d);
+    EXPECT_NEAR(units_d_back, units_d, 1e-6);
+}
+
+TEST(unit_test_unity_engine, ConversionChainConsistency)
+{
+    constexpr double units = 424242.42;
+
+    constexpr auto cm_direct = omath::unity_engine::units_to_centimeters(units);
+    constexpr auto cm_via_units = units / 100.0;
+    EXPECT_NEAR(cm_direct, cm_via_units, 1e-12);
+
+    constexpr auto km_direct = omath::unity_engine::units_to_kilometers(units);
+    constexpr auto km_via_meters = omath::unity_engine::units_to_meters(units) / 1000.0;
+    EXPECT_NEAR(km_direct, km_via_meters, 1e-12);
+}
+
+TEST(unit_test_unity_engine, SupportsFloatAndDouble)
+{
+    static_assert(std::is_same_v<decltype(omath::unity_engine::units_to_centimeters(1.0f)), float>);
+    static_assert(std::is_same_v<decltype(omath::unity_engine::units_to_centimeters(1.0)), double>);
+    static_assert(std::is_same_v<decltype(omath::unity_engine::meters_to_units(1.0f)), float>);
+    static_assert(std::is_same_v<decltype(omath::unity_engine::kilometers_to_units(1.0)), double>);
+}
+
+TEST(unit_test_unity_engine, ConstexprConversions)
+{
+    constexpr double units = 1000.0;
+    constexpr double cm = omath::unity_engine::units_to_centimeters(units);
+    constexpr double m = omath::unity_engine::units_to_meters(units);
+    constexpr double km = omath::unity_engine::units_to_kilometers(units);
+
+    static_assert(cm == 10.0, "units_to_centimeters constexpr failed");
+    static_assert(m == 1000.0, "units_to_meters constexpr failed");
+    static_assert(km == 1.0, "units_to_kilometers constexpr failed");
+}
+
 TEST(unit_test_unity_engine, ForwardVector)
 {
     const auto forward = omath::unity_engine::forward_vector({});

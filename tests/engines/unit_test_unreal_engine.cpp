@@ -239,3 +239,126 @@ TEST(unit_test_unreal_engine, loook_at_random_z_axis)
     }
     EXPECT_LE(failed_points, 100);
 }
+TEST(unit_test_unreal_engine, UnitsToCentimeters_BasicValues)
+{
+    EXPECT_FLOAT_EQ(omath::unreal_engine::units_to_centimeters(0.0f), 0.0f);
+    EXPECT_FLOAT_EQ(omath::unreal_engine::units_to_centimeters(1.0f), 1.0f);
+    EXPECT_FLOAT_EQ(omath::unreal_engine::units_to_centimeters(250.0f), 250.0f);
+    EXPECT_FLOAT_EQ(omath::unreal_engine::units_to_centimeters(-42.5f), -42.5f);
+}
+
+TEST(unit_test_unreal_engine, UnitsToMeters_BasicValues)
+{
+    EXPECT_NEAR(omath::unreal_engine::units_to_meters(0.0), 0.0, 1e-15);
+    EXPECT_NEAR(omath::unreal_engine::units_to_meters(1.0), 0.01, 1e-15);
+    EXPECT_NEAR(omath::unreal_engine::units_to_meters(100.0), 1.0, 1e-12);
+    EXPECT_NEAR(omath::unreal_engine::units_to_meters(-250.0), -2.5, 1e-12);
+}
+
+TEST(unit_test_unreal_engine, UnitsToKilometers_BasicValues)
+{
+    EXPECT_NEAR(omath::unreal_engine::units_to_kilometers(0.0), 0.0, 1e-18);
+    EXPECT_NEAR(omath::unreal_engine::units_to_kilometers(1.0), 0.00001, 1e-18);
+    EXPECT_NEAR(omath::unreal_engine::units_to_kilometers(100000.0), 1.0, 1e-12);
+    EXPECT_NEAR(omath::unreal_engine::units_to_kilometers(-250000.0), -2.5, 1e-12);
+}
+
+TEST(unit_test_unreal_engine, CentimetersToUnits_BasicValues)
+{
+    EXPECT_FLOAT_EQ(omath::unreal_engine::centimeters_to_units(0.0f), 0.0f);
+    EXPECT_FLOAT_EQ(omath::unreal_engine::centimeters_to_units(1.0f), 1.0f);
+    EXPECT_FLOAT_EQ(omath::unreal_engine::centimeters_to_units(250.0f), 250.0f);
+    EXPECT_FLOAT_EQ(omath::unreal_engine::centimeters_to_units(-42.5f), -42.5f);
+}
+
+TEST(unit_test_unreal_engine, MetersToUnits_BasicValues)
+{
+    EXPECT_NEAR(omath::unreal_engine::meters_to_units(0.0), 0.0, 1e-12);
+    EXPECT_NEAR(omath::unreal_engine::meters_to_units(0.01), 1.0, 1e-12);
+    EXPECT_NEAR(omath::unreal_engine::meters_to_units(1.0), 100.0, 1e-9);
+    EXPECT_NEAR(omath::unreal_engine::meters_to_units(-2.5), -250.0, 1e-9);
+}
+
+TEST(unit_test_unreal_engine, KilometersToUnits_BasicValues)
+{
+    EXPECT_NEAR(omath::unreal_engine::kilometers_to_units(0.0), 0.0, 1e-9);
+    EXPECT_NEAR(omath::unreal_engine::kilometers_to_units(0.00001), 1.0, 1e-9);
+    EXPECT_NEAR(omath::unreal_engine::kilometers_to_units(1.0), 100000.0, 1e-6);
+    EXPECT_NEAR(omath::unreal_engine::kilometers_to_units(-2.5), -250000.0, 1e-3);
+}
+
+TEST(unit_test_unreal_engine, RoundTrip_UnitsCentimeters)
+{
+    constexpr float units_f = 12345.678f;
+    constexpr auto cm_f = omath::unreal_engine::units_to_centimeters(units_f);
+    constexpr auto units_f_back = omath::unreal_engine::centimeters_to_units(cm_f);
+    EXPECT_FLOAT_EQ(units_f_back, units_f);
+
+    constexpr double units_d = -987654.321;
+    constexpr auto cm_d = omath::unreal_engine::units_to_centimeters(units_d);
+    constexpr auto units_d_back = omath::unreal_engine::centimeters_to_units(cm_d);
+    EXPECT_DOUBLE_EQ(units_d_back, units_d);
+}
+
+TEST(unit_test_unreal_engine, RoundTrip_UnitsMeters)
+{
+    constexpr float units_f = 5432.125f;
+    constexpr auto m_f = omath::unreal_engine::units_to_meters(units_f);
+    constexpr auto units_f_back = omath::unreal_engine::meters_to_units(m_f);
+    EXPECT_NEAR(units_f_back, units_f, 1e-3f);
+
+    constexpr double units_d = -123456.789;
+    constexpr auto m_d = omath::unreal_engine::units_to_meters(units_d);
+    constexpr auto units_d_back = omath::unreal_engine::meters_to_units(m_d);
+    EXPECT_NEAR(units_d_back, units_d, 1e-9);
+}
+
+TEST(unit_test_unreal_engine, RoundTrip_UnitsKilometers)
+{
+    constexpr float units_f = 100000.0f;
+    constexpr auto km_f = omath::unreal_engine::units_to_kilometers(units_f);
+    constexpr auto units_f_back = omath::unreal_engine::kilometers_to_units(km_f);
+    EXPECT_NEAR(units_f_back, units_f, 1e-2f);
+
+    constexpr double units_d = -7654321.123;
+    constexpr auto km_d = omath::unreal_engine::units_to_kilometers(units_d);
+    constexpr auto units_d_back = omath::unreal_engine::kilometers_to_units(km_d);
+    EXPECT_NEAR(units_d_back, units_d, 1e-6);
+}
+
+TEST(unit_test_unreal_engine, ConversionChainConsistency)
+{
+    constexpr double units = 424242.42;
+
+    constexpr auto cm_direct = omath::unreal_engine::units_to_centimeters(units);
+    constexpr auto cm_expected = units; // 1 uu == 1 cm
+    EXPECT_NEAR(cm_direct, cm_expected, 1e-12);
+
+    constexpr auto m_direct = omath::unreal_engine::units_to_meters(units);
+    constexpr auto m_via_cm = cm_direct / 100.0;
+    EXPECT_NEAR(m_direct, m_via_cm, 1e-12);
+
+    constexpr auto km_direct = omath::unreal_engine::units_to_kilometers(units);
+    constexpr auto km_via_m = m_direct / 1000.0;
+    EXPECT_NEAR(km_direct, km_via_m, 1e-15);
+}
+
+TEST(unit_test_unreal_engine, SupportsFloatAndDouble)
+{
+    static_assert(std::is_same_v<decltype(omath::unreal_engine::units_to_centimeters(1.0f)), float>);
+    static_assert(std::is_same_v<decltype(omath::unreal_engine::units_to_centimeters(1.0)), double>);
+    static_assert(std::is_same_v<decltype(omath::unreal_engine::meters_to_units(1.0f)), float>);
+    static_assert(std::is_same_v<decltype(omath::unreal_engine::kilometers_to_units(1.0)), double>);
+}
+
+TEST(unit_test_unreal_engine, ConstexprConversions)
+{
+    constexpr double units = 100000.0;
+    constexpr double cm = omath::unreal_engine::units_to_centimeters(units);
+    constexpr double m = omath::unreal_engine::units_to_meters(units);
+    constexpr double km = omath::unreal_engine::units_to_kilometers(units);
+
+    static_assert(cm == 100000.0, "units_to_centimeters constexpr failed");
+    static_assert(m == 1000.0, "units_to_meters constexpr failed");
+    static_assert(km == 1.0, "units_to_kilometers constexpr failed");
+}
