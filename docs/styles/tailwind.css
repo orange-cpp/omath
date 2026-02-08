@@ -179,9 +179,10 @@ a:hover { color: #cfe8ff; }
   background: rgba(0,0,0,0.02) !important;
 }
 
-/* Ensure overlay does not block pointer events to drawer links */
+/* Ensure overlay sits under the drawer but remains clickable to close */
 .md-overlay {
-  pointer-events: none !important;
+  pointer-events: auto !important;
+  z-index: 9988 !important; /* sit below drawer */
 }
 
 /* Allow drawer itself and its children to receive pointer events */
@@ -203,6 +204,22 @@ a:hover { color: #cfe8ff; }
   font-size: 18px !important;
   padding-top: 14px !important;
   padding-bottom: 14px !important;
+}
+
+/* Ensure drawer text is always visible and not clipped by decorative text-fill/background-clip */
+.md-drawer, .md-drawer *, .md-drawer a, .md-drawer a * {
+  color: var(--text) !important;
+  -webkit-text-fill-color: initial !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  text-shadow: none !important;
+  z-index: 100001 !important;
+}
+
+/* Make sure drawer and its links receive pointer events and are above overlays */
+.md-drawer {
+  pointer-events: auto !important;
+  z-index: 100000 !important;
 }
 
 
