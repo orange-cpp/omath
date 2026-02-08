@@ -993,10 +993,49 @@ a:hover { color: #cfe8ff; }
   ------------------------------------------------------------------ */
 .md-sidebar--primary .md-nav--primary .md-nav__item.omath-open > .md-nav__list,
 .md-sidebar--primary .md-nav--primary .md-nav__item[aria-expanded="true"] > .md-nav__list,
-.md-sidebar--primary .md-nav--primary .md-nav__item.md-nav__item--active > .md-nav__list {
+.md-sidebar--primary .md-nav--primary .md-nav__item.md-nav__item--active > .md-nav__list,
+/* also reveal when the toggle/link itself is expanded or marked open */
+.md-sidebar--primary .md-nav--primary .md-nav__link[aria-expanded="true"] + .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__link.md-nav__link--open + .md-nav__list,
+.md-sidebar--primary .md-nav--primary .md-nav__item.md-nav__item--open > .md-nav__list {
   display: block !important;
   max-height: 1000px !important;
   height: auto !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  overflow: visible !important;
+  margin: 0.2rem 0 !important;
+  padding-left: 0.5rem !important;
+}
+
+/* Ensure nav links and toggles are clickable (avoid any accidental pointer-events: none) */
+.md-sidebar--primary .md-nav__link,
+.md-sidebar--primary .md-nav__toggle,
+.md-sidebar--primary .md-nav__item {
+  pointer-events: auto !important;
+}
+
+/* Additional reveal selectors to match other theme patterns (aria-hidden toggles,
+   list-level open classes). Some themes toggle aria-hidden on the list rather
+   than adding classes to the parent; cover those cases here. */
+.md-sidebar--primary .md-nav--primary .md-nav__list[aria-hidden="false"],
+.md-sidebar--primary .md-nav--primary .md-nav__list.open,
+.md-sidebar--primary .md-nav--primary .md-nav__list.md-nav__list--open,
+.md-sidebar--primary .md-nav--primary .md-nav__list[hidden="false"] {
+  display: block !important;
+  max-height: 1000px !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  overflow: visible !important;
+}
+
+/* Reveal nested lists when the checkbox toggle is checked (MkDocs theme uses
+   an input[type=checkbox] before the label/nav). Cover both adjacent and
+   general sibling patterns so we match the generated structure. */
+.md-sidebar--primary .md-nav--primary input.md-nav__toggle:checked + label + nav .md-nav__list,
+.md-sidebar--primary .md-nav--primary input.md-nav__toggle:checked ~ nav .md-nav__list {
+  display: block !important;
+  max-height: 1000px !important;
   opacity: 1 !important;
   pointer-events: auto !important;
   overflow: visible !important;
