@@ -1,0 +1,24 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": " Unit Tests (Debug)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/out/Debug/unit_tests",
+            "args": [],
+            "cwd": "${workspaceRoot}"
+        },
+        {
+            "name": " Unit Tests (Release)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/out/Release/unit_tests",
+            "args": [],
+            "cwd": "${workspaceRoot}"
+        }
+    ]
+}
