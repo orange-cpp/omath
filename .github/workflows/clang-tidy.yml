@@ -1,0 +1,63 @@
+name: Clang-Tidy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: clang-tidy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  clang-tidy:
+    name: Clang-Tidy Analysis
+    runs-on: ubuntu-latest
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    steps:
+      - name: Install toolchain
+        shell: bash
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          sudo add-apt-repository -y "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main"
+          sudo apt-get update
+          sudo apt-get install -y git build-essential cmake ninja-build \
+                 zip unzip curl pkg-config ca-certificates \
+                 clang-21 lld-21 libc++-21-dev libc++abi-21-dev \
+                 clang-tidy-21
+          sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
+          sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: |
+          cmake --preset linux-release-vcpkg \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=ON \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+
+      - name: Run clang-tidy
+        shell: bash
+        run: |
+          find source include \( -name '*.cpp' -o -name '*.hpp' \) -print0 | \
+            xargs -0 clang-tidy -p cmake-build/build/linux-release-vcpkg
