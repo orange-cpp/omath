@@ -12,3 +12,4 @@ pixi.lock
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+/site/
