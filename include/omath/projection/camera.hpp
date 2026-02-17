@@ -80,59 +80,93 @@ namespace omath::projection
         {
             m_view_angles = TraitClass::calc_look_at_angle(m_origin, target);
             m_view_projection_matrix = std::nullopt;
+            m_view_matrix = std::nullopt;
         }
 
-    protected:
-        [[nodiscard]] Mat4X4Type calc_view_projection_matrix() const noexcept
+        [[nodiscard]]
+        Vector3<float> get_forward() const noexcept
         {
-            return TraitClass::calc_projection_matrix(m_field_of_view, m_view_port, m_near_plane_distance,
-                                                      m_far_plane_distance)
-                   * TraitClass::calc_view_matrix(m_view_angles, m_origin);
+            const auto& view_matrix = get_view_matrix();
+            return {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
         }
 
-    public:
+        [[nodiscard]]
+        Vector3<float> get_right() const noexcept
+        {
+            const auto& view_matrix = get_view_matrix();
+            return {view_matrix[0, 0], view_matrix[0, 1], view_matrix[0, 2]};
+        }
+
+        [[nodiscard]]
+        Vector3<float> get_up() const noexcept
+        {
+            const auto& view_matrix = get_view_matrix();
+            return {view_matrix[1, 0], view_matrix[1, 1], view_matrix[1, 2]};
+        }
+
         [[nodiscard]] const Mat4X4Type& get_view_projection_matrix() const noexcept
         {
             if (!m_view_projection_matrix.has_value())
-                m_view_projection_matrix = calc_view_projection_matrix();
+                m_view_projection_matrix = get_projection_matrix() * get_view_matrix();
 
             return m_view_projection_matrix.value();
+        }
+
+        [[nodiscard]] const Mat4X4Type& get_view_matrix() const noexcept
+        {
+            if (!m_view_matrix.has_value())
+                m_view_matrix = TraitClass::calc_view_matrix(m_view_angles, m_origin);
+
+            return m_view_matrix.value();
+        }
+        [[nodiscard]] const Mat4X4Type& get_projection_matrix() const noexcept
+        {
+            if (!m_projection_matrix.has_value())
+                m_projection_matrix = TraitClass::calc_projection_matrix(m_field_of_view, m_view_port,
+                                                                         m_near_plane_distance, m_far_plane_distance);
+
+            return m_projection_matrix.value();
         }
 
         void set_field_of_view(const FieldOfView& fov) noexcept
         {
             m_field_of_view = fov;
             m_view_projection_matrix = std::nullopt;
+            m_projection_matrix = std::nullopt;
         }
 
         void set_near_plane(const float near) noexcept
         {
             m_near_plane_distance = near;
             m_view_projection_matrix = std::nullopt;
+            m_projection_matrix = std::nullopt;
         }
 
         void set_far_plane(const float far) noexcept
         {
             m_far_plane_distance = far;
             m_view_projection_matrix = std::nullopt;
+            m_projection_matrix = std::nullopt;
         }
 
         void set_view_angles(const ViewAnglesType& view_angles) noexcept
         {
             m_view_angles = view_angles;
             m_view_projection_matrix = std::nullopt;
+            m_view_matrix = std::nullopt;
         }
 
         void set_origin(const Vector3<float>& origin) noexcept
         {
             m_origin = origin;
             m_view_projection_matrix = std::nullopt;
+            m_view_matrix = std::nullopt;
         }
-
         void set_view_port(const ViewPort& view_port) noexcept
         {
             m_view_port = view_port;
             m_view_projection_matrix = std::nullopt;
+            m_projection_matrix = std::nullopt;
         }
 
         [[nodiscard]] const FieldOfView& get_field_of_view() const noexcept
@@ -283,7 +317,8 @@ namespace omath::projection
         Angle<float, 0.f, 180.f, AngleFlags::Clamped> m_field_of_view;
 
         mutable std::optional<Mat4X4Type> m_view_projection_matrix;
-
+        mutable std::optional<Mat4X4Type> m_projection_matrix;
+        mutable std::optional<Mat4X4Type> m_view_matrix;
         float m_far_plane_distance;
         float m_near_plane_distance;
 
