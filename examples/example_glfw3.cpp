@@ -149,10 +149,13 @@ int main()
     // Check if context is valid using standard GL
     const GLubyte* renderer = glGetString(GL_RENDERER);
     const GLubyte* version = glGetString(GL_VERSION);
-    if (renderer && version) {
+    if (renderer && version)
+    {
         std::cout << "Renderer: " << renderer << "\n";
         std::cout << "OpenGL version supported: " << version << "\n";
-    } else {
+    }
+    else
+    {
         std::cerr << "Failed to get GL_RENDERER or GL_VERSION. Context might be invalid.\n";
     }
 
@@ -162,11 +165,14 @@ int main()
     if (glewErr != GLEW_OK)
     {
         // Ignore NO_GLX_DISPLAY if we have a valid context
-        if (glewErr == GLEW_ERROR_NO_GLX_DISPLAY && renderer) {
-             std::cerr << "GLEW warning: " << glewGetErrorString(glewErr) << " (Ignored because context seems valid)\n";
-        } else {
+        if (glewErr == GLEW_ERROR_NO_GLX_DISPLAY && renderer)
+        {
+            std::cerr << "GLEW warning: " << glewGetErrorString(glewErr) << " (Ignored because context seems valid)\n";
+        }
+        else
+        {
             std::cerr << "Failed to initialize GLEW: " << reinterpret_cast<const char*>(glewGetErrorString(glewErr))
-                    << "\n";
+                      << "\n";
             glfwTerminate();
             return -1;
         }
@@ -300,11 +306,65 @@ int main()
 
     static float old_frame_time = glfwGetTime();
 
+    float lastX = 640.0f / 2.0f;
+    float lastY = 480.0f / 2.0f;
+    bool firstMouse = true;
+    bool mouse_capture = false;
+    float mouseSensitivity = 0.1f;
     // ---------- Main loop ----------
+    static double old_mouse_time = glfwGetTime();
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
+        omath::Vector3<float> move_dir;
+        if (glfwGetKey(window, GLFW_KEY_W))
+            move_dir += camera.get_forward();
 
+        if (glfwGetKey(window, GLFW_KEY_A))
+            move_dir -= camera.get_right();
+
+        if (glfwGetKey(window, GLFW_KEY_S))
+            move_dir -= camera.get_forward();
+
+        if (glfwGetKey(window, GLFW_KEY_D))
+            move_dir += camera.get_right();
+
+        if (glfwGetKey(window, GLFW_KEY_SPACE))
+            move_dir += camera.get_up();
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL))
+            move_dir -= camera.get_up();
+
+
+        auto delta = glfwGetTime() - old_mouse_time;
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && delta > 0.4)
+        {
+            old_mouse_time = glfwGetTime();
+            mouse_capture = !mouse_capture;
+
+            glfwSetInputMode(window, GLFW_CURSOR, mouse_capture ? GLFW_CURSOR_CAPTURED : GLFW_CURSOR_NORMAL);
+        }
+        if (mouse_capture)
+        {
+            int x, y;
+            glfwGetWindowSize(window, &x, &y);
+
+            camera.set_origin(camera.get_origin() + (move_dir.normalized() * 0.4f));
+
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            float xoffset = (float)xpos - x / 2.f;
+            float yoffset = y / 2.f - ypos ; // reversed: y-coordinates go bottom->top for pitch
+
+            xoffset *= mouseSensitivity;
+            yoffset *= mouseSensitivity;
+
+            auto new_angles = camera.get_view_angles();
+            new_angles.pitch += decltype(new_angles.pitch)::from_degrees(yoffset);
+            new_angles.yaw -= decltype(new_angles.yaw)::from_degrees(xoffset);
+            camera.set_view_angles(new_angles);
+            glfwSetCursorPos(window, x / 2., y / 2);
+        }
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - old_frame_time;
         old_frame_time = currentTime;

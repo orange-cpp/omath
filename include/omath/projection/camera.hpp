@@ -52,7 +52,7 @@ namespace omath::projection
                 requires noexcept(T::calc_projection_matrix(fov, viewport, znear, zfar));
             };
 
-    template<class Mat4X4Type, class ViewAnglesType, class TraitClass>
+    template<class Mat4X4Type, class ViewAnglesType, class TraitClass, bool inverted_z = false>
     requires CameraEngineConcept<TraitClass, Mat4X4Type, ViewAnglesType>
     class Camera final
     {
@@ -87,6 +87,9 @@ namespace omath::projection
         Vector3<float> get_forward() const noexcept
         {
             const auto& view_matrix = get_view_matrix();
+
+            if constexpr (inverted_z)
+                return -Vector3<float>{view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
             return {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
         }
 
