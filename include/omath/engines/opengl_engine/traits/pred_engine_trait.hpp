@@ -55,7 +55,7 @@ namespace omath::opengl_engine
             const auto delta2d = calc_vector_2d_distance(predicted_target_position - projectile.m_origin);
             const auto height = delta2d * std::tan(angles::degrees_to_radians(projectile_pitch.value()));
 
-            return {predicted_target_position.x, predicted_target_position.y + height, projectile.m_origin.z};
+            return {predicted_target_position.x, projectile.m_origin.y + height, predicted_target_position.z};
         }
         // Due to specification of maybe_calculate_projectile_launch_pitch_angle, pitch angle must be:
         // 89 look up, -89 look down
