@@ -13,11 +13,11 @@
 
 namespace omath::collision
 {
-    template<class V>
-    concept EpaVector = requires(const V& a, const V& b, float s) {
+    template<class V, class FloatingType>
+    concept EpaVector = requires(const V& a, const V& b, FloatingType s) {
         { a - b } -> std::same_as<V>;
         { a.cross(b) } -> std::same_as<V>;
-        { a.dot(b) } -> std::same_as<float>;
+        { a.dot(b) } -> std::same_as<FloatingType>;
         { -a } -> std::same_as<V>;
         { a * s } -> std::same_as<V>;
         { a / s } -> std::same_as<V>;
@@ -28,13 +28,18 @@ namespace omath::collision
     {
     public:
         using VectorType = ColliderInterfaceType::VectorType;
-        static_assert(EpaVector<VectorType>, "VertexType must satisfy EpaVector concept");
+        static_assert(EpaVector<VectorType, typename VectorType::ContainedType>,
+                      "VertexType must satisfy EpaVector concept");
 
+    private:
+        using FloatingType = VectorType::ContainedType;
+
+    public:
         struct Result final
         {
             VectorType normal{}; // from A to B
             VectorType penetration_vector;
-            float depth{0.0f};
+            FloatingType depth{0.0};
             int iterations{0};
             int num_vertices{0};
             int num_faces{0};
@@ -43,7 +48,7 @@ namespace omath::collision
         struct Params final
         {
             int max_iterations{64};
-            float tolerance{1e-4f}; // absolute tolerance on distance growth
+            FloatingType tolerance{1e-4}; // absolute tolerance on distance growth
         };
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
@@ -75,13 +80,13 @@ namespace omath::collision
                 if (heap.empty())
                     break;
 
-                //FIXME: STORE REF VALUE, DO NOT USE
-                // AFTER IF STATEMENT BLOCK
+                // FIXME: STORE REF VALUE, DO NOT USE
+                //  AFTER IF STATEMENT BLOCK
                 const Face& face = faces[heap.top().idx];
 
                 // Get the furthest point in face normal direction
                 const VectorType p = support_point(a, b, face.n);
-                const float p_dist = face.n.dot(p);
+                const auto p_dist = face.n.dot(p);
 
                 // Converged if we can’t push the face closer than tolerance
                 if (p_dist - face.d <= params.tolerance)
@@ -136,7 +141,7 @@ namespace omath::collision
         {
             int i0, i1, i2;
             VectorType n; // unit outward normal
-            float d; // n · v0  (>=0 ideally because origin is inside)
+            FloatingType d; // n · v0  (>=0 ideally because origin is inside)
         };
 
         struct Edge final
@@ -146,7 +151,7 @@ namespace omath::collision
 
         struct HeapItem final
         {
-            float d;
+            FloatingType d;
             int idx;
         };
         struct HeapCmp final
@@ -178,7 +183,7 @@ namespace omath::collision
         static bool visible_from(const Face& f, const VectorType& p)
         {
             // positive if p is in front of the face
-            return f.n.dot(p) - f.d > 1e-7f;
+            return f.n.dot(p) - f.d > static_cast<FloatingType>(1e-7);
         }
 
         static void add_edge_boundary(std::pmr::vector<Edge>& boundary, int a, int b)
@@ -198,19 +203,20 @@ namespace omath::collision
             const VectorType& a1 = vertexes[i1];
             const VectorType& a2 = vertexes[i2];
             VectorType n = (a1 - a0).cross(a2 - a0);
-            if (n.dot(n) <= 1e-30f)
+            if (n.dot(n) <= static_cast<FloatingType>(1e-30))
             {
                 n = any_perp_vec(a1 - a0); // degenerate guard
             }
             // Ensure normal points outward (away from origin): require n·a0 >= 0
-            if (n.dot(a0) < 0.0f)
+            if (n.dot(a0) < static_cast<FloatingType>(0.0))
             {
                 std::swap(i1, i2);
                 n = -n;
             }
-            const float inv_len = 1.0f / std::sqrt(std::max(n.dot(n), 1e-30f));
+            const auto inv_len =
+                    static_cast<FloatingType>(1.0) / std::sqrt(std::max(n.dot(n), static_cast<FloatingType>(1e-30)));
             n = n * inv_len;
-            const float d = n.dot(a0);
+            const auto d = n.dot(a0);
             return {i0, i1, i2, n, d};
         }
 
@@ -223,7 +229,7 @@ namespace omath::collision
 
         template<class V>
         [[nodiscard]]
-        static constexpr bool near_zero_vec(const V& v, const float eps = 1e-7f)
+        static constexpr bool near_zero_vec(const V& v, const FloatingType eps = 1e-7f)
         {
             return v.dot(v) <= eps * eps;
         }
