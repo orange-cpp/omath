@@ -73,4 +73,4 @@ namespace omath::cry_engine
             return angles::radians_to_degrees(-std::atan2(direction.x, direction.y));
         };
     };
-} // namespace omath::unity_engine
+} // namespace omath::cry_engine

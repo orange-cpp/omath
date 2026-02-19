@@ -21,4 +21,4 @@ namespace omath::cry_engine
                                              float near, float far) noexcept;
     };
 
-} // namespace omath::unreal_engine
+} // namespace omath::cry_engine

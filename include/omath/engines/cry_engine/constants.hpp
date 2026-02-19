@@ -22,4 +22,4 @@ namespace omath::cry_engine
     using RollAngle = Angle<float, -180.f, 180.f, AngleFlags::Normalized>;
 
     using ViewAngles = omath::ViewAngles<PitchAngle, YawAngle, RollAngle>;
-} // namespace omath::frostbite_engine
+} // namespace omath::cry_engine

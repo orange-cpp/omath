@@ -71,4 +71,4 @@ namespace omath::cry_engine
     {
         return meters_to_units(kilometers * static_cast<FloatingType>(1000));
     }
-} // namespace omath::frostbite_engine
+} // namespace omath::cry_engine
