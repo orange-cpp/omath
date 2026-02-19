@@ -26,6 +26,15 @@ set_target_properties(
                LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
                RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}")
 
+add_executable(example_barycentric example_barycentric.cpp)
+set_target_properties(
+    example_barycentric
+    PROPERTIES CXX_STANDARD 23
+               ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
+               LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"
+               RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}")
+target_link_libraries(example_barycentric PRIVATE omath::omath GLEW::GLEW glfw OpenGL::GL)
+
 find_package(OpenGL)
 find_package(GLEW REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
