@@ -82,7 +82,8 @@ if (auto screen = camera.world_to_screen(world_position)) {
 - **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
 - **Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine, CryEngine and canonical OpenGL**.
 - **Cross platform**: Supports Windows, MacOS and Linux.
-- **Algorithms**: Has ability to scan for byte pattern with wildcards in PE files/modules, binary slices, works even with Wine apps. 
+- **Algorithms**: Has ability to scan for byte pattern with wildcards in ELF/Mach-O/PE files/modules, binary slices, works even with Wine apps. 
+- **Battle tested**: It's already used by some big players on the market like wraith.su and bluedream.ltd
 <div align = center>
  
 # Gallery
