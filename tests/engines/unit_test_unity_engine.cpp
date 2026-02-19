@@ -7,6 +7,7 @@
 #include <omath/engines/unity_engine/formulas.hpp>
 #include <print>
 #include <random>
+#include <ranges>
 
 TEST(unit_test_unity_engine, UnitsToCentimeters_BasicValues)
 {
@@ -207,7 +208,8 @@ TEST(unit_test_unity_engine, Project)
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
 
     const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
-    const auto proj = cam.world_to_screen<omath::unity_engine::Camera::ScreenStart::BOTTOM_LEFT_CORNER>({10.f, 3, 10.f});
+    const auto proj =
+            cam.world_to_screen<omath::unity_engine::Camera::ScreenStart::BOTTOM_LEFT_CORNER>({10.f, 3, 10.f});
 
     EXPECT_NEAR(proj->x, 1263.538, 0.001f);
     EXPECT_NEAR(proj->y, 547.061f, 0.001f);
@@ -353,4 +355,65 @@ TEST(unit_test_unity_engine, loook_at_random_z_axis)
             failed_points++;
     }
     EXPECT_LE(failed_points, 100);
+}
+TEST(unit_test_unity_engine, look_at_forward)
+{
+    const auto angles = omath::unity_engine::CameraTrait::calc_look_at_angle({}, omath::unity_engine::k_abs_forward);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::unity_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), omath::unity_engine::k_abs_forward.as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
+}
+TEST(unit_test_unity_engine, look_at_right)
+{
+    const auto angles = omath::unity_engine::CameraTrait::calc_look_at_angle({}, omath::unity_engine::k_abs_right);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::unity_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), omath::unity_engine::k_abs_right.as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
+}
+TEST(unit_test_unity_engine, look_at_up)
+{
+    const auto angles = omath::unity_engine::CameraTrait::calc_look_at_angle({}, omath::unity_engine::k_abs_right);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::unity_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), omath::unity_engine::k_abs_right.as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
+}
+
+TEST(unit_test_unity_engine, look_at_back)
+{
+    const auto angles = omath::unity_engine::CameraTrait::calc_look_at_angle({}, -omath::unity_engine::k_abs_forward);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::unity_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), (-omath::unity_engine::k_abs_forward).as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
+}
+TEST(unit_test_unity_engine, look_at_left)
+{
+    const auto angles = omath::unity_engine::CameraTrait::calc_look_at_angle({}, -omath::unity_engine::k_abs_right);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::unity_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), (-omath::unity_engine::k_abs_right).as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
+}
+TEST(unit_test_unity_engine, look_at_down)
+{
+    const auto angles = omath::unity_engine::CameraTrait::calc_look_at_angle({}, -omath::unity_engine::k_abs_up);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::unity_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), (-omath::unity_engine::k_abs_up).as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
 }

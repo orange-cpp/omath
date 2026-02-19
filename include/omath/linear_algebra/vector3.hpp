@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "omath/trigonometry/angle.hpp"
 #include "omath/linear_algebra/vector2.hpp"
+#include "omath/trigonometry/angle.hpp"
 #include <cstdint>
 #include <expected>
 #include <functional>
@@ -233,7 +233,8 @@ namespace omath
             return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(std::acos(dot(other) / bottom));
         }
 
-        [[nodiscard]] bool is_perpendicular(const Vector3& other, Type epsilon = static_cast<Type>(0.0001)) const noexcept
+        [[nodiscard]] bool is_perpendicular(const Vector3& other,
+                                            Type epsilon = static_cast<Type>(0.0001)) const noexcept
         {
             if (const auto angle = angle_between(other))
                 return std::abs(angle->as_degrees() - static_cast<Type>(90)) <= epsilon;
@@ -273,6 +274,12 @@ namespace omath
         bool operator>=(const Vector3& other) const noexcept
         {
             return length() >= other.length();
+        }
+
+        [[nodiscard]]
+        constexpr std::array<Type, 3> as_array() const noexcept
+        {
+            return {this->x, this->y, z};
         }
     };
 } // namespace omath

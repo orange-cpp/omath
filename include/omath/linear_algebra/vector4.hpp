@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include <algorithm>
 #include "omath/linear_algebra/vector3.hpp"
+#include <algorithm>
 
 namespace omath
 {
@@ -183,6 +183,12 @@ namespace omath
             return length() >= other.length();
         }
 
+        [[nodiscard]]
+        constexpr std::array<Type, 4> as_array() const noexcept
+        {
+            return {this->x, this->y, this->z, w};
+        }
+
 #ifdef OMATH_IMGUI_INTEGRATION
         [[nodiscard]]
         constexpr ImVec4 to_im_vec4() const noexcept
@@ -200,7 +206,7 @@ namespace omath
             return {static_cast<Type>(other.x), static_cast<Type>(other.y), static_cast<Type>(other.z)};
         }
 #endif
-};
+    };
 } // namespace omath
 
 template<> struct std::hash<omath::Vector4<float>>

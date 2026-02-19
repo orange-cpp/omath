@@ -7,6 +7,7 @@
 #include <omath/engines/frostbite_engine/formulas.hpp>
 #include <print>
 #include <random>
+#include <ranges>
 
 TEST(unit_test_frostbite_engine, UnitsToCentimeters_BasicValues)
 {
@@ -352,4 +353,55 @@ TEST(unit_test_frostbite_engine, loook_at_random_z_axis)
             failed_points++;
     }
     EXPECT_LE(failed_points, 100);
+}
+TEST(unit_test_frostbite_engine, look_at_right)
+{
+    const auto angles = omath::frostbite_engine::CameraTrait::calc_look_at_angle({}, omath::frostbite_engine::k_abs_right);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::frostbite_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), omath::frostbite_engine::k_abs_right.as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
+}
+TEST(unit_test_frostbite_engine, look_at_up)
+{
+    const auto angles = omath::frostbite_engine::CameraTrait::calc_look_at_angle({}, omath::frostbite_engine::k_abs_right);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::frostbite_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), omath::frostbite_engine::k_abs_right.as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
+}
+
+TEST(unit_test_frostbite_engine, look_at_back)
+{
+    const auto angles = omath::frostbite_engine::CameraTrait::calc_look_at_angle({}, -omath::frostbite_engine::k_abs_forward);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::frostbite_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), (-omath::frostbite_engine::k_abs_forward).as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
+}
+TEST(unit_test_frostbite_engine, look_at_left)
+{
+    const auto angles = omath::frostbite_engine::CameraTrait::calc_look_at_angle({}, -omath::frostbite_engine::k_abs_right);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::frostbite_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), (-omath::frostbite_engine::k_abs_right).as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
+}
+TEST(unit_test_frostbite_engine, look_at_down)
+{
+    const auto angles = omath::frostbite_engine::CameraTrait::calc_look_at_angle({}, -omath::frostbite_engine::k_abs_up);
+
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const auto dir_vector = omath::frostbite_engine::forward_vector(angles);
+    for (const auto& [result, etalon] :
+         std::views::zip(dir_vector.as_array(), (-omath::frostbite_engine::k_abs_up).as_array()))
+        EXPECT_NEAR(result, etalon, 0.0001f);
 }
