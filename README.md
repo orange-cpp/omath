@@ -80,7 +80,7 @@ if (auto screen = camera.world_to_screen(world_position)) {
 - **Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
 - **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
 - **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
-- **Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine and canonical OpenGL**.
+- **Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine, CryEngine and canonical OpenGL**.
 - **Cross platform**: Supports Windows, MacOS and Linux.
 - **Algorithms**: Has ability to scan for byte pattern with wildcards in PE files/modules, binary slices, works even with Wine apps. 
 <div align = center>
