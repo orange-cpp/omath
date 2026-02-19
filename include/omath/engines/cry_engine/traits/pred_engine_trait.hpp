@@ -70,7 +70,7 @@ namespace omath::cry_engine
         {
             const auto direction = (view_to - origin).normalized();
 
-            return angles::radians_to_degrees(std::atan2(direction.y, direction.z));
+            return angles::radians_to_degrees(-std::atan2(direction.x, direction.y));
         };
     };
 } // namespace omath::unity_engine
