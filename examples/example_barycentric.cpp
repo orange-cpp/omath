@@ -14,26 +14,32 @@ static const char* vertexShaderSource = R"(
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aColor;
 layout (location = 2) in float aPointSize;
+layout (location = 3) in float aIsLine;
 
 out vec3 vColor;
+out float vIsLine;
 
 void main() {
     gl_Position = vec4(aPos, 1.0);
     vColor = aColor;
     gl_PointSize = aPointSize;
+    vIsLine = aIsLine;
 }
 )";
 
 static const char* fragmentShaderSource = R"(
 #version 330 core
 in vec3 vColor;
+in float vIsLine;
 out vec4 FragColor;
 
 void main() {
-    // Calculate distance from center of the point
-    vec2 coord = gl_PointCoord - vec2(0.5);
-    if(length(coord) > 0.5)
-        discard;
+    if (vIsLine < 0.5) {
+        // Calculate distance from center of the point
+        vec2 coord = gl_PointCoord - vec2(0.5);
+        if(length(coord) > 0.5)
+            discard;
+    }
         
     FragColor = vec4(vColor, 1.0);
 }
@@ -61,10 +67,12 @@ void drawChar(char c, float x, float y, float scale, const Vector3<float>& color
         lines.push_back(x + x1*w); lines.push_back(y + y1*h); lines.push_back(0.0f);
         lines.push_back(color.x); lines.push_back(color.y); lines.push_back(color.z);
         lines.push_back(1.0f); // size
+        lines.push_back(1.0f); // isLine
         
         lines.push_back(x + x2*w); lines.push_back(y + y2*h); lines.push_back(0.0f);
         lines.push_back(color.x); lines.push_back(color.y); lines.push_back(color.z);
         lines.push_back(1.0f); // size
+        lines.push_back(1.0f); // isLine
     };
 
     switch(c) {
@@ -155,6 +163,7 @@ int main() {
                 pointCloud.push_back(P.x); pointCloud.push_back(P.y); pointCloud.push_back(P.z);
                 pointCloud.push_back(u);   pointCloud.push_back(v);   pointCloud.push_back(w);
                 pointCloud.push_back(2.0f); // size
+                pointCloud.push_back(0.0f); // isLine
             }
         }
     }
@@ -165,25 +174,29 @@ int main() {
     glBindVertexArray(VAO_cloud);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_cloud);
     glBufferData(GL_ARRAY_BUFFER, pointCloud.size() * sizeof(float), pointCloud.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(7 * sizeof(float)));
+    glEnableVertexAttribArray(3);
 
     GLuint VAO_dyn, VBO_dyn;
     glGenVertexArrays(1, &VAO_dyn);
     glGenBuffers(1, &VBO_dyn);
     glBindVertexArray(VAO_dyn);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_dyn);
-    glBufferData(GL_ARRAY_BUFFER, 1000 * 7 * sizeof(float), NULL, GL_DYNAMIC_DRAW); 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, 1000 * 8 * sizeof(float), NULL, GL_DYNAMIC_DRAW); 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(7 * sizeof(float)));
+    glEnableVertexAttribArray(3);
 
     glEnable(GL_PROGRAM_POINT_SIZE);
     glEnable(GL_BLEND);
@@ -197,7 +210,7 @@ int main() {
 
         // Draw the point cloud (the iterated points)
         glBindVertexArray(VAO_cloud);
-        glDrawArrays(GL_POINTS, 0, pointCloud.size() / 7);
+        glDrawArrays(GL_POINTS, 0, pointCloud.size() / 8);
 
         // Animate the white dot to simulate dragging
         float t = glfwGetTime();
@@ -231,22 +244,22 @@ int main() {
 
         std::vector<float> dynData = {
             // Lines from P to A, B, C
-            P.x, P.y, P.z, u, v, w, 1.0f,
-            A.x, A.y, A.z, 1.0f, 0.0f, 0.0f, 1.0f,
+            P.x, P.y, P.z, u, v, w, 1.0f, 1.0f,
+            A.x, A.y, A.z, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
             
-            P.x, P.y, P.z, u, v, w, 1.0f,
-            B.x, B.y, B.z, 0.0f, 1.0f, 0.0f, 1.0f,
+            P.x, P.y, P.z, u, v, w, 1.0f, 1.0f,
+            B.x, B.y, B.z, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
             
-            P.x, P.y, P.z, u, v, w, 1.0f,
-            C.x, C.y, C.z, 0.0f, 0.0f, 1.0f, 1.0f,
+            P.x, P.y, P.z, u, v, w, 1.0f, 1.0f,
+            C.x, C.y, C.z, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
 
             // The animated dot itself (White)
-            P.x, P.y, P.z, 1.0f, 1.0f, 1.0f, sizeP,
+            P.x, P.y, P.z, 1.0f, 1.0f, 1.0f, sizeP, 0.0f,
 
             // The 3 corner dots
-            A.x, A.y, A.z, 1.0f, 0.0f, 0.0f, sizeA,
-            B.x, B.y, B.z, 0.0f, 1.0f, 0.0f, sizeB,
-            C.x, C.y, C.z, 0.0f, 0.0f, 1.0f, sizeC
+            A.x, A.y, A.z, 1.0f, 0.0f, 0.0f, sizeA, 0.0f,
+            B.x, B.y, B.z, 0.0f, 1.0f, 0.0f, sizeB, 0.0f,
+            C.x, C.y, C.z, 0.0f, 0.0f, 1.0f, sizeC, 0.0f
         };
 
         char bufA[16], bufB[16], bufC[16];
@@ -271,7 +284,7 @@ int main() {
         glDrawArrays(GL_LINES, 0, 6);
         
         // Draw text lines
-        int numTextVertices = (dynData.size() / 7) - 10;
+        int numTextVertices = (dynData.size() / 8) - 10;
         if (numTextVertices > 0) {
             glDrawArrays(GL_LINES, 10, numTextVertices);
         }
