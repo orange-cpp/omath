@@ -130,11 +130,10 @@ set_target_properties(
                CXX_STANDARD 23
                CXX_STANDARD_REQUIRED ON)
 
-if (OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-    )
-endif ()
+if(OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
+    set_target_properties(${PROJECT_NAME} PROPERTIES MSVC_RUNTIME_LIBRARY
+                                                     "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
 
 if(OMATH_USE_AVX2)
     if(MSVC)
