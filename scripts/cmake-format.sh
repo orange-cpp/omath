@@ -8,7 +8,7 @@ cd "$REPO_ROOT"
 
 find . \
   -path "./build" -prune -o \
-  -path "./cmake-build-*" -prune -o \
+  -path "./cmake-build*" -prune -o \
   -path "./out" -prune -o \
   -path "./.git" -prune -o \
   \( -name "CMakeLists.txt" -o -name "*.cmake" \) -print0 \

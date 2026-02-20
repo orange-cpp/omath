@@ -3,7 +3,6 @@ add_subdirectory(example_glfw3)
 add_subdirectory(example_proj_mat_builder)
 add_subdirectory(example_signature_scan)
 
-
 if(OMATH_ENABLE_VALGRIND)
     omath_setup_valgrind(example_projection_matrix_builder)
     omath_setup_valgrind(example_signature_scan)
