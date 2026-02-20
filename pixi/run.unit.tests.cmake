@@ -15,7 +15,10 @@ endif()
 set(EXAMPLES_BIN_DIR "${PROJECT_ROOT}/out/${CMAKE_BUILD_TYPE}")
 
 if(NOT EXISTS "${EXAMPLES_BIN_DIR}")
-    message(FATAL_ERROR "Examples binary directory not found: ${EXAMPLES_BIN_DIR}. Please build the project first.")
+    message(
+        FATAL_ERROR
+            "Examples binary directory not found: ${EXAMPLES_BIN_DIR}. Please build the project first."
+        )
 endif()
 
 message(STATUS "Looking for unit test executables in: ${EXAMPLES_BIN_DIR}")
@@ -43,16 +46,13 @@ foreach(EXAMPLE_PATH ${EXAMPLE_FILES})
     endif()
 
     # On Linux/macOS, check permissions or just try to run it.
-    
+
     message(STATUS "-------------------------------------------------")
     message(STATUS "Running unit_tests: ${FILENAME}")
     message(STATUS "-------------------------------------------------")
 
-    execute_process(
-        COMMAND "${EXAMPLE_PATH}"
-        WORKING_DIRECTORY "${PROJECT_ROOT}"
-        RESULT_VARIABLE EXIT_CODE
-    )
+    execute_process(COMMAND "${EXAMPLE_PATH}" WORKING_DIRECTORY "${PROJECT_ROOT}"
+                    RESULT_VARIABLE EXIT_CODE)
 
     if(NOT EXIT_CODE EQUAL 0)
         message(WARNING "Example ${FILENAME} exited with error code: ${EXIT_CODE}")
