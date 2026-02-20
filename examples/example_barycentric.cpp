@@ -3,11 +3,11 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include "omath/linear_algebra/vector3.hpp"
-#include "omath/linear_algebra/triangle.hpp"
+#include <omath/omath.hpp>
 
 using omath::Vector3;
 using omath::Triangle;
+using omath::Color;
 
 static const char* vertexShaderSource = R"(
 #version 330 core
@@ -59,7 +59,7 @@ GLuint compileShader(GLenum type, const char* src) {
     return shader;
 }
 
-void drawChar(char c, float x, float y, float scale, const Vector3<float>& color, std::vector<float>& lines) {
+void drawChar(char c, float x, float y, float scale, const Color& color, std::vector<float>& lines) {
     float w = 0.5f * scale;
     float h = 1.0f * scale;
     
@@ -90,7 +90,7 @@ void drawChar(char c, float x, float y, float scale, const Vector3<float>& color
     }
 }
 
-void drawText(const std::string& text, float x, float y, float scale, const Vector3<float>& color, std::vector<float>& lines) {
+void drawText(const std::string& text, float x, float y, float scale, const Color& color, std::vector<float>& lines) {
     float cursor = x;
     for (char c : text) {
         drawChar(c, cursor, y, scale, color, lines);
@@ -151,7 +151,10 @@ GLuint createShaderProgram() {
     return shaderProgram;
 }
 
-void generatePointCloud(std::vector<float>& pointCloud, const Vector3<float>& A, const Vector3<float>& B, const Vector3<float>& C) {
+void generatePointCloud(std::vector<float>& pointCloud, const Triangle<Vector3<float>>& triangle) {
+    const auto& A = triangle.m_vertex1;
+    const auto& B = triangle.m_vertex2;
+    const auto& C = triangle.m_vertex3;
     // Iterating over barycentric coordinates (u, v, w) from 0.0 to 1.0
     for (float u = 0.0f; u <= 1.0f; u += 0.015f) {
         for (float v = 0.0f; v <= 1.0f - u; v += 0.015f) {
@@ -197,7 +200,11 @@ void setupBuffers(GLuint& VAO_cloud, GLuint& VBO_cloud, const std::vector<float>
     glEnableVertexAttribArray(3);
 }
 
-void updateDynamicData(std::vector<float>& dynData, float u, float v, float w, const Vector3<float>& P, const Vector3<float>& A, const Vector3<float>& B, const Vector3<float>& C) {
+void updateDynamicData(std::vector<float>& dynData, float u, float v, float w, const Vector3<float>& P, const Triangle<Vector3<float>>& triangle) {
+    const auto& A = triangle.m_vertex1;
+    const auto& B = triangle.m_vertex2;
+    const auto& C = triangle.m_vertex3;
+    
     float sizeA = 10.0f + u * 30.0f;
     float sizeB = 10.0f + v * 30.0f;
     float sizeC = 10.0f + w * 30.0f;
@@ -233,9 +240,9 @@ void updateDynamicData(std::vector<float>& dynData, float u, float v, float w, c
     float distB = 0.13f;
     float distC = 0.13f;
 
-    drawText(bufA, A.x - 0.05f, A.y + distA, 0.1f, Vector3<float>(1,0,0), dynData);
-    drawText(bufB, B.x - 0.15f - distB, B.y - 0.05f - distB, 0.1f, Vector3<float>(0,1,0), dynData);
-    drawText(bufC, C.x + 0.05f + distC, C.y - 0.05f - distC, 0.1f, Vector3<float>(0,0,1), dynData);
+    drawText(bufA, A.x - 0.05f, A.y + distA, 0.1f, Color(1,0,0,1), dynData);
+    drawText(bufB, B.x - 0.15f - distB, B.y - 0.05f - distB, 0.1f, Color(0,1,0,1), dynData);
+    drawText(bufC, C.x + 0.05f + distC, C.y - 0.05f - distC, 0.1f, Color(0,0,1,1), dynData);
 }
 
 int main() {
@@ -246,12 +253,14 @@ int main() {
 
     // Triangle vertices as shown in the picture (Red, Green, Blue)
     // Scaled down slightly to leave room for text
-    Vector3<float> A(0.0f, 0.6f, 0.0f);   // Red dot (top)
-    Vector3<float> B(-0.6f, -0.6f, 0.0f); // Green dot (bottom left)
-    Vector3<float> C(0.6f, -0.6f, 0.0f);  // Blue dot (bottom right)
+    Triangle<Vector3<float>> triangle(
+        Vector3<float>(0.0f, 0.6f, 0.0f),   // Red dot (top)
+        Vector3<float>(-0.6f, -0.6f, 0.0f), // Green dot (bottom left)
+        Vector3<float>(0.6f, -0.6f, 0.0f)   // Blue dot (bottom right)
+    );
 
     std::vector<float> pointCloud;
-    generatePointCloud(pointCloud, A, B, C);
+    generatePointCloud(pointCloud, triangle);
 
     GLuint VAO_cloud, VBO_cloud, VAO_dyn, VBO_dyn;
     setupBuffers(VAO_cloud, VBO_cloud, pointCloud, VAO_dyn, VBO_dyn);
@@ -293,10 +302,10 @@ int main() {
             v -= diff / 2.0f;
         }
 
-        Vector3<float> P = A * u + B * v + C * w;
+        Vector3<float> P = triangle.m_vertex1 * u + triangle.m_vertex2 * v + triangle.m_vertex3 * w;
 
         std::vector<float> dynData;
-        updateDynamicData(dynData, u, v, w, P, A, B, C);
+        updateDynamicData(dynData, u, v, w, P, triangle);
 
         glBindVertexArray(VAO_dyn);
         glBindBuffer(GL_ARRAY_BUFFER, VBO_dyn);
