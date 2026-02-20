@@ -342,7 +342,7 @@ int main()
             old_mouse_time = glfwGetTime();
             mouse_capture = !mouse_capture;
 
-            glfwSetInputMode(window, GLFW_CURSOR, mouse_capture ? GLFW_CURSOR_CAPTURED : GLFW_CURSOR_NORMAL);
+            glfwSetInputMode(window, GLFW_CURSOR, mouse_capture ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
         }
         if (mouse_capture)
         {
