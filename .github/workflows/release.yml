@@ -36,6 +36,34 @@ jobs:
               sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
               sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
               sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+          - name: Linux (Clang) (x86-linux)
+            triplet: x86-linux
+            runner: ubuntu-latest
+            preset: linux-release-vcpkg-x86
+            archive: omath-linux-x86
+            install_cmd: |
+              # Add LLVM 21 repository
+              wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+              sudo add-apt-repository -y "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main"
+              # Add GCC Toolchain PPA
+              sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu plucky main universe"
+              # Enable i386 architecture
+              sudo dpkg --add-architecture i386
+              sudo apt-get update
+              # Install Clang 21
+              sudo apt-get install -y git build-essential cmake ninja-build \
+                     zip unzip curl pkg-config ca-certificates \
+                     clang-21 lld-21 libc++-21-dev libc++abi-21-dev
+              sudo apt-get install -y -t plucky binutils
+              # Install GCC 15 with multilib support
+              sudo apt-get install -y gcc-15-multilib g++-15-multilib
+              # Set up alternatives for Clang
+              sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-21 100
+              sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-21 100
+              sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-21 100
+              # Set up alternatives for GCC
+              sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
+              sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
           - name: Linux (Clang) (arm64-linux)
             triplet: arm64-linux
             runner: ubuntu-24.04-arm
@@ -231,3 +259,360 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: gh release upload "${{ github.event.release.tag_name }}" "${{ matrix.archive }}.tar.gz" --clobber
+
+  ##############################################################################
+  # 4)  iOS  –  AppleClang / Xcode / arm64-ios
+  ##############################################################################
+  ios-release:
+    name: iOS (AppleClang) (${{ matrix.triplet }})
+    runs-on: macOS-latest
+    strategy:
+      matrix:
+        include:
+          - triplet: arm64-ios
+            preset: ios-release-vcpkg
+            archive: omath-ios-arm64
+      fail-fast: false
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    steps:
+      - name: Install CMake tooling
+        shell: bash
+        run: |
+          brew install cmake ninja
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: |
+          cmake --preset ${{ matrix.preset }} \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=OFF \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui"
+
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build cmake-build/build/${{ matrix.preset }} --config Release --target omath
+
+      - name: Install
+        shell: bash
+        run: cmake --install cmake-build/build/${{ matrix.preset }} --prefix staging
+
+      - name: Package
+        shell: bash
+        run: tar -czf ${{ matrix.archive }}.tar.gz -C staging .
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release upload "${{ github.event.release.tag_name }}" "${{ matrix.archive }}.tar.gz" --clobber
+
+  ##############################################################################
+  # 5)  FreeBSD  –  Clang / Ninja
+  ##############################################################################
+  freebsd-release:
+    name: FreeBSD (Clang) (${{ matrix.triplet }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - triplet: x64-freebsd
+            preset: freebsd-release-vcpkg
+            arch: x86-64
+            archive: omath-freebsd-x64
+      fail-fast: false
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/tmp/vcpkg
+    steps:
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build and Package
+        uses: cross-platform-actions/action@v0.31.0
+        with:
+          operating_system: freebsd
+          architecture: ${{ matrix.arch }}
+          version: '15.0'
+          memory: '12G'
+          cpu_count: 4
+          run: |
+            sudo pkg install -y git curl zip unzip gmake llvm gsed bash perl5 openssl 7-zip coreutils cmake ninja pkgconf patchelf
+            git config --global --add safe.directory `pwd`
+            # Build vcpkg in /tmp to avoid sshfs timestamp sync issues
+            export VCPKG_ROOT=/tmp/vcpkg
+            rm -rf "$VCPKG_ROOT"
+            git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+            cd "$VCPKG_ROOT"
+            ./bootstrap-vcpkg.sh
+            cd -
+            export VCPKG_FORCE_SYSTEM_BINARIES=0
+            cmake --preset ${{ matrix.preset }} \
+              -DOMATH_BUILD_TESTS=OFF \
+              -DOMATH_BUILD_BENCHMARK=OFF \
+              -DVCPKG_MANIFEST_FEATURES="imgui;avx2" \
+              -DVCPKG_INSTALL_OPTIONS="--allow-unsupported"
+            cmake --build cmake-build/build/${{ matrix.preset }} --target omath
+            cmake --install cmake-build/build/${{ matrix.preset }} --prefix staging
+            tar -czf ${{ matrix.archive }}.tar.gz -C staging .
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release upload "${{ github.event.release.tag_name }}" "${{ matrix.archive }}.tar.gz" --clobber
+
+  ##############################################################################
+  # 6)  Android NDK  –  Clang / Ninja
+  ##############################################################################
+  android-release:
+    name: Android NDK (${{ matrix.triplet }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - triplet: arm-neon-android
+            preset: android-arm-neon-release-vcpkg
+            archive: omath-android-arm-neon
+          - triplet: arm64-android
+            preset: android-arm64-release-vcpkg
+            archive: omath-android-arm64
+          - triplet: x64-android
+            preset: android-x64-release-vcpkg
+            archive: omath-android-x64
+          - triplet: x86-android
+            preset: android-x86-release-vcpkg
+            archive: omath-android-x86
+      fail-fast: false
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      ANDROID_NDK_HOME: ${{ github.workspace }}/android-ndk
+    steps:
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Android NDK
+        shell: bash
+        run: |
+          NDK_VERSION="r28b"
+          NDK_ZIP="android-ndk-${NDK_VERSION}-linux.zip"
+          wget -q "https://dl.google.com/android/repository/${NDK_ZIP}"
+          unzip -q "${NDK_ZIP}" -d "${{ github.workspace }}"
+          mv "${{ github.workspace }}/android-ndk-${NDK_VERSION}" "$ANDROID_NDK_HOME"
+          rm "${NDK_ZIP}"
+          echo "ANDROID_NDK_HOME=${ANDROID_NDK_HOME}" >> $GITHUB_ENV
+
+      - name: Install basic tool-chain
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: |
+          cmake --preset ${{ matrix.preset }} \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=OFF \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui"
+
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build cmake-build/build/${{ matrix.preset }} --target omath
+
+      - name: Install
+        shell: bash
+        run: cmake --install cmake-build/build/${{ matrix.preset }} --prefix staging
+
+      - name: Package
+        shell: bash
+        run: tar -czf ${{ matrix.archive }}.tar.gz -C staging .
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release upload "${{ github.event.release.tag_name }}" "${{ matrix.archive }}.tar.gz" --clobber
+
+  ##############################################################################
+  # 7)  WebAssembly (Emscripten)  –  Clang / Ninja / wasm32-emscripten
+  ##############################################################################
+  wasm-release:
+    name: WebAssembly (Emscripten) (${{ matrix.triplet }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - triplet: wasm32-emscripten
+            preset: wasm-release-vcpkg
+            archive: omath-wasm32
+      fail-fast: false
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+    steps:
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install basic tool-chain
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 'latest'
+
+      - name: Verify Emscripten
+        shell: bash
+        run: |
+          echo "EMSDK=$EMSDK"
+          emcc --version
+          ls -la "$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+
+      - name: Set up vcpkg
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        shell: bash
+        run: |
+          cmake --preset ${{ matrix.preset }} \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=OFF \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui"
+
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build cmake-build/build/${{ matrix.preset }} --target omath
+
+      - name: Install
+        shell: bash
+        run: cmake --install cmake-build/build/${{ matrix.preset }} --prefix staging
+
+      - name: Package
+        shell: bash
+        run: tar -czf ${{ matrix.archive }}.tar.gz -C staging .
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release upload "${{ github.event.release.tag_name }}" "${{ matrix.archive }}.tar.gz" --clobber
+
+  ##############################################################################
+  # 8)  Windows MSYS2 MinGW  –  GCC / Ninja
+  ##############################################################################
+  mingw-release:
+    name: ${{ matrix.name }}
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - name: MINGW64 (MSYS2) (x64-mingw-dynamic)
+            msystem: MINGW64
+            pkg_prefix: mingw-w64-x86_64
+            preset: mingw-release-vcpkg
+            archive: omath-mingw64-x64
+          - name: UCRT64 (MSYS2) (x64-mingw-dynamic)
+            msystem: UCRT64
+            pkg_prefix: mingw-w64-ucrt-x86_64
+            preset: mingw-release-vcpkg
+            archive: omath-ucrt64-x64
+          - name: MINGW32 (MSYS2) (x86-mingw-dynamic)
+            msystem: MINGW32
+            pkg_prefix: mingw-w64-i686
+            preset: mingw32-release-vcpkg
+            archive: omath-mingw32-x86
+      fail-fast: false
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+    steps:
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: >-
+            ${{ matrix.pkg_prefix }}-toolchain
+            ${{ matrix.pkg_prefix }}-cmake
+            ${{ matrix.pkg_prefix }}-ninja
+            ${{ matrix.pkg_prefix }}-pkg-config
+            git
+            base-devel
+
+      - name: Checkout repository (with sub-modules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+
+      - name: Configure (cmake --preset)
+        run: |
+          cmake --preset ${{ matrix.preset }} \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
+            -DOMATH_BUILD_TESTS=OFF \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui"
+
+      - name: Build
+        run: |
+          cmake --build cmake-build/build/${{ matrix.preset }} --target omath
+
+      - name: Install
+        run: cmake --install cmake-build/build/${{ matrix.preset }} --prefix staging
+
+      - name: Package
+        shell: pwsh
+        run: Compress-Archive -Path staging\* -DestinationPath "${{ matrix.archive }}.zip"
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release upload "${{ github.event.release.tag_name }}" "${{ matrix.archive }}.zip" --clobber
