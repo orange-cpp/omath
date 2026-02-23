@@ -67,7 +67,6 @@ namespace omath::detail
     consteval std::int64_t rand_uint8_t()
     {
         static_assert(Lo <= Hi);
-        const std::uint64_t span = static_cast<std::uint64_t>(Hi - Lo) + 1ull;
         const std::uint64_t r = rand_u64<Stream>();
         return static_cast<std::int64_t>(r) + Lo;
     }
