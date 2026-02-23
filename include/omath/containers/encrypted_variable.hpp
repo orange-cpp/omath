@@ -62,12 +62,6 @@ namespace omath::detail
         return splitmix64(base_seed() + 0xD1B54A32D192ED03ull * (Stream + 1));
     }
 
-    [[nodiscard]]
-    consteval std::uint64_t bounded_u64(const std::uint64_t x, const std::uint64_t bound)
-    {
-        return (x * bound) >> 64;
-    }
-
     template<std::int64_t Lo, std::int64_t Hi, std::uint64_t Stream>
     [[nodiscard]]
     consteval std::int64_t rand_uint8_t()
@@ -75,7 +69,7 @@ namespace omath::detail
         static_assert(Lo <= Hi);
         const std::uint64_t span = static_cast<std::uint64_t>(Hi - Lo) + 1ull;
         const std::uint64_t r = rand_u64<Stream>();
-        return static_cast<std::int64_t>(bounded_u64(r, span)) + Lo;
+        return static_cast<std::int64_t>(r) + Lo;
     }
     [[nodiscard]]
     consteval std::uint64_t rand_u64(const std::uint64_t seed, const std::uint64_t i)
