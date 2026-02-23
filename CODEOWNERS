@@ -1,0 +1,37 @@
+##   List of maintainers for the omath library
+
+## This file purpose is to give newcomers to the project the responsible
+## developers when submitting a pull request on GitHub, or opening a bug
+## report in issues.
+
+## This file will notably establish who is responsible for a specific
+## area of omath. Being a maintainer means the following:
+##  - that person has good knownledge in the area
+##  - that person is able to enforce consistency in the area
+##  - that person may be available for giving help in the area
+##  - that person has push access on the repository
+## Being a maintainer does not mean the following:
+##  - that person is dedicated to the area
+##  - that person is working full-time on the area/on omath
+##  - that person is paid
+##  - that person is always available
+
+
+# omath core source code
+/source @orange-cpp
+/include @orange-cpp
+
+# Tests and becnchmarks
+/benchmark @orange-cpp
+/tests @orange-cpp @luadebug
+
+# Examples and documentation
+/examples @luadebug @orange-cpp
+/docs @orange-cpp
+
+# Misc like formating
+/scripts @luadebug
+/pixi @luadebug
+
+# CI/CD
+/.github/workflows @luadbg @orange-cpp
