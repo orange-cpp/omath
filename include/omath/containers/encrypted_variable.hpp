@@ -2,10 +2,14 @@
 // Created by Vladislav on 04.01.2026.
 //
 #pragma once
+#include <VMProtectSDK.h>
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <source_location>
+
+
 #ifdef OMATH_ENABLE_FORCE_INLINE
 #ifdef _MSC_VER
 #define OMATH_FORCE_INLINE __forceinline
@@ -110,16 +114,18 @@ namespace omath
         bool m_is_encrypted{};
         value_type m_data{};
 
-        OMATH_FORCE_INLINE constexpr void xor_contained_var_by_key()
+        OMATH_FORCE_INLINE void xor_contained_var_by_key()
         {
+            VMProtectBeginVirtualization(nullptr);
             // Safe, keeps const-correctness, and avoids reinterpret_cast issues
             auto bytes = std::as_writable_bytes(std::span<value_type, 1>{&m_data, 1});
 
             for (std::size_t i = 0; i < bytes.size(); ++i)
             {
-                const std::uint8_t k = static_cast<std::uint8_t>(key[i % key_size] + (i * key_size));
+                const auto k = static_cast<std::uint8_t>(key[i % key_size] + (i * key_size));
                 bytes[i] ^= static_cast<std::byte>(k);
             }
+            VMProtectEnd();
         }
 
     public:
@@ -134,7 +140,7 @@ namespace omath
             return m_is_encrypted;
         }
 
-        OMATH_FORCE_INLINE constexpr void decrypt()
+        OMATH_FORCE_INLINE void decrypt()
         {
             if (!m_is_encrypted)
                 return;
@@ -142,7 +148,7 @@ namespace omath
             m_is_encrypted = false;
         }
 
-        OMATH_FORCE_INLINE constexpr void encrypt()
+        OMATH_FORCE_INLINE void encrypt()
         {
             if (m_is_encrypted)
                 return;

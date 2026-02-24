@@ -31,6 +31,10 @@ option(OMATH_SUPRESS_SAFETY_CHECKS
 option(OMATH_ENABLE_COVERAGE "Enable coverage" OFF)
 option(OMATH_ENABLE_FORCE_INLINE
        "Will for compiler to make some functions to be force inlined no matter what" ON)
+option(OMATH_VMPROTECT_INTEGRATION
+       "omath will use vmprotect sdk to protect sensitive parts of code from reverse engineering"
+       OFF)
+
 if(VCPKG_MANIFEST_FEATURES)
     foreach(omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
         if(omath_feature STREQUAL "imgui")
@@ -43,6 +47,8 @@ if(VCPKG_MANIFEST_FEATURES)
             set(OMATH_BUILD_BENCHMARK ON)
         elseif(omath_feature STREQUAL "examples")
             set(OMATH_BUILD_EXAMPLES ON)
+        elseif(omath_feature STREQUAL "vmprotect")
+            set(OMATH_VMPROTECT_INTEGRATION ON)
         endif()
 
     endforeach()
@@ -105,6 +111,11 @@ if(OMATH_IMGUI_INTEGRATION)
         target_link_libraries(${PROJECT_NAME} PUBLIC imgui::imgui)
     endif()
 
+endif()
+
+if(OMATH_VMPROTECT_INTEGRATION)
+    find_package(vmprotect_sdk CONFIG REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC vmprotect_sdk::vmprotect_sdk)
 endif()
 
 if(OMATH_USE_AVX2)

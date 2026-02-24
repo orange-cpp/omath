@@ -17,8 +17,15 @@
   ],
   "features": {
     "avx2": {
-      "description": "Omath will use AVX2 to boost performance",
+      "description": "omath will use AVX2 to boost performance",
       "supports": "!arm"
+    },
+    "vmprotect": {
+      "description": "omath will use vmprotect sdk to protect sensitive parts of code from reverse engineering",
+      "supports": "windows | linux | osx | android",
+      "dependencies": [
+        "orange-vmprotect-sdk"
+      ]
     },
     "benchmark": {
       "description": "Build benchmarks",
@@ -35,7 +42,7 @@
       ]
     },
     "imgui": {
-      "description": "Omath will define method to convert omath types to imgui types",
+      "description": "omath will define method to convert omath types to imgui types",
       "dependencies": [
         "imgui"
       ]

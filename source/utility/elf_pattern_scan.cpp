@@ -8,6 +8,7 @@
 #include <utility>
 #include <variant>
 #include <vector>
+#include <VMProtectSDK.h>
 
 #pragma pack(push, 1)
 
