@@ -46,16 +46,27 @@ namespace omath::collision
         [[nodiscard]]
         const VertexType& find_furthest_vertex(const VectorType& direction) const
         {
-            // Compare vertices in world space so rotation and non-uniform scale are
-            // accounted for correctly. Without this the comparator uses local-space
-            // positions against a world-space direction, which yields the wrong support
-            // vertex whenever a non-identity transform is applied to the mesh.
+            // The support query arrives in world space, but vertex positions are stored
+            // in local space.  We need argmax_v { world(v) · d }.
+            //
+            // world(v) = M·v  (ignoring translation, which is constant across vertices)
+            // world(v) · d = v · Mᵀ·d
+            //
+            // So we transform the direction to local space once — O(1) — then compare
+            // raw local positions, which is far cheaper than calling
+            // vertex_position_to_world_space (full 4×4 multiply) for every vertex.
+            //
+            // d_local = upper-left 3×3 of M, transposed, times d_world:
+            //   d_local[j] = sum_i  M.at(i,j) * d[i]   (i.e. column j of M dotted with d)
+            const auto& m = m_mesh.get_to_world_matrix();
+            const VectorType d_local = {
+                m.at(0, 0) * direction.x + m.at(1, 0) * direction.y + m.at(2, 0) * direction.z,
+                m.at(0, 1) * direction.x + m.at(1, 1) * direction.y + m.at(2, 1) * direction.z,
+                m.at(0, 2) * direction.x + m.at(1, 2) * direction.y + m.at(2, 2) * direction.z,
+            };
             return *std::ranges::max_element(
-                    m_mesh.m_vertex_buffer, [&](const auto& first, const auto& second)
-                    {
-                        return m_mesh.vertex_position_to_world_space(first.position).dot(direction)
-                             < m_mesh.vertex_position_to_world_space(second.position).dot(direction);
-                    });
+                    m_mesh.m_vertex_buffer, [&d_local](const auto& first, const auto& second)
+                    { return first.position.dot(d_local) < second.position.dot(d_local); });
         }
         MeshType m_mesh;
     };
