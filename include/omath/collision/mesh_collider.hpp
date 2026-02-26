@@ -46,9 +46,16 @@ namespace omath::collision
         [[nodiscard]]
         const VertexType& find_furthest_vertex(const VectorType& direction) const
         {
+            // Compare vertices in world space so rotation and non-uniform scale are
+            // accounted for correctly. Without this the comparator uses local-space
+            // positions against a world-space direction, which yields the wrong support
+            // vertex whenever a non-identity transform is applied to the mesh.
             return *std::ranges::max_element(
-                    m_mesh.m_vertex_buffer, [&direction](const auto& first, const auto& second)
-                    { return first.position.dot(direction) < second.position.dot(direction); });
+                    m_mesh.m_vertex_buffer, [&](const auto& first, const auto& second)
+                    {
+                        return m_mesh.vertex_position_to_world_space(first.position).dot(direction)
+                             < m_mesh.vertex_position_to_world_space(second.position).dot(direction);
+                    });
         }
         MeshType m_mesh;
     };
