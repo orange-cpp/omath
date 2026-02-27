@@ -14,11 +14,15 @@ namespace omath::collision
         Simplex<VertexType> simplex; // valid only if hit == true and size==4
     };
 
+    struct GjkSettings final
+    {
+        float epsilon = 1e-6f;
+        std::size_t max_iterations = 64;
+    };
     template<class ColliderInterfaceType>
     class GjkAlgorithm final
     {
         using VectorType = ColliderInterfaceType::VectorType;
-
     public:
         [[nodiscard]]
         static VectorType find_support_vertex(const ColliderInterfaceType& collider_a,
@@ -36,7 +40,8 @@ namespace omath::collision
 
         [[nodiscard]]
         static GjkHitInfo<VectorType> is_collide_with_simplex_info(const ColliderInterfaceType& collider_a,
-                                                                   const ColliderInterfaceType& collider_b)
+                                                                   const ColliderInterfaceType& collider_b,
+                                                                   const GjkSettings& settings = {})
         {
             auto support = find_support_vertex(collider_a, collider_b, VectorType{1, 0, 0});
 
@@ -45,11 +50,11 @@ namespace omath::collision
 
             auto direction = -support;
 
-            while (true)
+            for (std::size_t iteration = 0; iteration < settings.max_iterations; ++iteration)
             {
                 support = find_support_vertex(collider_a, collider_b, direction);
 
-                if (support.dot(direction) <= 0.f)
+                if (support.dot(direction) <= settings.epsilon)
                     return {false, simplex};
 
                 simplex.push_front(support);
@@ -57,6 +62,7 @@ namespace omath::collision
                 if (simplex.handle(direction))
                     return {true, simplex};
             }
+            return {false, simplex};
         }
     };
 } // namespace omath::collision
