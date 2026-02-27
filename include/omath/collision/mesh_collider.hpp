@@ -60,13 +60,12 @@ namespace omath::collision
             //   d_local[j] = sum_i  M.at(i,j) * d[i]   (i.e. column j of M dotted with d)
             const auto& m = m_mesh.get_to_world_matrix();
             const VectorType d_local = {
-                m.at(0, 0) * direction.x + m.at(1, 0) * direction.y + m.at(2, 0) * direction.z,
-                m.at(0, 1) * direction.x + m.at(1, 1) * direction.y + m.at(2, 1) * direction.z,
-                m.at(0, 2) * direction.x + m.at(1, 2) * direction.y + m.at(2, 2) * direction.z,
+                    m[0, 0] * direction.x + m[1, 0] * direction.y + m[2, 0] * direction.z,
+                    m[0, 1] * direction.x + m[1, 1] * direction.y + m[2, 1] * direction.z,
+                    m[0, 2] * direction.x + m[1, 2] * direction.y + m[2, 2] * direction.z,
             };
-            return *std::ranges::max_element(
-                    m_mesh.m_vertex_buffer, [&d_local](const auto& first, const auto& second)
-                    { return first.position.dot(d_local) < second.position.dot(d_local); });
+            return *std::ranges::max_element(m_mesh.m_vertex_buffer, [&d_local](const auto& first, const auto& second)
+                                             { return first.position.dot(d_local) < second.position.dot(d_local); });
         }
         MeshType m_mesh;
     };
