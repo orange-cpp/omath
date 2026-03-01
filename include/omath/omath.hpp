@@ -17,6 +17,9 @@
 // Matrix classes
 #include "omath/linear_algebra/mat.hpp"
 
+// Quaternion
+#include "omath/linear_algebra/quaternion.hpp"
+
 // Color functionality
 #include "omath/utility/color.hpp"
 
