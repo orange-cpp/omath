@@ -291,3 +291,35 @@ TEST(UnitTestColorGrouped_More2, FormatterUsesToString)
     const auto formatted = std::format("{}", c);
     EXPECT_NE(formatted.find("r:10"), std::string::npos);
 }
+
+TEST(UnitTestColorGrouped_More2, FormatterRgb)
+{
+    constexpr Color c = Color::from_rgba(255, 128, 0, 64);
+    const auto s = std::format("{:rgb}", c);
+    EXPECT_NE(s.find("r:255"), std::string::npos);
+    EXPECT_NE(s.find("g:128"), std::string::npos);
+    EXPECT_NE(s.find("b:0"), std::string::npos);
+    EXPECT_NE(s.find("a:64"), std::string::npos);
+}
+
+TEST(UnitTestColorGrouped_More2, FormatterRgbf)
+{
+    constexpr Color c(0.5f, 0.25f, 1.0f, 0.75f);
+    const auto s = std::format("{:rgbf}", c);
+    EXPECT_NE(s.find("r:"), std::string::npos);
+    EXPECT_NE(s.find("g:"), std::string::npos);
+    EXPECT_NE(s.find("b:"), std::string::npos);
+    EXPECT_NE(s.find("a:"), std::string::npos);
+    // Values should be in [0,1] float range, not 0-255
+    EXPECT_EQ(s.find("r:127"), std::string::npos);
+    EXPECT_EQ(s.find("r:255"), std::string::npos);
+}
+
+TEST(UnitTestColorGrouped_More2, FormatterHsv)
+{
+    const Color c = Color::red();
+    const auto s = std::format("{:hsv}", c);
+    EXPECT_NE(s.find("h:"), std::string::npos);
+    EXPECT_NE(s.find("s:"), std::string::npos);
+    EXPECT_NE(s.find("v:"), std::string::npos);
+}
