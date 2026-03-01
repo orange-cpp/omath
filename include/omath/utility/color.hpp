@@ -207,7 +207,7 @@ struct std::formatter<omath::Color> // NOLINT(*-dcl58-cpp)
 
     constexpr auto parse(std::format_parse_context& ctx)
     {
-        auto it = ctx.begin();
+        const auto it = ctx.begin();
         const auto end = ctx.end();
 
         if (it == end || *it == '}')
