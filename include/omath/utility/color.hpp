@@ -16,19 +16,24 @@ namespace omath
         float value{};
     };
 
-    class Color final : public Vector4<float>
+    class Color final
     {
+        Vector4<float> m_value;
     public:
-        constexpr Color(const float r, const float g, const float b, const float a) noexcept: Vector4(r, g, b, a)
+        constexpr Color(const float r, const float g, const float b, const float a) noexcept: m_value(r, g, b, a)
         {
-            clamp(0.f, 1.f);
+            m_value.clamp(0.f, 1.f);
         }
 
+        constexpr explicit Color(const Vector4<float>& value) : m_value(value)
+        {
+            m_value.clamp(0.f, 1.f);
+        }
         constexpr explicit Color() noexcept = default;
         [[nodiscard]]
         constexpr static Color from_rgba(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) noexcept
         {
-            return Color{Vector4(r, g, b, a) / 255.f};
+            return Color(Vector4<float>(r, g, b, a) / 255.f);
         }
 
         [[nodiscard]]
@@ -82,9 +87,9 @@ namespace omath
         {
             Hsv hsv_data;
 
-            const float& red = x;
-            const float& green = y;
-            const float& blue = z;
+            const float& red = m_value.x;
+            const float& green = m_value.y;
+            const float& blue = m_value.z;
 
             const float max = std::max({red, green, blue});
             const float min = std::min({red, green, blue});
@@ -108,11 +113,6 @@ namespace omath
             hsv_data.value = max;
 
             return hsv_data;
-        }
-
-        constexpr explicit Color(const Vector4& vec) noexcept: Vector4(vec)
-        {
-            clamp(0.f, 1.f);
         }
         constexpr void set_hue(const float hue) noexcept
         {
@@ -141,7 +141,7 @@ namespace omath
         constexpr Color blend(const Color& other, float ratio) const noexcept
         {
             ratio = std::clamp(ratio, 0.f, 1.f);
-            return Color(*this * (1.f - ratio) + other * ratio);
+            return Color(this->m_value * (1.f - ratio) + other.m_value * ratio);
         }
 
         [[nodiscard]] static constexpr Color red()
@@ -160,16 +160,16 @@ namespace omath
         [[nodiscard]]
         ImColor to_im_color() const noexcept
         {
-            return {to_im_vec4()};
+            return {m_value.to_im_vec4()};
         }
 #endif
         [[nodiscard]] std::string to_string() const noexcept
         {
             return std::format("[r:{}, g:{}, b:{}, a:{}]",
-                            static_cast<int>(x * 255.f),
-                            static_cast<int>(y * 255.f),
-                            static_cast<int>(z * 255.f),
-                            static_cast<int>(w * 255.f));
+                            static_cast<int>(m_value.x * 255.f),
+                            static_cast<int>(m_value.y * 255.f),
+                            static_cast<int>(m_value.z * 255.f),
+                            static_cast<int>(m_value.w * 255.f));
         }
         [[nodiscard]] std::wstring to_wstring() const noexcept
         {
