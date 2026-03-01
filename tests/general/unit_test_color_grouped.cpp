@@ -26,38 +26,38 @@ protected:
 TEST_F(UnitTestColorGrouped, Constructor_Float)
 {
     constexpr Color color(0.5f, 0.5f, 0.5f, 1.0f);
-    EXPECT_FLOAT_EQ(color.x, 0.5f);
-    EXPECT_FLOAT_EQ(color.y, 0.5f);
-    EXPECT_FLOAT_EQ(color.z, 0.5f);
-    EXPECT_FLOAT_EQ(color.w, 1.0f);
+    EXPECT_FLOAT_EQ(color.value().x, 0.5f);
+    EXPECT_FLOAT_EQ(color.value().y, 0.5f);
+    EXPECT_FLOAT_EQ(color.value().z, 0.5f);
+    EXPECT_FLOAT_EQ(color.value().w, 1.0f);
 }
 
 TEST_F(UnitTestColorGrouped, Constructor_Vector4)
 {
     constexpr omath::Vector4 vec(0.2f, 0.4f, 0.6f, 0.8f);
     constexpr Color color(vec);
-    EXPECT_FLOAT_EQ(color.x, 0.2f);
-    EXPECT_FLOAT_EQ(color.y, 0.4f);
-    EXPECT_FLOAT_EQ(color.z, 0.6f);
-    EXPECT_FLOAT_EQ(color.w, 0.8f);
+    EXPECT_FLOAT_EQ(color.value().x, 0.2f);
+    EXPECT_FLOAT_EQ(color.value().y, 0.4f);
+    EXPECT_FLOAT_EQ(color.value().z, 0.6f);
+    EXPECT_FLOAT_EQ(color.value().w, 0.8f);
 }
 
 TEST_F(UnitTestColorGrouped, FromRGBA)
 {
     constexpr Color color = Color::from_rgba(128, 64, 32, 255);
-    EXPECT_FLOAT_EQ(color.x, 128.0f / 255.0f);
-    EXPECT_FLOAT_EQ(color.y, 64.0f / 255.0f);
-    EXPECT_FLOAT_EQ(color.z, 32.0f / 255.0f);
-    EXPECT_FLOAT_EQ(color.w, 1.0f);
+    EXPECT_FLOAT_EQ(color.value().x, 128.0f / 255.0f);
+    EXPECT_FLOAT_EQ(color.value().y, 64.0f / 255.0f);
+    EXPECT_FLOAT_EQ(color.value().z, 32.0f / 255.0f);
+    EXPECT_FLOAT_EQ(color.value().w, 1.0f);
 }
 
 TEST_F(UnitTestColorGrouped, FromHSV)
 {
     constexpr Color color = Color::from_hsv(0.0f, 1.0f, 1.0f); // Red in HSV
-    EXPECT_FLOAT_EQ(color.x, 1.0f);
-    EXPECT_FLOAT_EQ(color.y, 0.0f);
-    EXPECT_FLOAT_EQ(color.z, 0.0f);
-    EXPECT_FLOAT_EQ(color.w, 1.0f);
+    EXPECT_FLOAT_EQ(color.value().x, 1.0f);
+    EXPECT_FLOAT_EQ(color.value().y, 0.0f);
+    EXPECT_FLOAT_EQ(color.value().z, 0.0f);
+    EXPECT_FLOAT_EQ(color.value().w, 1.0f);
 }
 
 TEST_F(UnitTestColorGrouped, ToHSV)
@@ -71,10 +71,10 @@ TEST_F(UnitTestColorGrouped, ToHSV)
 TEST_F(UnitTestColorGrouped, Blend)
 {
     const Color blended = color1.blend(color2, 0.5f);
-    EXPECT_FLOAT_EQ(blended.x, 0.5f);
-    EXPECT_FLOAT_EQ(blended.y, 0.5f);
-    EXPECT_FLOAT_EQ(blended.z, 0.0f);
-    EXPECT_FLOAT_EQ(blended.w, 1.0f);
+    EXPECT_FLOAT_EQ(blended.value().x, 0.5f);
+    EXPECT_FLOAT_EQ(blended.value().y, 0.5f);
+    EXPECT_FLOAT_EQ(blended.value().z, 0.0f);
+    EXPECT_FLOAT_EQ(blended.value().w, 1.0f);
 }
 
 TEST_F(UnitTestColorGrouped, PredefinedColors)
@@ -83,20 +83,20 @@ TEST_F(UnitTestColorGrouped, PredefinedColors)
     constexpr Color green = Color::green();
     constexpr Color blue = Color::blue();
 
-    EXPECT_FLOAT_EQ(red.x, 1.0f);
-    EXPECT_FLOAT_EQ(red.y, 0.0f);
-    EXPECT_FLOAT_EQ(red.z, 0.0f);
-    EXPECT_FLOAT_EQ(red.w, 1.0f);
+    EXPECT_FLOAT_EQ(red.value().x, 1.0f);
+    EXPECT_FLOAT_EQ(red.value().y, 0.0f);
+    EXPECT_FLOAT_EQ(red.value().z, 0.0f);
+    EXPECT_FLOAT_EQ(red.value().w, 1.0f);
 
-    EXPECT_FLOAT_EQ(green.x, 0.0f);
-    EXPECT_FLOAT_EQ(green.y, 1.0f);
-    EXPECT_FLOAT_EQ(green.z, 0.0f);
-    EXPECT_FLOAT_EQ(green.w, 1.0f);
+    EXPECT_FLOAT_EQ(green.value().x, 0.0f);
+    EXPECT_FLOAT_EQ(green.value().y, 1.0f);
+    EXPECT_FLOAT_EQ(green.value().z, 0.0f);
+    EXPECT_FLOAT_EQ(green.value().w, 1.0f);
 
-    EXPECT_FLOAT_EQ(blue.x, 0.0f);
-    EXPECT_FLOAT_EQ(blue.y, 0.0f);
-    EXPECT_FLOAT_EQ(blue.z, 1.0f);
-    EXPECT_FLOAT_EQ(blue.w, 1.0f);
+    EXPECT_FLOAT_EQ(blue.value().x, 0.0f);
+    EXPECT_FLOAT_EQ(blue.value().y, 0.0f);
+    EXPECT_FLOAT_EQ(blue.value().z, 1.0f);
+    EXPECT_FLOAT_EQ(blue.value().w, 1.0f);
 }
 
 TEST_F(UnitTestColorGrouped, BlendVector3)
@@ -104,9 +104,9 @@ TEST_F(UnitTestColorGrouped, BlendVector3)
     constexpr Color v1(1.0f, 0.0f, 0.0f, 1.f); // Red
     constexpr Color v2(0.0f, 1.0f, 0.0f, 1.f); // Green
     constexpr Color blended = v1.blend(v2, 0.5f);
-    EXPECT_FLOAT_EQ(blended.x, 0.5f);
-    EXPECT_FLOAT_EQ(blended.y, 0.5f);
-    EXPECT_FLOAT_EQ(blended.z, 0.0f);
+    EXPECT_FLOAT_EQ(blended.value().x, 0.5f);
+    EXPECT_FLOAT_EQ(blended.value().y, 0.5f);
+    EXPECT_FLOAT_EQ(blended.value().z, 0.0f);
 }
 
 // From unit_test_color_extra.cpp
@@ -148,37 +148,37 @@ TEST(UnitTestColorGrouped_Extra, BlendEdgeCases)
     constexpr Color a = Color::red();
     constexpr Color b = Color::blue();
     constexpr auto r0 = a.blend(b, 0.f);
-    EXPECT_FLOAT_EQ(r0.x, a.x);
+    EXPECT_FLOAT_EQ(r0.value().x, a.value().x);
     constexpr auto r1 = a.blend(b, 1.f);
-    EXPECT_FLOAT_EQ(r1.x, b.x);
+    EXPECT_FLOAT_EQ(r1.value().x, b.value().x);
 }
 
 // From unit_test_color_more.cpp
 TEST(UnitTestColorGrouped_More, DefaultCtorIsZero)
 {
     constexpr Color c;
-    EXPECT_FLOAT_EQ(c.x, 0.0f);
-    EXPECT_FLOAT_EQ(c.y, 0.0f);
-    EXPECT_FLOAT_EQ(c.z, 0.0f);
-    EXPECT_FLOAT_EQ(c.w, 0.0f);
+    EXPECT_FLOAT_EQ(c.value().x, 0.0f);
+    EXPECT_FLOAT_EQ(c.value().y, 0.0f);
+    EXPECT_FLOAT_EQ(c.value().z, 0.0f);
+    EXPECT_FLOAT_EQ(c.value().w, 0.0f);
 }
 
 TEST(UnitTestColorGrouped_More, FloatCtorAndClampForRGB)
 {
     constexpr Color c(1.2f, -0.5f, 0.5f, 2.0f);
-    EXPECT_FLOAT_EQ(c.x, 1.0f);
-    EXPECT_FLOAT_EQ(c.y, 0.0f);
-    EXPECT_FLOAT_EQ(c.z, 0.5f);
-    EXPECT_FLOAT_EQ(c.w, 2.0f);
+    EXPECT_FLOAT_EQ(c.value().x, 1.0f);
+    EXPECT_FLOAT_EQ(c.value().y, 0.0f);
+    EXPECT_FLOAT_EQ(c.value().z, 0.5f);
+    EXPECT_FLOAT_EQ(c.value().w, 2.0f);
 }
 
 TEST(UnitTestColorGrouped_More, FromRgbaProducesScaledComponents)
 {
     constexpr Color c = Color::from_rgba(25u, 128u, 230u, 64u);
-    EXPECT_NEAR(c.x, 25.0f/255.0f, 1e-6f);
-    EXPECT_NEAR(c.y, 128.0f/255.0f, 1e-6f);
-    EXPECT_NEAR(c.z, 230.0f/255.0f, 1e-6f);
-    EXPECT_NEAR(c.w, 64.0f/255.0f, 1e-6f);
+    EXPECT_NEAR(c.value().x, 25.0f/255.0f, 1e-6f);
+    EXPECT_NEAR(c.value().y, 128.0f/255.0f, 1e-6f);
+    EXPECT_NEAR(c.value().z, 230.0f/255.0f, 1e-6f);
+    EXPECT_NEAR(c.value().w, 64.0f/255.0f, 1e-6f);
 }
 
 TEST(UnitTestColorGrouped_More, BlendProducesIntermediate)
@@ -186,10 +186,10 @@ TEST(UnitTestColorGrouped_More, BlendProducesIntermediate)
     constexpr Color c0(0.0f, 0.0f, 0.0f, 1.0f);
     constexpr Color c1(1.0f, 1.0f, 1.0f, 0.0f);
     constexpr Color mid = c0.blend(c1, 0.5f);
-    EXPECT_FLOAT_EQ(mid.x, 0.5f);
-    EXPECT_FLOAT_EQ(mid.y, 0.5f);
-    EXPECT_FLOAT_EQ(mid.z, 0.5f);
-    EXPECT_FLOAT_EQ(mid.w, 0.5f);
+    EXPECT_FLOAT_EQ(mid.value().x, 0.5f);
+    EXPECT_FLOAT_EQ(mid.value().y, 0.5f);
+    EXPECT_FLOAT_EQ(mid.value().z, 0.5f);
+    EXPECT_FLOAT_EQ(mid.value().w, 0.5f);
 }
 
 TEST(UnitTestColorGrouped_More, HsvRoundTrip)
@@ -197,9 +197,9 @@ TEST(UnitTestColorGrouped_More, HsvRoundTrip)
     constexpr Color red = Color::red();
     const auto hsv = red.to_hsv();
     const Color back = Color::from_hsv(hsv);
-    EXPECT_NEAR(back.x, 1.0f, 1e-6f);
-    EXPECT_NEAR(back.y, 0.0f, 1e-6f);
-    EXPECT_NEAR(back.z, 0.0f, 1e-6f);
+    EXPECT_NEAR(back.value().x, 1.0f, 1e-6f);
+    EXPECT_NEAR(back.value().y, 0.0f, 1e-6f);
+    EXPECT_NEAR(back.value().z, 0.0f, 1e-6f);
 }
 
 TEST(UnitTestColorGrouped_More, ToStringContainsComponents)
@@ -230,18 +230,18 @@ TEST(UnitTestColorGrouped_More2, FromHsvCases)
     auto check_hue = [&](float h) {
         SCOPED_TRACE(::testing::Message() << "h=" << h);
         Color c = Color::from_hsv(h, 1.f, 1.f);
-        EXPECT_TRUE(std::isfinite(c.x));
-        EXPECT_TRUE(std::isfinite(c.y));
-        EXPECT_TRUE(std::isfinite(c.z));
-        EXPECT_GE(c.x, -eps);
-        EXPECT_LE(c.x, 1.f + eps);
-        EXPECT_GE(c.y, -eps);
-        EXPECT_LE(c.y, 1.f + eps);
-        EXPECT_GE(c.z, -eps);
-        EXPECT_LE(c.z, 1.f + eps);
+        EXPECT_TRUE(std::isfinite(c.value().x));
+        EXPECT_TRUE(std::isfinite(c.value().y));
+        EXPECT_TRUE(std::isfinite(c.value().z));
+        EXPECT_GE(c.value().x, -eps);
+        EXPECT_LE(c.value().x, 1.f + eps);
+        EXPECT_GE(c.value().y, -eps);
+        EXPECT_LE(c.value().y, 1.f + eps);
+        EXPECT_GE(c.value().z, -eps);
+        EXPECT_LE(c.value().z, 1.f + eps);
 
-        float mx = std::max({c.x, c.y, c.z});
-        float mn = std::min({c.x, c.y, c.z});
+        float mx = std::max({c.value().x, c.value().y, c.value().z});
+        float mn = std::min({c.value().x, c.value().y, c.value().z});
         EXPECT_GE(mx, 0.999f);
         EXPECT_LE(mn, 1e-3f + 1e-4f);
     };
@@ -261,13 +261,13 @@ TEST(UnitTestColorGrouped_More2, ToHsvAndSetters)
     EXPECT_NEAR(hsv.value, 0.6f, 1e-6f);
 
     c.set_hue(0.0f);
-    EXPECT_TRUE(std::isfinite(c.x));
+    EXPECT_TRUE(std::isfinite(c.value().x));
 
     c.set_saturation(0.0f);
-    EXPECT_TRUE(std::isfinite(c.y));
+    EXPECT_TRUE(std::isfinite(c.value().y));
 
     c.set_value(0.5f);
-    EXPECT_TRUE(std::isfinite(c.z));
+    EXPECT_TRUE(std::isfinite(c.value().z));
 }
 
 TEST(UnitTestColorGrouped_More2, BlendAndStaticColors)
@@ -275,14 +275,14 @@ TEST(UnitTestColorGrouped_More2, BlendAndStaticColors)
     constexpr Color a = Color::red();
     constexpr Color b = Color::blue();
     constexpr auto mid = a.blend(b, 0.5f);
-    EXPECT_GT(mid.x, 0.f);
-    EXPECT_GT(mid.z, 0.f);
+    EXPECT_GT(mid.value().x, 0.f);
+    EXPECT_GT(mid.value().z, 0.f);
 
     constexpr auto all_a = a.blend(b, -1.f);
-    EXPECT_NEAR(all_a.x, a.x, 1e-6f);
+    EXPECT_NEAR(all_a.value().x, a.value().x, 1e-6f);
 
     constexpr auto all_b = a.blend(b, 2.f);
-    EXPECT_NEAR(all_b.z, b.z, 1e-6f);
+    EXPECT_NEAR(all_b.value().z, b.value().z, 1e-6f);
 }
 
 TEST(UnitTestColorGrouped_More2, FormatterUsesToString)
@@ -290,4 +290,36 @@ TEST(UnitTestColorGrouped_More2, FormatterUsesToString)
     Color c = Color::from_rgba(10, 20, 30, 40);
     const auto formatted = std::format("{}", c);
     EXPECT_NE(formatted.find("r:10"), std::string::npos);
+}
+
+TEST(UnitTestColorGrouped_More2, FormatterRgb)
+{
+    constexpr Color c = Color::from_rgba(255, 128, 0, 64);
+    const auto s = std::format("{:rgb}", c);
+    EXPECT_NE(s.find("r:255"), std::string::npos);
+    EXPECT_NE(s.find("g:128"), std::string::npos);
+    EXPECT_NE(s.find("b:0"), std::string::npos);
+    EXPECT_NE(s.find("a:64"), std::string::npos);
+}
+
+TEST(UnitTestColorGrouped_More2, FormatterRgbf)
+{
+    constexpr Color c(0.5f, 0.25f, 1.0f, 0.75f);
+    const auto s = std::format("{:rgbf}", c);
+    EXPECT_NE(s.find("r:"), std::string::npos);
+    EXPECT_NE(s.find("g:"), std::string::npos);
+    EXPECT_NE(s.find("b:"), std::string::npos);
+    EXPECT_NE(s.find("a:"), std::string::npos);
+    // Values should be in [0,1] float range, not 0-255
+    EXPECT_EQ(s.find("r:127"), std::string::npos);
+    EXPECT_EQ(s.find("r:255"), std::string::npos);
+}
+
+TEST(UnitTestColorGrouped_More2, FormatterHsv)
+{
+    const Color c = Color::red();
+    const auto s = std::format("{:hsv}", c);
+    EXPECT_NE(s.find("h:"), std::string::npos);
+    EXPECT_NE(s.find("s:"), std::string::npos);
+    EXPECT_NE(s.find("v:"), std::string::npos);
 }
