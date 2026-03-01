@@ -20,6 +20,10 @@ namespace omath
     {
         Vector4<float> m_value;
     public:
+        constexpr const Vector4<float>& value() const
+        {
+            return m_value;
+        }
         constexpr Color(const float r, const float g, const float b, const float a) noexcept: m_value(r, g, b, a)
         {
             m_value.clamp(0.f, 1.f);
