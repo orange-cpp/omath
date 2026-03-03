@@ -8,6 +8,7 @@
 #include <memory>
 #include <memory_resource>
 #include <queue>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -56,83 +57,76 @@ namespace omath::collision
                                            const Simplex<VectorType>& simplex, const Params params = {},
                                            std::pmr::memory_resource& mem_resource = *std::pmr::get_default_resource())
         {
-            // --- Build initial polytope from simplex (4 points) ---
             std::pmr::vector<VectorType> vertexes = build_initial_polytope_from_simplex(simplex, mem_resource);
-
-            // Initial tetra faces (windings corrected in make_face)
             std::pmr::vector<Face> faces = create_initial_tetra_faces(mem_resource, vertexes);
 
-            auto heap = rebuild_heap(faces, mem_resource);
+            // Build initial min-heap by distance.
+            Heap heap = rebuild_heap(faces, mem_resource);
 
             Result out{};
 
+            // Hoisted outside the loop to reuse bucket allocation across iterations.
+            // Initial bucket count 16 covers a typical horizon without rehashing.
+            BoundaryMap boundary{16, &mem_resource};
+
             for (int it = 0; it < params.max_iterations; ++it)
             {
-                // If heap might be stale after face edits, rebuild lazily.
-                if (heap.empty())
-                    break;
-                // Rebuild when the "closest" face changed (simple cheap guard)
-                // (We could keep face handles; this is fine for small Ns.)
-
-                if (const auto top = heap.top(); faces[top.idx].d != top.d)
-                    heap = rebuild_heap(faces, mem_resource);
+                // Lazily discard stale (deleted or index-mismatched) heap entries.
+                discard_stale_heap_entries(faces, heap);
 
                 if (heap.empty())
                     break;
 
-                // FIXME: STORE REF VALUE, DO NOT USE
-                //  AFTER IF STATEMENT BLOCK
                 const Face& face = faces[heap.top().idx];
 
-                // Get the furthest point in face normal direction
                 const VectorType p = support_point(a, b, face.n);
                 const auto p_dist = face.n.dot(p);
 
-                // Converged if we can’t push the face closer than tolerance
+                // Converged: new support can't push the face closer than tolerance.
                 if (p_dist - face.d <= params.tolerance)
                 {
                     out.normal = face.n;
-                    out.depth = face.d; // along unit normal
+                    out.depth = face.d;
                     out.iterations = it + 1;
                     out.num_vertices = static_cast<int>(vertexes.size());
                     out.num_faces = static_cast<int>(faces.size());
-
                     out.penetration_vector = out.normal * out.depth;
                     return out;
                 }
 
-                // Add new vertex
                 const int new_idx = static_cast<int>(vertexes.size());
                 vertexes.emplace_back(p);
 
-                const auto [to_delete, boundary] = mark_visible_and_collect_horizon(faces, p);
+                // Tombstone visible faces and collect the horizon boundary.
+                // This avoids copying the faces array (O(n)) each iteration.
+                tombstone_visible_faces(faces, boundary, p);
 
-                erase_marked(faces, to_delete);
-
-                // Stitch new faces around the horizon
-                for (const auto& e : boundary)
+                // Stitch new faces around the horizon and push them directly onto the
+                // heap — no full O(n log n) rebuild needed.
+                for (const auto& [key, e] : boundary)
+                {
+                    const int fi = static_cast<int>(faces.size());
                     faces.emplace_back(make_face(vertexes, e.a, e.b, new_idx));
-
-                // Rebuild heap after topology change
-                heap = rebuild_heap(faces, mem_resource);
+                    heap.emplace(faces.back().d, fi);
+                }
 
                 if (!std::isfinite(vertexes.back().dot(vertexes.back())))
                     break; // safety
+
                 out.iterations = it + 1;
             }
 
-            if (faces.empty())
+            // Find the best surviving (non-deleted) face.
+            const Face* best = find_best_surviving_face(faces);
+
+            if (!best)
                 return std::nullopt;
 
-            const auto best = *std::ranges::min_element(faces, [](const auto& first, const auto& second)
-                                                        { return first.d < second.d; });
-            out.normal = best.n;
-            out.depth = best.d;
+            out.normal = best->n;
+            out.depth = best->d;
             out.num_vertices = static_cast<int>(vertexes.size());
             out.num_faces = static_cast<int>(faces.size());
-
             out.penetration_vector = out.normal * out.depth;
-
             return out;
         }
 
@@ -141,7 +135,8 @@ namespace omath::collision
         {
             int i0, i1, i2;
             VectorType n; // unit outward normal
-            FloatingType d; // n · v0  (>=0 ideally because origin is inside)
+            FloatingType d; // n · v0  (>= 0 ideally because origin is inside)
+            bool deleted{false}; // tombstone flag — avoids O(n) compaction per iteration
         };
 
         struct Edge final
@@ -154,6 +149,7 @@ namespace omath::collision
             FloatingType d;
             int idx;
         };
+
         struct HeapCmp final
         {
             [[nodiscard]]
@@ -165,35 +161,44 @@ namespace omath::collision
 
         using Heap = std::priority_queue<HeapItem, std::pmr::vector<HeapItem>, HeapCmp>;
 
+        // Horizon boundary: maps packed(a,b) → Edge.
+        // Opposite edges cancel in O(1) via hash lookup instead of O(h) linear scan.
+        using BoundaryMap = std::pmr::unordered_map<std::int64_t, Edge>;
+
+        [[nodiscard]]
+        static constexpr std::int64_t pack_edge(const int a, const int b) noexcept
+        {
+            return (static_cast<std::int64_t>(a) << 32) | static_cast<std::uint32_t>(b);
+        }
+
         [[nodiscard]]
         static Heap rebuild_heap(const std::pmr::vector<Face>& faces, auto& memory_resource)
         {
             std::pmr::vector<HeapItem> storage{&memory_resource};
-            storage.reserve(faces.size()); // optional but recommended
-
+            storage.reserve(faces.size());
             Heap h{HeapCmp{}, std::move(storage)};
-
             for (int i = 0; i < static_cast<int>(faces.size()); ++i)
-                h.emplace(faces[i].d, i);
-
-            return h; // allocator is preserved
+                if (!faces[i].deleted)
+                    h.emplace(faces[i].d, i);
+            return h;
         }
 
         [[nodiscard]]
         static bool visible_from(const Face& f, const VectorType& p)
         {
-            // positive if p is in front of the face
             return f.n.dot(p) - f.d > static_cast<FloatingType>(1e-7);
         }
 
-        static void add_edge_boundary(std::pmr::vector<Edge>& boundary, int a, int b)
+        static void add_edge_boundary(BoundaryMap& boundary, int a, int b)
         {
-            // Keep edges that appear only once; erase if opposite already present
-            auto itb = std::ranges::find_if(boundary, [&](const Edge& e) { return e.a == b && e.b == a; });
-            if (itb != boundary.end())
-                boundary.erase(itb); // internal edge cancels out
+            // O(1) cancel: if the opposite edge (b→a) is already in the map it is an
+            // internal edge shared by two visible faces and must be removed.
+            // Otherwise this is a horizon edge and we insert it.
+            const std::int64_t rev = pack_edge(b, a);
+            if (const auto it = boundary.find(rev); it != boundary.end())
+                boundary.erase(it);
             else
-                boundary.emplace_back(a, b); // horizon edge (directed)
+                boundary.emplace(pack_edge(a, b), Edge{a, b});
         }
 
         [[nodiscard]]
@@ -204,9 +209,7 @@ namespace omath::collision
             const VectorType& a2 = vertexes[i2];
             VectorType n = (a1 - a0).cross(a2 - a0);
             if (n.dot(n) <= static_cast<FloatingType>(1e-30))
-            {
                 n = any_perp_vec(a1 - a0); // degenerate guard
-            }
             // Ensure normal points outward (away from origin): require n·a0 >= 0
             if (n.dot(a0) < static_cast<FloatingType>(0.0))
             {
@@ -243,6 +246,7 @@ namespace omath::collision
                     return d;
             return V{1, 0, 0};
         }
+
         [[nodiscard]]
         static std::pmr::vector<Face> create_initial_tetra_faces(std::pmr::memory_resource& mem_resource,
                                                                  const std::pmr::vector<VectorType>& vertexes)
@@ -262,48 +266,45 @@ namespace omath::collision
         {
             std::pmr::vector<VectorType> vertexes{&mem_resource};
             vertexes.reserve(simplex.size());
-
             for (std::size_t i = 0; i < simplex.size(); ++i)
                 vertexes.emplace_back(simplex[i]);
-
             return vertexes;
         }
-        static void erase_marked(std::pmr::vector<Face>& faces, const std::pmr::vector<bool>& to_delete)
+
+        static const Face* find_best_surviving_face(const std::pmr::vector<Face>& faces)
         {
-            auto* mr = faces.get_allocator().resource(); // keep same resource
-            std::pmr::vector<Face> kept{mr};
-            kept.reserve(faces.size());
-
-            for (std::size_t i = 0; i < faces.size(); ++i)
-                if (!to_delete[i])
-                    kept.emplace_back(faces[i]);
-
-            faces.swap(kept);
+            const Face* best = nullptr;
+            for (const auto& f : faces)
+                if (!f.deleted && (best == nullptr || f.d < best->d))
+                    best = &f;
+            return best;
         }
-        struct Horizon
+        static void tombstone_visible_faces(std::pmr::vector<Face>& faces, BoundaryMap& boundary,
+                                            const VectorType& p)
         {
-            std::pmr::vector<bool> to_delete;
-            std::pmr::vector<Edge> boundary;
-        };
-
-        static Horizon mark_visible_and_collect_horizon(const std::pmr::vector<Face>& faces, const VectorType& p)
-        {
-            auto* mr = faces.get_allocator().resource();
-
-            Horizon horizon{std::pmr::vector<bool>(faces.size(), false, mr), std::pmr::vector<Edge>(mr)};
-            horizon.boundary.reserve(faces.size());
-
-            for (std::size_t i = 0; i < faces.size(); ++i)
-                if (visible_from(faces[i], p))
+            boundary.clear();
+            for (auto& f : faces)
+            {
+                if (!f.deleted && visible_from(f, p))
                 {
-                    const auto& rf = faces[i];
-                    horizon.to_delete[i] = true;
-                    add_edge_boundary(horizon.boundary, rf.i0, rf.i1);
-                    add_edge_boundary(horizon.boundary, rf.i1, rf.i2);
-                    add_edge_boundary(horizon.boundary, rf.i2, rf.i0);
+                    f.deleted = true;
+                    add_edge_boundary(boundary, f.i0, f.i1);
+                    add_edge_boundary(boundary, f.i1, f.i2);
+                    add_edge_boundary(boundary, f.i2, f.i0);
                 }
+            }
+        }
 
-            return horizon;
+        static void discard_stale_heap_entries(const std::pmr::vector<Face>& faces,
+                                               std::priority_queue<HeapItem, std::pmr::vector<HeapItem>, HeapCmp>& heap)
+        {
+            while (!heap.empty())
+            {
+                const auto& top = heap.top();
+                if (!faces[top.idx].deleted && faces[top.idx].d == top.d)
+                    break;
+                heap.pop();
+            }
         }
     };
 } // namespace omath::collision

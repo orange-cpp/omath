@@ -43,7 +43,20 @@ namespace omath::collision
                                                                    const ColliderInterfaceType& collider_b,
                                                                    const GjkSettings& settings = {})
         {
-            auto support = find_support_vertex(collider_a, collider_b, VectorType{1, 0, 0});
+            // Use centroid difference as initial direction — greatly reduces iterations for separated shapes.
+            VectorType initial_dir;
+            if constexpr (requires { collider_b.get_origin() - collider_a.get_origin(); })
+            {
+                initial_dir = collider_b.get_origin() - collider_a.get_origin();
+                if (initial_dir.dot(initial_dir) < settings.epsilon * settings.epsilon)
+                    initial_dir = VectorType{1, 0, 0};
+            }
+            else
+            {
+                initial_dir = VectorType{1, 0, 0};
+            }
+
+            auto support = find_support_vertex(collider_a, collider_b, initial_dir);
 
             Simplex<VectorType> simplex;
             simplex.push_front(support);
