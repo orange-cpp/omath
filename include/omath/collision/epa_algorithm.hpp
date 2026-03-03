@@ -50,7 +50,6 @@ namespace omath::collision
             int max_iterations{64};
             FloatingType tolerance{1e-4}; // absolute tolerance on distance growth
         };
-
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
         static std::optional<Result> solve(const ColliderInterfaceType& a, const ColliderInterfaceType& b,
@@ -72,13 +71,7 @@ namespace omath::collision
             for (int it = 0; it < params.max_iterations; ++it)
             {
                 // Lazily discard stale (deleted or index-mismatched) heap entries.
-                while (!heap.empty())
-                {
-                    const auto& top = heap.top();
-                    if (!faces[top.idx].deleted && faces[top.idx].d == top.d)
-                        break;
-                    heap.pop();
-                }
+                discard_stale_heap_entries(faces, heap);
 
                 if (heap.empty())
                     break;
@@ -105,17 +98,7 @@ namespace omath::collision
 
                 // Tombstone visible faces and collect the horizon boundary.
                 // This avoids copying the faces array (O(n)) each iteration.
-                boundary.clear();
-                for (auto& f : faces)
-                {
-                    if (!f.deleted && visible_from(f, p))
-                    {
-                        f.deleted = true;
-                        add_edge_boundary(boundary, f.i0, f.i1);
-                        add_edge_boundary(boundary, f.i1, f.i2);
-                        add_edge_boundary(boundary, f.i2, f.i0);
-                    }
-                }
+                tombstone_visible_faces(faces, boundary, p);
 
                 // Stitch new faces around the horizon and push them directly onto the
                 // heap — no full O(n log n) rebuild needed.
@@ -133,10 +116,7 @@ namespace omath::collision
             }
 
             // Find the best surviving (non-deleted) face.
-            const Face* best = nullptr;
-            for (const auto& f : faces)
-                if (!f.deleted && (best == nullptr || f.d < best->d))
-                    best = &f;
+            const Face* best = find_best_surviving_face(faces);
 
             if (!best)
                 return std::nullopt;
@@ -153,8 +133,8 @@ namespace omath::collision
         struct Face final
         {
             int i0, i1, i2;
-            VectorType n;       // unit outward normal
-            FloatingType d;     // n · v0  (>= 0 ideally because origin is inside)
+            VectorType n; // unit outward normal
+            FloatingType d; // n · v0  (>= 0 ideally because origin is inside)
             bool deleted{false}; // tombstone flag — avoids O(n) compaction per iteration
         };
 
@@ -276,6 +256,42 @@ namespace omath::collision
             for (std::size_t i = 0; i < simplex.size(); ++i)
                 vertexes.emplace_back(simplex[i]);
             return vertexes;
+        }
+
+        static const Face* find_best_surviving_face(const std::pmr::vector<Face>& faces)
+        {
+            const Face* best = nullptr;
+            for (const auto& f : faces)
+                if (!f.deleted && (best == nullptr || f.d < best->d))
+                    best = &f;
+            return best;
+        }
+        static void tombstone_visible_faces(std::pmr::vector<Face>& faces, std::pmr::vector<Edge>& boundary,
+                                            const VectorType& p)
+        {
+            boundary.clear();
+            for (auto& f : faces)
+            {
+                if (!f.deleted && visible_from(f, p))
+                {
+                    f.deleted = true;
+                    add_edge_boundary(boundary, f.i0, f.i1);
+                    add_edge_boundary(boundary, f.i1, f.i2);
+                    add_edge_boundary(boundary, f.i2, f.i0);
+                }
+            }
+        }
+
+        static void discard_stale_heap_entries(const std::pmr::vector<Face>& faces,
+                                               std::priority_queue<HeapItem, std::pmr::vector<HeapItem>, HeapCmp>& heap)
+        {
+            while (!heap.empty())
+            {
+                const auto& top = heap.top();
+                if (!faces[top.idx].deleted && faces[top.idx].d == top.d)
+                    break;
+                heap.pop();
+            }
         }
     };
 } // namespace omath::collision
