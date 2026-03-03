@@ -163,12 +163,12 @@ namespace omath::collision
 
         // Horizon boundary: maps packed(a,b) → Edge.
         // Opposite edges cancel in O(1) via hash lookup instead of O(h) linear scan.
-        using BoundaryMap = std::pmr::unordered_map<int64_t, Edge>;
+        using BoundaryMap = std::pmr::unordered_map<std::int64_t, Edge>;
 
         [[nodiscard]]
-        static constexpr int64_t pack_edge(const int a, const int b) noexcept
+        static constexpr std::int64_t pack_edge(const int a, const int b) noexcept
         {
-            return (static_cast<int64_t>(a) << 32) | static_cast<uint32_t>(b);
+            return (static_cast<std::int64_t>(a) << 32) | static_cast<std::uint32_t>(b);
         }
 
         [[nodiscard]]
@@ -194,7 +194,7 @@ namespace omath::collision
             // O(1) cancel: if the opposite edge (b→a) is already in the map it is an
             // internal edge shared by two visible faces and must be removed.
             // Otherwise this is a horizon edge and we insert it.
-            const int64_t rev = pack_edge(b, a);
+            const std::int64_t rev = pack_edge(b, a);
             if (const auto it = boundary.find(rev); it != boundary.end())
                 boundary.erase(it);
             else
