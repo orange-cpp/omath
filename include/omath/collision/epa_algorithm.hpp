@@ -166,7 +166,7 @@ namespace omath::collision
         using BoundaryMap = std::pmr::unordered_map<int64_t, Edge>;
 
         [[nodiscard]]
-        static constexpr int64_t pack_edge(int a, int b) noexcept
+        static constexpr int64_t pack_edge(const int a, const int b) noexcept
         {
             return (static_cast<int64_t>(a) << 32) | static_cast<uint32_t>(b);
         }
