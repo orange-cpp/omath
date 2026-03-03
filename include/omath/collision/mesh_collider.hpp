@@ -42,6 +42,14 @@ namespace omath::collision
             m_mesh.set_origin(new_origin);
         }
 
+        const MeshType& get_mesh() const
+        {
+            return m_mesh;
+        }
+        MeshType& get_mesh()
+        {
+            return m_mesh;
+        }
     private:
         [[nodiscard]]
         const VertexType& find_furthest_vertex(const VectorType& direction) const
