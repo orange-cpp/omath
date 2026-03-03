@@ -42,10 +42,12 @@ namespace omath::collision
             m_mesh.set_origin(new_origin);
         }
 
+        [[nodiscard]]
         const MeshType& get_mesh() const
         {
             return m_mesh;
         }
+        [[nodiscard]]
         MeshType& get_mesh()
         {
             return m_mesh;
