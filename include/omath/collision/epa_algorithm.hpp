@@ -8,6 +8,7 @@
 #include <memory>
 #include <memory_resource>
 #include <queue>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -64,9 +65,9 @@ namespace omath::collision
 
             Result out{};
 
-            // Hoisted outside the loop to reuse the allocation across iterations.
-            std::pmr::vector<Edge> boundary{&mem_resource};
-            boundary.reserve(16);
+            // Hoisted outside the loop to reuse bucket allocation across iterations.
+            // Initial bucket count 16 covers a typical horizon without rehashing.
+            BoundaryMap boundary{16, &mem_resource};
 
             for (int it = 0; it < params.max_iterations; ++it)
             {
@@ -102,7 +103,7 @@ namespace omath::collision
 
                 // Stitch new faces around the horizon and push them directly onto the
                 // heap — no full O(n log n) rebuild needed.
-                for (const auto& e : boundary)
+                for (const auto& [key, e] : boundary)
                 {
                     const int fi = static_cast<int>(faces.size());
                     faces.emplace_back(make_face(vertexes, e.a, e.b, new_idx));
@@ -160,6 +161,16 @@ namespace omath::collision
 
         using Heap = std::priority_queue<HeapItem, std::pmr::vector<HeapItem>, HeapCmp>;
 
+        // Horizon boundary: maps packed(a,b) → Edge.
+        // Opposite edges cancel in O(1) via hash lookup instead of O(h) linear scan.
+        using BoundaryMap = std::pmr::unordered_map<int64_t, Edge>;
+
+        [[nodiscard]]
+        static constexpr int64_t pack_edge(int a, int b) noexcept
+        {
+            return (static_cast<int64_t>(a) << 32) | static_cast<uint32_t>(b);
+        }
+
         [[nodiscard]]
         static Heap rebuild_heap(const std::pmr::vector<Face>& faces, auto& memory_resource)
         {
@@ -178,14 +189,16 @@ namespace omath::collision
             return f.n.dot(p) - f.d > static_cast<FloatingType>(1e-7);
         }
 
-        static void add_edge_boundary(std::pmr::vector<Edge>& boundary, int a, int b)
+        static void add_edge_boundary(BoundaryMap& boundary, int a, int b)
         {
-            // Keep edges that appear only once; cancel if opposite already present.
-            auto itb = std::ranges::find_if(boundary, [&](const Edge& e) { return e.a == b && e.b == a; });
-            if (itb != boundary.end())
-                boundary.erase(itb);
+            // O(1) cancel: if the opposite edge (b→a) is already in the map it is an
+            // internal edge shared by two visible faces and must be removed.
+            // Otherwise this is a horizon edge and we insert it.
+            const int64_t rev = pack_edge(b, a);
+            if (const auto it = boundary.find(rev); it != boundary.end())
+                boundary.erase(it);
             else
-                boundary.emplace_back(a, b);
+                boundary.emplace(pack_edge(a, b), Edge{a, b});
         }
 
         [[nodiscard]]
@@ -266,7 +279,7 @@ namespace omath::collision
                     best = &f;
             return best;
         }
-        static void tombstone_visible_faces(std::pmr::vector<Face>& faces, std::pmr::vector<Edge>& boundary,
+        static void tombstone_visible_faces(std::pmr::vector<Face>& faces, BoundaryMap& boundary,
                                             const VectorType& p)
         {
             boundary.clear();
