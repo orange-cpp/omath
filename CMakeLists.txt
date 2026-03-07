@@ -31,6 +31,9 @@ option(OMATH_SUPRESS_SAFETY_CHECKS
 option(OMATH_ENABLE_COVERAGE "Enable coverage" OFF)
 option(OMATH_ENABLE_FORCE_INLINE
        "Will for compiler to make some functions to be force inlined no matter what" ON)
+
+option(OMATH_ENABLE_LUA
+        "omath bindings for lua" OFF)
 if(VCPKG_MANIFEST_FEATURES)
     foreach(omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
         if(omath_feature STREQUAL "imgui")
@@ -43,6 +46,8 @@ if(VCPKG_MANIFEST_FEATURES)
             set(OMATH_BUILD_BENCHMARK ON)
         elseif(omath_feature STREQUAL "examples")
             set(OMATH_BUILD_EXAMPLES ON)
+        elseif(omath_feature STREQUAL "lua")
+            set(OMATH_ENABLE_LUA ON)
         endif()
 
     endforeach()
@@ -82,6 +87,17 @@ if(OMATH_BUILD_AS_SHARED_LIBRARY)
 else()
     add_library(${PROJECT_NAME} STATIC ${OMATH_SOURCES} ${OMATH_HEADERS})
 endif()
+
+if (OMATH_ENABLE_LUA)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_ENABLE_LUA)
+
+    find_package(Lua REQUIRED)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${LUA_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${LUA_LIBRARIES})
+
+    find_path(SOL2_INCLUDE_DIRS "sol/abort.hpp")
+    target_include_directories(${PROJECT_NAME} PRIVATE ${SOL2_INCLUDE_DIRS})
+endif ()
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
