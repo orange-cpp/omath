@@ -22,6 +22,7 @@
 #include <omath/linear_algebra/vector2.hpp>
 #include <omath/linear_algebra/vector3.hpp>
 #include <omath/linear_algebra/vector4.hpp>
+#include <omath/utility/color.hpp>
 #include <omath/projection/camera.hpp>
 #include <omath/projection/error_codes.hpp>
 #include <sol/sol.hpp>
@@ -195,6 +196,44 @@ namespace
             return "inverse view-projection matrix determinant is zero";
         }
         return "unknown error";
+    }
+
+    void register_color(sol::table& omath_table)
+    {
+        omath_table.new_usertype<omath::Color>(
+                "Color",
+                sol::factories(
+                        [](float r, float g, float b, float a) { return omath::Color(r, g, b, a); },
+                        []() { return omath::Color(); }),
+
+                "from_rgba", [](uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+                    return omath::Color::from_rgba(r, g, b, a);
+                },
+                "from_hsv", sol::overload(
+                        [](float h, float s, float v) { return omath::Color::from_hsv(h, s, v); },
+                        [](const omath::Hsv& hsv) { return omath::Color::from_hsv(hsv); }),
+                "red",   []() { return omath::Color::red(); },
+                "green", []() { return omath::Color::green(); },
+                "blue",  []() { return omath::Color::blue(); },
+
+                "r", sol::property([](const omath::Color& c) { return c.value().x; }),
+                "g", sol::property([](const omath::Color& c) { return c.value().y; }),
+                "b", sol::property([](const omath::Color& c) { return c.value().z; }),
+                "a", sol::property([](const omath::Color& c) { return c.value().w; }),
+
+                "to_hsv",         &omath::Color::to_hsv,
+                "set_hue",        &omath::Color::set_hue,
+                "set_saturation", &omath::Color::set_saturation,
+                "set_value",      &omath::Color::set_value,
+                "blend",          &omath::Color::blend,
+
+                sol::meta_function::to_string, &omath::Color::to_string);
+
+        omath_table.new_usertype<omath::Hsv>(
+                "Hsv", sol::constructors<omath::Hsv()>(),
+                "hue",        &omath::Hsv::hue,
+                "saturation", &omath::Hsv::saturation,
+                "value",      &omath::Hsv::value);
     }
 
     template<class AngleType>
@@ -398,6 +437,7 @@ namespace omath::lua
         register_vec2(omath_table);
         register_vec3(omath_table);
         register_vec4(omath_table);
+        register_color(omath_table);
         register_shared_types(omath_table);
         register_engine<OpenGLEngineTraits>(omath_table,    "opengl");
         register_engine<FrostbiteEngineTraits>(omath_table, "frostbite");
