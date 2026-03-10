@@ -21,6 +21,7 @@ namespace omath::lua
         register_triangle(omath_table);
         register_shared_types(omath_table);
         register_engines(omath_table);
+        register_pattern_scan(omath_table);
     }
 } // namespace omath::lua
 #endif

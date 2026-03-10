@@ -19,6 +19,7 @@ namespace omath::lua
         static void register_triangle(sol::table& omath_table);
         static void register_shared_types(sol::table& omath_table);
         static void register_engines(sol::table& omath_table);
+        static void register_pattern_scan(sol::table& omath_table);
     };
 }
 #endif
