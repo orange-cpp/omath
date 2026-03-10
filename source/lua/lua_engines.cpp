@@ -4,19 +4,12 @@
 #ifdef OMATH_ENABLE_LUA
 #include "omath/lua/lua.hpp"
 #include <omath/engines/cry_engine/camera.hpp>
-#include <omath/engines/cry_engine/constants.hpp>
 #include <omath/engines/frostbite_engine/camera.hpp>
-#include <omath/engines/frostbite_engine/constants.hpp>
 #include <omath/engines/iw_engine/camera.hpp>
-#include <omath/engines/iw_engine/constants.hpp>
 #include <omath/engines/opengl_engine/camera.hpp>
-#include <omath/engines/opengl_engine/constants.hpp>
 #include <omath/engines/source_engine/camera.hpp>
-#include <omath/engines/source_engine/constants.hpp>
 #include <omath/engines/unity_engine/camera.hpp>
-#include <omath/engines/unity_engine/constants.hpp>
 #include <omath/engines/unreal_engine/camera.hpp>
-#include <omath/engines/unreal_engine/constants.hpp>
 #include <sol/sol.hpp>
 #include <string_view>
 
