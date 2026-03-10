@@ -2,7 +2,6 @@
 // Created by orange on 07.03.2026.
 //
 #ifdef OMATH_ENABLE_LUA
-#include "omath/lua/lua.hpp"
 #include <sol/sol.hpp>
 #include <omath/engines/cry_engine/camera.hpp>
 #include <omath/engines/cry_engine/constants.hpp>
@@ -18,9 +17,6 @@
 #include <omath/engines/unity_engine/constants.hpp>
 #include <omath/engines/unreal_engine/camera.hpp>
 #include <omath/engines/unreal_engine/constants.hpp>
-#include <omath/linear_algebra/vector3.hpp>
-#include <omath/projection/camera.hpp>
-#include <omath/projection/error_codes.hpp>
 #include <string_view>
 
 namespace

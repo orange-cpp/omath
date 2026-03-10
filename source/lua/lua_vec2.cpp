@@ -2,7 +2,6 @@
 // Created by orange on 07.03.2026.
 //
 #ifdef OMATH_ENABLE_LUA
-#include "omath/lua/lua.hpp"
 #include <sol/sol.hpp>
 #include <omath/linear_algebra/vector2.hpp>
 

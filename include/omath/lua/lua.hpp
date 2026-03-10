@@ -3,9 +3,7 @@
 //
 #pragma once
 #ifdef OMATH_ENABLE_LUA
-// ReSharper disable once CppInconsistentNaming
-struct lua_State;
-
+#include <sol/forward.hpp>
 namespace omath::lua
 {
     void register_lib(lua_State* lua_state);
