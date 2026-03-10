@@ -10,7 +10,6 @@
 #include <omath/utility/pe_pattern_scan.hpp>
 #include <omath/utility/section_scan_result.hpp>
 #include <sol/sol.hpp>
-#endif
 
 namespace omath::lua
 {
@@ -102,3 +101,4 @@ namespace omath::lua
         };
     }
 } // namespace omath::lua
+#endif
