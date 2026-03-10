@@ -84,6 +84,7 @@ if (auto screen = camera.world_to_screen(world_position)) {
 - **Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine, CryEngine and canonical OpenGL**.
 - **Cross platform**: Supports Windows, MacOS and Linux.
 - **Algorithms**: Has ability to scan for byte pattern with wildcards in ELF/Mach-O/PE files/modules, binary slices, works even with Wine apps. 
+- **Scripting**: Supports to make scripts in Lua out of box
 - **Battle tested**: It's already used by some big players on the market like wraith.su and bluedream.ltd
 <div align = center>
  
