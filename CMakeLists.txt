@@ -77,6 +77,7 @@ if(${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: Building using vcpkg ${OMATH_BUILD_VIA_VCPKG}")
     message(STATUS "[${PROJECT_NAME}]: Coverage feature status ${OMATH_ENABLE_COVERAGE}")
     message(STATUS "[${PROJECT_NAME}]: Valgrind feature status ${OMATH_ENABLE_VALGRIND}")
+    message(STATUS "[${PROJECT_NAME}]: Lua feature status ${OMATH_ENABLE_LUA}")
 endif()
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
