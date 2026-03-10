@@ -6,9 +6,9 @@
 #include <sol/sol.hpp>
 #include <omath/linear_algebra/vector3.hpp>
 
-namespace omath::lua::detail
+namespace omath::lua
 {
-    void register_vec3(sol::table& omath_table)
+    void LuaInterpreter::register_vec3(sol::table& omath_table)
     {
         using Vec3f = omath::Vector3<float>;
 

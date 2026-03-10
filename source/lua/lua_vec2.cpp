@@ -2,12 +2,13 @@
 // Created by orange on 07.03.2026.
 //
 #ifdef OMATH_ENABLE_LUA
-#include <sol/sol.hpp>
+#include "omath/lua/lua.hpp"
 #include <omath/linear_algebra/vector2.hpp>
+#include <sol/sol.hpp>
 
-namespace omath::lua::detail
+namespace omath::lua
 {
-    void register_vec2(sol::table& omath_table)
+    void LuaInterpreter::register_vec2(sol::table& omath_table)
     {
         using Vec2f = omath::Vector2<float>;
 

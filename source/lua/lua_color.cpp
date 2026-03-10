@@ -6,9 +6,9 @@
 #include <sol/sol.hpp>
 #include <omath/utility/color.hpp>
 
-namespace omath::lua::detail
+namespace omath::lua
 {
-    void register_color(sol::table& omath_table)
+    void LuaInterpreter::register_color(sol::table& omath_table)
     {
         omath_table.new_usertype<omath::Color>(
                 "Color",

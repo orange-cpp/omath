@@ -14,7 +14,7 @@ protected:
     {
         L = luaL_newstate();
         luaL_openlibs(L);
-        omath::lua::register_lib(L);
+        omath::lua::LuaInterpreter::register_lib(L);
         if (luaL_dofile(L, LUA_SCRIPTS_DIR "/vec3_tests.lua") != LUA_OK)
             FAIL() << lua_tostring(L, -1);
     }

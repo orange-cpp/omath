@@ -6,9 +6,9 @@
 #include <sol/sol.hpp>
 #include <omath/linear_algebra/vector4.hpp>
 
-namespace omath::lua::detail
+namespace omath::lua
 {
-    void register_vec4(sol::table& omath_table)
+    void LuaInterpreter::register_vec4(sol::table& omath_table)
     {
         using Vec4f = omath::Vector4<float>;
 

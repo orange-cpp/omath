@@ -2,7 +2,7 @@
 // Created by orange on 07.03.2026.
 //
 #ifdef OMATH_ENABLE_LUA
-#include <sol/sol.hpp>
+#include "omath/lua/lua.hpp"
 #include <omath/engines/cry_engine/camera.hpp>
 #include <omath/engines/cry_engine/constants.hpp>
 #include <omath/engines/frostbite_engine/camera.hpp>
@@ -17,6 +17,7 @@
 #include <omath/engines/unity_engine/constants.hpp>
 #include <omath/engines/unreal_engine/camera.hpp>
 #include <omath/engines/unreal_engine/constants.hpp>
+#include <sol/sol.hpp>
 #include <string_view>
 
 namespace
@@ -172,9 +173,9 @@ namespace
     };
 } // namespace
 
-namespace omath::lua::detail
+namespace omath::lua
 {
-    void register_shared_types(sol::table& omath_table)
+    void LuaInterpreter::register_shared_types(sol::table& omath_table)
     {
         auto t = omath_table["_types"].get_or_create<sol::table>();
 
@@ -219,7 +220,7 @@ namespace omath::lua::detail
                               [](ViewAngles89& va, const SharedYawRoll& val) { va.roll = val; }));
     }
 
-    void register_engines(sol::table& omath_table)
+    void LuaInterpreter::register_engines(sol::table& omath_table)
     {
         register_engine<OpenGLEngineTraits>(omath_table, "opengl");
         register_engine<FrostbiteEngineTraits>(omath_table, "frostbite");

@@ -8,18 +8,18 @@
 
 namespace omath::lua
 {
-    void register_lib(lua_State* lua_state)
+    void LuaInterpreter::register_lib(lua_State* lua_state)
     {
         sol::state_view lua(lua_state);
 
         auto omath_table = lua["omath"].get_or_create<sol::table>();
 
-        detail::register_vec2(omath_table);
-        detail::register_vec3(omath_table);
-        detail::register_vec4(omath_table);
-        detail::register_color(omath_table);
-        detail::register_shared_types(omath_table);
-        detail::register_engines(omath_table);
+        register_vec2(omath_table);
+        register_vec3(omath_table);
+        register_vec4(omath_table);
+        register_color(omath_table);
+        register_shared_types(omath_table);
+        register_engines(omath_table);
     }
 } // namespace omath::lua
 #endif
