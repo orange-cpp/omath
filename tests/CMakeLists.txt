@@ -26,6 +26,10 @@ if (OMATH_ENABLE_LUA)
     file(GLOB_RECURSE UNIT_TESTS_SOURCES_LUA CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lua/*.cpp")
     target_compile_definitions(${PROJECT_NAME} PRIVATE LUA_SCRIPTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/lua")
     target_sources(${PROJECT_NAME} PRIVATE ${UNIT_TESTS_SOURCES_LUA})
+    if (EMSCRIPTEN)
+        target_link_options(${PROJECT_NAME} PRIVATE
+            "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/lua@${CMAKE_CURRENT_SOURCE_DIR}/lua")
+    endif()
 endif()
 
 if(OMATH_ENABLE_COVERAGE)
