@@ -107,7 +107,7 @@ jobs:
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
             -DOMATH_ENABLE_COVERAGE=${{ matrix.coverage == true && 'ON' || 'OFF' }} \
-            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;lua"
 
       - name: Build
         shell: bash
@@ -193,7 +193,7 @@ jobs:
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
             -DOMATH_ENABLE_COVERAGE=OFF \
-            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;lua"
 
       - name: Build
         shell: bash
@@ -234,7 +234,7 @@ jobs:
             -DOMATH_ENABLE_COVERAGE=ON \
             -DOMATH_THREAT_WARNING_AS_ERROR=OFF \
             -DCMAKE_BUILD_TYPE=Debug \
-            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;lua"
           cmake --build cmake-build/build/${{ matrix.preset }} --config Debug --target unit_tests omath
 
       - name: Run Tests (Generates .profraw)
@@ -373,7 +373,7 @@ jobs:
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
             -DOMATH_ENABLE_COVERAGE=${{ matrix.coverage == true && 'ON' || 'OFF' }} \
-            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests"
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;lua"
 
       - name: Build
         shell: bash
@@ -450,7 +450,7 @@ jobs:
             -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
-            -DVCPKG_MANIFEST_FEATURES="imgui;tests"
+            -DVCPKG_MANIFEST_FEATURES="imgui;tests;lua"
 
       - name: Build
         shell: bash
@@ -509,7 +509,7 @@ jobs:
             cmake --preset ${{ matrix.preset }} \
               -DOMATH_BUILD_TESTS=ON \
               -DOMATH_BUILD_BENCHMARK=OFF \
-              -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests" \
+              -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;lua" \
               -DVCPKG_INSTALL_OPTIONS="--allow-unsupported"
             cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
             ./out/Release/unit_tests
@@ -581,7 +581,7 @@ jobs:
             -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
-            -DVCPKG_MANIFEST_FEATURES="imgui;tests"
+            -DVCPKG_MANIFEST_FEATURES="imgui;tests;lua"
 
       - name: Build
         shell: bash
@@ -650,7 +650,7 @@ jobs:
             -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
-            -DVCPKG_MANIFEST_FEATURES="imgui;tests"
+            -DVCPKG_MANIFEST_FEATURES="imgui;tests;lua"
 
       - name: Build
         shell: bash
@@ -735,7 +735,7 @@ jobs:
             -DVCPKG_INSTALL_OPTIONS="--allow-unsupported" \
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
-            -DVCPKG_MANIFEST_FEATURES="imgui;tests"
+            -DVCPKG_MANIFEST_FEATURES="imgui;tests;lua"
 
       - name: Build
         run: |
@@ -800,7 +800,7 @@ jobs:
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=ON \
             -DOMATH_ENABLE_VALGRIND=ON \
-            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;benchmark"
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;lua;tests;benchmark"
 
       - name: Build All Targets
         shell: bash

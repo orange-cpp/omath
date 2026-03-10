@@ -4,7 +4,7 @@ project(unit_tests)
 
 include(GoogleTest)
 
-file(GLOB_RECURSE UNIT_TESTS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB_RECURSE UNIT_TESTS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/general/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/engines/*.cpp")
 add_executable(${PROJECT_NAME} ${UNIT_TESTS_SOURCES})
 
 set_target_properties(
@@ -22,7 +22,11 @@ else() # GTest is being linked as vcpkg package
     target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main omath::omath)
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE LUA_SCRIPTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/lua")
+if (OMATH_ENABLE_LUA)
+    file(GLOB_RECURSE UNIT_TESTS_SOURCES_LUA CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lua/*.cpp")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE LUA_SCRIPTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/lua")
+    target_sources(${PROJECT_NAME} PRIVATE ${UNIT_TESTS_SOURCES_LUA})
+endif()
 
 if(OMATH_ENABLE_COVERAGE)
     include(${CMAKE_SOURCE_DIR}/cmake/Coverage.cmake)
@@ -38,3 +42,4 @@ endif()
 if(NOT (ANDROID OR IOS OR EMSCRIPTEN))
     gtest_discover_tests(${PROJECT_NAME})
 endif()
+
