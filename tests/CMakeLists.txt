@@ -28,7 +28,7 @@ if (OMATH_ENABLE_LUA)
     target_sources(${PROJECT_NAME} PRIVATE ${UNIT_TESTS_SOURCES_LUA})
     if (EMSCRIPTEN)
         target_link_options(${PROJECT_NAME} PRIVATE
-            "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/lua@${CMAKE_CURRENT_SOURCE_DIR}/lua")
+            "SHELL:--embed-file ${CMAKE_CURRENT_SOURCE_DIR}/lua@${CMAKE_CURRENT_SOURCE_DIR}/lua")
     endif()
 endif()
 
