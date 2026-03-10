@@ -18,6 +18,7 @@ namespace omath::lua
         register_vec3(omath_table);
         register_vec4(omath_table);
         register_color(omath_table);
+        register_triangle(omath_table);
         register_shared_types(omath_table);
         register_engines(omath_table);
     }
