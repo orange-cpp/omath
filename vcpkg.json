@@ -17,7 +17,7 @@
   ],
   "features": {
     "avx2": {
-      "description": "Omath will use AVX2 to boost performance",
+      "description": "omath will use AVX2 to boost performance",
       "supports": "!arm"
     },
     "benchmark": {
@@ -35,7 +35,7 @@
       ]
     },
     "imgui": {
-      "description": "Omath will define method to convert omath types to imgui types",
+      "description": "omath will define method to convert omath types to imgui types",
       "dependencies": [
         "imgui"
       ]
@@ -44,6 +44,13 @@
       "description": "Build unit-tests using GTest",
       "dependencies": [
         "gtest"
+      ]
+    },
+    "lua": {
+      "description": "lua support for omath",
+      "dependencies": [
+        "lua",
+        "sol2"
       ]
     }
   }

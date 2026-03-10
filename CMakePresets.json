@@ -145,7 +145,7 @@
       "hidden": true,
       "inherits": ["linux-base", "vcpkg-base"],
       "cacheVariables": {
-        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2"
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;lua"
       }
     },
     {
@@ -235,7 +235,7 @@
       "hidden": true,
       "inherits": ["darwin-base", "vcpkg-base"],
       "cacheVariables": {
-        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples"
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples;lua"
       }
     },
     {
