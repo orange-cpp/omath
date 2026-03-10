@@ -14,7 +14,9 @@ namespace omath::lua::detail
         omath_table.new_usertype<Vec3f>(
                 "Vec3", sol::constructors<Vec3f(), Vec3f(float, float, float)>(),
 
-                "x", &Vec3f::x, "y", &Vec3f::y, "z", &Vec3f::z,
+                "x", sol::property([](const Vec3f& v) { return v.x; }, [](Vec3f& v, float val) { v.x = val; }),
+                "y", sol::property([](const Vec3f& v) { return v.y; }, [](Vec3f& v, float val) { v.y = val; }),
+                "z", sol::property([](const Vec3f& v) { return v.z; }, [](Vec3f& v, float val) { v.z = val; }),
 
                 sol::meta_function::addition, sol::resolve<Vec3f(const Vec3f&) const>(&Vec3f::operator+),
                 sol::meta_function::subtraction, sol::resolve<Vec3f(const Vec3f&) const>(&Vec3f::operator-),

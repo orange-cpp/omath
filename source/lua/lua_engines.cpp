@@ -207,25 +207,25 @@ namespace omath::lua::detail
         t.new_usertype<omath::projection::ViewPort>(
                 "ViewPort",
                 sol::factories([](float w, float h) { return omath::projection::ViewPort{w, h}; }),
-                "width",        &omath::projection::ViewPort::m_width,
-                "height",       &omath::projection::ViewPort::m_height,
+                "width",        sol::property([](const omath::projection::ViewPort& vp) { return vp.m_width; },  [](omath::projection::ViewPort& vp, float val) { vp.m_width = val; }),
+                "height",       sol::property([](const omath::projection::ViewPort& vp) { return vp.m_height; }, [](omath::projection::ViewPort& vp, float val) { vp.m_height = val; }),
                 "aspect_ratio", &omath::projection::ViewPort::aspect_ratio);
 
         t.new_usertype<ViewAngles90>(
                 "ViewAngles90",
                 sol::factories([](PitchAngle90 p, SharedYawRoll y, SharedYawRoll r)
                                { return ViewAngles90{p, y, r}; }),
-                "pitch", &ViewAngles90::pitch,
-                "yaw",   &ViewAngles90::yaw,
-                "roll",  &ViewAngles90::roll);
+                "pitch", sol::property([](const ViewAngles90& va) { return va.pitch; }, [](ViewAngles90& va, const PitchAngle90& val) { va.pitch = val; }),
+                "yaw",   sol::property([](const ViewAngles90& va) { return va.yaw; },   [](ViewAngles90& va, const SharedYawRoll& val) { va.yaw = val; }),
+                "roll",  sol::property([](const ViewAngles90& va) { return va.roll; },  [](ViewAngles90& va, const SharedYawRoll& val) { va.roll = val; }));
 
         t.new_usertype<ViewAngles89>(
                 "ViewAngles89",
                 sol::factories([](PitchAngle89 p, SharedYawRoll y, SharedYawRoll r)
                                { return ViewAngles89{p, y, r}; }),
-                "pitch", &ViewAngles89::pitch,
-                "yaw",   &ViewAngles89::yaw,
-                "roll",  &ViewAngles89::roll);
+                "pitch", sol::property([](const ViewAngles89& va) { return va.pitch; }, [](ViewAngles89& va, const PitchAngle89& val) { va.pitch = val; }),
+                "yaw",   sol::property([](const ViewAngles89& va) { return va.yaw; },   [](ViewAngles89& va, const SharedYawRoll& val) { va.yaw = val; }),
+                "roll",  sol::property([](const ViewAngles89& va) { return va.roll; },  [](ViewAngles89& va, const SharedYawRoll& val) { va.roll = val; }));
     }
 
     void register_engines(sol::table& omath_table)

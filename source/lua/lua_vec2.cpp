@@ -14,7 +14,8 @@ namespace omath::lua::detail
         omath_table.new_usertype<Vec2f>(
                 "Vec2", sol::constructors<Vec2f(), Vec2f(float, float)>(),
 
-                "x", &Vec2f::x, "y", &Vec2f::y,
+                "x", sol::property([](const Vec2f& v) { return v.x; }, [](Vec2f& v, float val) { v.x = val; }),
+                "y", sol::property([](const Vec2f& v) { return v.y; }, [](Vec2f& v, float val) { v.y = val; }),
 
                 sol::meta_function::addition, sol::resolve<Vec2f(const Vec2f&) const>(&Vec2f::operator+),
                 sol::meta_function::subtraction, sol::resolve<Vec2f(const Vec2f&) const>(&Vec2f::operator-),

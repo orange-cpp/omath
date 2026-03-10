@@ -40,9 +40,9 @@ namespace omath::lua::detail
 
         omath_table.new_usertype<omath::Hsv>(
                 "Hsv", sol::constructors<omath::Hsv()>(),
-                "hue",        &omath::Hsv::hue,
-                "saturation", &omath::Hsv::saturation,
-                "value",      &omath::Hsv::value);
+                "hue",        sol::property([](const omath::Hsv& h) { return h.hue; },        [](omath::Hsv& h, float val) { h.hue = val; }),
+                "saturation", sol::property([](const omath::Hsv& h) { return h.saturation; }, [](omath::Hsv& h, float val) { h.saturation = val; }),
+                "value",      sol::property([](const omath::Hsv& h) { return h.value; },      [](omath::Hsv& h, float val) { h.value = val; }));
     }
 } // namespace omath::lua::detail
 #endif

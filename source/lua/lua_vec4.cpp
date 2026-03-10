@@ -14,7 +14,10 @@ namespace omath::lua::detail
         omath_table.new_usertype<Vec4f>(
                 "Vec4", sol::constructors<Vec4f(), Vec4f(float, float, float, float)>(),
 
-                "x", &Vec4f::x, "y", &Vec4f::y, "z", &Vec4f::z, "w", &Vec4f::w,
+                "x", sol::property([](const Vec4f& v) { return v.x; }, [](Vec4f& v, float val) { v.x = val; }),
+                "y", sol::property([](const Vec4f& v) { return v.y; }, [](Vec4f& v, float val) { v.y = val; }),
+                "z", sol::property([](const Vec4f& v) { return v.z; }, [](Vec4f& v, float val) { v.z = val; }),
+                "w", sol::property([](const Vec4f& v) { return v.w; }, [](Vec4f& v, float val) { v.w = val; }),
 
                 sol::meta_function::addition, sol::resolve<Vec4f(const Vec4f&) const>(&Vec4f::operator+),
                 sol::meta_function::subtraction, sol::resolve<Vec4f(const Vec4f&) const>(&Vec4f::operator-),
