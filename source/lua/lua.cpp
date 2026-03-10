@@ -3,7 +3,7 @@
 //
 #ifdef OMATH_ENABLE_LUA
 #include "lua.hpp"
-#include "internal.hpp"
+#include <sol/sol.hpp>
 #include "omath/lua/lua.hpp"
 
 namespace omath::lua
