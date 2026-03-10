@@ -17,10 +17,14 @@ namespace omath::lua
     void LuaInterpreter::register_pattern_scan(sol::table& omath_table)
     {
         omath_table.new_usertype<SectionScanResult>(
-                "SectionScanResult", sol::no_constructor, "virtual_base_addr",
-                sol::readonly(&SectionScanResult::virtual_base_addr), "raw_base_addr",
-                sol::readonly(&SectionScanResult::raw_base_addr), "target_offset",
-                sol::readonly(&SectionScanResult::target_offset), sol::meta_function::to_string,
+                "SectionScanResult", sol::no_constructor,
+                "virtual_base_addr",
+                sol::property([](const SectionScanResult& r) { return r.virtual_base_addr; }),
+                "raw_base_addr",
+                sol::property([](const SectionScanResult& r) { return r.raw_base_addr; }),
+                "target_offset",
+                sol::property([](const SectionScanResult& r) { return r.target_offset; }),
+                sol::meta_function::to_string,
                 [](const SectionScanResult& r)
                 {
                     return std::format("SectionScanResult(vbase=0x{:X}, raw_base=0x{:X}, offset={})",
