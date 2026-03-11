@@ -145,6 +145,13 @@ TEST(NavigationMeshTests, VertexWithNoNeighborsRoundTrip)
 // Vertex events
 // ---------------------------------------------------------------------------
 
+TEST(NavigationMeshTests, SetEventOnNonExistentVertexThrows)
+{
+    NavigationMesh nav;
+    const Vector3<float> v{99.f, 99.f, 99.f};
+    EXPECT_THROW(nav.set_event(v, "jump"), std::invalid_argument);
+}
+
 TEST(NavigationMeshTests, EventNotSetByDefault)
 {
     NavigationMesh nav;
