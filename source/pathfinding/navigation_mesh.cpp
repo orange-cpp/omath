@@ -3,9 +3,9 @@
 //
 #include "omath/pathfinding/navigation_mesh.hpp"
 #include <algorithm>
-#include <cstring>
-#include <limits>
+#include <sstream>
 #include <stdexcept>
+
 namespace omath::pathfinding
 {
     std::expected<Vector3<float>, std::string>
@@ -30,77 +30,72 @@ namespace omath::pathfinding
         return m_vertex_map.empty();
     }
 
-    std::vector<uint8_t> NavigationMesh::serialize() const noexcept
+    void NavigationMesh::set_event(const Vector3<float>& vertex, const std::string_view&  event_id)
     {
-        std::vector<std::uint8_t> raw;
+        if (!m_vertex_map.contains(vertex))
+            throw std::invalid_argument(std::format("Vertex '{}' not found", vertex));
 
-        // Pre-calculate total size for better performance
-        std::size_t total_size = 0;
-        for (const auto& [vertex, neighbors] : m_vertex_map)
-        {
-            total_size += sizeof(vertex) + sizeof(std::uint16_t) + sizeof(Vector3<float>) * neighbors.size();
-        }
-        raw.reserve(total_size);
-
-        auto dump_to_vector = [&raw]<typename T>(const T& t)
-        {
-            const auto* byte_ptr = reinterpret_cast<const std::uint8_t*>(&t);
-            raw.insert(raw.end(), byte_ptr, byte_ptr + sizeof(T));
-        };
-
-        for (const auto& [vertex, neighbors] : m_vertex_map)
-        {
-            // Clamp neighbors count to fit in uint16_t (prevents silent data corruption)
-            // NOTE: If neighbors.size() > 65535, only the first 65535 neighbors will be serialized.
-            // This is a limitation of the current serialization format using uint16_t for count.
-            const auto clamped_count =
-                    std::min<std::size_t>(neighbors.size(), std::numeric_limits<std::uint16_t>::max());
-            const auto neighbors_count = static_cast<std::uint16_t>(clamped_count);
-
-            dump_to_vector(vertex);
-            dump_to_vector(neighbors_count);
-
-            // Only serialize up to the clamped count
-            for (std::size_t i = 0; i < clamped_count; ++i)
-                dump_to_vector(neighbors[i]);
-        }
-        return raw;
+        m_vertex_events[vertex] = event_id;
     }
 
-    void NavigationMesh::deserialize(const std::vector<uint8_t>& raw) noexcept
+    void NavigationMesh::clear_event(const Vector3<float>& vertex)
     {
-        auto load_from_vector = [](const std::vector<uint8_t>& vec, std::size_t& offset, auto& value)
+        m_vertex_events.erase(vertex);
+    }
+
+    std::optional<std::string> NavigationMesh::get_event(const Vector3<float>& vertex) const noexcept
+    {
+        const auto it = m_vertex_events.find(vertex);
+        if (it == m_vertex_events.end())
+            return std::nullopt;
+        return it->second;
+    }
+
+    // Serialization format per vertex line:
+    //   x y z neighbor_count event_id
+    // where event_id is "-" when no event is set.
+    // Neighbor lines follow: nx ny nz
+
+    std::string NavigationMesh::serialize() const noexcept
+    {
+        std::ostringstream oss;
+        for (const auto& [vertex, neighbors] : m_vertex_map)
         {
-            if (offset + sizeof(value) > vec.size())
-                throw std::runtime_error("Deserialize: Invalid input data size.");
+            const auto event_it = m_vertex_events.find(vertex);
+            const std::string& event = (event_it != m_vertex_events.end()) ? event_it->second : "-";
 
-            std::copy_n(vec.data() + offset, sizeof(value), reinterpret_cast<uint8_t*>(&value));
-            offset += sizeof(value);
-        };
+            oss << vertex.x << ' ' << vertex.y << ' ' << vertex.z << ' ' << neighbors.size() << ' ' << event << '\n';
 
+            for (const auto& n : neighbors)
+                oss << n.x << ' ' << n.y << ' ' << n.z << '\n';
+        }
+        return oss.str();
+    }
+
+    void NavigationMesh::deserialize(const std::string& raw)
+    {
         m_vertex_map.clear();
+        m_vertex_events.clear();
+        std::istringstream iss(raw);
 
-        std::size_t offset = 0;
-
-        while (offset < raw.size())
+        Vector3<float> vertex;
+        std::size_t neighbors_count;
+        std::string event;
+        while (iss >> vertex.x >> vertex.y >> vertex.z >> neighbors_count >> event)
         {
-            Vector3<float> vertex;
-            load_from_vector(raw, offset, vertex);
-
-            std::uint16_t neighbors_count;
-            load_from_vector(raw, offset, neighbors_count);
-
             std::vector<Vector3<float>> neighbors;
             neighbors.reserve(neighbors_count);
-
             for (std::size_t i = 0; i < neighbors_count; ++i)
             {
-                Vector3<float> neighbor;
-                load_from_vector(raw, offset, neighbor);
-                neighbors.push_back(neighbor);
+                Vector3<float> n;
+                if (!(iss >> n.x >> n.y >> n.z))
+                    throw std::runtime_error("Deserialize: Unexpected end of data.");
+                neighbors.push_back(n);
             }
-
             m_vertex_map.emplace(vertex, std::move(neighbors));
+
+            if (event != "-")
+                m_vertex_events.emplace(vertex, std::move(event));
         }
     }
 } // namespace omath::pathfinding

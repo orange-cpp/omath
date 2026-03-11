@@ -6,7 +6,9 @@
 
 #include "omath/linear_algebra/vector3.hpp"
 #include <expected>
+#include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace omath::pathfinding
@@ -28,10 +30,20 @@ namespace omath::pathfinding
         [[nodiscard]]
         bool empty() const;
 
-        [[nodiscard]] std::vector<uint8_t> serialize() const noexcept;
+        // Events -- per-vertex optional tag (e.g. "jump", "teleport")
+        void set_event(const Vector3<float>& vertex, const std::string_view& event_id);
+        void clear_event(const Vector3<float>& vertex);
 
-        void deserialize(const std::vector<uint8_t>& raw) noexcept;
+        [[nodiscard]]
+        std::optional<std::string> get_event(const Vector3<float>& vertex) const noexcept;
+
+        [[nodiscard]] std::string serialize() const noexcept;
+
+        void deserialize(const std::string& raw);
 
         std::unordered_map<Vector3<float>, std::vector<Vector3<float>>> m_vertex_map;
+
+    private:
+        std::unordered_map<Vector3<float>, std::string> m_vertex_events;
     };
 } // namespace omath::pathfinding
