@@ -7,6 +7,7 @@
 #include "omath/linear_algebra/vector3.hpp"
 #include <expected>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace omath::pathfinding
@@ -28,9 +29,9 @@ namespace omath::pathfinding
         [[nodiscard]]
         bool empty() const;
 
-        [[nodiscard]] std::vector<uint8_t> serialize() const noexcept;
+        [[nodiscard]] std::string serialize() const noexcept;
 
-        void deserialize(const std::vector<uint8_t>& raw) noexcept;
+        void deserialize(const std::string& raw);
 
         std::unordered_map<Vector3<float>, std::vector<Vector3<float>>> m_vertex_map;
     };
