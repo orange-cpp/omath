@@ -30,12 +30,12 @@ namespace omath::pathfinding
         return m_vertex_map.empty();
     }
 
-    void NavigationMesh::set_event(const Vector3<float>& vertex, std::string event_id)
+    void NavigationMesh::set_event(const Vector3<float>& vertex, const std::string_view&  event_id)
     {
         if (!m_vertex_map.contains(vertex))
             throw std::invalid_argument(std::format("Vertex '{}' not found", vertex));
 
-        m_vertex_events[vertex] = std::move(event_id);
+        m_vertex_events[vertex] = event_id;
     }
 
     void NavigationMesh::clear_event(const Vector3<float>& vertex)

@@ -31,7 +31,7 @@ namespace omath::pathfinding
         bool empty() const;
 
         // Events -- per-vertex optional tag (e.g. "jump", "teleport")
-        void set_event(const Vector3<float>& vertex, std::string event_id);
+        void set_event(const Vector3<float>& vertex, const std::string_view& event_id);
         void clear_event(const Vector3<float>& vertex);
 
         [[nodiscard]]
