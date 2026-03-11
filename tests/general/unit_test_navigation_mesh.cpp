@@ -140,3 +140,102 @@ TEST(NavigationMeshTests, VertexWithNoNeighborsRoundTrip)
     ASSERT_EQ(nav2.m_vertex_map.count(v), 1u);
     EXPECT_TRUE(nav2.get_neighbors(v).empty());
 }
+
+// ---------------------------------------------------------------------------
+// Vertex events
+// ---------------------------------------------------------------------------
+
+TEST(NavigationMeshTests, EventNotSetByDefault)
+{
+    NavigationMesh nav;
+    const Vector3<float> v{0.f, 0.f, 0.f};
+    nav.m_vertex_map.emplace(v, std::vector<Vector3<float>>{});
+
+    EXPECT_FALSE(nav.get_event(v).has_value());
+}
+
+TEST(NavigationMeshTests, SetAndGetEvent)
+{
+    NavigationMesh nav;
+    const Vector3<float> v{1.f, 0.f, 0.f};
+    nav.m_vertex_map.emplace(v, std::vector<Vector3<float>>{});
+    nav.set_event(v, "jump");
+
+    const auto event = nav.get_event(v);
+    ASSERT_TRUE(event.has_value());
+    EXPECT_EQ(event.value(), "jump");
+}
+
+TEST(NavigationMeshTests, OverwriteEvent)
+{
+    NavigationMesh nav;
+    const Vector3<float> v{1.f, 0.f, 0.f};
+    nav.m_vertex_map.emplace(v, std::vector<Vector3<float>>{});
+    nav.set_event(v, "jump");
+    nav.set_event(v, "teleport");
+
+    EXPECT_EQ(nav.get_event(v).value(), "teleport");
+}
+
+TEST(NavigationMeshTests, ClearEvent)
+{
+    NavigationMesh nav;
+    const Vector3<float> v{1.f, 0.f, 0.f};
+    nav.m_vertex_map.emplace(v, std::vector<Vector3<float>>{});
+    nav.set_event(v, "jump");
+    nav.clear_event(v);
+
+    EXPECT_FALSE(nav.get_event(v).has_value());
+}
+
+TEST(NavigationMeshTests, EventRoundTripSerialization)
+{
+    NavigationMesh nav;
+    const Vector3<float> a{0.f, 0.f, 0.f};
+    const Vector3<float> b{1.f, 0.f, 0.f};
+    nav.m_vertex_map.emplace(a, std::vector<Vector3<float>>{b});
+    nav.m_vertex_map.emplace(b, std::vector<Vector3<float>>{});
+    nav.set_event(b, "jump");
+
+    NavigationMesh nav2;
+    nav2.deserialize(nav.serialize());
+
+    ASSERT_FALSE(nav2.get_event(a).has_value());
+    ASSERT_TRUE(nav2.get_event(b).has_value());
+    EXPECT_EQ(nav2.get_event(b).value(), "jump");
+}
+
+TEST(NavigationMeshTests, MultipleEventsRoundTrip)
+{
+    NavigationMesh nav;
+    const Vector3<float> a{0.f, 0.f, 0.f};
+    const Vector3<float> b{1.f, 0.f, 0.f};
+    const Vector3<float> c{2.f, 0.f, 0.f};
+    nav.m_vertex_map.emplace(a, std::vector<Vector3<float>>{});
+    nav.m_vertex_map.emplace(b, std::vector<Vector3<float>>{});
+    nav.m_vertex_map.emplace(c, std::vector<Vector3<float>>{});
+    nav.set_event(a, "spawn");
+    nav.set_event(c, "teleport");
+
+    NavigationMesh nav2;
+    nav2.deserialize(nav.serialize());
+
+    EXPECT_EQ(nav2.get_event(a).value(), "spawn");
+    EXPECT_FALSE(nav2.get_event(b).has_value());
+    EXPECT_EQ(nav2.get_event(c).value(), "teleport");
+}
+
+TEST(NavigationMeshTests, DeserializeClearsOldEvents)
+{
+    NavigationMesh nav;
+    const Vector3<float> v{0.f, 0.f, 0.f};
+    nav.m_vertex_map.emplace(v, std::vector<Vector3<float>>{});
+    nav.set_event(v, "jump");
+
+    // Deserialize a mesh that has no events
+    NavigationMesh empty_events;
+    empty_events.m_vertex_map.emplace(v, std::vector<Vector3<float>>{});
+
+    nav.deserialize(empty_events.serialize());
+    EXPECT_FALSE(nav.get_event(v).has_value());
+}
