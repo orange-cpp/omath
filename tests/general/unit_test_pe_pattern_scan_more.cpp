@@ -1,120 +1,89 @@
 // Additional tests for PePatternScanner to exercise edge cases and loaded-module scanning
 #include <cstdint>
 #include <cstring>
-#include <fstream>
 #include <gtest/gtest.h>
 #include <omath/utility/pe_pattern_scan.hpp>
 #include <vector>
+#include "mem_fd_helper.hpp"
 
 using namespace omath;
 
-static bool write_bytes(const std::string& path, const std::vector<std::uint8_t>& data)
-{
-    std::ofstream f(path, std::ios::binary);
-    if (!f.is_open())
-        return false;
-    f.write(reinterpret_cast<const char*>(data.data()), data.size());
-    return true;
-}
-
 TEST(unit_test_pe_pattern_scan_more, InvalidDosHeader)
 {
-    constexpr std::string_view path = "./test_bad_dos.bin";
     std::vector<std::uint8_t> data(128, 0);
-    // write wrong magic
     data[0] = 'N';
     data[1] = 'Z';
-    ASSERT_TRUE(write_bytes(path.data(), data));
+    const auto f = MemFdFile::create(data);
+    ASSERT_TRUE(f.valid());
 
-    const auto res = PePatternScanner::scan_for_pattern_in_file(path, "55 8B EC", ".text");
+    const auto res = PePatternScanner::scan_for_pattern_in_file(f.path(), "55 8B EC", ".text");
     EXPECT_FALSE(res.has_value());
 }
 
 TEST(unit_test_pe_pattern_scan_more, InvalidNtSignature)
 {
-    constexpr std::string_view path = "./test_bad_nt.bin";
     std::vector<std::uint8_t> data(256, 0);
-    // valid DOS header
     data[0] = 'M';
     data[1] = 'Z';
-    // point e_lfanew to 0x80
     constexpr std::uint32_t e_lfanew = 0x80;
     std::memcpy(data.data() + 0x3C, &e_lfanew, sizeof(e_lfanew));
-    // write garbage at e_lfanew (not 'PE\0\0')
     data[e_lfanew + 0] = 'X';
     data[e_lfanew + 1] = 'Y';
     data[e_lfanew + 2] = 'Z';
     data[e_lfanew + 3] = 'W';
-    ASSERT_TRUE(write_bytes(path.data(), data));
+    const auto f = MemFdFile::create(data);
+    ASSERT_TRUE(f.valid());
 
-    const auto res = PePatternScanner::scan_for_pattern_in_file(path, "55 8B EC", ".text");
+    const auto res = PePatternScanner::scan_for_pattern_in_file(f.path(), "55 8B EC", ".text");
     EXPECT_FALSE(res.has_value());
 }
 
 TEST(unit_test_pe_pattern_scan_more, SectionNotFound)
 {
-    // reuse minimal writer but with section named .data and search .text
-    constexpr std::string_view path = "./test_section_not_found.bin";
-    std::ofstream f(path.data(), std::ios::binary);
-    ASSERT_TRUE(f.is_open());
-    // DOS
-    std::vector<std::uint8_t> dos(64, 0);
-    dos[0] = 'M';
-    dos[1] = 'Z';
-    std::uint32_t e_lfanew = 0x80;
-    std::memcpy(dos.data() + 0x3C, &e_lfanew, sizeof(e_lfanew));
-    f.write(reinterpret_cast<char*>(dos.data()), dos.size());
-    // pad
-    std::vector<char> pad(e_lfanew - static_cast<std::uint32_t>(f.tellp()), 0);
-    f.write(pad.data(), pad.size());
-    // NT sig
-    f.put('P');
-    f.put('E');
-    f.put('\0');
-    f.put('\0');
-    // FileHeader minimal
-    std::uint16_t machine = 0x8664;
-    std::uint16_t num_sections = 1;
-    std::uint32_t z = 0;
-    std::uint32_t z2 = 0;
-    std::uint32_t numsym = 0;
-    std::uint16_t size_opt = 0xF0;
-    std::uint16_t ch = 0;
-    f.write(reinterpret_cast<char*>(&machine), sizeof(machine));
-    f.write(reinterpret_cast<char*>(&num_sections), sizeof(num_sections));
-    f.write(reinterpret_cast<char*>(&z), sizeof(z));
-    f.write(reinterpret_cast<char*>(&z2), sizeof(z2));
-    f.write(reinterpret_cast<char*>(&numsym), sizeof(numsym));
-    f.write(reinterpret_cast<char*>(&size_opt), sizeof(size_opt));
-    f.write(reinterpret_cast<char*>(&ch), sizeof(ch));
-    // Optional header magic
-    std::uint16_t magic = 0x20b;
-    f.write(reinterpret_cast<char*>(&magic), sizeof(magic));
-    std::vector<std::uint8_t> opt(size_opt - sizeof(magic), 0);
-    f.write(reinterpret_cast<char*>(opt.data()), opt.size());
-    // Section header named .data
-    char name[8] = {'.', 'd', 'a', 't', 'a', 0, 0, 0};
-    f.write(name, 8);
-    std::uint32_t vs = 4, va = 0x1000, srd = 4, prd = 0x200;
-    f.write(reinterpret_cast<char*>(&vs), 4);
-    f.write(reinterpret_cast<char*>(&va), 4);
-    f.write(reinterpret_cast<char*>(&srd), 4);
-    f.write(reinterpret_cast<char*>(&prd), 4);
-    std::vector<char> rest(16, 0);
-    f.write(rest.data(), rest.size());
-    // section bytes
-    std::vector<std::uint8_t> sec = {0x00, 0x01, 0x02, 0x03};
-    f.write(reinterpret_cast<char*>(sec.data()), sec.size());
-    f.close();
+    // Minimal PE with a .data section; scanning for .text should fail
+    constexpr std::uint32_t e_lfanew  = 0x80u;
+    constexpr std::uint16_t size_opt  = 0xF0u;
+    constexpr std::size_t   nt_off    = e_lfanew;
+    constexpr std::size_t   fh_off    = nt_off + 4;
+    constexpr std::size_t   oh_off    = fh_off + 20;
+    constexpr std::size_t   sh_off    = oh_off + size_opt;
+    constexpr std::size_t   data_off  = sh_off + 44;
 
-    auto res = PePatternScanner::scan_for_pattern_in_file(path, "00 01", ".text");
+    const std::vector<std::uint8_t> sec_data = {0x00, 0x01, 0x02, 0x03};
+    std::vector<std::uint8_t> buf(data_off + sec_data.size(), 0u);
+
+    buf[0] = 'M'; buf[1] = 'Z';
+    std::memcpy(buf.data() + 0x3C, &e_lfanew, 4);
+    buf[nt_off] = 'P'; buf[nt_off + 1] = 'E';
+
+    const std::uint16_t machine = 0x8664u, num_sections = 1u;
+    std::memcpy(buf.data() + fh_off,      &machine,       2);
+    std::memcpy(buf.data() + fh_off + 2,  &num_sections,  2);
+    std::memcpy(buf.data() + fh_off + 16, &size_opt,      2);
+
+    const std::uint16_t magic = 0x20Bu;
+    std::memcpy(buf.data() + oh_off, &magic, 2);
+
+    const char name[8] = {'.','d','a','t','a',0,0,0};
+    std::memcpy(buf.data() + sh_off, name, 8);
+
+    const std::uint32_t vs = 4u, va = 0x1000u, srd = 4u, prd = static_cast<std::uint32_t>(data_off);
+    std::memcpy(buf.data() + sh_off + 8,  &vs,  4);
+    std::memcpy(buf.data() + sh_off + 12, &va,  4);
+    std::memcpy(buf.data() + sh_off + 16, &srd, 4);
+    std::memcpy(buf.data() + sh_off + 20, &prd, 4);
+    std::memcpy(buf.data() + data_off, sec_data.data(), sec_data.size());
+
+    const auto f = MemFdFile::create(buf);
+    ASSERT_TRUE(f.valid());
+
+    const auto res = PePatternScanner::scan_for_pattern_in_file(f.path(), "00 01", ".text");
     EXPECT_FALSE(res.has_value());
 }
 
 TEST(unit_test_pe_pattern_scan_more, LoadedModuleScanFinds)
 {
     // Create an in-memory buffer that mimics loaded module layout
-    // Define local header structs matching those in source
     struct DosHeader
     {
         std::uint16_t e_magic;
@@ -158,9 +127,9 @@ TEST(unit_test_pe_pattern_scan_more, LoadedModuleScanFinds)
         std::uint32_t base_of_code;
         std::uint64_t image_base;
         std::uint32_t section_alignment;
-        std::uint32_t file_alignment; /* rest omitted */
+        std::uint32_t file_alignment;
         std::uint32_t size_image;
-        std::uint32_t size_headers; /* keep space */
+        std::uint32_t size_headers;
         std::uint8_t pad[200];
     };
     struct SectionHeader
@@ -188,44 +157,38 @@ TEST(unit_test_pe_pattern_scan_more, LoadedModuleScanFinds)
     };
 
     const std::vector<std::uint8_t> pattern_bytes = {0xDE, 0xAD, 0xBE, 0xEF, 0x90};
-    constexpr std::uint32_t base_of_code = 0x200; // will place bytes at offset 0x200
+    constexpr std::uint32_t base_of_code = 0x200;
     const std::uint32_t size_code = static_cast<std::uint32_t>(pattern_bytes.size());
 
     const std::uint32_t bufsize = 0x400 + size_code;
     std::vector<std::uint8_t> buf(bufsize, 0);
 
-    // DOS header
     const auto dos = reinterpret_cast<DosHeader*>(buf.data());
-    dos->e_magic = 0x5A4D;
+    dos->e_magic  = 0x5A4D;
     dos->e_lfanew = 0x80;
 
-    // NT headers
     const auto nt = reinterpret_cast<ImageNtHeadersX64*>(buf.data() + dos->e_lfanew);
-    nt->signature = 0x4550; // 'PE\0\0'
-    nt->file_header.machine = 0x8664;
-    nt->file_header.num_sections = 1;
-    nt->file_header.size_optional_header = static_cast<std::uint16_t>(sizeof(OptionalHeaderX64));
+    nt->signature                         = 0x4550;
+    nt->file_header.machine               = 0x8664;
+    nt->file_header.num_sections          = 1;
+    nt->file_header.size_optional_header  = static_cast<std::uint16_t>(sizeof(OptionalHeaderX64));
+    nt->optional_header.magic             = 0x020B;
+    nt->optional_header.base_of_code      = base_of_code;
+    nt->optional_header.size_code         = size_code;
 
-    nt->optional_header.magic = 0x020B; // x64
-    nt->optional_header.base_of_code = base_of_code;
-    nt->optional_header.size_code = size_code;
-
-    // Compute section table offset: e_lfanew + 4 (sig) + FileHeader + OptionalHeader
     const std::size_t section_table_off =
         static_cast<std::size_t>(dos->e_lfanew) + 4 + sizeof(FileHeader) + sizeof(OptionalHeaderX64);
     nt->optional_header.size_headers = static_cast<std::uint32_t>(section_table_off + sizeof(SectionHeader));
 
-    // Section header (.text)
     const auto sect = reinterpret_cast<SectionHeader*>(buf.data() + section_table_off);
     std::memset(sect, 0, sizeof(SectionHeader));
     std::memcpy(sect->name, ".text", 5);
-    sect->virtual_size = size_code;
+    sect->virtual_size    = size_code;
     sect->virtual_address = base_of_code;
-    sect->size_raw_data = size_code;
-    sect->ptr_raw_data = base_of_code;
-    sect->characteristics = 0x60000020; // code | execute | read
+    sect->size_raw_data   = size_code;
+    sect->ptr_raw_data    = base_of_code;
+    sect->characteristics = 0x60000020;
 
-    // place code at base_of_code
     std::memcpy(buf.data() + base_of_code, pattern_bytes.data(), pattern_bytes.size());
 
     const auto res = PePatternScanner::scan_for_pattern_in_loaded_module(buf.data(), "DE AD BE EF", ".text");
