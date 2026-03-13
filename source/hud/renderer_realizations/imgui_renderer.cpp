@@ -50,7 +50,7 @@ namespace omath::hud
                                                 text.data() + text.size());
     }
     [[nodiscard]]
-    virtual Vector2<float> calc_text_size(const std::string_view& text)
+    Vector2<float> calc_text_size(const std::string_view& text)
     {
         return Vector2<float>::from_im_vec2(ImGui::CalcTextSize(text.data()));
     }
