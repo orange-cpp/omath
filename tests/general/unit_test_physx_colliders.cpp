@@ -6,7 +6,9 @@
 #include <gtest/gtest.h>
 #include <omath/collision/gjk_algorithm.hpp>
 #include <omath/collision/physx_box_collider.hpp>
+#include <omath/collision/physx_rigid_body.hpp>
 #include <omath/collision/physx_sphere_collider.hpp>
+#include <omath/collision/physx_world.hpp>
 
 using namespace omath::collision;
 using omath::Vector3;
@@ -251,6 +253,89 @@ TEST(PhysXSphereGjk, DifferentRadiiNotColliding)
     const PhysXSphereCollider a(1.f);
     const PhysXSphereCollider b(1.f, {5.f, 0.f, 0.f});
     EXPECT_FALSE(GjkSphere::is_collide(a, b));
+}
+
+// ─── PhysX simulation-based collision resolution ─────────────────────────────
+
+// Helper: step the world N times with a fixed dt.
+static void step_n(omath::collision::PhysXWorld& world, int n, float dt = 1.f / 60.f)
+{
+    for (int i = 0; i < n; ++i)
+        world.step(dt);
+}
+
+TEST(PhysXSimulation, BoxFallsAndStopsOnGround)
+{
+    // A box dropped from y=5 should come to rest at y≈0.5 (half-extent) above the ground plane.
+    omath::collision::PhysXWorld world;
+    world.add_ground_plane(0.f);
+
+    omath::collision::PhysXRigidBody box(world, physx::PxBoxGeometry(0.5f, 0.5f, 0.5f),
+                                         {0.f, 5.f, 0.f});
+
+    step_n(world, 300); // ~5 simulated seconds
+
+    EXPECT_NEAR(box.get_origin().y, 0.5f, 0.05f);
+}
+
+TEST(PhysXSimulation, SphereFallsAndStopsOnGround)
+{
+    // A sphere of radius 1 dropped from y=5 should rest at y≈1.
+    omath::collision::PhysXWorld world;
+    world.add_ground_plane(0.f);
+
+    omath::collision::PhysXRigidBody sphere(world, physx::PxSphereGeometry(1.f),
+                                            {0.f, 5.f, 0.f});
+
+    step_n(world, 300);
+
+    EXPECT_NEAR(sphere.get_origin().y, 1.f, 0.05f);
+}
+
+TEST(PhysXSimulation, TwoBoxesCollideSeparate)
+{
+    // Two boxes launched toward each other — after collision they must be
+    // further apart than their combined half-extents (no overlap).
+    omath::collision::PhysXWorld world({0.f, 0.f, 0.f}); // no gravity
+
+    omath::collision::PhysXRigidBody left (world, physx::PxBoxGeometry(0.5f, 0.5f, 0.5f), {-3.f, 0.f, 0.f});
+    omath::collision::PhysXRigidBody right(world, physx::PxBoxGeometry(0.5f, 0.5f, 0.5f), { 3.f, 0.f, 0.f});
+
+    left.set_linear_velocity({ 5.f, 0.f, 0.f});
+    right.set_linear_velocity({-5.f, 0.f, 0.f});
+
+    step_n(world, 120); // 2 simulated seconds
+
+    const float distance = right.get_origin().x - left.get_origin().x;
+    // Boxes must not be overlapping (combined extents = 1.0).
+    EXPECT_GE(distance, 1.0f);
+}
+
+TEST(PhysXSimulation, BoxGetOriginMatchesSetOrigin)
+{
+    // Kinematic teleport — set_origin must immediately reflect in get_origin.
+    omath::collision::PhysXWorld world;
+    omath::collision::PhysXRigidBody box(world, physx::PxBoxGeometry(1.f, 1.f, 1.f));
+    box.set_kinematic(true);
+
+    box.set_origin({7.f, 3.f, -2.f});
+
+    EXPECT_NEAR(box.get_origin().x,  7.f, 1e-4f);
+    EXPECT_NEAR(box.get_origin().y,  3.f, 1e-4f);
+    EXPECT_NEAR(box.get_origin().z, -2.f, 1e-4f);
+}
+
+TEST(PhysXSimulation, BoxFallsUnderGravity)
+{
+    // Without a floor, a box should be lower after simulation than its start.
+    omath::collision::PhysXWorld world; // default gravity -9.81 Y
+    omath::collision::PhysXRigidBody box(world, physx::PxBoxGeometry(0.5f, 0.5f, 0.5f),
+                                         {0.f, 10.f, 0.f});
+
+    const float y_start = box.get_origin().y;
+    step_n(world, 60); // 1 simulated second
+
+    EXPECT_LT(box.get_origin().y, y_start);
 }
 
 #endif // OMATH_ENABLE_PHYSX
