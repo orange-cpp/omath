@@ -62,8 +62,7 @@ namespace omath::hud
         m_renderer->add_rectangle(bar_start - Vector2<float>(1.f, 0.f),
                                   bar_start + Vector2<float>(width, -max_bar_height), outline_color);
 
-        // NOTE: Move text 1 pixel horizontali due to imgui logic of rendering rectangle
-        m_text_cursor_right.x += offset + width + 1.f;
+        m_text_cursor_right.x += offset + width;
     }
     void EntityOverlay::add_left_bar(const Color& color, const Color& outline_color, const Color& bg_color,
                                      const float width, float ratio, const float offset) const
