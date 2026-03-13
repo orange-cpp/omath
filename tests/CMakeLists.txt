@@ -4,7 +4,7 @@ project(unit_tests)
 
 include(GoogleTest)
 
-file(GLOB_RECURSE UNIT_TESTS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/general/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/engines/*.cpp")
+file(GLOB_RECURSE UNIT_TESTS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/general/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/engines/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 add_executable(${PROJECT_NAME} ${UNIT_TESTS_SOURCES} main.cpp)
 
 set_target_properties(
