@@ -3,7 +3,7 @@
 //
 #pragma once
 #include "omath/linear_algebra/vector2.hpp"
-
+#include <array>
 namespace omath::hud
 {
     class CanvasBox final
