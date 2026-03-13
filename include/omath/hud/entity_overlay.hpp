@@ -53,7 +53,7 @@ namespace omath::hud
         void add_top_bar(const Color& color, const Color& outline_color, const Color& bg_color, float height,
                          float ratio, float offset = 5.f);
 
-        void add_snap_line(const Vector3<float>& start_pos, const Color& color, float width);
+        void add_snap_line(const Vector2<float>& start_pos, const Color& color, float width);
 
     private:
         void draw_outlined_text(const Vector2<float>& position, const Color& color,

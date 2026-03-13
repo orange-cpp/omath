@@ -2,6 +2,7 @@ add_subdirectory(example_barycentric)
 add_subdirectory(example_glfw3)
 add_subdirectory(example_proj_mat_builder)
 add_subdirectory(example_signature_scan)
+add_subdirectory(example_hud)
 
 if(OMATH_ENABLE_VALGRIND)
     omath_setup_valgrind(example_projection_matrix_builder)

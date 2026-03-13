@@ -113,7 +113,7 @@ namespace omath::hud
 
         m_text_cursor_top.y -= offset + height;
     }
-    void EntityOverlay::add_snap_line(const Vector3<float>& start_pos, const Color& color, const float width)
+    void EntityOverlay::add_snap_line(const Vector2<float>& start_pos, const Color& color, const float width)
     {
         const Vector2<float> line_end =
                 m_canvas.bottom_left_corner
