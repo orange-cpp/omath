@@ -90,7 +90,6 @@ namespace omath::hud
     void EntityOverlay::add_top_label(const Color& color, const float offset, const bool outlined,
                                       const std::string_view text)
     {
-
         m_text_cursor_top.y -= ImGui::CalcTextSize(text.data()).y;
 
         if (outlined)
