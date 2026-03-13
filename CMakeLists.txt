@@ -34,6 +34,8 @@ option(OMATH_ENABLE_FORCE_INLINE
 
 option(OMATH_ENABLE_LUA
         "omath bindings for lua" OFF)
+option(OMATH_ENABLE_PHYSX
+        "PhysX-backed collider implementations" OFF)
 if(VCPKG_MANIFEST_FEATURES)
     foreach(omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
         if(omath_feature STREQUAL "imgui")
@@ -48,6 +50,8 @@ if(VCPKG_MANIFEST_FEATURES)
             set(OMATH_BUILD_EXAMPLES ON)
         elseif(omath_feature STREQUAL "lua")
             set(OMATH_ENABLE_LUA ON)
+        elseif(omath_feature STREQUAL "physx")
+            set(OMATH_ENABLE_PHYSX ON)
         endif()
 
     endforeach()
@@ -78,6 +82,7 @@ if(${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: Coverage feature status ${OMATH_ENABLE_COVERAGE}")
     message(STATUS "[${PROJECT_NAME}]: Valgrind feature status ${OMATH_ENABLE_VALGRIND}")
     message(STATUS "[${PROJECT_NAME}]: Lua feature status ${OMATH_ENABLE_LUA}")
+    message(STATUS "[${PROJECT_NAME}]: PhysX feature status ${OMATH_ENABLE_PHYSX}")
 endif()
 
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
@@ -98,6 +103,13 @@ if (OMATH_ENABLE_LUA)
 
     find_path(SOL2_INCLUDE_DIRS "sol/abort.hpp")
     target_include_directories(${PROJECT_NAME} PRIVATE ${SOL2_INCLUDE_DIRS})
+endif ()
+
+if (OMATH_ENABLE_PHYSX)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_ENABLE_PHYSX)
+
+    find_package(unofficial-omniverse-physx-sdk CONFIG REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC unofficial::omniverse-physx-sdk::sdk)
 endif ()
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})

@@ -52,6 +52,13 @@
         "lua",
         "sol2"
       ]
+    },
+    "physx": {
+      "description": "PhysX-backed collider implementations",
+      "dependencies": [
+        "physx"
+      ],
+      "supports": "(windows & x64 & !mingw & !uwp) | (linux & x64) | (linux & arm64)"
     }
   }
 }
