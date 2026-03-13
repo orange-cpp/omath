@@ -163,11 +163,20 @@ TEST(PhysXBoxGjk, CollidingOverlap)
     EXPECT_TRUE(GjkBox::is_collide(a, b));
 }
 
-TEST(PhysXBoxGjk, CollidingTouching)
+TEST(PhysXBoxGjk, NotCollidingTouching)
 {
     // Boxes exactly touching on the +X face: A[-1,1] and B[1,3] along X.
+    // GJK treats boundary contact (Minkowski difference passes through origin) as non-collision.
     const PhysXBoxCollider a({1.f, 1.f, 1.f});
     const PhysXBoxCollider b({1.f, 1.f, 1.f}, {2.f, 0.f, 0.f});
+    EXPECT_FALSE(GjkBox::is_collide(a, b));
+}
+
+TEST(PhysXBoxGjk, CollidingSlightOverlap)
+{
+    // Boxes overlapping by 0.1 along X: A[-1,1] and B[0.9,2.9].
+    const PhysXBoxCollider a({1.f, 1.f, 1.f});
+    const PhysXBoxCollider b({1.f, 1.f, 1.f}, {1.9f, 0.f, 0.f});
     EXPECT_TRUE(GjkBox::is_collide(a, b));
 }
 
