@@ -14,9 +14,9 @@ namespace omath::hud
         virtual void add_line(const Vector2<float>& line_start, const Vector2<float>& line_end, const Color& color,
                               float thickness) = 0;
 
-        virtual void add_polyline(const std::span<const Vector2<float>>& vertexes, float thickness) = 0;
+        virtual void add_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color, float thickness) = 0;
 
-        virtual void add_filled_polyline(const std::span<const Vector2<float>>& vertexes, float thickness) = 0;
+        virtual void add_filled_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color, float thickness) = 0;
 
         virtual void add_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) = 0;
 

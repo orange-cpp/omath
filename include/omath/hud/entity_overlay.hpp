@@ -10,13 +10,7 @@
 #include <string_view>
 namespace omath::hud
 {
-    enum class SnapLineStartPosition
-    {
-        SCREEN_BOTTOM,
-        SCREEN_TOP,
-        SCREEN_CENTER,
-    };
-    class EntityOverlay
+    class EntityOverlay final
     {
     public:
         EntityOverlay(const Vector2<float>& top, const Vector2<float>& bottom,
@@ -59,14 +53,14 @@ namespace omath::hud
         void add_top_bar(const Color& color, const Color& outline_color, const Color& bg_color, float height,
                          float ratio, float offset = 5.f);
 
-        void add_snap_line(const SnapLineStartPosition& start_pos, const Color& color, float width);
+        void add_snap_line(const Vector3<float>& start_pos, const Color& color, float width);
 
     private:
-        static void draw_outlined_text(const Vector2<float>& position, const Color& color,
+        void draw_outlined_text(const Vector2<float>& position, const Color& color,
                                        const std::string_view& text);
         CanvasBox m_canvas;
         Vector2<float> m_text_cursor_right;
         Vector2<float> m_text_cursor_top;
-        std::shared_ptr<HudRendererInterface> renderer;
+        std::shared_ptr<HudRendererInterface> m_renderer;
     };
 } // namespace omath::hud
