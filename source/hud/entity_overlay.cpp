@@ -85,12 +85,12 @@ namespace omath::hud
         else
             m_renderer->add_text(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, text.data());
 
-        m_text_cursor_right.y += ImGui::CalcTextSize(text.data()).y;
+        m_text_cursor_right.y += m_renderer->calc_text_size(text.data()).y;
     }
     void EntityOverlay::add_top_label(const Color& color, const float offset, const bool outlined,
                                       const std::string_view text)
     {
-        m_text_cursor_top.y -= ImGui::CalcTextSize(text.data()).y;
+        m_text_cursor_top.y -= m_renderer->calc_text_size(text.data()).y;
 
         if (outlined)
             draw_outlined_text(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, text);

@@ -3,6 +3,8 @@
 //
 #pragma once
 #include <omath/hud/hud_renderer_interface.hpp>
+
+#ifdef OMATH_IMGUI_INTEGRATION
 namespace omath::hud
 {
     class ImguiHudRenderer final : public HudRendererInterface
@@ -16,5 +18,8 @@ namespace omath::hud
         void add_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) override;
         void add_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) override;
         void add_text(const Vector2<float>& position, const Color& color, const std::string_view& text) override;
+        [[nodiscard]]
+        virtual Vector2<float> calc_text_size(const std::string_view& text) override;
     };
-}
+} // namespace omath::hud
+#endif // OMATH_IMGUI_INTEGRATION
