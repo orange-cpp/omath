@@ -8,7 +8,6 @@
 #include "omath/utility/color.hpp"
 #include <memory>
 #include <string_view>
-#include <span>
 namespace omath::hud
 {
     class EntityOverlay final
