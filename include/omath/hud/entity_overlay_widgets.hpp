@@ -84,9 +84,9 @@ namespace omath::hud::widget
 
     struct Label
     {
-        Color            color;
-        float            offset;
-        bool             outlined;
+        Color color;
+        float offset;
+        bool outlined;
         std::string_view text;
     };
 
@@ -100,7 +100,9 @@ namespace omath::hud::widget
     Centered(W) -> Centered<W>;
 
     // ── Side widget variant ───────────────────────────────────────────────────
-    struct None {};  ///< No-op placeholder — used by widget::when for disabled elements.
+    struct None
+    {
+    }; ///< No-op placeholder — used by widget::when for disabled elements.
     using SideWidget = std::variant<None, Bar, DashedBar, Label, Centered<Label>>;
 
     // ── Side containers ───────────────────────────────────────────────────────
@@ -109,10 +111,34 @@ namespace omath::hud::widget
     // temporary side-container object, which is consumed within the same
     // full-expression by EntityOverlay::dispatch. No heap allocation occurs.
 
-    struct RightSide  { std::initializer_list<SideWidget> children; RightSide(std::initializer_list<SideWidget> c) : children(c) {} };
-    struct LeftSide   { std::initializer_list<SideWidget> children; LeftSide(std::initializer_list<SideWidget> c) : children(c) {} };
-    struct TopSide    { std::initializer_list<SideWidget> children; TopSide(std::initializer_list<SideWidget> c) : children(c) {} };
-    struct BottomSide { std::initializer_list<SideWidget> children; BottomSide(std::initializer_list<SideWidget> c) : children(c) {} };
+    struct RightSide
+    {
+        std::initializer_list<SideWidget> children;
+        RightSide(const std::initializer_list<SideWidget> c): children(c)
+        {
+        }
+    };
+    struct LeftSide
+    {
+        std::initializer_list<SideWidget> children;
+        LeftSide(const std::initializer_list<SideWidget> c): children(c)
+        {
+        }
+    };
+    struct TopSide
+    {
+        std::initializer_list<SideWidget> children;
+        TopSide(const std::initializer_list<SideWidget> c): children(c)
+        {
+        }
+    };
+    struct BottomSide
+    {
+        std::initializer_list<SideWidget> children;
+        BottomSide(const std::initializer_list<SideWidget> c): children(c)
+        {
+        }
+    };
 
 } // namespace omath::hud::widget
 
@@ -121,10 +147,11 @@ namespace omath::hud::widget
     /// Inside XxxSide containers: returns the widget as a SideWidget when condition is true,
     /// or None{} otherwise. Preferred over hud::when for types inside the SideWidget variant.
     template<typename W>
-        requires std::constructible_from<SideWidget, W>
+    requires std::constructible_from<SideWidget, W>
     SideWidget when(const bool condition, W widget)
     {
-        if (condition) return SideWidget{std::move(widget)};
+        if (condition)
+            return SideWidget{std::move(widget)};
         return None{};
     }
 } // namespace omath::hud::widget
@@ -136,7 +163,8 @@ namespace omath::hud
     template<typename W>
     std::optional<W> when(const bool condition, W widget)
     {
-        if (condition) return std::move(widget);
+        if (condition)
+            return std::move(widget);
         return std::nullopt;
     }
 } // namespace omath::hud

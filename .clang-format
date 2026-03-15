@@ -12,6 +12,7 @@ AlignConsecutiveMacros: AcrossEmptyLinesAndComments
 AlignTrailingComments: false
 AllowShortBlocksOnASingleLine: Never
 AllowShortFunctionsOnASingleLine: None
+AllowShortLambdasOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 BreakTemplateDeclarations: Leave

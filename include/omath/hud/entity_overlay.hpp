@@ -142,15 +142,15 @@ namespace omath::hud
                 dispatch(*w);
         }
 
-        void dispatch(const widget::Box& w);
-        void dispatch(const widget::CorneredBox& w);
-        void dispatch(const widget::DashedBox& w);
-        void dispatch(const widget::RightSide& w);
-        void dispatch(const widget::LeftSide& w);
-        void dispatch(const widget::TopSide& w);
-        void dispatch(const widget::BottomSide& w);
-        void dispatch(const widget::Skeleton& w);
-        void dispatch(const widget::SnapLine& w);
+        void dispatch(const widget::Box& box);
+        void dispatch(const widget::CorneredBox& cornered_box);
+        void dispatch(const widget::DashedBox& dashed_box);
+        void dispatch(const widget::RightSide& right_side);
+        void dispatch(const widget::LeftSide& left_side);
+        void dispatch(const widget::TopSide& top_side);
+        void dispatch(const widget::BottomSide& bottom_side);
+        void dispatch(const widget::Skeleton& skeleton);
+        void dispatch(const widget::SnapLine& snap_line);
         void draw_outlined_text(const Vector2<float>& position, const Color& color, const std::string_view& text);
         void draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color, float dash_len,
                               float gap_len, float thickness) const;

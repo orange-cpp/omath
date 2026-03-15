@@ -167,8 +167,7 @@ namespace imgui_desktop::gui
                                                               m_corner_ratio, m_box_thickness}),
                         when(m_show_dashed_box, DashedBox{m_dash_color, m_dash_len, m_dash_gap, m_dash_thickness}),
 
-                        RightSide
-                        {
+                        RightSide{
                                 when(m_show_right_bar, bar),
                                 when(m_show_right_dashed_bar, dbar),
                                 when(m_show_right_labels,
@@ -178,8 +177,7 @@ namespace imgui_desktop::gui
                                 when(m_show_right_labels,
                                      Label{{1.f, 0.f, 1.f, 1.f}, m_label_offset, m_outlined, "*LOCKED*"}),
                         },
-                        LeftSide
-                        {
+                        LeftSide{
                                 when(m_show_left_bar, bar),
                                 when(m_show_left_dashed_bar, dbar),
                                 when(m_show_left_labels, Label{omath::Color::from_rgba(255, 128, 0, 255),
@@ -187,8 +185,7 @@ namespace imgui_desktop::gui
                                 when(m_show_left_labels, Label{omath::Color::from_rgba(0, 200, 255, 255),
                                                                m_label_offset, m_outlined, "Level: 42"}),
                         },
-                        TopSide
-                        {
+                        TopSide{
                                 when(m_show_top_bar, bar),
                                 when(m_show_top_dashed_bar, dbar),
                                 when(m_show_centered_top, Centered{Label{omath::Color::from_rgba(0, 255, 255, 255),
@@ -198,8 +195,7 @@ namespace imgui_desktop::gui
                                 when(m_show_top_labels, Label{omath::Color::from_rgba(255, 0, 0, 255), m_label_offset,
                                                               m_outlined, "*BLEEDING*"}),
                         },
-                        BottomSide
-                        {
+                        BottomSide{
                                 when(m_show_bottom_bar, bar),
                                 when(m_show_bottom_dashed_bar, dbar),
                                 when(m_show_centered_bottom, Centered{Label{omath::Color::from_rgba(255, 255, 255, 255),
