@@ -3,9 +3,11 @@
 //
 #include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <omath/utility/elf_pattern_scan.hpp>
+#include <span>
 #include <vector>
 
 using namespace omath;
@@ -188,26 +190,25 @@ TEST(unit_test_elf_pattern_scan_memory, missing_section_returns_nullopt)
 
 TEST(unit_test_elf_pattern_scan_memory, matches_file_scan)
 {
-    // Read test binary itself and compare memory scan vs file scan
-    std::ifstream file("/proc/self/exe", std::ios::binary);
-    if (!file.is_open())
-        GTEST_SKIP() << "Cannot open /proc/self/exe";
+    // Write our synthetic ELF to a temp file and verify memory scan == file scan
+    const std::vector<std::uint8_t> code = {0x48, 0x89, 0xE5, 0xDE, 0xAD, 0xBE, 0xEF, 0x00};
+    const auto buf = make_elf64_with_text_section(code);
 
-    const std::string raw{std::istreambuf_iterator<char>(file), {}};
-    std::vector<std::byte> data(raw.size());
-    std::transform(raw.begin(), raw.end(), data.begin(),
-                   [](char c) { return std::byte{static_cast<unsigned char>(c)}; });
-
-    constexpr std::string_view pattern = "7F 45 4C 46"; // ELF magic at start of .text unlikely; use any known bytes
-    const auto file_result = ElfPatternScanner::scan_for_pattern_in_file("/proc/self/exe", pattern, ".text");
-    const auto mem_result =
-            ElfPatternScanner::scan_for_pattern_in_memory_file(std::span<const std::byte>{data}, pattern, ".text");
-
-    EXPECT_EQ(file_result.has_value(), mem_result.has_value());
-    if (file_result && mem_result)
+    const auto tmp_path = std::filesystem::temp_directory_path() / "omath_elf_test.elf";
     {
-        EXPECT_EQ(file_result->virtual_base_addr, mem_result->virtual_base_addr);
-        EXPECT_EQ(file_result->raw_base_addr, mem_result->raw_base_addr);
-        EXPECT_EQ(file_result->target_offset, mem_result->target_offset);
+        std::ofstream out(tmp_path, std::ios::binary);
+        out.write(reinterpret_cast<const char*>(buf.data()), static_cast<std::streamsize>(buf.size()));
     }
+
+    const auto file_result = ElfPatternScanner::scan_for_pattern_in_file(tmp_path, "48 89 E5 DE AD", ".text");
+    const auto mem_result =
+            ElfPatternScanner::scan_for_pattern_in_memory_file(std::span<const std::byte>{buf}, "48 89 E5 DE AD", ".text");
+
+    std::filesystem::remove(tmp_path);
+
+    ASSERT_TRUE(file_result.has_value());
+    ASSERT_TRUE(mem_result.has_value());
+    EXPECT_EQ(file_result->virtual_base_addr, mem_result->virtual_base_addr);
+    EXPECT_EQ(file_result->raw_base_addr, mem_result->raw_base_addr);
+    EXPECT_EQ(file_result->target_offset, mem_result->target_offset);
 }
