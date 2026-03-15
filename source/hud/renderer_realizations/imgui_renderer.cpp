@@ -22,7 +22,7 @@ namespace omath::hud
     {
         ImGui::GetBackgroundDrawList()->AddPolyline(reinterpret_cast<const ImVec2*>(vertexes.data()),
                                                     static_cast<int>(vertexes.size()), color.to_im_color(),
-                                                    ImDrawFlags_None, thickness);
+                                                    ImDrawFlags_Closed, thickness);
     }
 
     void ImguiHudRenderer::add_filled_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color,
@@ -50,7 +50,7 @@ namespace omath::hud
                                                 text.data() + text.size());
     }
     [[nodiscard]]
-    Vector2<float> calc_text_size(const std::string_view& text)
+    Vector2<float> ImguiHudRenderer::calc_text_size(const std::string_view& text)
     {
         return Vector2<float>::from_im_vec2(ImGui::CalcTextSize(text.data()));
     }

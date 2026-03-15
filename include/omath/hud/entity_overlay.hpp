@@ -26,7 +26,7 @@ namespace omath::hud
                            float ratio, float offset = 5.f);
 
         void add_left_bar(const Color& color, const Color& outline_color, const Color& bg_color, float width,
-                          float ratio, float offset = 5.f) const;
+                          float ratio, float offset = 5.f);
 
         template<typename... Args>
         void add_right_label(const Color& color, const float offset, const bool outlined,
@@ -55,12 +55,47 @@ namespace omath::hud
 
         void add_snap_line(const Vector2<float>& start_pos, const Color& color, float width);
 
+        void add_bottom_bar(const Color& color, const Color& outline_color, const Color& bg_color, float height,
+                            float ratio, float offset = 5.f);
+
+        template<typename... Args>
+        void add_bottom_label(const Color& color, const float offset, const bool outlined,
+                              std::format_string<Args...> fmt, Args&&... args)
+        {
+            const std::string label = std::vformat(fmt.get(), std::make_format_args(args...));
+            add_bottom_label(color, offset, outlined, std::string_view{label});
+        }
+
+        void add_bottom_label(const Color& color, float offset, bool outlined, std::string_view text);
+
+        template<typename... Args>
+        void add_left_label(const Color& color, const float offset, const bool outlined,
+                            std::format_string<Args...> fmt, Args&&... args)
+        {
+            const std::string label = std::vformat(fmt.get(), std::make_format_args(args...));
+            add_left_label(color, offset, outlined, std::string_view{label});
+        }
+
+        void add_left_label(const Color& color, float offset, bool outlined, const std::string_view& text);
+
+        template<typename... Args>
+        void add_centered_label(const Color& color, const float offset, const bool outlined,
+                                std::format_string<Args...> fmt, Args&&... args)
+        {
+            const std::string label = std::vformat(fmt.get(), std::make_format_args(args...));
+            add_centered_label(color, offset, outlined, std::string_view{label});
+        }
+
+        void add_centered_label(const Color& color, float offset, bool outlined, const std::string_view& text);
+
     private:
         void draw_outlined_text(const Vector2<float>& position, const Color& color,
                                        const std::string_view& text);
         CanvasBox m_canvas;
         Vector2<float> m_text_cursor_right;
         Vector2<float> m_text_cursor_top;
+        Vector2<float> m_text_cursor_bottom;
+        Vector2<float> m_text_cursor_left;
         std::shared_ptr<HudRendererInterface> m_renderer;
     };
 } // namespace omath::hud
