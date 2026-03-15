@@ -10,7 +10,9 @@ namespace omath::hud
         const auto points = m_canvas.as_array();
 
         m_renderer->add_polyline({points.data(), points.size()}, box_color, thickness);
-        m_renderer->add_filled_polyline({points.data(), points.size()}, fill_color, thickness);
+
+        if (fill_color.value().w > 0.f)
+            m_renderer->add_filled_polyline({points.data(), points.size()}, fill_color);
     }
     void EntityOverlay::add_cornered_2d_box(const Color& box_color, const Color& fill_color,
                                             const float corner_ratio_len, const float thickness) const
@@ -173,11 +175,11 @@ namespace omath::hud
     }
 
     void EntityOverlay::add_centered_bottom_label(const Color& color, const float offset, const bool outlined,
-                                                   const std::string_view& text)
+                                                  const std::string_view& text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
-        const auto box_center_x = m_canvas.bottom_left_corner.x
-                                  + (m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x) / 2.f;
+        const auto box_center_x =
+                m_canvas.bottom_left_corner.x + (m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x) / 2.f;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_bottom.y + offset};
 
         if (outlined)
@@ -192,8 +194,8 @@ namespace omath::hud
                                                const std::string_view& text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
-        const auto box_center_x = m_canvas.top_left_corner.x
-                                  + (m_canvas.top_right_corner.x - m_canvas.top_left_corner.x) / 2.f;
+        const auto box_center_x =
+                m_canvas.top_left_corner.x + (m_canvas.top_right_corner.x - m_canvas.top_left_corner.x) / 2.f;
 
         m_text_cursor_top.y -= text_size.y;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_top.y - offset};
