@@ -19,9 +19,6 @@ namespace imgui_desktop::gui
     private:
         void draw_controls();
         void draw_overlay();
-        void draw_boxes(omath::hud::EntityOverlay& ent) const;
-        void draw_bars(omath::hud::EntityOverlay& ent) const;
-        void draw_labels(omath::hud::EntityOverlay& ent) const;
         void present();
 
         GLFWwindow* m_window = nullptr;
