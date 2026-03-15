@@ -4,12 +4,23 @@
 #pragma once
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
+#include <initializer_list>
 #include <optional>
-#include <string>
+#include <string_view>
+#include <variant>
 
 namespace omath::hud::widget
 {
-    // ── Boxes ─────────────────────────────────────────────────────────────────
+    // ── Overloaded helper for std::visit ──────────────────────────────────────
+    template<typename... Ts>
+    struct Overloaded : Ts...
+    {
+        using Ts::operator()...;
+    };
+    template<typename... Ts>
+    Overloaded(Ts...) -> Overloaded<Ts...>;
+
+    // ── Standalone widgets ────────────────────────────────────────────────────
     struct Box
     {
         Color color;
@@ -33,134 +44,6 @@ namespace omath::hud::widget
         float thickness = 1.f;
     };
 
-    // ── Bars ──────────────────────────────────────────────────────────────────
-    struct RightBar
-    {
-        Color color;
-        Color outline;
-        Color bg;
-        float width;
-        float ratio;
-        float offset = 5.f;
-    };
-    struct LeftBar
-    {
-        Color color;
-        Color outline;
-        Color bg;
-        float width;
-        float ratio;
-        float offset = 5.f;
-    };
-    struct TopBar
-    {
-        Color color;
-        Color outline;
-        Color bg;
-        float height;
-        float ratio;
-        float offset = 5.f;
-    };
-    struct BottomBar
-    {
-        Color color;
-        Color outline;
-        Color bg;
-        float height;
-        float ratio;
-        float offset = 5.f;
-    };
-
-    struct RightDashedBar
-    {
-        Color color;
-        Color outline;
-        Color bg;
-        float width;
-        float ratio;
-        float dash_len;
-        float gap_len;
-        float offset = 5.f;
-    };
-    struct LeftDashedBar
-    {
-        Color color;
-        Color outline;
-        Color bg;
-        float width;
-        float ratio;
-        float dash_len;
-        float gap_len;
-        float offset = 5.f;
-    };
-    struct TopDashedBar
-    {
-        Color color;
-        Color outline;
-        Color bg;
-        float height;
-        float ratio;
-        float dash_len;
-        float gap_len;
-        float offset = 5.f;
-    };
-    struct BottomDashedBar
-    {
-        Color color;
-        Color outline;
-        Color bg;
-        float height;
-        float ratio;
-        float dash_len;
-        float gap_len;
-        float offset = 5.f;
-    };
-
-    // ── Labels ────────────────────────────────────────────────────────────────
-    struct RightLabel
-    {
-        Color color;
-        float offset;
-        bool outlined;
-        std::string text;
-    };
-    struct LeftLabel
-    {
-        Color color;
-        float offset;
-        bool outlined;
-        std::string text;
-    };
-    struct TopLabel
-    {
-        Color color;
-        float offset;
-        bool outlined;
-        std::string text;
-    };
-    struct BottomLabel
-    {
-        Color color;
-        float offset;
-        bool outlined;
-        std::string text;
-    };
-    struct CenteredTopLabel
-    {
-        Color color;
-        float offset;
-        bool outlined;
-        std::string text;
-    };
-    struct CenteredBottomLabel
-    {
-        Color color;
-        float offset;
-        bool outlined;
-        std::string text;
-    };
-
-    // ── Misc ──────────────────────────────────────────────────────────────────
     struct Skeleton
     {
         Color color;
@@ -173,17 +56,87 @@ namespace omath::hud::widget
         float width;
     };
 
+    // ── Side-agnostic widgets (used inside XxxSide containers) ────────────────
+
+    /// A filled bar. `size` is width for left/right sides, height for top/bottom.
+    struct Bar
+    {
+        Color color;
+        Color outline;
+        Color bg;
+        float size;
+        float ratio;
+        float offset = 5.f;
+    };
+
+    /// A dashed bar. Same field semantics as Bar plus dash parameters.
+    struct DashedBar
+    {
+        Color color;
+        Color outline;
+        Color bg;
+        float size;
+        float ratio;
+        float dash_len;
+        float gap_len;
+        float offset = 5.f;
+    };
+
+    struct Label
+    {
+        Color            color;
+        float            offset;
+        bool             outlined;
+        std::string_view text;
+    };
+
+    /// Wraps a Label to request horizontal centering (only applied in TopSide / BottomSide).
+    template<typename W>
+    struct Centered
+    {
+        W child;
+    };
+    template<typename W>
+    Centered(W) -> Centered<W>;
+
+    // ── Side widget variant ───────────────────────────────────────────────────
+    struct None {};  ///< No-op placeholder — used by widget::when for disabled elements.
+    using SideWidget = std::variant<None, Bar, DashedBar, Label, Centered<Label>>;
+
+    // ── Side containers ───────────────────────────────────────────────────────
+    // Storing std::initializer_list<SideWidget> is safe here: the backing array
+    // is a const SideWidget[] on the caller's stack whose lifetime matches the
+    // temporary side-container object, which is consumed within the same
+    // full-expression by EntityOverlay::dispatch. No heap allocation occurs.
+
+    struct RightSide  { std::initializer_list<SideWidget> children; RightSide(std::initializer_list<SideWidget> c) : children(c) {} };
+    struct LeftSide   { std::initializer_list<SideWidget> children; LeftSide(std::initializer_list<SideWidget> c) : children(c) {} };
+    struct TopSide    { std::initializer_list<SideWidget> children; TopSide(std::initializer_list<SideWidget> c) : children(c) {} };
+    struct BottomSide { std::initializer_list<SideWidget> children; BottomSide(std::initializer_list<SideWidget> c) : children(c) {} };
+
+} // namespace omath::hud::widget
+
+namespace omath::hud::widget
+{
+    /// Inside XxxSide containers: returns the widget as a SideWidget when condition is true,
+    /// or None{} otherwise. Preferred over hud::when for types inside the SideWidget variant.
+    template<typename W>
+        requires std::constructible_from<SideWidget, W>
+    SideWidget when(const bool condition, W widget)
+    {
+        if (condition) return SideWidget{std::move(widget)};
+        return None{};
+    }
 } // namespace omath::hud::widget
 
 namespace omath::hud
 {
-    /// Returns an engaged optional<W> when condition is true, std::nullopt otherwise.
-    /// Designed for use with EntityOverlay::contents() to conditionally include widgets.
+    /// Top-level: returns an engaged optional<W> when condition is true, std::nullopt otherwise.
+    /// Designed for use with EntityOverlay::contents() for top-level widget types.
     template<typename W>
-    std::optional<W> when(bool condition, W widget)
+    std::optional<W> when(const bool condition, W widget)
     {
-        if (condition)
-            return std::move(widget);
+        if (condition) return std::move(widget);
         return std::nullopt;
     }
 } // namespace omath::hud

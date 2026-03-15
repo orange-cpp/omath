@@ -154,6 +154,9 @@ namespace imgui_desktop::gui
         using namespace omath::hud::widget;
         using omath::hud::when;
         const auto* vp = ImGui::GetMainViewport();
+        const Bar bar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_offset};
+        const DashedBar dbar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
+                             m_bar_value, m_bar_dash_len,      m_bar_dash_gap, m_bar_offset};
 
         omath::hud::EntityOverlay({m_entity_x, m_entity_top_y}, {m_entity_x, m_entity_bottom_y},
                                   std::make_shared<omath::hud::ImguiHudRenderer>())
@@ -164,51 +167,46 @@ namespace imgui_desktop::gui
                                                               m_corner_ratio, m_box_thickness}),
                         when(m_show_dashed_box, DashedBox{m_dash_color, m_dash_len, m_dash_gap, m_dash_thickness}),
 
-                        // ── Bars ─────────────────────────────────────────────────────
-                        when(m_show_right_bar, RightBar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
-                                                        m_bar_value, m_bar_offset}),
-                        when(m_show_left_bar, LeftBar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
-                                                      m_bar_value, m_bar_offset}),
-                        when(m_show_top_bar, TopBar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
-                                                    m_bar_value, m_bar_offset}),
-                        when(m_show_bottom_bar, BottomBar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
-                                                          m_bar_value, m_bar_offset}),
-                        when(m_show_right_dashed_bar,
-                             RightDashedBar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value,
-                                            m_bar_dash_len, m_bar_dash_gap, m_bar_offset}),
-                        when(m_show_left_dashed_bar,
-                             LeftDashedBar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value,
-                                           m_bar_dash_len, m_bar_dash_gap, m_bar_offset}),
-                        when(m_show_top_dashed_bar,
-                             TopDashedBar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value,
-                                          m_bar_dash_len, m_bar_dash_gap, m_bar_offset}),
-                        when(m_show_bottom_dashed_bar,
-                             BottomDashedBar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value,
-                                             m_bar_dash_len, m_bar_dash_gap, m_bar_offset}),
-
-                        // ── Labels ───────────────────────────────────────────────────
-                        when(m_show_right_labels,
-                             RightLabel{{0.f, 1.f, 0.f, 1.f}, m_label_offset, m_outlined, "Health: 100/100"}),
-                        when(m_show_right_labels,
-                             RightLabel{{1.f, 0.f, 0.f, 1.f}, m_label_offset, m_outlined, "Shield: 125/125"}),
-                        when(m_show_right_labels,
-                             RightLabel{{1.f, 0.f, 1.f, 1.f}, m_label_offset, m_outlined, "*LOCKED*"}),
-                        when(m_show_left_labels, LeftLabel{omath::Color::from_rgba(255, 128, 0, 255), m_label_offset,
-                                                           m_outlined, "Armor: 75"}),
-                        when(m_show_left_labels, LeftLabel{omath::Color::from_rgba(0, 200, 255, 255), m_label_offset,
-                                                           m_outlined, "Level: 42"}),
-                        when(m_show_top_labels, TopLabel{omath::Color::from_rgba(255, 255, 0, 255), m_label_offset,
-                                                         m_outlined, "*SCOPED*"}),
-                        when(m_show_top_labels, TopLabel{omath::Color::from_rgba(255, 0, 0, 255), m_label_offset,
-                                                         m_outlined, "*BLEEDING*"}),
-                        when(m_show_centered_top, CenteredTopLabel{omath::Color::from_rgba(0, 255, 255, 255),
-                                                                   m_label_offset, m_outlined, "*VISIBLE*"}),
-                        when(m_show_centered_bottom, CenteredBottomLabel{omath::Color::from_rgba(255, 255, 255, 255),
-                                                                         m_label_offset, m_outlined, "PlayerName"}),
-                        when(m_show_bottom_labels,
-                             BottomLabel{omath::Color::from_rgba(200, 200, 0, 255), m_label_offset, m_outlined, "42m"}),
-
-                        // ── Misc ─────────────────────────────────────────────────────
+                        RightSide
+                        {
+                                when(m_show_right_bar, bar),
+                                when(m_show_right_dashed_bar, dbar),
+                                when(m_show_right_labels,
+                                     Label{{0.f, 1.f, 0.f, 1.f}, m_label_offset, m_outlined, "Health: 100/100"}),
+                                when(m_show_right_labels,
+                                     Label{{1.f, 0.f, 0.f, 1.f}, m_label_offset, m_outlined, "Shield: 125/125"}),
+                                when(m_show_right_labels,
+                                     Label{{1.f, 0.f, 1.f, 1.f}, m_label_offset, m_outlined, "*LOCKED*"}),
+                        },
+                        LeftSide
+                        {
+                                when(m_show_left_bar, bar),
+                                when(m_show_left_dashed_bar, dbar),
+                                when(m_show_left_labels, Label{omath::Color::from_rgba(255, 128, 0, 255),
+                                                               m_label_offset, m_outlined, "Armor: 75"}),
+                                when(m_show_left_labels, Label{omath::Color::from_rgba(0, 200, 255, 255),
+                                                               m_label_offset, m_outlined, "Level: 42"}),
+                        },
+                        TopSide
+                        {
+                                when(m_show_top_bar, bar),
+                                when(m_show_top_dashed_bar, dbar),
+                                when(m_show_centered_top, Centered{Label{omath::Color::from_rgba(0, 255, 255, 255),
+                                                                         m_label_offset, m_outlined, "*VISIBLE*"}}),
+                                when(m_show_top_labels, Label{omath::Color::from_rgba(255, 255, 0, 255), m_label_offset,
+                                                              m_outlined, "*SCOPED*"}),
+                                when(m_show_top_labels, Label{omath::Color::from_rgba(255, 0, 0, 255), m_label_offset,
+                                                              m_outlined, "*BLEEDING*"}),
+                        },
+                        BottomSide
+                        {
+                                when(m_show_bottom_bar, bar),
+                                when(m_show_bottom_dashed_bar, dbar),
+                                when(m_show_centered_bottom, Centered{Label{omath::Color::from_rgba(255, 255, 255, 255),
+                                                                            m_label_offset, m_outlined, "PlayerName"}}),
+                                when(m_show_bottom_labels, Label{omath::Color::from_rgba(200, 200, 0, 255),
+                                                                 m_label_offset, m_outlined, "42m"}),
+                        },
                         when(m_show_skeleton, Skeleton{m_skel_color, m_skel_thickness}),
                         when(m_show_snap, SnapLine{{vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width}));
     }

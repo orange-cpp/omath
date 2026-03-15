@@ -43,8 +43,8 @@ namespace imgui_desktop::gui
         omath::Color m_bar_bg_color{0.f, 0.f, 0.f, 0.5f};
         omath::Color m_bar_outline_color{0.f, 0.f, 0.f, 1.f};
         float m_bar_width = 4.f, m_bar_value = 0.75f, m_bar_offset = 5.f;
-        bool m_show_right_bar = true,        m_show_left_bar = true;
-        bool m_show_top_bar = true,          m_show_bottom_bar = true;
+        bool m_show_right_bar = true,         m_show_left_bar = true;
+        bool m_show_top_bar = true,           m_show_bottom_bar = true;
         bool m_show_right_dashed_bar = false, m_show_left_dashed_bar = false;
         bool m_show_top_dashed_bar = false,   m_show_bottom_dashed_bar = false;
         float m_bar_dash_len = 6.f, m_bar_dash_gap = 4.f;

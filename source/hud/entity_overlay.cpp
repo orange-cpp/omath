@@ -459,98 +459,83 @@ namespace omath::hud
     }
     // ── widget dispatch ───────────────────────────────────────────────────────
     void EntityOverlay::dispatch(const widget::Box& w)
-    {
-        add_2d_box(w.color, w.fill, w.thickness);
-    }
+        { add_2d_box(w.color, w.fill, w.thickness); }
 
     void EntityOverlay::dispatch(const widget::CorneredBox& w)
-    {
-        add_cornered_2d_box(w.color, w.fill, w.corner_ratio, w.thickness);
-    }
+        { add_cornered_2d_box(w.color, w.fill, w.corner_ratio, w.thickness); }
 
     void EntityOverlay::dispatch(const widget::DashedBox& w)
-    {
-        add_dashed_box(w.color, w.dash_len, w.gap_len, w.thickness);
-    }
-
-    void EntityOverlay::dispatch(const widget::RightBar& w)
-    {
-        add_right_bar(w.color, w.outline, w.bg, w.width, w.ratio, w.offset);
-    }
-
-    void EntityOverlay::dispatch(const widget::LeftBar& w)
-    {
-        add_left_bar(w.color, w.outline, w.bg, w.width, w.ratio, w.offset);
-    }
-
-    void EntityOverlay::dispatch(const widget::TopBar& w)
-    {
-        add_top_bar(w.color, w.outline, w.bg, w.height, w.ratio, w.offset);
-    }
-
-    void EntityOverlay::dispatch(const widget::BottomBar& w)
-    {
-        add_bottom_bar(w.color, w.outline, w.bg, w.height, w.ratio, w.offset);
-    }
-
-    void EntityOverlay::dispatch(const widget::RightDashedBar& w)
-    {
-        add_right_dashed_bar(w.color, w.outline, w.bg, w.width, w.ratio, w.dash_len, w.gap_len, w.offset);
-    }
-
-    void EntityOverlay::dispatch(const widget::LeftDashedBar& w)
-    {
-        add_left_dashed_bar(w.color, w.outline, w.bg, w.width, w.ratio, w.dash_len, w.gap_len, w.offset);
-    }
-
-    void EntityOverlay::dispatch(const widget::TopDashedBar& w)
-    {
-        add_top_dashed_bar(w.color, w.outline, w.bg, w.height, w.ratio, w.dash_len, w.gap_len, w.offset);
-    }
-
-    void EntityOverlay::dispatch(const widget::BottomDashedBar& w)
-    {
-        add_bottom_dashed_bar(w.color, w.outline, w.bg, w.height, w.ratio, w.dash_len, w.gap_len, w.offset);
-    }
-
-    void EntityOverlay::dispatch(const widget::RightLabel& w)
-    {
-        add_right_label(w.color, w.offset, w.outlined, w.text);
-    }
-
-    void EntityOverlay::dispatch(const widget::LeftLabel& w)
-    {
-        add_left_label(w.color, w.offset, w.outlined, w.text);
-    }
-
-    void EntityOverlay::dispatch(const widget::TopLabel& w)
-    {
-        add_top_label(w.color, w.offset, w.outlined, w.text);
-    }
-
-    void EntityOverlay::dispatch(const widget::BottomLabel& w)
-    {
-        add_bottom_label(w.color, w.offset, w.outlined, w.text);
-    }
-
-    void EntityOverlay::dispatch(const widget::CenteredTopLabel& w)
-    {
-        add_centered_top_label(w.color, w.offset, w.outlined, w.text);
-    }
-
-    void EntityOverlay::dispatch(const widget::CenteredBottomLabel& w)
-    {
-        add_centered_bottom_label(w.color, w.offset, w.outlined, w.text);
-    }
+        { add_dashed_box(w.color, w.dash_len, w.gap_len, w.thickness); }
 
     void EntityOverlay::dispatch(const widget::Skeleton& w)
-    {
-        add_skeleton(w.color, w.thickness);
-    }
+        { add_skeleton(w.color, w.thickness); }
 
     void EntityOverlay::dispatch(const widget::SnapLine& w)
+        { add_snap_line(w.start, w.color, w.width); }
+
+    // ── Side container dispatch ───────────────────────────────────────────────
+    void EntityOverlay::dispatch(const widget::RightSide& s)
     {
-        add_snap_line(w.start, w.color, w.width);
+        for (const auto& child : s.children)
+            std::visit(widget::Overloaded{
+                [](const widget::None&) {},
+                [this](const widget::Bar& w)
+                    { add_right_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset); },
+                [this](const widget::DashedBar& w)
+                    { add_right_dashed_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.dash_len, w.gap_len, w.offset); },
+                [this](const widget::Label& w)
+                    { add_right_label(w.color, w.offset, w.outlined, w.text); },
+                [this](const widget::Centered<widget::Label>& w)
+                    { add_right_label(w.child.color, w.child.offset, w.child.outlined, w.child.text); },
+            }, child);
+    }
+
+    void EntityOverlay::dispatch(const widget::LeftSide& s)
+    {
+        for (const auto& child : s.children)
+            std::visit(widget::Overloaded{
+                [](const widget::None&) {},
+                [this](const widget::Bar& w)
+                    { add_left_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset); },
+                [this](const widget::DashedBar& w)
+                    { add_left_dashed_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.dash_len, w.gap_len, w.offset); },
+                [this](const widget::Label& w)
+                    { add_left_label(w.color, w.offset, w.outlined, w.text); },
+                [this](const widget::Centered<widget::Label>& w)
+                    { add_left_label(w.child.color, w.child.offset, w.child.outlined, w.child.text); },
+            }, child);
+    }
+
+    void EntityOverlay::dispatch(const widget::TopSide& s)
+    {
+        for (const auto& child : s.children)
+            std::visit(widget::Overloaded{
+                [](const widget::None&) {},
+                [this](const widget::Bar& w)
+                    { add_top_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset); },
+                [this](const widget::DashedBar& w)
+                    { add_top_dashed_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.dash_len, w.gap_len, w.offset); },
+                [this](const widget::Label& w)
+                    { add_top_label(w.color, w.offset, w.outlined, w.text); },
+                [this](const widget::Centered<widget::Label>& w)
+                    { add_centered_top_label(w.child.color, w.child.offset, w.child.outlined, w.child.text); },
+            }, child);
+    }
+
+    void EntityOverlay::dispatch(const widget::BottomSide& s)
+    {
+        for (const auto& child : s.children)
+            std::visit(widget::Overloaded{
+                [](const widget::None&) {},
+                [this](const widget::Bar& w)
+                    { add_bottom_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset); },
+                [this](const widget::DashedBar& w)
+                    { add_bottom_dashed_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.dash_len, w.gap_len, w.offset); },
+                [this](const widget::Label& w)
+                    { add_bottom_label(w.color, w.offset, w.outlined, w.text); },
+                [this](const widget::Centered<widget::Label>& w)
+                    { add_centered_bottom_label(w.child.color, w.child.offset, w.child.outlined, w.child.text); },
+            }, child);
     }
 
 } // namespace omath::hud
