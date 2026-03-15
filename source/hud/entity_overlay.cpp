@@ -172,8 +172,8 @@ namespace omath::hud
         m_text_cursor_left.y += text_size.y;
     }
 
-    void EntityOverlay::add_centered_label(const Color& color, const float offset, const bool outlined,
-                                           const std::string_view& text)
+    void EntityOverlay::add_centered_bottom_label(const Color& color, const float offset, const bool outlined,
+                                                   const std::string_view& text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto box_center_x = m_canvas.bottom_left_corner.x
@@ -186,6 +186,22 @@ namespace omath::hud
             m_renderer->add_text(pos, color, text);
 
         m_text_cursor_bottom.y += text_size.y;
+    }
+
+    void EntityOverlay::add_centered_top_label(const Color& color, const float offset, const bool outlined,
+                                               const std::string_view& text)
+    {
+        const auto text_size = m_renderer->calc_text_size(text);
+        const auto box_center_x = m_canvas.top_left_corner.x
+                                  + (m_canvas.top_right_corner.x - m_canvas.top_left_corner.x) / 2.f;
+
+        m_text_cursor_top.y -= text_size.y;
+        const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_top.y - offset};
+
+        if (outlined)
+            draw_outlined_text(pos, color, text);
+        else
+            m_renderer->add_text(pos, color, text);
     }
 
     EntityOverlay::EntityOverlay(const Vector2<float>& top, const Vector2<float>& bottom,
