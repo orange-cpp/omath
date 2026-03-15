@@ -35,7 +35,7 @@ static std::vector<std::byte> make_macho64_with_text_section(const std::vector<s
     constexpr std::size_t text_raw_off = hdr_size + seg_size + sect_hdr_size; // 0xB8
     constexpr std::size_t text_raw_size = 0x20;
     constexpr std::size_t total_size = text_raw_off + text_raw_size;
-    constexpr std::uint64_t text_vmaddr = 0x100001000ULL;
+    constexpr std::uint64_t text_vmaddr = 0x1000ULL;
 
     constexpr std::uint32_t cmd_size =
             static_cast<std::uint32_t>(seg_size + sect_hdr_size); // segment + 1 section
@@ -141,5 +141,5 @@ TEST(unit_test_macho_memory_file_scan, raw_addr_and_virtual_addr_correct)
 
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->raw_base_addr, expected_raw_off);
-    EXPECT_EQ(result->virtual_base_addr, 0x100001000ULL);
+    EXPECT_EQ(result->virtual_base_addr, 0x1000u);
 }

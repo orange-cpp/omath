@@ -43,7 +43,7 @@ static std::vector<std::byte> make_fake_pe_file(std::uint32_t virtual_address, s
     // OptionalHeader PE32+
     const std::size_t opt_off = fh_off + 20;
     w16(opt_off + 0, opt_magic);
-    w64(opt_off + 24, 0x140000000ULL); // ImageBase
+    w64(opt_off + 24, 0ULL); // ImageBase = 0 to keep virtual_base_addr in 32-bit range
 
     // Section header (.text)
     const std::size_t sh_off = section_table_off;
@@ -123,6 +123,6 @@ TEST(unit_test_pe_memory_file_scan, raw_addr_differs_from_virtual_address)
     ASSERT_TRUE(result.has_value());
     // raw_base_addr should be ptr_raw_data, not virtual_address
     EXPECT_EQ(result->raw_base_addr, 0x600u);
-    // virtual_base_addr = virtual_address + image_base
-    EXPECT_EQ(result->virtual_base_addr, 0x3000u + 0x140000000ULL);
+    // virtual_base_addr = virtual_address + image_base (image_base = 0)
+    EXPECT_EQ(result->virtual_base_addr, 0x3000u);
 }
