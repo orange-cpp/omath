@@ -125,13 +125,23 @@ namespace omath::hud
     void EntityOverlay::draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color,
                                          const float dash_len, const float gap_len, const float thickness) const
     {
-        const auto edge     = to - from;
-        const auto total    = edge.length();
-        const auto dir      = edge.normalized();
-        const float step    = dash_len + gap_len;
+        const auto total = (to - from).length();
+        if (total <= 0.f)
+            return;
 
-        for (float pos = 0.f; pos < total; pos += step)
+        const auto dir   = (to - from).normalized();
+        const float step = dash_len + gap_len;
+
+        const float n_dashes  = std::floor((total + gap_len) / step);
+        if (n_dashes < 1.f)
+            return;
+
+        const float used   = n_dashes * dash_len + (n_dashes - 1.f) * gap_len;
+        const float offset = (total - used) / 2.f;
+
+        for (float i = 0.f; i < n_dashes; ++i)
         {
+            const float pos       = offset + i * step;
             const auto dash_start = from + dir * pos;
             const auto dash_end   = from + dir * std::min(pos + dash_len, total);
             m_renderer->add_line(dash_start, dash_end, color, thickness);
@@ -141,10 +151,24 @@ namespace omath::hud
     void EntityOverlay::add_dashed_box(const Color& color, const float dash_len, const float gap_len,
                                        const float thickness) const
     {
-        draw_dashed_line(m_canvas.top_left_corner,    m_canvas.top_right_corner,    color, dash_len, gap_len, thickness);
-        draw_dashed_line(m_canvas.top_right_corner,   m_canvas.bottom_right_corner, color, dash_len, gap_len, thickness);
-        draw_dashed_line(m_canvas.bottom_right_corner,m_canvas.bottom_left_corner,  color, dash_len, gap_len, thickness);
-        draw_dashed_line(m_canvas.bottom_left_corner, m_canvas.top_left_corner,     color, dash_len, gap_len, thickness);
+        const float min_edge   = std::min(
+            (m_canvas.top_right_corner    - m_canvas.top_left_corner).length(),
+            (m_canvas.bottom_right_corner - m_canvas.top_right_corner).length());
+        const float corner_len = std::min(dash_len, min_edge / 2.f);
+
+        const auto draw_edge = [&](const Vector2<float>& from, const Vector2<float>& to)
+        {
+            const auto dir = (to - from).normalized();
+
+            m_renderer->add_line(from, from + dir * corner_len, color, thickness);
+            draw_dashed_line(from + dir * corner_len, to - dir * corner_len, color, dash_len, gap_len, thickness);
+            m_renderer->add_line(to - dir * corner_len, to, color, thickness);
+        };
+
+        draw_edge(m_canvas.top_left_corner,    m_canvas.top_right_corner);
+        draw_edge(m_canvas.top_right_corner,   m_canvas.bottom_right_corner);
+        draw_edge(m_canvas.bottom_right_corner,m_canvas.bottom_left_corner);
+        draw_edge(m_canvas.bottom_left_corner, m_canvas.top_left_corner);
     }
 
     void EntityOverlay::draw_outlined_text(const Vector2<float>& position, const Color& color,
