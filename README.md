@@ -14,7 +14,7 @@
 [![discord badge](https://dcbadge.limes.pink/api/server/https://discord.gg/eDgdaWbqwZ?style=flat)](https://discord.gg/eDgdaWbqwZ)
 [![telegram badge](https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white)](https://t.me/orangennotes)
 
-OMath is a 100% independent, constexpr template blazingly fast math library that doesn't have legacy C++ code.
+OMath is a 100% independent, constexpr template blazingly fast math/physics/games/mods/cheats development framework that doesn't have legacy C++ code.
 
 It provides the latest features, is highly customizable, has all for cheat development, DirectX/OpenGL/Vulkan support, premade support for different game engines, much more constexpr stuff than in other libraries and more...
 <br>
@@ -84,7 +84,8 @@ if (auto screen = camera.world_to_screen(world_position)) {
 - **Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine, CryEngine and canonical OpenGL**.
 - **Cross platform**: Supports Windows, MacOS and Linux.
 - **Algorithms**: Has ability to scan for byte pattern with wildcards in ELF/Mach-O/PE files/modules, binary slices, works even with Wine apps. 
-- **Scripting**: Supports to make scripts in Lua out of box
+- **Scripting**: Supports to make scripts in Lua out of box.
+- **Handy**: Allow to design wall hacks in modern jetpack compose like way.
 - **Battle tested**: It's already used by some big players on the market like wraith.su and bluedream.ltd
 <div align = center>
  
