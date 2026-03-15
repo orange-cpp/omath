@@ -7,6 +7,7 @@
 #include <span>
 #include <stdexcept>
 #include <variant>
+#include <vector>
 
 // Internal PE shit defines
 // Big thx for linuxpe sources as ref
@@ -245,6 +246,78 @@ namespace
     };
 
     [[nodiscard]]
+    std::optional<ExtractedSection> extract_section_from_pe_memory(const std::span<const std::byte> data,
+                                                                   const std::string_view& section_name)
+    {
+        if (data.size() < sizeof(DosHeader))
+            return std::nullopt;
+
+        const auto* dos_header = reinterpret_cast<const DosHeader*>(data.data());
+
+        if (invalid_dos_header_file(*dos_header))
+            return std::nullopt;
+
+        const auto nt_off = static_cast<std::size_t>(dos_header->e_lfanew);
+
+        if (nt_off + sizeof(ImageNtHeaders<NtArchitecture::x32_bit>) > data.size())
+            return std::nullopt;
+
+        const auto* x86_hdrs =
+                reinterpret_cast<const ImageNtHeaders<NtArchitecture::x32_bit>*>(data.data() + nt_off);
+
+        NtHeaderVariant nt_headers;
+        if (x86_hdrs->optional_header.magic == opt_hdr32_magic)
+            nt_headers = *x86_hdrs;
+        else if (x86_hdrs->optional_header.magic == opt_hdr64_magic)
+        {
+            if (nt_off + sizeof(ImageNtHeaders<NtArchitecture::x64_bit>) > data.size())
+                return std::nullopt;
+            nt_headers = *reinterpret_cast<const ImageNtHeaders<NtArchitecture::x64_bit>*>(data.data() + nt_off);
+        }
+        else
+            return std::nullopt;
+
+        if (invalid_nt_header_file(nt_headers))
+            return std::nullopt;
+
+        return std::visit(
+                [&data, &section_name, nt_off](const auto& concrete_headers) -> std::optional<ExtractedSection>
+                {
+                    constexpr std::size_t sig_size = sizeof(concrete_headers.signature);
+                    const auto section_table_off = nt_off + sig_size + sizeof(FileHeader)
+                                                   + concrete_headers.file_header.size_optional_header;
+
+                    for (std::size_t i = 0; i < concrete_headers.file_header.num_sections; ++i)
+                    {
+                        const auto sh_off = section_table_off + i * sizeof(SectionHeader);
+                        if (sh_off + sizeof(SectionHeader) > data.size())
+                            return std::nullopt;
+
+                        const auto* section = reinterpret_cast<const SectionHeader*>(data.data() + sh_off);
+
+                        if (std::string_view(section->name) != section_name)
+                            continue;
+
+                        const auto raw_off = static_cast<std::size_t>(section->ptr_raw_data);
+                        const auto raw_size = static_cast<std::size_t>(section->size_raw_data);
+
+                        if (raw_off + raw_size > data.size())
+                            return std::nullopt;
+
+                        std::vector<std::byte> section_data(data.data() + raw_off, data.data() + raw_off + raw_size);
+
+                        return ExtractedSection{
+                                .virtual_base_addr = static_cast<std::uintptr_t>(
+                                        section->virtual_address + concrete_headers.optional_header.image_base),
+                                .raw_base_addr = raw_off,
+                                .data = std::move(section_data)};
+                    }
+                    return std::nullopt;
+                },
+                nt_headers);
+    }
+
+    [[nodiscard]]
     std::optional<ExtractedSection> extract_section_from_pe_file(const std::filesystem::path& path_to_file,
                                                                  const std::string_view& section_name)
     {
@@ -377,6 +450,29 @@ namespace omath
 
         if (scan_result == pe_section->data.cend())
             return std::nullopt;
+        const auto offset = std::distance(pe_section->data.begin(), scan_result);
+
+        return SectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
+                                 .raw_base_addr = pe_section->raw_base_addr,
+                                 .target_offset = offset};
+    }
+
+    std::optional<SectionScanResult>
+    PePatternScanner::scan_for_pattern_in_memory_file(const std::span<const std::byte> file_data,
+                                                      const std::string_view& pattern,
+                                                      const std::string_view& target_section_name)
+    {
+        const auto pe_section = extract_section_from_pe_memory(file_data, target_section_name);
+
+        if (!pe_section.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        const auto scan_result =
+                PatternScanner::scan_for_pattern(pe_section->data.cbegin(), pe_section->data.cend(), pattern);
+
+        if (scan_result == pe_section->data.cend())
+            return std::nullopt;
+
         const auto offset = std::distance(pe_section->data.begin(), scan_result);
 
         return SectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,

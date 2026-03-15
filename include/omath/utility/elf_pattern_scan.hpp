@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <optional>
+#include <span>
 #include <string_view>
 #include "section_scan_result.hpp"
 namespace omath
@@ -21,5 +22,10 @@ namespace omath
         static std::optional<SectionScanResult>
         scan_for_pattern_in_file(const std::filesystem::path& path_to_file, const std::string_view& pattern,
                                  const std::string_view& target_section_name = ".text");
+
+        [[nodiscard]]
+        static std::optional<SectionScanResult>
+        scan_for_pattern_in_memory_file(std::span<const std::byte> file_data, const std::string_view& pattern,
+                                        const std::string_view& target_section_name = ".text");
     };
 } // namespace omath

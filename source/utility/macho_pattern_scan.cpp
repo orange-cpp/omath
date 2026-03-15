@@ -5,6 +5,7 @@
 #include "omath/utility/pattern_scan.hpp"
 #include <cstring>
 #include <fstream>
+#include <span>
 #include <variant>
 #include <vector>
 
@@ -231,6 +232,96 @@ namespace
         return std::nullopt;
     }
 
+    template<typename HeaderType, typename SegmentType, typename SectionType, std::uint32_t segment_cmd>
+    std::optional<ExtractedSection> extract_section_from_memory_impl(const std::span<const std::byte> data,
+                                                                     const std::string_view& section_name)
+    {
+        if (data.size() < sizeof(HeaderType))
+            return std::nullopt;
+
+        const auto* header = reinterpret_cast<const HeaderType*>(data.data());
+
+        std::size_t cmd_offset = sizeof(HeaderType);
+
+        for (std::uint32_t i = 0; i < header->ncmds; ++i)
+        {
+            if (cmd_offset + sizeof(LoadCommand) > data.size())
+                return std::nullopt;
+
+            const auto* lc = reinterpret_cast<const LoadCommand*>(data.data() + cmd_offset);
+
+            if (lc->cmd != segment_cmd)
+            {
+                cmd_offset += lc->cmdsize;
+                continue;
+            }
+
+            if (cmd_offset + sizeof(SegmentType) > data.size())
+                return std::nullopt;
+
+            const auto* segment = reinterpret_cast<const SegmentType*>(data.data() + cmd_offset);
+
+            if (!segment->nsects)
+            {
+                cmd_offset += lc->cmdsize;
+                continue;
+            }
+
+            std::size_t sect_offset = cmd_offset + sizeof(SegmentType);
+
+            for (std::uint32_t j = 0; j < segment->nsects; ++j)
+            {
+                if (sect_offset + sizeof(SectionType) > data.size())
+                    return std::nullopt;
+
+                const auto* section = reinterpret_cast<const SectionType*>(data.data() + sect_offset);
+
+                if (get_section_name(section->sectname) != section_name)
+                {
+                    sect_offset += sizeof(SectionType);
+                    continue;
+                }
+
+                const auto raw_off = static_cast<std::size_t>(section->offset);
+                const auto sec_size = static_cast<std::size_t>(section->size);
+
+                if (raw_off + sec_size > data.size())
+                    return std::nullopt;
+
+                ExtractedSection out;
+                out.virtual_base_addr = static_cast<std::uintptr_t>(section->addr);
+                out.raw_base_addr = raw_off;
+                out.data.assign(data.data() + raw_off, data.data() + raw_off + sec_size);
+                return out;
+            }
+
+            cmd_offset += lc->cmdsize;
+        }
+
+        return std::nullopt;
+    }
+
+    [[nodiscard]]
+    std::optional<ExtractedSection> get_macho_section_by_name_from_memory(const std::span<const std::byte> data,
+                                                                          const std::string_view& section_name)
+    {
+        if (data.size() < sizeof(std::uint32_t))
+            return std::nullopt;
+
+        std::uint32_t magic{};
+        std::memcpy(&magic, data.data(), sizeof(magic));
+
+        if (magic == mh_magic_64 || magic == mh_cigam_64)
+            return extract_section_from_memory_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(
+                    data, section_name);
+
+        if (magic == mh_magic_32 || magic == mh_cigam_32)
+            return extract_section_from_memory_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(data,
+                                                                                                           section_name);
+
+        return std::nullopt;
+    }
+
     [[nodiscard]]
     std::optional<ExtractedSection> get_macho_section_by_name(const std::filesystem::path& path,
                                                               const std::string_view& section_name)
@@ -344,6 +435,29 @@ namespace omath
 
         return SectionScanResult{.virtual_base_addr = macho_section->virtual_base_addr,
                                  .raw_base_addr = macho_section->raw_base_addr,
+                                 .target_offset = offset};
+    }
+
+    std::optional<SectionScanResult>
+    MachOPatternScanner::scan_for_pattern_in_memory_file(const std::span<const std::byte> file_data,
+                                                         const std::string_view& pattern,
+                                                         const std::string_view& target_section_name)
+    {
+        const auto section = get_macho_section_by_name_from_memory(file_data, target_section_name);
+
+        if (!section.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        const auto scan_result =
+                PatternScanner::scan_for_pattern(section->data.cbegin(), section->data.cend(), pattern);
+
+        if (scan_result == section->data.cend())
+            return std::nullopt;
+
+        const auto offset = std::distance(section->data.begin(), scan_result);
+
+        return SectionScanResult{.virtual_base_addr = section->virtual_base_addr,
+                                 .raw_base_addr = section->raw_base_addr,
                                  .target_offset = offset};
     }
 } // namespace omath
