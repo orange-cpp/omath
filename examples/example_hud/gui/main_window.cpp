@@ -97,10 +97,16 @@ namespace imgui_desktop::gui
             ImGui::SliderFloat("Width##bar",  &m_bar_width,  1.f, 20.f);
             ImGui::SliderFloat("Value##bar",  &m_bar_value,  0.f,  1.f);
             ImGui::SliderFloat("Offset##bar", &m_bar_offset, 1.f, 20.f);
-            ImGui::Checkbox("Right##bar",  &m_show_right_bar);  ImGui::SameLine();
-            ImGui::Checkbox("Left##bar",   &m_show_left_bar);
-            ImGui::Checkbox("Top##bar",    &m_show_top_bar);    ImGui::SameLine();
-            ImGui::Checkbox("Bottom##bar", &m_show_bottom_bar);
+            ImGui::Checkbox("Right##bar",        &m_show_right_bar);        ImGui::SameLine();
+            ImGui::Checkbox("Left##bar",         &m_show_left_bar);
+            ImGui::Checkbox("Top##bar",          &m_show_top_bar);          ImGui::SameLine();
+            ImGui::Checkbox("Bottom##bar",       &m_show_bottom_bar);
+            ImGui::Checkbox("Right dashed##bar", &m_show_right_dashed_bar); ImGui::SameLine();
+            ImGui::Checkbox("Left dashed##bar",  &m_show_left_dashed_bar);
+            ImGui::Checkbox("Top dashed##bar",   &m_show_top_dashed_bar);   ImGui::SameLine();
+            ImGui::Checkbox("Bot dashed##bar",   &m_show_bottom_dashed_bar);
+            ImGui::SliderFloat("Dash len##bar",  &m_bar_dash_len, 2.f, 20.f);
+            ImGui::SliderFloat("Dash gap##bar",  &m_bar_dash_gap, 1.f, 15.f);
         }
 
         if (ImGui::CollapsingHeader("Labels", ImGuiTreeNodeFlags_DefaultOpen))
@@ -171,6 +177,15 @@ namespace imgui_desktop::gui
             ent.add_top_bar(m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_offset);
         if (m_show_bottom_bar)
             ent.add_bottom_bar(m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_offset);
+
+        if (m_show_right_dashed_bar)
+            ent.add_right_dashed_bar(m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_dash_len, m_bar_dash_gap, m_bar_offset);
+        if (m_show_left_dashed_bar)
+            ent.add_left_dashed_bar(m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_dash_len, m_bar_dash_gap, m_bar_offset);
+        if (m_show_top_dashed_bar)
+            ent.add_top_dashed_bar(m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_dash_len, m_bar_dash_gap, m_bar_offset);
+        if (m_show_bottom_dashed_bar)
+            ent.add_bottom_dashed_bar(m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_dash_len, m_bar_dash_gap, m_bar_offset);
     }
 
     void MainWindow::draw_labels(omath::hud::EntityOverlay& ent) const

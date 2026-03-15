@@ -60,6 +60,18 @@ namespace omath::hud
 
         void add_skeleton(const Color& color, float thickness = 1.f) const;
 
+        void add_right_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
+                                  float width, float ratio, float dash_len, float gap_len, float offset = 5.f);
+
+        void add_left_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
+                                 float width, float ratio, float dash_len, float gap_len, float offset = 5.f);
+
+        void add_top_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
+                                float height, float ratio, float dash_len, float gap_len, float offset = 5.f);
+
+        void add_bottom_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
+                                   float height, float ratio, float dash_len, float gap_len, float offset = 5.f);
+
         void add_bottom_bar(const Color& color, const Color& outline_color, const Color& bg_color, float height,
                             float ratio, float offset = 5.f);
 
@@ -108,6 +120,10 @@ namespace omath::hud
                                        const std::string_view& text);
         void draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color,
                               float dash_len, float gap_len, float thickness) const;
+        void draw_dashed_fill(const Vector2<float>& origin, const Vector2<float>& step_dir,
+                              const Vector2<float>& perp_dir, float full_len, float filled_len,
+                              const Color& fill_color, const Color& split_color,
+                              float dash_len, float gap_len) const;
         CanvasBox m_canvas;
         Vector2<float> m_text_cursor_right;
         Vector2<float> m_text_cursor_top;

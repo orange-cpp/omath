@@ -122,6 +122,127 @@ namespace omath::hud
                 + Vector2<float>{m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x, 0.f} / 2;
         m_renderer->add_line(start_pos, line_end, color, width);
     }
+    void EntityOverlay::draw_dashed_fill(const Vector2<float>& origin, const Vector2<float>& step_dir,
+                                         const Vector2<float>& perp_dir, const float full_len,
+                                         const float filled_len, const Color& fill_color,
+                                         const Color& split_color, const float dash_len,
+                                         const float gap_len) const
+    {
+        if (full_len <= 0.f)
+            return;
+
+        const float step   = dash_len + gap_len;
+        const float n      = std::floor((full_len + gap_len) / step);
+        if (n < 1.f)
+            return;
+
+        const float used   = n * dash_len + (n - 1.f) * gap_len;
+        const float offset = (full_len - used) / 2.f;
+
+        const auto fill_rect = [&](const Vector2<float>& a, const Vector2<float>& b, const Color& c)
+        {
+            m_renderer->add_filled_rectangle(
+                {std::min(a.x, b.x), std::min(a.y, b.y)},
+                {std::max(a.x, b.x), std::max(a.y, b.y)}, c);
+        };
+
+        // Draw split lines (gaps) across the full bar first
+        // Leading gap
+        if (offset > 0.f)
+            fill_rect(origin, origin + step_dir * offset + perp_dir, split_color);
+
+        for (float i = 0.f; i < n; ++i)
+        {
+            const float dash_start = offset + i * step;
+            const float dash_end   = dash_start + dash_len;
+            const float gap_start  = dash_end;
+            const float gap_end    = dash_start + step;
+
+            // Fill dash only up to filled_len
+            if (dash_start < filled_len)
+            {
+                const auto a = origin + step_dir * dash_start;
+                const auto b = a + step_dir * std::min(dash_len, filled_len - dash_start) + perp_dir;
+                fill_rect(a, b, fill_color);
+            }
+
+            // Split line (gap) — always drawn across full bar
+            if (i < n - 1.f && gap_start < full_len)
+            {
+                const auto a = origin + step_dir * gap_start;
+                const auto b = origin + step_dir * std::min(gap_end, full_len) + perp_dir;
+                fill_rect(a, b, split_color);
+            }
+        }
+
+        // Trailing gap
+        const float trail_start = offset + n * dash_len + (n - 1.f) * gap_len;
+        if (trail_start < full_len)
+            fill_rect(origin + step_dir * trail_start, origin + step_dir * full_len + perp_dir, split_color);
+    }
+
+    void EntityOverlay::add_right_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
+                                             const float width, float ratio, const float dash_len,
+                                             const float gap_len, const float offset)
+    {
+        ratio = std::clamp(ratio, 0.f, 1.f);
+        const float height   = std::abs(m_canvas.top_right_corner.y - m_canvas.bottom_right_corner.y);
+        const auto  bar_start = m_canvas.bottom_right_corner + Vector2<float>{offset, 0.f};
+
+        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>{width, -height}, bg_color);
+        draw_dashed_fill(bar_start, {0.f, -1.f}, {width, 0.f}, height, height * ratio,
+                         color, outline_color, dash_len, gap_len);
+        m_renderer->add_rectangle(bar_start - Vector2<float>{1.f, 0.f},
+                                  bar_start + Vector2<float>{width, -height}, outline_color);
+        m_text_cursor_right.x += offset + width;
+    }
+
+    void EntityOverlay::add_left_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
+                                            const float width, float ratio, const float dash_len,
+                                            const float gap_len, const float offset)
+    {
+        ratio = std::clamp(ratio, 0.f, 1.f);
+        const float height    = std::abs(m_canvas.top_left_corner.y - m_canvas.bottom_left_corner.y);
+        const auto  bar_start = m_canvas.bottom_left_corner + Vector2<float>{-(offset + width), 0.f};
+
+        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>{width, -height}, bg_color);
+        draw_dashed_fill(bar_start, {0.f, -1.f}, {width, 0.f}, height, height * ratio,
+                         color, outline_color, dash_len, gap_len);
+        m_renderer->add_rectangle(bar_start - Vector2<float>{1.f, 0.f},
+                                  bar_start + Vector2<float>{width, -height}, outline_color);
+        m_text_cursor_left.x -= offset + width;
+    }
+
+    void EntityOverlay::add_top_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
+                                           const float height, float ratio, const float dash_len,
+                                           const float gap_len, const float offset)
+    {
+        ratio = std::clamp(ratio, 0.f, 1.f);
+        const float bar_w     = std::abs(m_canvas.top_left_corner.x - m_canvas.top_right_corner.x);
+        const auto  bar_start = m_canvas.top_left_corner - Vector2<float>{0.f, offset};
+
+        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>{bar_w, -height}, bg_color);
+        draw_dashed_fill(bar_start, {1.f, 0.f}, {0.f, -height}, bar_w, bar_w * ratio,
+                         color, outline_color, dash_len, gap_len);
+        m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>{bar_w, -height}, outline_color);
+        m_text_cursor_top.y -= offset + height;
+    }
+
+    void EntityOverlay::add_bottom_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
+                                              const float height, float ratio, const float dash_len,
+                                              const float gap_len, const float offset)
+    {
+        ratio = std::clamp(ratio, 0.f, 1.f);
+        const float bar_w     = std::abs(m_canvas.bottom_left_corner.x - m_canvas.bottom_right_corner.x);
+        const auto  bar_start = m_canvas.bottom_left_corner + Vector2<float>{0.f, offset};
+
+        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>{bar_w, height}, bg_color);
+        draw_dashed_fill(bar_start, {1.f, 0.f}, {0.f, height}, bar_w, bar_w * ratio,
+                         color, outline_color, dash_len, gap_len);
+        m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>{bar_w, height}, outline_color);
+        m_text_cursor_bottom.y += offset + height;
+    }
+
     void EntityOverlay::add_skeleton(const Color& color, const float thickness) const
     {
         // Maps normalized (rx in [0,1], ry in [0,1]) to canvas screen position
