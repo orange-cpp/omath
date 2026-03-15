@@ -55,6 +55,9 @@ namespace omath::hud
 
         void add_snap_line(const Vector2<float>& start_pos, const Color& color, float width);
 
+        void add_dashed_box(const Color& color, float dash_len = 8.f, float gap_len = 5.f,
+                            float thickness = 1.f) const;
+
         void add_bottom_bar(const Color& color, const Color& outline_color, const Color& bg_color, float height,
                             float ratio, float offset = 5.f);
 
@@ -101,6 +104,8 @@ namespace omath::hud
     private:
         void draw_outlined_text(const Vector2<float>& position, const Color& color,
                                        const std::string_view& text);
+        void draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color,
+                              float dash_len, float gap_len, float thickness) const;
         CanvasBox m_canvas;
         Vector2<float> m_text_cursor_right;
         Vector2<float> m_text_cursor_top;

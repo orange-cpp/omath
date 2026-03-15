@@ -66,6 +66,11 @@ namespace imgui_desktop::gui
         bool show_top_labels = true,   show_bottom_labels = true;
         bool show_centered_top = true, show_centered_bottom = true;
 
+        // Dashed box
+        omath::Color dash_color = omath::Color::from_rgba(255, 200, 0, 255);
+        float dash_len = 8.f, dash_gap = 5.f, dash_thickness = 1.f;
+        bool show_dashed_box = false;
+
         // Snap line
         omath::Color snap_color = omath::Color::from_rgba(255, 50, 50, 255);
         float snap_width = 1.5f;
@@ -101,12 +106,17 @@ namespace imgui_desktop::gui
 
             if (ImGui::CollapsingHeader("Box", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::Checkbox("Show box",         &show_box);
+                ImGui::Checkbox("Show box",          &show_box);
                 ImGui::Checkbox("Show cornered box", &show_cornered_box);
+                ImGui::Checkbox("Show dashed box",   &show_dashed_box);
                 ImGui::ColorEdit4("Color##box",  reinterpret_cast<float*>(&box_color), ImGuiColorEditFlags_NoInputs);
                 ImGui::ColorEdit4("Fill##box",   reinterpret_cast<float*>(&box_fill),  ImGuiColorEditFlags_NoInputs);
                 ImGui::SliderFloat("Thickness",  &box_thickness, 0.5f, 5.f);
-                ImGui::SliderFloat("Corner ratio", &corner_ratio, 0.05f, 0.5f);
+                ImGui::SliderFloat("Corner ratio",    &corner_ratio,    0.05f, 0.5f);
+                ImGui::ColorEdit4("Dash color",        reinterpret_cast<float*>(&dash_color), ImGuiColorEditFlags_NoInputs);
+                ImGui::SliderFloat("Dash length",      &dash_len,        2.f,  30.f);
+                ImGui::SliderFloat("Dash gap",         &dash_gap,        1.f,  20.f);
+                ImGui::SliderFloat("Dash thickness",   &dash_thickness,  0.5f,  5.f);
             }
 
             if (ImGui::CollapsingHeader("Bars", ImGuiTreeNodeFlags_DefaultOpen))
@@ -154,6 +164,8 @@ namespace imgui_desktop::gui
                 ent.add_2d_box(box_color, box_fill, box_thickness);
             if (show_cornered_box)
                 ent.add_cornered_2d_box(omath::Color::from_rgba(255, 0, 255, 255), box_fill, corner_ratio, box_thickness);
+            if (show_dashed_box)
+                ent.add_dashed_box(dash_color, dash_len, dash_gap, dash_thickness);
 
             if (show_right_bar)
                 ent.add_right_bar(bar_color, bar_outline_color, bar_bg_color, bar_width, bar_value, bar_offset);
