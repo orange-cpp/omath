@@ -75,7 +75,7 @@ namespace imgui_desktop::gui
 
         if (ImGui::CollapsingHeader("Box", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::Checkbox("Box", &m_show_box);
+            ImGui::Checkbox("Box##chk", &m_show_box);
             ImGui::SameLine();
             ImGui::Checkbox("Cornered", &m_show_cornered_box);
             ImGui::SameLine();
