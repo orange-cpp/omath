@@ -5,6 +5,7 @@
 #include <array>
 #include <fstream>
 #include <omath/utility/elf_pattern_scan.hpp>
+#include <span>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -140,6 +141,87 @@ namespace
         std::uintptr_t raw_base_addr{};
         std::vector<std::byte> data;
     };
+    template<FileArch arch>
+    std::optional<ExtractedSection> get_elf_section_from_memory_impl(const std::span<const std::byte> data,
+                                                                     const std::string_view& section_name)
+    {
+        using FH = typename ElfHeaders<arch>::FileHeader;
+        using SH = typename ElfHeaders<arch>::SectionHeader;
+
+        if (data.size() < sizeof(FH))
+            return std::nullopt;
+
+        const auto* file_header = reinterpret_cast<const FH*>(data.data());
+
+        const auto shoff = static_cast<std::size_t>(file_header->e_shoff);
+        const auto shnum = static_cast<std::size_t>(file_header->e_shnum);
+        const auto shstrndx = static_cast<std::size_t>(file_header->e_shstrndx);
+
+        const auto shstrtab_hdr_off = shoff + shstrndx * sizeof(SH);
+        if (shstrtab_hdr_off + sizeof(SH) > data.size())
+            return std::nullopt;
+
+        const auto* shstrtab_hdr = reinterpret_cast<const SH*>(data.data() + shstrtab_hdr_off);
+        const auto shstrtab_off = static_cast<std::size_t>(shstrtab_hdr->sh_offset);
+        const auto shstrtab_size = static_cast<std::size_t>(shstrtab_hdr->sh_size);
+
+        if (shstrtab_off + shstrtab_size > data.size())
+            return std::nullopt;
+
+        const auto* shstrtab = reinterpret_cast<const char*>(data.data() + shstrtab_off);
+
+        for (std::size_t i = 0; i < shnum; ++i)
+        {
+            const auto sect_hdr_off = shoff + i * sizeof(SH);
+            if (sect_hdr_off + sizeof(SH) > data.size())
+                continue;
+
+            const auto* section = reinterpret_cast<const SH*>(data.data() + sect_hdr_off);
+
+            if (std::cmp_greater_equal(section->sh_name, shstrtab_size))
+                continue;
+
+            if (std::string_view{shstrtab + section->sh_name} != section_name)
+                continue;
+
+            const auto raw_off = static_cast<std::size_t>(section->sh_offset);
+            const auto sec_size = static_cast<std::size_t>(section->sh_size);
+
+            if (raw_off + sec_size > data.size())
+                return std::nullopt;
+
+            ExtractedSection out;
+            out.virtual_base_addr = static_cast<std::uintptr_t>(section->sh_addr);
+            out.raw_base_addr = raw_off;
+            out.data.assign(data.data() + raw_off, data.data() + raw_off + sec_size);
+            return out;
+        }
+        return std::nullopt;
+    }
+
+    std::optional<ExtractedSection> get_elf_section_by_name_from_memory(const std::span<const std::byte> data,
+                                                                        const std::string_view& section_name)
+    {
+        constexpr std::string_view valid_elf_signature = "\x7F"
+                                                         "ELF";
+        if (data.size() < ei_nident)
+            return std::nullopt;
+
+        if (std::string_view{reinterpret_cast<const char*>(data.data()), valid_elf_signature.size()}
+            != valid_elf_signature)
+            return std::nullopt;
+
+        const auto class_byte = static_cast<uint8_t>(data[ei_class]);
+
+        if (class_byte == elfclass64)
+            return get_elf_section_from_memory_impl<FileArch::x64>(data, section_name);
+
+        if (class_byte == elfclass32)
+            return get_elf_section_from_memory_impl<FileArch::x32>(data, section_name);
+
+        return std::nullopt;
+    }
+
     [[maybe_unused]]
     std::optional<ExtractedSection> get_elf_section_by_name(const std::filesystem::path& path,
                                                             const std::string_view& section_name)
@@ -320,6 +402,29 @@ namespace omath
 
         return SectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
                                  .raw_base_addr = pe_section->raw_base_addr,
+                                 .target_offset = offset};
+    }
+
+    std::optional<SectionScanResult>
+    ElfPatternScanner::scan_for_pattern_in_memory_file(const std::span<const std::byte> file_data,
+                                                       const std::string_view& pattern,
+                                                       const std::string_view& target_section_name)
+    {
+        const auto section = get_elf_section_by_name_from_memory(file_data, target_section_name);
+
+        if (!section.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        const auto scan_result =
+                PatternScanner::scan_for_pattern(section->data.cbegin(), section->data.cend(), pattern);
+
+        if (scan_result == section->data.cend())
+            return std::nullopt;
+
+        const auto offset = std::distance(section->data.begin(), scan_result);
+
+        return SectionScanResult{.virtual_base_addr = section->virtual_base_addr,
+                                 .raw_base_addr = section->raw_base_addr,
                                  .target_offset = offset};
     }
 } // namespace omath
