@@ -57,7 +57,7 @@ namespace omath::hud
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_height = std::abs(m_canvas.top_right_corner.y - m_canvas.bottom_right_corner.y);
 
-        const auto bar_start = m_canvas.bottom_right_corner + Vector2<float>{offset, 0.f};
+        const auto bar_start = Vector2<float>{m_text_cursor_right.x + offset, m_canvas.bottom_right_corner.y};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
 
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
@@ -72,7 +72,7 @@ namespace omath::hud
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_height = std::abs(m_canvas.top_left_corner.y - m_canvas.bottom_right_corner.y);
 
-        const auto bar_start = m_canvas.bottom_left_corner + Vector2<float>{-(offset + width), 0.f};
+        const auto bar_start = Vector2<float>{m_text_cursor_left.x - (offset + width), m_canvas.bottom_left_corner.y};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
 
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
@@ -107,7 +107,7 @@ namespace omath::hud
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_width = std::abs(m_canvas.top_left_corner.x - m_canvas.bottom_right_corner.x);
 
-        const auto bar_start = m_canvas.top_left_corner - Vector2<float>{0.f, offset};
+        const auto bar_start = Vector2<float>{m_canvas.top_left_corner.x, m_text_cursor_top.y - offset};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, -height), bg_color);
 
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, -height), color);
@@ -187,7 +187,7 @@ namespace omath::hud
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const float height   = std::abs(m_canvas.top_right_corner.y - m_canvas.bottom_right_corner.y);
-        const auto  bar_start = m_canvas.bottom_right_corner + Vector2<float>{offset, 0.f};
+        const auto  bar_start = Vector2<float>{m_text_cursor_right.x + offset, m_canvas.bottom_right_corner.y};
 
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>{width, -height}, bg_color);
         draw_dashed_fill(bar_start, {0.f, -1.f}, {width, 0.f}, height, height * ratio,
@@ -203,7 +203,7 @@ namespace omath::hud
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const float height    = std::abs(m_canvas.top_left_corner.y - m_canvas.bottom_left_corner.y);
-        const auto  bar_start = m_canvas.bottom_left_corner + Vector2<float>{-(offset + width), 0.f};
+        const auto  bar_start = Vector2<float>{m_text_cursor_left.x - (offset + width), m_canvas.bottom_left_corner.y};
 
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>{width, -height}, bg_color);
         draw_dashed_fill(bar_start, {0.f, -1.f}, {width, 0.f}, height, height * ratio,
@@ -219,7 +219,7 @@ namespace omath::hud
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const float bar_w     = std::abs(m_canvas.top_left_corner.x - m_canvas.top_right_corner.x);
-        const auto  bar_start = m_canvas.top_left_corner - Vector2<float>{0.f, offset};
+        const auto  bar_start = Vector2<float>{m_canvas.top_left_corner.x, m_text_cursor_top.y - offset};
 
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>{bar_w, -height}, bg_color);
         draw_dashed_fill(bar_start, {1.f, 0.f}, {0.f, -height}, bar_w, bar_w * ratio,
@@ -234,7 +234,7 @@ namespace omath::hud
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const float bar_w     = std::abs(m_canvas.bottom_left_corner.x - m_canvas.bottom_right_corner.x);
-        const auto  bar_start = m_canvas.bottom_left_corner + Vector2<float>{0.f, offset};
+        const auto  bar_start = Vector2<float>{m_canvas.bottom_left_corner.x, m_text_cursor_bottom.y + offset};
 
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>{bar_w, height}, bg_color);
         draw_dashed_fill(bar_start, {1.f, 0.f}, {0.f, height}, bar_w, bar_w * ratio,
@@ -349,7 +349,7 @@ namespace omath::hud
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_width = std::abs(m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x);
 
-        const auto bar_start = m_canvas.bottom_left_corner + Vector2<float>{0.f, offset};
+        const auto bar_start = Vector2<float>{m_canvas.bottom_left_corner.x, m_text_cursor_bottom.y + offset};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), bg_color);
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, height), color);
         m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), outline_color);
