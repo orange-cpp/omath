@@ -2,6 +2,7 @@
 // Created by Orange on 11/11/2024.
 //
 #pragma once
+#include <omath/hud/entity_overlay.hpp>
 #include <omath/utility/color.hpp>
 #include <string_view>
 
@@ -18,6 +19,9 @@ namespace imgui_desktop::gui
     private:
         void draw_controls();
         void draw_overlay();
+        void draw_boxes(omath::hud::EntityOverlay& ent) const;
+        void draw_bars(omath::hud::EntityOverlay& ent) const;
+        void draw_labels(omath::hud::EntityOverlay& ent) const;
         void present();
 
         GLFWwindow* m_window = nullptr;

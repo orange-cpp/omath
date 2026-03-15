@@ -141,13 +141,28 @@ namespace imgui_desktop::gui
             {m_entity_x, m_entity_top_y}, {m_entity_x, m_entity_bottom_y},
             std::make_shared<omath::hud::ImguiHudRenderer>());
 
+        draw_boxes(ent);
+        draw_bars(ent);
+        draw_labels(ent);
+
+        if (m_show_skeleton)
+            ent.add_skeleton(m_skel_color, m_skel_thickness);
+        if (m_show_snap)
+            ent.add_snap_line({vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width);
+    }
+
+    void MainWindow::draw_boxes(omath::hud::EntityOverlay& ent) const
+    {
         if (m_show_box)
             ent.add_2d_box(m_box_color, m_box_fill, m_box_thickness);
         if (m_show_cornered_box)
             ent.add_cornered_2d_box(omath::Color::from_rgba(255, 0, 255, 255), m_box_fill, m_corner_ratio, m_box_thickness);
         if (m_show_dashed_box)
             ent.add_dashed_box(m_dash_color, m_dash_len, m_dash_gap, m_dash_thickness);
+    }
 
+    void MainWindow::draw_bars(omath::hud::EntityOverlay& ent) const
+    {
         if (m_show_right_bar)
             ent.add_right_bar(m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_offset);
         if (m_show_left_bar)
@@ -156,7 +171,10 @@ namespace imgui_desktop::gui
             ent.add_top_bar(m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_offset);
         if (m_show_bottom_bar)
             ent.add_bottom_bar(m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_offset);
+    }
 
+    void MainWindow::draw_labels(omath::hud::EntityOverlay& ent) const
+    {
         if (m_show_right_labels)
         {
             ent.add_right_label({0.f, 1.f, 0.f, 1.f}, m_label_offset, m_outlined, "Health: {}/100", 100);
@@ -179,11 +197,6 @@ namespace imgui_desktop::gui
             ent.add_centered_bottom_label(omath::Color::from_rgba(255, 255, 255, 255), m_label_offset, m_outlined, "PlayerName");
         if (m_show_bottom_labels)
             ent.add_bottom_label(omath::Color::from_rgba(200, 200, 0, 255), m_label_offset, m_outlined, "42m");
-
-        if (m_show_skeleton)
-            ent.add_skeleton(m_skel_color, m_skel_thickness);
-        if (m_show_snap)
-            ent.add_snap_line({vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width);
     }
 
     void MainWindow::present()
