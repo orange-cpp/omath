@@ -71,6 +71,11 @@ namespace imgui_desktop::gui
         float dash_len = 8.f, dash_gap = 5.f, dash_thickness = 1.f;
         bool show_dashed_box = false;
 
+        // Skeleton
+        omath::Color skel_color = omath::Color::from_rgba(255, 255, 255, 200);
+        float skel_thickness = 1.f;
+        bool show_skeleton = false;
+
         // Snap line
         omath::Color snap_color = omath::Color::from_rgba(255, 50, 50, 255);
         float snap_width = 1.5f;
@@ -145,6 +150,13 @@ namespace imgui_desktop::gui
                 ImGui::Checkbox("Centered bot##lbl",   &show_centered_bottom);
             }
 
+            if (ImGui::CollapsingHeader("Skeleton"))
+            {
+                ImGui::Checkbox("Show##skel", &show_skeleton);
+                ImGui::ColorEdit4("Color##skel", reinterpret_cast<float*>(&skel_color), ImGuiColorEditFlags_NoInputs);
+                ImGui::SliderFloat("Thickness##skel", &skel_thickness, 0.5f, 5.f);
+            }
+
             if (ImGui::CollapsingHeader("Snap Line"))
             {
                 ImGui::Checkbox("Show##snap", &show_snap);
@@ -198,6 +210,9 @@ namespace imgui_desktop::gui
                 ent.add_centered_bottom_label(omath::Color::from_rgba(255, 255, 255, 255), label_offset, outlined, "PlayerName");
             if (show_bottom_labels)
                 ent.add_bottom_label(omath::Color::from_rgba(200, 200, 0, 255), label_offset, outlined, "42m");
+
+            if (show_skeleton)
+                ent.add_skeleton(skel_color, skel_thickness);
 
             if (show_snap)
                 ent.add_snap_line({viewport->Size.x / 2.f, viewport->Size.y}, snap_color, snap_width);

@@ -122,6 +122,46 @@ namespace omath::hud
                 + Vector2<float>{m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x, 0.f} / 2;
         m_renderer->add_line(start_pos, line_end, color, width);
     }
+    void EntityOverlay::add_skeleton(const Color& color, const float thickness) const
+    {
+        // Maps normalized (rx in [0,1], ry in [0,1]) to canvas screen position
+        const auto joint = [&](const float rx, const float ry) -> Vector2<float>
+        {
+            const auto top = m_canvas.top_left_corner
+                             + (m_canvas.top_right_corner - m_canvas.top_left_corner) * rx;
+            const auto bot = m_canvas.bottom_left_corner
+                             + (m_canvas.bottom_right_corner - m_canvas.bottom_left_corner) * rx;
+            return top + (bot - top) * ry;
+        };
+
+        using B = std::pair<std::pair<float,float>, std::pair<float,float>>;
+        static constexpr std::array<B, 15> k_bones{{
+            // Spine
+            {{0.50f, 0.13f}, {0.50f, 0.22f}},  // head       → neck
+            {{0.50f, 0.22f}, {0.50f, 0.38f}},  // neck       → chest
+            {{0.50f, 0.38f}, {0.50f, 0.55f}},  // chest      → pelvis
+            // Left arm
+            {{0.50f, 0.22f}, {0.25f, 0.25f}},  // neck       → L shoulder
+            {{0.25f, 0.25f}, {0.13f, 0.42f}},  // L shoulder → L elbow
+            {{0.13f, 0.42f}, {0.08f, 0.56f}},  // L elbow    → L hand
+            // Right arm
+            {{0.50f, 0.22f}, {0.75f, 0.25f}},  // neck       → R shoulder
+            {{0.75f, 0.25f}, {0.87f, 0.42f}},  // R shoulder → R elbow
+            {{0.87f, 0.42f}, {0.92f, 0.56f}},  // R elbow    → R hand
+            // Left leg
+            {{0.50f, 0.55f}, {0.36f, 0.58f}},  // pelvis     → L hip
+            {{0.36f, 0.58f}, {0.32f, 0.77f}},  // L hip      → L knee
+            {{0.32f, 0.77f}, {0.27f, 0.97f}},  // L knee     → L foot
+            // Right leg
+            {{0.50f, 0.55f}, {0.64f, 0.58f}},  // pelvis     → R hip
+            {{0.64f, 0.58f}, {0.68f, 0.77f}},  // R hip      → R knee
+            {{0.68f, 0.77f}, {0.73f, 0.97f}},  // R knee     → R foot
+        }};
+
+        for (const auto& [a, b] : k_bones)
+            m_renderer->add_line(joint(a.first, a.second), joint(b.first, b.second), color, thickness);
+    }
+
     void EntityOverlay::draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color,
                                          const float dash_len, const float gap_len, const float thickness) const
     {

@@ -58,6 +58,8 @@ namespace omath::hud
         void add_dashed_box(const Color& color, float dash_len = 8.f, float gap_len = 5.f,
                             float thickness = 1.f) const;
 
+        void add_skeleton(const Color& color, float thickness = 1.f) const;
+
         void add_bottom_bar(const Color& color, const Color& outline_color, const Color& bg_color, float height,
                             float ratio, float offset = 5.f);
 
