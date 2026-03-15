@@ -99,11 +99,17 @@ namespace omath::hud::widget
     template<typename W>
     Centered(W) -> Centered<W>;
 
+    /// Empty gap that advances the side cursor without drawing.
+    struct Spacer
+    {
+        float size;
+    };
+
     // ── Side widget variant ───────────────────────────────────────────────────
     struct None
     {
     }; ///< No-op placeholder — used by widget::when for disabled elements.
-    using SideWidget = std::variant<None, Bar, DashedBar, Label, Centered<Label>>;
+    using SideWidget = std::variant<None, Bar, DashedBar, Label, Centered<Label>, Spacer>;
 
     // ── Side containers ───────────────────────────────────────────────────────
     // Storing std::initializer_list<SideWidget> is safe here: the backing array

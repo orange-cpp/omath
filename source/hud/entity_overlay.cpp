@@ -509,6 +509,10 @@ namespace omath::hud
                             {
                                 add_right_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
                             },
+                            [this](const widget::Spacer& w)
+                            {
+                                m_text_cursor_right.x += w.size;
+                            },
                     },
                     child);
     }
@@ -537,6 +541,10 @@ namespace omath::hud
                             [this](const widget::Centered<widget::Label>& w)
                             {
                                 add_left_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
+                            },
+                            [this](const widget::Spacer& w)
+                            {
+                                m_text_cursor_left.x -= w.size;
                             },
                     },
                     child);
@@ -567,6 +575,10 @@ namespace omath::hud
                             {
                                 add_centered_top_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
                             },
+                            [this](const widget::Spacer& w)
+                            {
+                                m_text_cursor_top.y -= w.size;
+                            },
                     },
                     child);
     }
@@ -595,6 +607,10 @@ namespace omath::hud
                             {
                                 add_centered_bottom_label(w.child.color, w.child.offset, w.child.outlined,
                                                           w.child.text);
+                            },
+                            [this](const widget::Spacer& w)
+                            {
+                                m_text_cursor_bottom.y += w.size;
                             },
                     },
                     child);
