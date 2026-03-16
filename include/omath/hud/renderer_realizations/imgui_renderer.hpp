@@ -23,6 +23,8 @@ namespace omath::hud
                                int segments = 0) override;
         void add_arc(const Vector2<float>& center, float radius, float a_min, float a_max, const Color& color,
                      float thickness, int segments = 0) override;
+        void add_image(const std::any& texture_id, const Vector2<float>& min, const Vector2<float>& max,
+                       const Color& tint = Color{1.f, 1.f, 1.f, 1.f}) override;
         void add_text(const Vector2<float>& position, const Color& color, const std::string_view& text) override;
         [[nodiscard]]
         virtual Vector2<float> calc_text_size(const std::string_view& text) override;

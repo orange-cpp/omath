@@ -4,6 +4,7 @@
 #pragma once
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
+#include <any>
 #include <span>
 
 namespace omath::hud
@@ -33,6 +34,10 @@ namespace omath::hud
         /// Draw an arc (partial circle outline). Angles in radians, 0 = right (+X), counter-clockwise.
         virtual void add_arc(const Vector2<float>& center, float radius, float a_min, float a_max, const Color& color,
                              float thickness, int segments = 0) = 0;
+
+        /// Draw a textured quad. texture_id is renderer-specific (e.g. ImTextureID for ImGui).
+        virtual void add_image(const std::any& texture_id, const Vector2<float>& min, const Vector2<float>& max,
+                               const Color& tint = Color{1.f, 1.f, 1.f, 1.f}) = 0;
 
         virtual void add_text(const Vector2<float>& position, const Color& color, const std::string_view& text) = 0;
 

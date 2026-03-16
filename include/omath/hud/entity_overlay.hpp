@@ -138,6 +138,16 @@ namespace omath::hud
         EntityOverlay& add_bottom_progress_ring(const Color& color, const Color& bg, float radius, float ratio,
                                                 float thickness = 2.f, float offset = 5.f, int segments = 0);
 
+        // ── Icons ────────────────────────────────────────────────────────
+        EntityOverlay& add_right_icon(const std::any& texture_id, float width, float height,
+                                      const Color& tint = Color{1.f, 1.f, 1.f, 1.f}, float offset = 5.f);
+        EntityOverlay& add_left_icon(const std::any& texture_id, float width, float height,
+                                     const Color& tint = Color{1.f, 1.f, 1.f, 1.f}, float offset = 5.f);
+        EntityOverlay& add_top_icon(const std::any& texture_id, float width, float height,
+                                    const Color& tint = Color{1.f, 1.f, 1.f, 1.f}, float offset = 5.f);
+        EntityOverlay& add_bottom_icon(const std::any& texture_id, float width, float height,
+                                       const Color& tint = Color{1.f, 1.f, 1.f, 1.f}, float offset = 5.f);
+
         // ── Misc ─────────────────────────────────────────────────────────
         EntityOverlay& add_snap_line(const Vector2<float>& start_pos, const Color& color, float width);
 

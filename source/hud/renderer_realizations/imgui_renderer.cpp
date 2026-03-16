@@ -61,6 +61,13 @@ namespace omath::hud
         ImGui::GetBackgroundDrawList()->PathStroke(color.to_im_color(), ImDrawFlags_None, thickness);
     }
 
+    void ImguiHudRenderer::add_image(const std::any& texture_id, const Vector2<float>& min, const Vector2<float>& max,
+                                      const Color& tint)
+    {
+        ImGui::GetBackgroundDrawList()->AddImage(std::any_cast<ImTextureID>(texture_id), min.to_im_vec2(),
+                                                  max.to_im_vec2(), {0, 0}, {1, 1}, tint.to_im_color());
+    }
+
     void ImguiHudRenderer::add_text(const Vector2<float>& position, const Color& color, const std::string_view& text)
     {
         ImGui::GetBackgroundDrawList()->AddText(position.to_im_vec2(), color.to_im_color(), text.data(),

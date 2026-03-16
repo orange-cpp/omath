@@ -4,6 +4,7 @@
 #pragma once
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
+#include <any>
 #include <initializer_list>
 #include <optional>
 #include <string_view>
@@ -137,11 +138,21 @@ namespace omath::hud::widget
         int segments = 32;
     };
 
+    struct Icon
+    {
+        std::any texture_id;
+        float width;
+        float height;
+        Color tint{1.f, 1.f, 1.f, 1.f};
+        float offset = 5.f;
+    };
+
     // ── Side widget variant ───────────────────────────────────────────────────
     struct None
     {
     }; ///< No-op placeholder — used by widget::when for disabled elements.
-    using SideWidget = std::variant<None, Bar, DashedBar, Label, Centered<Label>, SpaceVertical, SpaceHorizontal, ProgressRing>;
+    using SideWidget =
+            std::variant<None, Bar, DashedBar, Label, Centered<Label>, SpaceVertical, SpaceHorizontal, ProgressRing, Icon>;
 
     // ── Side containers ───────────────────────────────────────────────────────
     // Storing std::initializer_list<SideWidget> is safe here: the backing array

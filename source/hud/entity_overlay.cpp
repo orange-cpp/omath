@@ -551,6 +551,43 @@ namespace omath::hud
         return *this;
     }
 
+    // ── Icons ────────────────────────────────────────────────────────────────────
+    EntityOverlay& EntityOverlay::add_right_icon(const std::any& texture_id, const float width, const float height,
+                                                  const Color& tint, const float offset)
+    {
+        const auto pos = m_text_cursor_right + Vector2<float>{offset, 0.f};
+        m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
+        m_text_cursor_right.y += height;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_left_icon(const std::any& texture_id, const float width, const float height,
+                                                 const Color& tint, const float offset)
+    {
+        const auto pos = m_text_cursor_left + Vector2<float>{-(offset + width), 0.f};
+        m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
+        m_text_cursor_left.y += height;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_top_icon(const std::any& texture_id, const float width, const float height,
+                                                const Color& tint, const float offset)
+    {
+        m_text_cursor_top.y -= height;
+        const auto pos = m_text_cursor_top + Vector2<float>{0.f, -offset};
+        m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_bottom_icon(const std::any& texture_id, const float width, const float height,
+                                                   const Color& tint, const float offset)
+    {
+        const auto pos = m_text_cursor_bottom + Vector2<float>{0.f, offset};
+        m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
+        m_text_cursor_bottom.y += height;
+        return *this;
+    }
+
     // ── widget dispatch ───────────────────────────────────────────────────────
     void EntityOverlay::dispatch(const widget::Box& box)
     {
@@ -659,6 +696,10 @@ namespace omath::hud
                                 add_right_progress_ring(w.color, w.bg, w.radius, w.ratio, w.thickness, w.offset,
                                                         w.segments);
                             },
+                            [this](const widget::Icon& w)
+                            {
+                                add_right_icon(w.texture_id, w.width, w.height, w.tint, w.offset);
+                            },
                     },
                     child);
     }
@@ -700,6 +741,10 @@ namespace omath::hud
                             {
                                 add_left_progress_ring(w.color, w.bg, w.radius, w.ratio, w.thickness, w.offset,
                                                        w.segments);
+                            },
+                            [this](const widget::Icon& w)
+                            {
+                                add_left_icon(w.texture_id, w.width, w.height, w.tint, w.offset);
                             },
                     },
                     child);
@@ -743,6 +788,10 @@ namespace omath::hud
                                 add_top_progress_ring(w.color, w.bg, w.radius, w.ratio, w.thickness, w.offset,
                                                       w.segments);
                             },
+                            [this](const widget::Icon& w)
+                            {
+                                add_top_icon(w.texture_id, w.width, w.height, w.tint, w.offset);
+                            },
                     },
                     child);
     }
@@ -784,6 +833,10 @@ namespace omath::hud
                             {
                                 add_bottom_progress_ring(w.color, w.bg, w.radius, w.ratio, w.thickness, w.offset,
                                                          w.segments);
+                            },
+                            [this](const widget::Icon& w)
+                            {
+                                add_bottom_icon(w.texture_id, w.width, w.height, w.tint, w.offset);
                             },
                     },
                     child);
