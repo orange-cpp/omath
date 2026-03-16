@@ -458,27 +458,51 @@ namespace omath::hud
     {
     }
     // ── Spacers ─────────────────────────────────────────────────────────────────
-    EntityOverlay& EntityOverlay::add_right_spacer(const float size)
+    EntityOverlay& EntityOverlay::add_right_space_vertical(const float size)
+    {
+        m_text_cursor_right.y += size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_right_space_horizontal(const float size)
     {
         m_text_cursor_right.x += size;
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_left_spacer(const float size)
+    EntityOverlay& EntityOverlay::add_left_space_vertical(const float size)
+    {
+        m_text_cursor_left.y += size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_left_space_horizontal(const float size)
     {
         m_text_cursor_left.x -= size;
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_top_spacer(const float size)
+    EntityOverlay& EntityOverlay::add_top_space_vertical(const float size)
     {
         m_text_cursor_top.y -= size;
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_bottom_spacer(const float size)
+    EntityOverlay& EntityOverlay::add_top_space_horizontal(const float size)
+    {
+        m_text_cursor_top.x += size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_bottom_space_vertical(const float size)
     {
         m_text_cursor_bottom.y += size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_bottom_space_horizontal(const float size)
+    {
+        m_text_cursor_bottom.x += size;
         return *this;
     }
 
@@ -594,9 +618,13 @@ namespace omath::hud
                             {
                                 add_right_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
                             },
-                            [this](const widget::Spacer& w)
+                            [this](const widget::SpaceVertical& w)
                             {
-                                add_right_spacer(w.size);
+                                add_right_space_vertical(w.size);
+                            },
+                            [this](const widget::SpaceHorizontal& w)
+                            {
+                                add_right_space_horizontal(w.size);
                             },
                             [this](const widget::ProgressRing& w)
                             {
@@ -632,9 +660,13 @@ namespace omath::hud
                             {
                                 add_left_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
                             },
-                            [this](const widget::Spacer& w)
+                            [this](const widget::SpaceVertical& w)
                             {
-                                add_left_spacer(w.size);
+                                add_left_space_vertical(w.size);
+                            },
+                            [this](const widget::SpaceHorizontal& w)
+                            {
+                                add_left_space_horizontal(w.size);
                             },
                             [this](const widget::ProgressRing& w)
                             {
@@ -670,9 +702,13 @@ namespace omath::hud
                             {
                                 add_centered_top_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
                             },
-                            [this](const widget::Spacer& w)
+                            [this](const widget::SpaceVertical& w)
                             {
-                                add_top_spacer(w.size);
+                                add_top_space_vertical(w.size);
+                            },
+                            [this](const widget::SpaceHorizontal& w)
+                            {
+                                add_top_space_horizontal(w.size);
                             },
                             [this](const widget::ProgressRing& w)
                             {
@@ -708,9 +744,13 @@ namespace omath::hud
                                 add_centered_bottom_label(w.child.color, w.child.offset, w.child.outlined,
                                                           w.child.text);
                             },
-                            [this](const widget::Spacer& w)
+                            [this](const widget::SpaceVertical& w)
                             {
-                                add_bottom_spacer(w.size);
+                                add_bottom_space_vertical(w.size);
+                            },
+                            [this](const widget::SpaceHorizontal& w)
+                            {
+                                add_bottom_space_horizontal(w.size);
                             },
                             [this](const widget::ProgressRing& w)
                             {

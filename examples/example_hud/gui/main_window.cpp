@@ -187,9 +187,7 @@ namespace imgui_desktop::gui
                                 when(m_show_right_labels,
                                      Label{{1.f, 0.f, 1.f, 1.f}, m_label_offset, m_outlined, "*LOCKED*"}),
 
-                            Spacer{10},
-                                when(m_show_ring, ProgressRing{m_ring_color, m_ring_bg, m_ring_radius, m_ring_ratio,
-                                                               m_ring_thickness, m_ring_offset}),
+                            SpaceVertical{10},
                                 when(m_show_ring, ProgressRing{m_ring_color, m_ring_bg, m_ring_radius, m_ring_ratio,
                                                                m_ring_thickness, m_ring_offset}),
                         },

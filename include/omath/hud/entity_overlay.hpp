@@ -119,10 +119,14 @@ namespace omath::hud
         }
 
         // ── Spacers ─────────────────────────────────────────────────────
-        EntityOverlay& add_right_spacer(float size);
-        EntityOverlay& add_left_spacer(float size);
-        EntityOverlay& add_top_spacer(float size);
-        EntityOverlay& add_bottom_spacer(float size);
+        EntityOverlay& add_right_space_vertical(float size);
+        EntityOverlay& add_right_space_horizontal(float size);
+        EntityOverlay& add_left_space_vertical(float size);
+        EntityOverlay& add_left_space_horizontal(float size);
+        EntityOverlay& add_top_space_vertical(float size);
+        EntityOverlay& add_top_space_horizontal(float size);
+        EntityOverlay& add_bottom_space_vertical(float size);
+        EntityOverlay& add_bottom_space_horizontal(float size);
 
         // ── Progress rings ──────────────────────────────────────────────
         EntityOverlay& add_right_progress_ring(const Color& color, const Color& bg, float radius, float ratio,
