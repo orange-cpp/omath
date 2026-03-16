@@ -138,6 +138,32 @@ namespace imgui_desktop::gui
             ImGui::SliderFloat("Thick##skel", &m_skel_thickness, 0.5f, 5.f);
         }
 
+        if (ImGui::CollapsingHeader("Progress Ring"))
+        {
+            ImGui::Checkbox("Show##ring", &m_show_ring);
+            ImGui::ColorEdit4("Color##ring", reinterpret_cast<float*>(&m_ring_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("BG##ring", reinterpret_cast<float*>(&m_ring_bg), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Radius##ring", &m_ring_radius, 4.f, 30.f);
+            ImGui::SliderFloat("Value##ring", &m_ring_ratio, 0.f, 1.f);
+            ImGui::SliderFloat("Thick##ring", &m_ring_thickness, 0.5f, 6.f);
+            ImGui::SliderFloat("Offset##ring", &m_ring_offset, 0.f, 15.f);
+        }
+
+        if (ImGui::CollapsingHeader("Scan Marker"))
+        {
+            ImGui::Checkbox("Show##scan", &m_show_scan);
+            ImGui::ColorEdit4("Fill##scan", reinterpret_cast<float*>(&m_scan_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("Outline##scan", reinterpret_cast<float*>(&m_scan_outline), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Thick##scan", &m_scan_outline_thickness, 0.5f, 5.f);
+        }
+
+        if (ImGui::CollapsingHeader("Aim Dot"))
+        {
+            ImGui::Checkbox("Show##aim", &m_show_aim);
+            ImGui::ColorEdit4("Color##aim", reinterpret_cast<float*>(&m_aim_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Radius##aim", &m_aim_radius, 1.f, 10.f);
+        }
+
         if (ImGui::CollapsingHeader("Snap Line"))
         {
             ImGui::Checkbox("Show##snap", &m_show_snap);
@@ -166,7 +192,6 @@ namespace imgui_desktop::gui
                         when(m_show_cornered_box, CorneredBox{omath::Color::from_rgba(255, 0, 255, 255), m_box_fill,
                                                               m_corner_ratio, m_box_thickness}),
                         when(m_show_dashed_box, DashedBox{m_dash_color, m_dash_len, m_dash_gap, m_dash_thickness}),
-
                         RightSide{
                                 when(m_show_right_bar, bar),
                                 when(m_show_right_dashed_bar, dbar),
@@ -176,6 +201,10 @@ namespace imgui_desktop::gui
                                      Label{{1.f, 0.f, 0.f, 1.f}, m_label_offset, m_outlined, "Shield: 125/125"}),
                                 when(m_show_right_labels,
                                      Label{{1.f, 0.f, 1.f, 1.f}, m_label_offset, m_outlined, "*LOCKED*"}),
+
+                            SpaceVertical{10},
+                                when(m_show_ring, ProgressRing{m_ring_color, m_ring_bg, m_ring_radius, m_ring_ratio,
+                                                               m_ring_thickness, m_ring_offset}),
                         },
                         LeftSide{
                                 when(m_show_left_bar, bar),
@@ -203,6 +232,8 @@ namespace imgui_desktop::gui
                                 when(m_show_bottom_labels, Label{omath::Color::from_rgba(200, 200, 0, 255),
                                                                  m_label_offset, m_outlined, "42m"}),
                         },
+                        when(m_show_aim, AimDot{{m_entity_x, m_entity_top_y+40.f}, m_aim_color, m_aim_radius}),
+                        when(m_show_scan, ScanMarker{m_scan_color, m_scan_outline, m_scan_outline_thickness}),
                         when(m_show_skeleton, Skeleton{m_skel_color, m_skel_thickness}),
                         when(m_show_snap, SnapLine{{vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width}));
     }

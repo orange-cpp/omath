@@ -61,6 +61,23 @@ namespace imgui_desktop::gui
         float m_skel_thickness = 1.f;
         bool m_show_skeleton = false;
 
+        // Progress ring
+        omath::Color m_ring_color = omath::Color::from_rgba(0, 200, 255, 255);
+        omath::Color m_ring_bg{0.3f, 0.3f, 0.3f, 0.5f};
+        float m_ring_radius = 10.f, m_ring_ratio = 0.65f, m_ring_thickness = 2.5f, m_ring_offset = 5.f;
+        bool m_show_ring = false;
+
+        // Scan marker
+        omath::Color m_scan_color = omath::Color::from_rgba(255, 200, 0, 150);
+        omath::Color m_scan_outline = omath::Color::from_rgba(255, 200, 0, 255);
+        float m_scan_outline_thickness = 2.f;
+        bool m_show_scan = false;
+
+        // Aim dot
+        omath::Color m_aim_color = omath::Color::from_rgba(255, 0, 0, 255);
+        float m_aim_radius = 3.f;
+        bool m_show_aim = false;
+
         // Snap line
         omath::Color m_snap_color = omath::Color::from_rgba(255, 50, 50, 255);
         float m_snap_width = 1.5f;

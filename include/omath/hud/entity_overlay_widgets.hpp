@@ -4,6 +4,7 @@
 #pragma once
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
+#include <any>
 #include <initializer_list>
 #include <optional>
 #include <string_view>
@@ -56,6 +57,21 @@ namespace omath::hud::widget
         float width;
     };
 
+    struct ScanMarker
+    {
+        Color color;
+        Color outline{0.f, 0.f, 0.f, 0.f};
+        float outline_thickness = 1.f;
+    };
+
+    /// Dot at an absolute screen position.
+    struct AimDot
+    {
+        Vector2<float> position;
+        Color color;
+        float radius = 3.f;
+    };
+
     // ── Side-agnostic widgets (used inside XxxSide containers) ────────────────
 
     /// A filled bar. `size` is width for left/right sides, height for top/bottom.
@@ -99,11 +115,44 @@ namespace omath::hud::widget
     template<typename W>
     Centered(W) -> Centered<W>;
 
+    /// Empty vertical gap that advances the Y cursor without drawing.
+    struct SpaceVertical
+    {
+        float size;
+    };
+
+    /// Empty horizontal gap that advances the X cursor without drawing.
+    struct SpaceHorizontal
+    {
+        float size;
+    };
+
+    struct ProgressRing
+    {
+        Color color;
+        Color bg{0.3f, 0.3f, 0.3f, 0.5f};
+        float radius = 12.f;
+        float ratio;
+        float thickness = 2.f;
+        float offset = 5.f;
+        int segments = 32;
+    };
+
+    struct Icon
+    {
+        std::any texture_id;
+        float width;
+        float height;
+        Color tint{1.f, 1.f, 1.f, 1.f};
+        float offset = 5.f;
+    };
+
     // ── Side widget variant ───────────────────────────────────────────────────
     struct None
     {
     }; ///< No-op placeholder — used by widget::when for disabled elements.
-    using SideWidget = std::variant<None, Bar, DashedBar, Label, Centered<Label>>;
+    using SideWidget =
+            std::variant<None, Bar, DashedBar, Label, Centered<Label>, SpaceVertical, SpaceHorizontal, ProgressRing, Icon>;
 
     // ── Side containers ───────────────────────────────────────────────────────
     // Storing std::initializer_list<SideWidget> is safe here: the backing array

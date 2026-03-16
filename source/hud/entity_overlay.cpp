@@ -457,6 +457,137 @@ namespace omath::hud
           m_text_cursor_left(m_canvas.top_left_corner), m_renderer(renderer)
     {
     }
+    // ── Spacers ─────────────────────────────────────────────────────────────────
+    EntityOverlay& EntityOverlay::add_right_space_vertical(const float size)
+    {
+        m_text_cursor_right.y += size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_right_space_horizontal(const float size)
+    {
+        m_text_cursor_right.x += size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_left_space_vertical(const float size)
+    {
+        m_text_cursor_left.y += size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_left_space_horizontal(const float size)
+    {
+        m_text_cursor_left.x -= size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_top_space_vertical(const float size)
+    {
+        m_text_cursor_top.y -= size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_top_space_horizontal(const float size)
+    {
+        m_text_cursor_top.x += size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_bottom_space_vertical(const float size)
+    {
+        m_text_cursor_bottom.y += size;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_bottom_space_horizontal(const float size)
+    {
+        m_text_cursor_bottom.x += size;
+        return *this;
+    }
+
+    // ── Progress rings ──────────────────────────────────────────────────────────
+    EntityOverlay& EntityOverlay::add_right_progress_ring(const Color& color, const Color& bg, const float radius,
+                                                          const float ratio, const float thickness, const float offset,
+                                                          const int segments)
+    {
+        const auto cx = m_text_cursor_right.x + offset + radius;
+        const auto cy = m_text_cursor_right.y + radius;
+        draw_progress_ring({cx, cy}, widget::ProgressRing{color, bg, radius, ratio, thickness, offset, segments});
+        m_text_cursor_right.y += radius * 2.f;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_left_progress_ring(const Color& color, const Color& bg, const float radius,
+                                                         const float ratio, const float thickness, const float offset,
+                                                         const int segments)
+    {
+        const auto cx = m_text_cursor_left.x - offset - radius;
+        const auto cy = m_text_cursor_left.y + radius;
+        draw_progress_ring({cx, cy}, widget::ProgressRing{color, bg, radius, ratio, thickness, offset, segments});
+        m_text_cursor_left.y += radius * 2.f;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_top_progress_ring(const Color& color, const Color& bg, const float radius,
+                                                        const float ratio, const float thickness, const float offset,
+                                                        const int segments)
+    {
+        m_text_cursor_top.y -= radius * 2.f;
+        const auto cx = m_text_cursor_top.x + radius;
+        const auto cy = m_text_cursor_top.y - offset + radius;
+        draw_progress_ring({cx, cy}, widget::ProgressRing{color, bg, radius, ratio, thickness, offset, segments});
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_bottom_progress_ring(const Color& color, const Color& bg, const float radius,
+                                                           const float ratio, const float thickness, const float offset,
+                                                           const int segments)
+    {
+        const auto cx = m_text_cursor_bottom.x + radius;
+        const auto cy = m_text_cursor_bottom.y + offset + radius;
+        draw_progress_ring({cx, cy}, widget::ProgressRing{color, bg, radius, ratio, thickness, offset, segments});
+        m_text_cursor_bottom.y += radius * 2.f;
+        return *this;
+    }
+
+    // ── Icons ────────────────────────────────────────────────────────────────────
+    EntityOverlay& EntityOverlay::add_right_icon(const std::any& texture_id, const float width, const float height,
+                                                  const Color& tint, const float offset)
+    {
+        const auto pos = m_text_cursor_right + Vector2<float>{offset, 0.f};
+        m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
+        m_text_cursor_right.y += height;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_left_icon(const std::any& texture_id, const float width, const float height,
+                                                 const Color& tint, const float offset)
+    {
+        const auto pos = m_text_cursor_left + Vector2<float>{-(offset + width), 0.f};
+        m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
+        m_text_cursor_left.y += height;
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_top_icon(const std::any& texture_id, const float width, const float height,
+                                                const Color& tint, const float offset)
+    {
+        m_text_cursor_top.y -= height;
+        const auto pos = m_text_cursor_top + Vector2<float>{0.f, -offset};
+        m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_bottom_icon(const std::any& texture_id, const float width, const float height,
+                                                   const Color& tint, const float offset)
+    {
+        const auto pos = m_text_cursor_bottom + Vector2<float>{0.f, offset};
+        m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
+        m_text_cursor_bottom.y += height;
+        return *this;
+    }
+
     // ── widget dispatch ───────────────────────────────────────────────────────
     void EntityOverlay::dispatch(const widget::Box& box)
     {
@@ -483,10 +614,53 @@ namespace omath::hud
         add_snap_line(snap_line.start, snap_line.color, snap_line.width);
     }
 
-    // ── Side container dispatch ───────────────────────────────────────────────
-    void EntityOverlay::dispatch(const widget::RightSide& s)
+    void EntityOverlay::dispatch(const widget::ScanMarker& scan_marker)
     {
-        for (const auto& child : s.children)
+        const auto box_width = std::abs(m_canvas.top_right_corner.x - m_canvas.top_left_corner.x);
+        const auto box_height = std::abs(m_canvas.bottom_left_corner.y - m_canvas.top_left_corner.y);
+
+        const auto center_x = (m_canvas.top_left_corner.x + m_canvas.top_right_corner.x) / 2.f;
+        const auto center_y = m_canvas.top_left_corner.y + box_height * 0.44f;
+
+        const auto side = std::min(box_width, box_height) * 0.5f;
+        const auto h = side * std::sqrt(3.f) / 2.f;
+
+        const std::array<Vector2<float>, 3> tri = {
+                Vector2<float>{center_x, center_y - h * 2.f / 3.f},
+                Vector2<float>{center_x - side / 2.f, center_y + h / 3.f},
+                Vector2<float>{center_x + side / 2.f, center_y + h / 3.f},
+        };
+
+        m_renderer->add_filled_polyline({tri.data(), tri.size()}, scan_marker.color);
+
+        if (scan_marker.outline.value().w > 0.f)
+            m_renderer->add_polyline({tri.data(), tri.size()}, scan_marker.outline, scan_marker.outline_thickness);
+    }
+
+    void EntityOverlay::dispatch(const widget::AimDot& aim_dot)
+    {
+        m_renderer->add_filled_circle(aim_dot.position, aim_dot.radius, aim_dot.color);
+    }
+
+    void EntityOverlay::draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring)
+    {
+        constexpr auto pi = std::numbers::pi_v<float>;
+        const float ratio = std::clamp(ring.ratio, 0.f, 1.f);
+
+        m_renderer->add_circle(center, ring.radius, ring.bg, ring.thickness, ring.segments);
+
+        if (ratio > 0.f)
+        {
+            const float a_min = -pi / 2.f;
+            const float a_max = a_min + ratio * 2.f * pi;
+            m_renderer->add_arc(center, ring.radius, a_min, a_max, ring.color, ring.thickness, ring.segments);
+        }
+    }
+
+    // ── Side container dispatch ───────────────────────────────────────────────
+    void EntityOverlay::dispatch(const widget::RightSide& right_side)
+    {
+        for (const auto& child : right_side.children)
             std::visit(
                     widget::Overloaded{
                             [](const widget::None&)
@@ -509,13 +683,30 @@ namespace omath::hud
                             {
                                 add_right_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
                             },
+                            [this](const widget::SpaceVertical& w)
+                            {
+                                add_right_space_vertical(w.size);
+                            },
+                            [this](const widget::SpaceHorizontal& w)
+                            {
+                                add_right_space_horizontal(w.size);
+                            },
+                            [this](const widget::ProgressRing& w)
+                            {
+                                add_right_progress_ring(w.color, w.bg, w.radius, w.ratio, w.thickness, w.offset,
+                                                        w.segments);
+                            },
+                            [this](const widget::Icon& w)
+                            {
+                                add_right_icon(w.texture_id, w.width, w.height, w.tint, w.offset);
+                            },
                     },
                     child);
     }
 
-    void EntityOverlay::dispatch(const widget::LeftSide& s)
+    void EntityOverlay::dispatch(const widget::LeftSide& left_side)
     {
-        for (const auto& child : s.children)
+        for (const auto& child : left_side.children)
             std::visit(
                     widget::Overloaded{
                             [](const widget::None&)
@@ -537,6 +728,23 @@ namespace omath::hud
                             [this](const widget::Centered<widget::Label>& w)
                             {
                                 add_left_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
+                            },
+                            [this](const widget::SpaceVertical& w)
+                            {
+                                add_left_space_vertical(w.size);
+                            },
+                            [this](const widget::SpaceHorizontal& w)
+                            {
+                                add_left_space_horizontal(w.size);
+                            },
+                            [this](const widget::ProgressRing& w)
+                            {
+                                add_left_progress_ring(w.color, w.bg, w.radius, w.ratio, w.thickness, w.offset,
+                                                       w.segments);
+                            },
+                            [this](const widget::Icon& w)
+                            {
+                                add_left_icon(w.texture_id, w.width, w.height, w.tint, w.offset);
                             },
                     },
                     child);
@@ -567,6 +775,23 @@ namespace omath::hud
                             {
                                 add_centered_top_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
                             },
+                            [this](const widget::SpaceVertical& w)
+                            {
+                                add_top_space_vertical(w.size);
+                            },
+                            [this](const widget::SpaceHorizontal& w)
+                            {
+                                add_top_space_horizontal(w.size);
+                            },
+                            [this](const widget::ProgressRing& w)
+                            {
+                                add_top_progress_ring(w.color, w.bg, w.radius, w.ratio, w.thickness, w.offset,
+                                                      w.segments);
+                            },
+                            [this](const widget::Icon& w)
+                            {
+                                add_top_icon(w.texture_id, w.width, w.height, w.tint, w.offset);
+                            },
                     },
                     child);
     }
@@ -595,6 +820,23 @@ namespace omath::hud
                             {
                                 add_centered_bottom_label(w.child.color, w.child.offset, w.child.outlined,
                                                           w.child.text);
+                            },
+                            [this](const widget::SpaceVertical& w)
+                            {
+                                add_bottom_space_vertical(w.size);
+                            },
+                            [this](const widget::SpaceHorizontal& w)
+                            {
+                                add_bottom_space_horizontal(w.size);
+                            },
+                            [this](const widget::ProgressRing& w)
+                            {
+                                add_bottom_progress_ring(w.color, w.bg, w.radius, w.ratio, w.thickness, w.offset,
+                                                         w.segments);
+                            },
+                            [this](const widget::Icon& w)
+                            {
+                                add_bottom_icon(w.texture_id, w.width, w.height, w.tint, w.offset);
                             },
                     },
                     child);
