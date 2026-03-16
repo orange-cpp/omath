@@ -658,9 +658,9 @@ namespace omath::hud
     }
 
     // ── Side container dispatch ───────────────────────────────────────────────
-    void EntityOverlay::dispatch(const widget::RightSide& s)
+    void EntityOverlay::dispatch(const widget::RightSide& right_side)
     {
-        for (const auto& child : s.children)
+        for (const auto& child : right_side.children)
             std::visit(
                     widget::Overloaded{
                             [](const widget::None&)
@@ -704,9 +704,9 @@ namespace omath::hud
                     child);
     }
 
-    void EntityOverlay::dispatch(const widget::LeftSide& s)
+    void EntityOverlay::dispatch(const widget::LeftSide& left_side)
     {
-        for (const auto& child : s.children)
+        for (const auto& child : left_side.children)
             std::visit(
                     widget::Overloaded{
                             [](const widget::None&)
