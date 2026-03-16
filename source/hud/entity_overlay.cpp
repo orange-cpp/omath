@@ -577,6 +577,34 @@ namespace omath::hud
         add_snap_line(snap_line.start, snap_line.color, snap_line.width);
     }
 
+    void EntityOverlay::dispatch(const widget::ScanMarker& scan_marker)
+    {
+        const auto box_width = std::abs(m_canvas.top_right_corner.x - m_canvas.top_left_corner.x);
+        const auto box_height = std::abs(m_canvas.bottom_left_corner.y - m_canvas.top_left_corner.y);
+
+        const auto center_x = (m_canvas.top_left_corner.x + m_canvas.top_right_corner.x) / 2.f;
+        const auto center_y = m_canvas.top_left_corner.y + box_height * 0.44f;
+
+        const auto side = std::min(box_width, box_height) * 0.5f;
+        const auto h = side * std::sqrt(3.f) / 2.f;
+
+        const std::array<Vector2<float>, 3> tri = {
+                Vector2<float>{center_x, center_y - h * 2.f / 3.f},
+                Vector2<float>{center_x - side / 2.f, center_y + h / 3.f},
+                Vector2<float>{center_x + side / 2.f, center_y + h / 3.f},
+        };
+
+        m_renderer->add_filled_polyline({tri.data(), tri.size()}, scan_marker.color);
+
+        if (scan_marker.outline.value().w > 0.f)
+            m_renderer->add_polyline({tri.data(), tri.size()}, scan_marker.outline, scan_marker.outline_thickness);
+    }
+
+    void EntityOverlay::dispatch(const widget::AimDot& aim_dot)
+    {
+        m_renderer->add_filled_circle(aim_dot.position, aim_dot.radius, aim_dot.color);
+    }
+
     void EntityOverlay::draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring)
     {
         constexpr auto pi = std::numbers::pi_v<float>;

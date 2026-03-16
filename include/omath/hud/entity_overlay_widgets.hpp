@@ -56,6 +56,21 @@ namespace omath::hud::widget
         float width;
     };
 
+    struct ScanMarker
+    {
+        Color color;
+        Color outline{0.f, 0.f, 0.f, 0.f};
+        float outline_thickness = 1.f;
+    };
+
+    /// Dot at an absolute screen position.
+    struct AimDot
+    {
+        Vector2<float> position;
+        Color color;
+        float radius = 3.f;
+    };
+
     // ── Side-agnostic widgets (used inside XxxSide containers) ────────────────
 
     /// A filled bar. `size` is width for left/right sides, height for top/bottom.

@@ -149,6 +149,21 @@ namespace imgui_desktop::gui
             ImGui::SliderFloat("Offset##ring", &m_ring_offset, 0.f, 15.f);
         }
 
+        if (ImGui::CollapsingHeader("Scan Marker"))
+        {
+            ImGui::Checkbox("Show##scan", &m_show_scan);
+            ImGui::ColorEdit4("Fill##scan", reinterpret_cast<float*>(&m_scan_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("Outline##scan", reinterpret_cast<float*>(&m_scan_outline), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Thick##scan", &m_scan_outline_thickness, 0.5f, 5.f);
+        }
+
+        if (ImGui::CollapsingHeader("Aim Dot"))
+        {
+            ImGui::Checkbox("Show##aim", &m_show_aim);
+            ImGui::ColorEdit4("Color##aim", reinterpret_cast<float*>(&m_aim_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Radius##aim", &m_aim_radius, 1.f, 10.f);
+        }
+
         if (ImGui::CollapsingHeader("Snap Line"))
         {
             ImGui::Checkbox("Show##snap", &m_show_snap);
@@ -217,6 +232,8 @@ namespace imgui_desktop::gui
                                 when(m_show_bottom_labels, Label{omath::Color::from_rgba(200, 200, 0, 255),
                                                                  m_label_offset, m_outlined, "42m"}),
                         },
+                        when(m_show_aim, AimDot{{m_entity_x, m_entity_top_y+40.f}, m_aim_color, m_aim_radius}),
+                        when(m_show_scan, ScanMarker{m_scan_color, m_scan_outline, m_scan_outline_thickness}),
                         when(m_show_skeleton, Skeleton{m_skel_color, m_skel_thickness}),
                         when(m_show_snap, SnapLine{{vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width}));
     }
