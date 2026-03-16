@@ -118,6 +118,22 @@ namespace omath::hud
                                              std::string_view{std::vformat(fmt.get(), std::make_format_args(args...))});
         }
 
+        // ── Spacers ─────────────────────────────────────────────────────
+        EntityOverlay& add_right_spacer(float size);
+        EntityOverlay& add_left_spacer(float size);
+        EntityOverlay& add_top_spacer(float size);
+        EntityOverlay& add_bottom_spacer(float size);
+
+        // ── Progress rings ──────────────────────────────────────────────
+        EntityOverlay& add_right_progress_ring(const Color& color, const Color& bg, float radius, float ratio,
+                                               float thickness = 2.f, float offset = 5.f, int segments = 0);
+        EntityOverlay& add_left_progress_ring(const Color& color, const Color& bg, float radius, float ratio,
+                                              float thickness = 2.f, float offset = 5.f, int segments = 0);
+        EntityOverlay& add_top_progress_ring(const Color& color, const Color& bg, float radius, float ratio,
+                                             float thickness = 2.f, float offset = 5.f, int segments = 0);
+        EntityOverlay& add_bottom_progress_ring(const Color& color, const Color& bg, float radius, float ratio,
+                                                float thickness = 2.f, float offset = 5.f, int segments = 0);
+
         // ── Misc ─────────────────────────────────────────────────────────
         EntityOverlay& add_snap_line(const Vector2<float>& start_pos, const Color& color, float width);
 
@@ -151,6 +167,7 @@ namespace omath::hud
         void dispatch(const widget::BottomSide& bottom_side);
         void dispatch(const widget::Skeleton& skeleton);
         void dispatch(const widget::SnapLine& snap_line);
+        void draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring);
         void draw_outlined_text(const Vector2<float>& position, const Color& color, const std::string_view& text);
         void draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color, float dash_len,
                               float gap_len, float thickness) const;

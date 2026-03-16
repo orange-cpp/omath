@@ -17,6 +17,12 @@ namespace omath::hud
         void add_filled_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color) override;
         void add_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) override;
         void add_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) override;
+        void add_circle(const Vector2<float>& center, float radius, const Color& color, float thickness,
+                        int segments = 0) override;
+        void add_filled_circle(const Vector2<float>& center, float radius, const Color& color,
+                               int segments = 0) override;
+        void add_arc(const Vector2<float>& center, float radius, float a_min, float a_max, const Color& color,
+                     float thickness, int segments = 0) override;
         void add_text(const Vector2<float>& position, const Color& color, const std::string_view& text) override;
         [[nodiscard]]
         virtual Vector2<float> calc_text_size(const std::string_view& text) override;

@@ -138,6 +138,17 @@ namespace imgui_desktop::gui
             ImGui::SliderFloat("Thick##skel", &m_skel_thickness, 0.5f, 5.f);
         }
 
+        if (ImGui::CollapsingHeader("Progress Ring"))
+        {
+            ImGui::Checkbox("Show##ring", &m_show_ring);
+            ImGui::ColorEdit4("Color##ring", reinterpret_cast<float*>(&m_ring_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("BG##ring", reinterpret_cast<float*>(&m_ring_bg), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Radius##ring", &m_ring_radius, 4.f, 30.f);
+            ImGui::SliderFloat("Value##ring", &m_ring_ratio, 0.f, 1.f);
+            ImGui::SliderFloat("Thick##ring", &m_ring_thickness, 0.5f, 6.f);
+            ImGui::SliderFloat("Offset##ring", &m_ring_offset, 0.f, 15.f);
+        }
+
         if (ImGui::CollapsingHeader("Snap Line"))
         {
             ImGui::Checkbox("Show##snap", &m_show_snap);
@@ -166,7 +177,6 @@ namespace imgui_desktop::gui
                         when(m_show_cornered_box, CorneredBox{omath::Color::from_rgba(255, 0, 255, 255), m_box_fill,
                                                               m_corner_ratio, m_box_thickness}),
                         when(m_show_dashed_box, DashedBox{m_dash_color, m_dash_len, m_dash_gap, m_dash_thickness}),
-
                         RightSide{
                                 when(m_show_right_bar, bar),
                                 when(m_show_right_dashed_bar, dbar),
@@ -176,6 +186,12 @@ namespace imgui_desktop::gui
                                      Label{{1.f, 0.f, 0.f, 1.f}, m_label_offset, m_outlined, "Shield: 125/125"}),
                                 when(m_show_right_labels,
                                      Label{{1.f, 0.f, 1.f, 1.f}, m_label_offset, m_outlined, "*LOCKED*"}),
+
+                            Spacer{10},
+                                when(m_show_ring, ProgressRing{m_ring_color, m_ring_bg, m_ring_radius, m_ring_ratio,
+                                                               m_ring_thickness, m_ring_offset}),
+                                when(m_show_ring, ProgressRing{m_ring_color, m_ring_bg, m_ring_radius, m_ring_ratio,
+                                                               m_ring_thickness, m_ring_offset}),
                         },
                         LeftSide{
                                 when(m_show_left_bar, bar),

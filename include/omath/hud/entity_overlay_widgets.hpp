@@ -105,11 +105,22 @@ namespace omath::hud::widget
         float size;
     };
 
+    struct ProgressRing
+    {
+        Color color;
+        Color bg{0.3f, 0.3f, 0.3f, 0.5f};
+        float radius = 12.f;
+        float ratio;
+        float thickness = 2.f;
+        float offset = 5.f;
+        int segments = 32;
+    };
+
     // ── Side widget variant ───────────────────────────────────────────────────
     struct None
     {
     }; ///< No-op placeholder — used by widget::when for disabled elements.
-    using SideWidget = std::variant<None, Bar, DashedBar, Label, Centered<Label>, Spacer>;
+    using SideWidget = std::variant<None, Bar, DashedBar, Label, Centered<Label>, Spacer, ProgressRing>;
 
     // ── Side containers ───────────────────────────────────────────────────────
     // Storing std::initializer_list<SideWidget> is safe here: the backing array
