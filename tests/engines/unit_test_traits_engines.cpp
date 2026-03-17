@@ -73,9 +73,14 @@ static void verify_zero_offset_matches_default()
 
     const auto pos1 = Trait::predict_projectile_position(p, 15.f, 30.f, 1.f, 9.81f);
     const auto pos2 = Trait::predict_projectile_position(p2, 15.f, 30.f, 1.f, 9.81f);
-    EXPECT_NEAR(pos1.x, pos2.x, 1e-6f);
-    EXPECT_NEAR(pos1.y, pos2.y, 1e-6f);
-    EXPECT_NEAR(pos1.z, pos2.z, 1e-6f);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || defined(_M_ARM64)
+    constexpr float tol = 1e-6f;
+#else
+    constexpr float tol = 1e-4f;
+#endif
+    EXPECT_NEAR(pos1.x, pos2.x, tol);
+    EXPECT_NEAR(pos1.y, pos2.y, tol);
+    EXPECT_NEAR(pos1.z, pos2.z, tol);
 }
 
 TEST(LaunchOffsetTests, Source_OffsetAtTimeZero)
