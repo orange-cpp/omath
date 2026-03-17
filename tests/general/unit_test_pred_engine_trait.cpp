@@ -53,6 +53,47 @@ TEST(PredEngineTrait, CalcViewpointFromAngles)
     EXPECT_NEAR(vp.z, 10.f, 1e-6f);
 }
 
+TEST(PredEngineTrait, PredictProjectilePositionWithLaunchOffset)
+{
+    projectile_prediction::Projectile p;
+    p.m_origin = {0.f, 0.f, 0.f};
+    p.m_launch_offset = {5.f, 3.f, -2.f};
+    p.m_launch_speed = 10.f;
+    p.m_gravity_scale = 1.f;
+
+    // At time=0, projectile should be at launch_pos = origin + offset
+    const auto pos_t0 = PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 0.f, 9.81f);
+    EXPECT_NEAR(pos_t0.x, 5.f, 1e-4f);
+    EXPECT_NEAR(pos_t0.y, 3.f, 1e-4f);
+    EXPECT_NEAR(pos_t0.z, -2.f, 1e-4f);
+
+    // At time=1 with zero pitch/yaw, should travel along X from the offset position
+    const auto pos_t1 = PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 1.f, 9.81f);
+    EXPECT_NEAR(pos_t1.x, 5.f + 10.f, 1e-3f);
+    EXPECT_NEAR(pos_t1.y, 3.f, 1e-3f);
+    EXPECT_NEAR(pos_t1.z, -2.f - 9.81f * 0.5f, 1e-3f);
+}
+
+TEST(PredEngineTrait, ZeroLaunchOffsetMatchesOriginalBehavior)
+{
+    projectile_prediction::Projectile p;
+    p.m_origin = {10.f, 20.f, 30.f};
+    p.m_launch_offset = {0.f, 0.f, 0.f};
+    p.m_launch_speed = 15.f;
+    p.m_gravity_scale = 0.5f;
+
+    projectile_prediction::Projectile p_no_offset;
+    p_no_offset.m_origin = {10.f, 20.f, 30.f};
+    p_no_offset.m_launch_speed = 15.f;
+    p_no_offset.m_gravity_scale = 0.5f;
+
+    const auto pos1 = PredEngineTrait::predict_projectile_position(p, 30.f, 45.f, 2.f, 9.81f);
+    const auto pos2 = PredEngineTrait::predict_projectile_position(p_no_offset, 30.f, 45.f, 2.f, 9.81f);
+    EXPECT_NEAR(pos1.x, pos2.x, 1e-6f);
+    EXPECT_NEAR(pos1.y, pos2.y, 1e-6f);
+    EXPECT_NEAR(pos1.z, pos2.z, 1e-6f);
+}
+
 TEST(PredEngineTrait, DirectAngles)
 {
     constexpr Vector3<float> origin{0.f, 0.f, 0.f};

@@ -46,6 +46,22 @@ TEST(ProjPredLegacyMore, ZeroGravityUsesDirectPitchAndReturnsViewpoint)
     EXPECT_NEAR(v.z, 3.f, 1e-6f);
 }
 
+TEST(ProjPredLegacyMore, ZeroGravityAimAnglesReturnsPitchAndYaw)
+{
+    constexpr Projectile proj{ .m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 10.f, .m_gravity_scale = 0.f };
+    constexpr Target target{ .m_origin = {100.f, 0.f, 0.f}, .m_velocity = {0.f,0.f,0.f}, .m_is_airborne = false };
+
+    using Engine = omath::projectile_prediction::ProjPredEngineLegacy<FakeEngineZeroGravity>;
+    const Engine engine(9.8f, 0.1f, 5.f, 1e-3f);
+
+    const auto res = engine.maybe_calculate_aim_angles(proj, target);
+    ASSERT_TRUE(res.has_value());
+    // FakeEngineZeroGravity::calc_direct_pitch_angle returns 12.5f
+    EXPECT_NEAR(res->pitch, 12.5f, 1e-6f);
+    // FakeEngineZeroGravity::calc_direct_yaw_angle returns 0.f
+    EXPECT_NEAR(res->yaw, 0.f, 1e-6f);
+}
+
 // Fake trait producing no valid launch angle (root < 0)
 struct FakeEngineNoSolution
 {
@@ -69,6 +85,9 @@ TEST(ProjPredLegacyMore, NoSolutionRootReturnsNullopt)
 
     const auto res = engine.maybe_calculate_aim_point(proj, target);
     EXPECT_FALSE(res.has_value());
+
+    const auto angles_res = engine.maybe_calculate_aim_angles(proj, target);
+    EXPECT_FALSE(angles_res.has_value());
 }
 
 // Fake trait where an angle exists but the projectile does not reach target (miss)

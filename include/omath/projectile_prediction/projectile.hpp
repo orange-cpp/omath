@@ -11,6 +11,7 @@ namespace omath::projectile_prediction
     {
     public:
         Vector3<float> m_origin;
+        Vector3<float> m_launch_offset{0.f, 0.f, 0.f};
         float m_launch_speed{};
         float m_gravity_scale{};
     };
