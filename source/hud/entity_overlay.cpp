@@ -646,20 +646,25 @@ namespace omath::hud
         const auto box_width = std::abs(m_canvas.top_right_corner.x - m_canvas.top_left_corner.x);
         const auto box_height = std::abs(m_canvas.bottom_left_corner.y - m_canvas.top_left_corner.y);
 
-        const auto box_center = m_canvas.top_left_corner+Vector2{box_width, box_height} / 2.f;
+        const auto box_center = m_canvas.top_left_corner + Vector2{box_width, box_height} / 2.f;
 
         m_renderer->add_line(box_center, proj_widget.position, proj_widget.color, proj_widget.line_size);
 
         if (proj_widget.figure == widget::ProjectileAim::Figure::CIRCLE)
         {
             m_renderer->add_filled_circle(proj_widget.position, proj_widget.size, proj_widget.color);
+            return;
         }
-        else if (proj_widget.figure == widget::ProjectileAim::Figure::SQUARE)
+
+        if (proj_widget.figure == widget::ProjectileAim::Figure::SQUARE)
         {
             const auto box_min = proj_widget.position - Vector2{proj_widget.size, proj_widget.size} / 2.f;
             const auto box_max = proj_widget.position + Vector2{proj_widget.size, proj_widget.size} / 2.f;
             m_renderer->add_filled_rectangle(box_min, box_max, proj_widget.color);
+            return;
         }
+
+        std::unreachable();
     }
 
     void EntityOverlay::draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring)
