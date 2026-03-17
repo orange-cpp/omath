@@ -12,6 +12,9 @@ namespace omath::projectile_prediction
         [[nodiscard]] std::optional<Vector3<float>>
         maybe_calculate_aim_point(const Projectile& projectile, const Target& target) const override;
 
+        [[nodiscard]] std::optional<AimAngles>
+        maybe_calculate_aim_angles(const Projectile& projectile, const Target& target) const override;
+
         ProjPredEngineAvx2(float gravity_constant, float simulation_time_step, float maximum_simulation_time);
         ~ProjPredEngineAvx2() override = default;
 

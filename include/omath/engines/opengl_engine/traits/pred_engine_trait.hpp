@@ -16,7 +16,8 @@ namespace omath::opengl_engine
                                                                     const float pitch, const float yaw,
                                                                     const float time, const float gravity) noexcept
         {
-            auto current_pos = projectile.m_origin
+            const auto launch_pos = projectile.m_origin + projectile.m_launch_offset;
+            auto current_pos = launch_pos
                                + forward_vector({PitchAngle::from_degrees(-pitch), YawAngle::from_degrees(yaw),
                                                  RollAngle::from_degrees(0)})
                                          * projectile.m_launch_speed * time;

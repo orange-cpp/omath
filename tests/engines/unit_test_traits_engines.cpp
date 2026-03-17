@@ -20,6 +20,8 @@
 #include <omath/engines/unreal_engine/traits/mesh_trait.hpp>
 #include <omath/engines/unreal_engine/traits/camera_trait.hpp>
 
+#include <omath/engines/source_engine/traits/pred_engine_trait.hpp>
+
 #include <omath/projectile_prediction/projectile.hpp>
 #include <omath/projectile_prediction/target.hpp>
 #include <optional>
@@ -33,6 +35,127 @@ static void expect_matrix_near(const MatT& a, const MatT& b, float eps = 1e-5f)
     for (std::size_t r = 0; r < 4; ++r)
         for (std::size_t c = 0; c < 4; ++c)
             EXPECT_NEAR(a.at(r, c), b.at(r, c), eps);
+}
+
+// ── Launch offset tests for all engines ──────────────────────────────────────
+#include <omath/engines/cry_engine/traits/pred_engine_trait.hpp>
+
+// Helper: verify that zero offset matches default-initialized offset behavior
+template<typename Trait>
+static void verify_launch_offset_at_time_zero(const Vector3<float>& origin, const Vector3<float>& offset)
+{
+    projectile_prediction::Projectile p;
+    p.m_origin = origin;
+    p.m_launch_offset = offset;
+    p.m_launch_speed = 100.f;
+    p.m_gravity_scale = 1.f;
+
+    const auto pos = Trait::predict_projectile_position(p, 0.f, 0.f, 0.f, 9.81f);
+    const auto expected = origin + offset;
+    EXPECT_NEAR(pos.x, expected.x, 1e-4f);
+    EXPECT_NEAR(pos.y, expected.y, 1e-4f);
+    EXPECT_NEAR(pos.z, expected.z, 1e-4f);
+}
+
+template<typename Trait>
+static void verify_zero_offset_matches_default()
+{
+    projectile_prediction::Projectile p;
+    p.m_origin = {10.f, 20.f, 30.f};
+    p.m_launch_offset = {0.f, 0.f, 0.f};
+    p.m_launch_speed = 50.f;
+    p.m_gravity_scale = 1.f;
+
+    projectile_prediction::Projectile p2;
+    p2.m_origin = {10.f, 20.f, 30.f};
+    p2.m_launch_speed = 50.f;
+    p2.m_gravity_scale = 1.f;
+
+    const auto pos1 = Trait::predict_projectile_position(p, 15.f, 30.f, 1.f, 9.81f);
+    const auto pos2 = Trait::predict_projectile_position(p2, 15.f, 30.f, 1.f, 9.81f);
+    EXPECT_NEAR(pos1.x, pos2.x, 1e-6f);
+    EXPECT_NEAR(pos1.y, pos2.y, 1e-6f);
+    EXPECT_NEAR(pos1.z, pos2.z, 1e-6f);
+}
+
+TEST(LaunchOffsetTests, Source_OffsetAtTimeZero)
+{
+    verify_launch_offset_at_time_zero<source_engine::PredEngineTrait>({0, 0, 0}, {5, 3, -2});
+}
+TEST(LaunchOffsetTests, Source_ZeroOffsetMatchesDefault)
+{
+    verify_zero_offset_matches_default<source_engine::PredEngineTrait>();
+}
+TEST(LaunchOffsetTests, Frostbite_OffsetAtTimeZero)
+{
+    verify_launch_offset_at_time_zero<frostbite_engine::PredEngineTrait>({0, 0, 0}, {5, 3, -2});
+}
+TEST(LaunchOffsetTests, Frostbite_ZeroOffsetMatchesDefault)
+{
+    verify_zero_offset_matches_default<frostbite_engine::PredEngineTrait>();
+}
+TEST(LaunchOffsetTests, IW_OffsetAtTimeZero)
+{
+    verify_launch_offset_at_time_zero<iw_engine::PredEngineTrait>({0, 0, 0}, {5, 3, -2});
+}
+TEST(LaunchOffsetTests, IW_ZeroOffsetMatchesDefault)
+{
+    verify_zero_offset_matches_default<iw_engine::PredEngineTrait>();
+}
+TEST(LaunchOffsetTests, OpenGL_OffsetAtTimeZero)
+{
+    verify_launch_offset_at_time_zero<opengl_engine::PredEngineTrait>({0, 0, 0}, {5, 3, -2});
+}
+TEST(LaunchOffsetTests, OpenGL_ZeroOffsetMatchesDefault)
+{
+    verify_zero_offset_matches_default<opengl_engine::PredEngineTrait>();
+}
+TEST(LaunchOffsetTests, Unity_OffsetAtTimeZero)
+{
+    verify_launch_offset_at_time_zero<unity_engine::PredEngineTrait>({0, 0, 0}, {5, 3, -2});
+}
+TEST(LaunchOffsetTests, Unity_ZeroOffsetMatchesDefault)
+{
+    verify_zero_offset_matches_default<unity_engine::PredEngineTrait>();
+}
+TEST(LaunchOffsetTests, Unreal_OffsetAtTimeZero)
+{
+    verify_launch_offset_at_time_zero<unreal_engine::PredEngineTrait>({0, 0, 0}, {5, 3, -2});
+}
+TEST(LaunchOffsetTests, Unreal_ZeroOffsetMatchesDefault)
+{
+    verify_zero_offset_matches_default<unreal_engine::PredEngineTrait>();
+}
+TEST(LaunchOffsetTests, CryEngine_OffsetAtTimeZero)
+{
+    verify_launch_offset_at_time_zero<cry_engine::PredEngineTrait>({0, 0, 0}, {5, 3, -2});
+}
+TEST(LaunchOffsetTests, CryEngine_ZeroOffsetMatchesDefault)
+{
+    verify_zero_offset_matches_default<cry_engine::PredEngineTrait>();
+}
+
+// Test that offset shifts the projectile position at t>0 as well
+TEST(LaunchOffsetTests, OffsetShiftsTrajectory)
+{
+    projectile_prediction::Projectile p_no_offset;
+    p_no_offset.m_origin = {0.f, 0.f, 0.f};
+    p_no_offset.m_launch_speed = 100.f;
+    p_no_offset.m_gravity_scale = 1.f;
+
+    projectile_prediction::Projectile p_with_offset;
+    p_with_offset.m_origin = {0.f, 0.f, 0.f};
+    p_with_offset.m_launch_offset = {10.f, 5.f, -3.f};
+    p_with_offset.m_launch_speed = 100.f;
+    p_with_offset.m_gravity_scale = 1.f;
+
+    const auto pos1 = source_engine::PredEngineTrait::predict_projectile_position(p_no_offset, 20.f, 45.f, 2.f, 9.81f);
+    const auto pos2 = source_engine::PredEngineTrait::predict_projectile_position(p_with_offset, 20.f, 45.f, 2.f, 9.81f);
+
+    // The difference should be exactly the launch offset
+    EXPECT_NEAR(pos2.x - pos1.x, 10.f, 1e-4f);
+    EXPECT_NEAR(pos2.y - pos1.y, 5.f, 1e-4f);
+    EXPECT_NEAR(pos2.z - pos1.z, -3.f, 1e-4f);
 }
 
 // Generic tests for PredEngineTrait behaviour across engines
