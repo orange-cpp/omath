@@ -183,6 +183,7 @@ namespace omath::hud
         void dispatch(const widget::SnapLine& snap_line);
         void dispatch(const widget::ScanMarker& scan_marker);
         void dispatch(const widget::AimDot& aim_dot);
+        void dispatch(const widget::ProjectileAim& proj_widget);
         void draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring);
         void draw_outlined_text(const Vector2<float>& position, const Color& color, const std::string_view& text);
         void draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color, float dash_len,

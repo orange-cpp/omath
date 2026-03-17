@@ -164,6 +164,17 @@ namespace imgui_desktop::gui
             ImGui::SliderFloat("Radius##aim", &m_aim_radius, 1.f, 10.f);
         }
 
+        if (ImGui::CollapsingHeader("Projectile Aim"))
+        {
+            ImGui::Checkbox("Show##proj", &m_show_proj);
+            ImGui::ColorEdit4("Color##proj", reinterpret_cast<float*>(&m_proj_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Size##proj", &m_proj_size, 1.f, 30.f);
+            ImGui::SliderFloat("Line width##proj", &m_proj_line_width, 0.5f, 5.f);
+            ImGui::SliderFloat("Pos X##proj", &m_proj_pos_x, 0.f, vp->Size.x);
+            ImGui::SliderFloat("Pos Y##proj", &m_proj_pos_y, 0.f, vp->Size.y);
+            ImGui::Combo("Figure##proj", &m_proj_figure, "Circle\0Square\0");
+        }
+
         if (ImGui::CollapsingHeader("Snap Line"))
         {
             ImGui::Checkbox("Show##snap", &m_show_snap);
@@ -235,6 +246,7 @@ namespace imgui_desktop::gui
                         when(m_show_aim, AimDot{{m_entity_x, m_entity_top_y+40.f}, m_aim_color, m_aim_radius}),
                         when(m_show_scan, ScanMarker{m_scan_color, m_scan_outline, m_scan_outline_thickness}),
                         when(m_show_skeleton, Skeleton{m_skel_color, m_skel_thickness}),
+                        when(m_show_proj, ProjectileAim{{m_proj_pos_x, m_proj_pos_y}, m_proj_color, m_proj_size, m_proj_line_width, static_cast<ProjectileAim::Figure>(m_proj_figure)}),
                         when(m_show_snap, SnapLine{{vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width}));
     }
 

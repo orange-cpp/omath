@@ -71,6 +71,20 @@ namespace omath::hud::widget
         Color color;
         float radius = 3.f;
     };
+    struct ProjectileAim
+    {
+        enum class Figure
+        {
+            CIRCLE,
+            SQUARE,
+        };
+        Vector2<float> position;
+        Color color;
+        float size = 3.f;
+        float line_size = 1.f;
+        Figure figure = Figure::SQUARE;
+    };
+
 
     // ── Side-agnostic widgets (used inside XxxSide containers) ────────────────
 

@@ -553,7 +553,7 @@ namespace omath::hud
 
     // ── Icons ────────────────────────────────────────────────────────────────────
     EntityOverlay& EntityOverlay::add_right_icon(const std::any& texture_id, const float width, const float height,
-                                                  const Color& tint, const float offset)
+                                                 const Color& tint, const float offset)
     {
         const auto pos = m_text_cursor_right + Vector2<float>{offset, 0.f};
         m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
@@ -562,7 +562,7 @@ namespace omath::hud
     }
 
     EntityOverlay& EntityOverlay::add_left_icon(const std::any& texture_id, const float width, const float height,
-                                                 const Color& tint, const float offset)
+                                                const Color& tint, const float offset)
     {
         const auto pos = m_text_cursor_left + Vector2<float>{-(offset + width), 0.f};
         m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
@@ -571,7 +571,7 @@ namespace omath::hud
     }
 
     EntityOverlay& EntityOverlay::add_top_icon(const std::any& texture_id, const float width, const float height,
-                                                const Color& tint, const float offset)
+                                               const Color& tint, const float offset)
     {
         m_text_cursor_top.y -= height;
         const auto pos = m_text_cursor_top + Vector2<float>{0.f, -offset};
@@ -580,7 +580,7 @@ namespace omath::hud
     }
 
     EntityOverlay& EntityOverlay::add_bottom_icon(const std::any& texture_id, const float width, const float height,
-                                                   const Color& tint, const float offset)
+                                                  const Color& tint, const float offset)
     {
         const auto pos = m_text_cursor_bottom + Vector2<float>{0.f, offset};
         m_renderer->add_image(texture_id, pos, pos + Vector2<float>{width, height}, tint);
@@ -640,6 +640,26 @@ namespace omath::hud
     void EntityOverlay::dispatch(const widget::AimDot& aim_dot)
     {
         m_renderer->add_filled_circle(aim_dot.position, aim_dot.radius, aim_dot.color);
+    }
+    void EntityOverlay::dispatch(const widget::ProjectileAim& proj_widget)
+    {
+        const auto box_width = std::abs(m_canvas.top_right_corner.x - m_canvas.top_left_corner.x);
+        const auto box_height = std::abs(m_canvas.bottom_left_corner.y - m_canvas.top_left_corner.y);
+
+        const auto box_center = m_canvas.top_left_corner+Vector2{box_width, box_height} / 2.f;
+
+        m_renderer->add_line(box_center, proj_widget.position, proj_widget.color, proj_widget.line_size);
+
+        if (proj_widget.figure == widget::ProjectileAim::Figure::CIRCLE)
+        {
+            m_renderer->add_filled_circle(proj_widget.position, proj_widget.size, proj_widget.color);
+        }
+        else if (proj_widget.figure == widget::ProjectileAim::Figure::SQUARE)
+        {
+            const auto box_min = proj_widget.position - Vector2{proj_widget.size, proj_widget.size} / 2.f;
+            const auto box_max = proj_widget.position + Vector2{proj_widget.size, proj_widget.size} / 2.f;
+            m_renderer->add_filled_rectangle(box_min, box_max, proj_widget.color);
+        }
     }
 
     void EntityOverlay::draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring)

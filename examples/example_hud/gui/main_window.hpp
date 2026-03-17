@@ -82,5 +82,13 @@ namespace imgui_desktop::gui
         omath::Color m_snap_color = omath::Color::from_rgba(255, 50, 50, 255);
         float m_snap_width = 1.5f;
         bool m_show_snap = true;
+
+        // Projectile aim
+        omath::Color m_proj_color = omath::Color::from_rgba(255, 50, 50, 255);
+        float m_proj_size = 10.f;
+        float m_proj_line_width = 1.5f;
+        float m_proj_pos_x = 300.f, m_proj_pos_y = 30.f;
+        int m_proj_figure = 1; // 0=circle, 1=square
+        bool m_show_proj = true;
     };
 } // namespace imgui_desktop::gui
