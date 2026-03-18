@@ -21,6 +21,25 @@
 
 namespace omath::rev_eng
 {
+    template<std::size_t N>
+    struct FixedString final
+    {
+        char data[N]{};
+        // ReSharper disable once CppNonExplicitConvertingConstructor
+        constexpr FixedString(const char (&str)[N]) noexcept // NOLINT(*-explicit-constructor)
+        {
+            for (std::size_t i = 0; i < N; ++i)
+                data[i] = str[i];
+        }
+        // ReSharper disable once CppNonExplicitConversionOperator
+        constexpr operator std::string_view() const noexcept // NOLINT(*-explicit-constructor)
+        {
+            return {data, N - 1};
+        }
+    };
+    template<std::size_t N>
+    FixedString(const char (&)[N]) -> FixedString<N>;
+
     class InternalReverseEngineeredObject
     {
     protected:
@@ -57,31 +76,31 @@ namespace omath::rev_eng
             return reinterpret_cast<MethodType>(const_cast<void*>(ptr))(this, arg_list...);
         }
 
-        template<auto module_name, auto pattern, class ReturnType>
+        template<FixedString ModuleName, FixedString Pattern, class ReturnType>
         ReturnType call_method(auto... arg_list)
         {
-            static const auto* address = resolve_pattern(module_name, pattern);
+            static const auto* address = resolve_pattern(ModuleName, Pattern);
             return call_method<ReturnType>(address, arg_list...);
         }
 
-        template<auto module_name, auto pattern, class ReturnType>
+        template<FixedString ModuleName, FixedString Pattern, class ReturnType>
         ReturnType call_method(auto... arg_list) const
         {
-            static const auto* address = resolve_pattern(module_name, pattern);
+            static const auto* address = resolve_pattern(ModuleName, Pattern);
             return call_method<ReturnType>(address, arg_list...);
         }
 
-        template<std::size_t id, class ReturnType>
+        template<std::size_t Id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list)
         {
             const auto vtable = *reinterpret_cast<void***>(this);
-            return call_method<ReturnType>(vtable[id], arg_list...);
+            return call_method<ReturnType>(vtable[Id], arg_list...);
         }
-        template<std::size_t id, class ReturnType>
+        template<std::size_t Id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list) const
         {
             const auto vtable = *reinterpret_cast<void* const* const*>(this);
-            return call_method<ReturnType>(vtable[id], arg_list...);
+            return call_method<ReturnType>(vtable[Id], arg_list...);
         }
 
     private:
@@ -91,11 +110,11 @@ namespace omath::rev_eng
             assert(base && "Failed to find module");
 
 #ifdef _WIN32
-            auto result = PePatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
+            const auto result = PePatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
 #elif defined(__APPLE__)
-            auto result = MachOPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
+            const auto result = MachOPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
 #else
-            auto result = ElfPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
+            const auto result = ElfPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
 #endif
             assert(result.has_value() && "Pattern scan failed");
             return reinterpret_cast<const void*>(*result);
@@ -104,7 +123,7 @@ namespace omath::rev_eng
         static const void* get_module_base(const std::string_view module_name)
         {
 #ifdef _WIN32
-            return static_cast<const void*>(GetModuleHandleA(module_name.data()));
+            return GetModuleHandleA(module_name.data());
 #elif defined(__APPLE__)
             // On macOS, iterate loaded images to find the module by name
             const auto count = _dyld_image_count();
