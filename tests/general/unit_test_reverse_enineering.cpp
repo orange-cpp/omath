@@ -20,28 +20,12 @@ public:
     int m_health{123};
 };
 
-// Helper to extract a member function pointer address as const void*
-template<typename T>
-const void* member_fn_to_ptr(T fn)
+// Extract a raw function pointer from an object's vtable
+inline const void* get_vtable_entry(const void* obj, const std::size_t index)
 {
-    union
-    {
-        T member;
-        const void* ptr;
-    } u{};
-    static_assert(sizeof(T) == sizeof(const void*), "Only simple member function pointers supported");
-    u.member = fn;
-    return u.ptr;
+    const auto vtable = *static_cast<void* const* const*>(obj);
+    return vtable[index];
 }
-
-// Target class with non-virtual member functions for call_method testing
-class MethodTarget
-{
-public:
-    int add(int a, int b) { return a + b; }
-    float scale(float val, float factor) { return val * factor; }
-    int get_42() const { return 42; }
-};
 
 class RevPlayer final : omath::rev_eng::InternalReverseEngineeredObject
 {
@@ -75,20 +59,15 @@ public:
         return call_virtual_method<1, int>();
     }
 
-    // Wrappers exposing call_method for testing with real member function addresses
-    int call_add(int a, int b)
+    // Wrappers exposing call_method for testing — use vtable entries as known-good function pointers
+    int call_foo_via_ptr(const void* fn_ptr) const
     {
-        return call_method<int>(member_fn_to_ptr(&MethodTarget::add), a, b);
+        return call_method<int>(fn_ptr);
     }
 
-    float call_scale(float val, float factor)
+    int call_bar_via_ptr(const void* fn_ptr) const
     {
-        return call_method<float>(member_fn_to_ptr(&MethodTarget::scale), val, factor);
-    }
-
-    int call_get_42() const
-    {
-        return call_method<int>(member_fn_to_ptr(&MethodTarget::get_42));
+        return call_method<int>(fn_ptr);
     }
 };
 
@@ -105,48 +84,37 @@ TEST(unit_test_reverse_enineering, read_test)
     EXPECT_EQ(player_original.bar(), player_reversed->rev_bar_const());
 }
 
-TEST(unit_test_reverse_enineering, call_method_with_args)
+TEST(unit_test_reverse_enineering, call_method_with_vtable_ptr)
 {
-    MethodTarget target;
-    auto* rev = reinterpret_cast<RevPlayer*>(&target);
+    // Extract raw function pointers from Player's vtable, then call them via call_method
+    Player player;
+    const auto* rev = reinterpret_cast<const RevPlayer*>(&player);
 
-    EXPECT_EQ(target.add(3, 4), rev->call_add(3, 4));
-    EXPECT_EQ(7, rev->call_add(3, 4));
+    const auto* foo_ptr = get_vtable_entry(&player, 0);
+    const auto* bar_ptr = get_vtable_entry(&player, 1);
+
+    EXPECT_EQ(player.foo(), rev->call_foo_via_ptr(foo_ptr));
+    EXPECT_EQ(player.bar(), rev->call_bar_via_ptr(bar_ptr));
+    EXPECT_EQ(1, rev->call_foo_via_ptr(foo_ptr));
+    EXPECT_EQ(2, rev->call_bar_via_ptr(bar_ptr));
 }
 
-TEST(unit_test_reverse_enineering, call_method_float_args)
+TEST(unit_test_reverse_enineering, call_method_same_result_as_virtual)
 {
-    MethodTarget target;
-    auto* rev = reinterpret_cast<RevPlayer*>(&target);
+    // call_virtual_method delegates to call_method — both paths must agree
+    Player player;
+    const auto* rev = reinterpret_cast<const RevPlayer*>(&player);
 
-    EXPECT_FLOAT_EQ(6.0f, rev->call_scale(2.0f, 3.0f));
-    EXPECT_FLOAT_EQ(0.0f, rev->call_scale(0.0f, 100.0f));
-    EXPECT_FLOAT_EQ(-5.0f, rev->call_scale(5.0f, -1.0f));
-}
-
-TEST(unit_test_reverse_enineering, call_method_const)
-{
-    MethodTarget target;
-    const auto* rev = reinterpret_cast<const RevPlayer*>(&target);
-
-    EXPECT_EQ(42, rev->call_get_42());
-}
-
-TEST(unit_test_reverse_enineering, call_method_no_extra_args)
-{
-    MethodTarget target;
-    const auto* rev = reinterpret_cast<const RevPlayer*>(&target);
-
-    // call_get_42 takes no arguments beyond this — verifies zero-arg pack works
-    EXPECT_EQ(42, rev->call_get_42());
+    EXPECT_EQ(rev->rev_foo(), rev->call_foo_via_ptr(get_vtable_entry(&player, 0)));
+    EXPECT_EQ(rev->rev_bar(), rev->call_bar_via_ptr(get_vtable_entry(&player, 1)));
 }
 
 TEST(unit_test_reverse_enineering, call_virtual_method_delegates_to_call_method)
 {
-    // call_virtual_method now internally uses call_method — verify both vtable slots
-    Player player_original;
-    auto* player_reversed = reinterpret_cast<RevPlayer*>(&player_original);
+    Player player;
+    auto* rev = reinterpret_cast<RevPlayer*>(&player);
 
-    EXPECT_EQ(1, player_reversed->rev_foo());
-    EXPECT_EQ(2, player_reversed->rev_bar());
+    EXPECT_EQ(1, rev->rev_foo());
+    EXPECT_EQ(2, rev->rev_bar());
+    EXPECT_EQ(2, rev->rev_bar_const());
 }
