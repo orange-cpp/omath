@@ -117,6 +117,7 @@ namespace omath::rev_eng
         }
 
     private:
+        [[nodiscard]]
         static const void* resolve_pattern(const std::string_view module_name, const std::string_view pattern)
         {
             const auto* base = get_module_base(module_name);
@@ -133,6 +134,7 @@ namespace omath::rev_eng
             return reinterpret_cast<const void*>(*result);
         }
 
+        [[nodiscard]]
         static const void* get_module_base(const std::string_view module_name)
         {
 #ifdef _WIN32
