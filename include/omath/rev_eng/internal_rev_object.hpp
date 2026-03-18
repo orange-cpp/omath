@@ -90,6 +90,19 @@ namespace omath::rev_eng
             return call_method<ReturnType>(address, arg_list...);
         }
 
+        template<class ReturnType>
+        ReturnType call_method(const std::string_view& module_name,const std::string_view& pattern, auto... arg_list)
+        {
+            static const auto* address = resolve_pattern(module_name, pattern);
+            return call_method<ReturnType>(address, arg_list...);
+        }
+
+        template<class ReturnType>
+        ReturnType call_method(const std::string_view& module_name,const std::string_view& pattern, auto... arg_list) const
+        {
+            static const auto* address = resolve_pattern(module_name, pattern);
+            return call_method<ReturnType>(address, arg_list...);
+        }
         template<std::size_t Id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list)
         {
