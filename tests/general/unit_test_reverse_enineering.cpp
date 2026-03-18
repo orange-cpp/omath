@@ -20,10 +20,28 @@ public:
     int m_health{123};
 };
 
-// Free functions that mimic member function calling convention (this as first arg)
-inline int free_add(void* /*this_ptr*/, int a, int b) { return a + b; }
-inline float free_scale(void* /*this_ptr*/, float val, float factor) { return val * factor; }
-inline int free_get_42(const void* /*this_ptr*/) { return 42; }
+// Helper to extract a member function pointer address as const void*
+template<typename T>
+const void* member_fn_to_ptr(T fn)
+{
+    union
+    {
+        T member;
+        const void* ptr;
+    } u{};
+    static_assert(sizeof(T) == sizeof(const void*), "Only simple member function pointers supported");
+    u.member = fn;
+    return u.ptr;
+}
+
+// Target class with non-virtual member functions for call_method testing
+class MethodTarget
+{
+public:
+    int add(int a, int b) { return a + b; }
+    float scale(float val, float factor) { return val * factor; }
+    int get_42() const { return 42; }
+};
 
 class RevPlayer final : omath::rev_eng::InternalReverseEngineeredObject
 {
@@ -57,20 +75,20 @@ public:
         return call_virtual_method<1, int>();
     }
 
-    // Wrappers exposing call_method for testing
+    // Wrappers exposing call_method for testing with real member function addresses
     int call_add(int a, int b)
     {
-        return call_method<int>(reinterpret_cast<const void*>(&free_add), a, b);
+        return call_method<int>(member_fn_to_ptr(&MethodTarget::add), a, b);
     }
 
     float call_scale(float val, float factor)
     {
-        return call_method<float>(reinterpret_cast<const void*>(&free_scale), val, factor);
+        return call_method<float>(member_fn_to_ptr(&MethodTarget::scale), val, factor);
     }
 
     int call_get_42() const
     {
-        return call_method<int>(reinterpret_cast<const void*>(&free_get_42));
+        return call_method<int>(member_fn_to_ptr(&MethodTarget::get_42));
     }
 };
 
@@ -89,38 +107,38 @@ TEST(unit_test_reverse_enineering, read_test)
 
 TEST(unit_test_reverse_enineering, call_method_with_args)
 {
-    Player player_original;
-    auto* player_reversed = reinterpret_cast<RevPlayer*>(&player_original);
+    MethodTarget target;
+    auto* rev = reinterpret_cast<RevPlayer*>(&target);
 
-    EXPECT_EQ(free_add(nullptr, 3, 4), player_reversed->call_add(3, 4));
-    EXPECT_EQ(7, player_reversed->call_add(3, 4));
+    EXPECT_EQ(target.add(3, 4), rev->call_add(3, 4));
+    EXPECT_EQ(7, rev->call_add(3, 4));
 }
 
 TEST(unit_test_reverse_enineering, call_method_float_args)
 {
-    Player player_original;
-    auto* player_reversed = reinterpret_cast<RevPlayer*>(&player_original);
+    MethodTarget target;
+    auto* rev = reinterpret_cast<RevPlayer*>(&target);
 
-    EXPECT_FLOAT_EQ(6.0f, player_reversed->call_scale(2.0f, 3.0f));
-    EXPECT_FLOAT_EQ(0.0f, player_reversed->call_scale(0.0f, 100.0f));
-    EXPECT_FLOAT_EQ(-5.0f, player_reversed->call_scale(5.0f, -1.0f));
+    EXPECT_FLOAT_EQ(6.0f, rev->call_scale(2.0f, 3.0f));
+    EXPECT_FLOAT_EQ(0.0f, rev->call_scale(0.0f, 100.0f));
+    EXPECT_FLOAT_EQ(-5.0f, rev->call_scale(5.0f, -1.0f));
 }
 
 TEST(unit_test_reverse_enineering, call_method_const)
 {
-    Player player_original;
-    const auto* player_reversed = reinterpret_cast<const RevPlayer*>(&player_original);
+    MethodTarget target;
+    const auto* rev = reinterpret_cast<const RevPlayer*>(&target);
 
-    EXPECT_EQ(42, player_reversed->call_get_42());
+    EXPECT_EQ(42, rev->call_get_42());
 }
 
 TEST(unit_test_reverse_enineering, call_method_no_extra_args)
 {
-    Player player_original;
-    const auto* player_reversed = reinterpret_cast<const RevPlayer*>(&player_original);
+    MethodTarget target;
+    const auto* rev = reinterpret_cast<const RevPlayer*>(&target);
 
     // call_get_42 takes no arguments beyond this — verifies zero-arg pack works
-    EXPECT_EQ(42, player_reversed->call_get_42());
+    EXPECT_EQ(42, rev->call_get_42());
 }
 
 TEST(unit_test_reverse_enineering, call_virtual_method_delegates_to_call_method)
