@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -22,20 +21,6 @@
 
 namespace omath::rev_eng
 {
-    template<std::size_t N>
-    struct FixedString
-    {
-        char data[N]{};
-        constexpr FixedString(const char (&str)[N])
-        {
-            std::copy_n(str, N, data);
-        }
-        constexpr operator std::string_view() const
-        {
-            return {data, N - 1};
-        }
-    };
-
     class InternalReverseEngineeredObject
     {
     protected:
@@ -72,47 +57,17 @@ namespace omath::rev_eng
             return reinterpret_cast<MethodType>(const_cast<void*>(ptr))(this, arg_list...);
         }
 
-        template<FixedString module_name, FixedString pattern, class ReturnType>
+        template<auto module_name, auto pattern, class ReturnType>
         ReturnType call_method(auto... arg_list)
         {
-            static const auto address = []() -> const void*
-            {
-                const auto* base = get_module_base(module_name);
-                assert(base && "Failed to find module");
-
-#ifdef _WIN32
-                auto result = PePatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
-#elif defined(__APPLE__)
-                auto result = MachOPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
-#else
-                auto result = ElfPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
-#endif
-                assert(result.has_value() && "Pattern scan failed");
-                return reinterpret_cast<const void*>(*result);
-            }();
-
+            static const auto* address = resolve_pattern(module_name, pattern);
             return call_method<ReturnType>(address, arg_list...);
         }
 
-        template<FixedString module_name, FixedString pattern, class ReturnType>
+        template<auto module_name, auto pattern, class ReturnType>
         ReturnType call_method(auto... arg_list) const
         {
-            static const auto address = []() -> const void*
-            {
-                const auto* base = get_module_base(module_name);
-                assert(base && "Failed to find module");
-
-#ifdef _WIN32
-                auto result = PePatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
-#elif defined(__APPLE__)
-                auto result = MachOPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
-#else
-                auto result = ElfPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
-#endif
-                assert(result.has_value() && "Pattern scan failed");
-                return reinterpret_cast<const void*>(*result);
-            }();
-
+            static const auto* address = resolve_pattern(module_name, pattern);
             return call_method<ReturnType>(address, arg_list...);
         }
 
@@ -130,6 +85,22 @@ namespace omath::rev_eng
         }
 
     private:
+        static const void* resolve_pattern(const std::string_view module_name, const std::string_view pattern)
+        {
+            const auto* base = get_module_base(module_name);
+            assert(base && "Failed to find module");
+
+#ifdef _WIN32
+            auto result = PePatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
+#elif defined(__APPLE__)
+            auto result = MachOPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
+#else
+            auto result = ElfPatternScanner::scan_for_pattern_in_loaded_module(base, pattern);
+#endif
+            assert(result.has_value() && "Pattern scan failed");
+            return reinterpret_cast<const void*>(*result);
+        }
+
         static const void* get_module_base(const std::string_view module_name)
         {
 #ifdef _WIN32
