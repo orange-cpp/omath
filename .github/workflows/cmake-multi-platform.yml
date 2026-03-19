@@ -380,6 +380,7 @@ jobs:
         run: cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
 
       - name: Run unit_tests
+        if: ${{ matrix.coverage != true }}
         shell: bash
         run: ./out/Release/unit_tests
 
@@ -388,6 +389,8 @@ jobs:
         shell: bash
         run: |
           brew install lcov
+          # Clean stale profraw files before running coverage
+          find cmake-build/build/${{ matrix.preset }} -name "*.profraw" -delete 2>/dev/null || true
           chmod +x scripts/coverage-llvm.sh
           ./scripts/coverage-llvm.sh \
             "${{ github.workspace }}" \
