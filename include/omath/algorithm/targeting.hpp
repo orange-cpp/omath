@@ -7,6 +7,7 @@
 #include <functional>
 #include <iterator>
 #include <optional>
+#include <ranges>
 
 namespace omath::algorithm
 {
@@ -45,6 +46,18 @@ namespace omath::algorithm
                 best_target = current;
         }
         return best_target;
+    }
+
+    template<class CameraType, std::ranges::range RangeType, class FilterT>
+    requires std::is_invocable_r_v<bool, std::function<FilterT>,
+                                   std::ranges::range_reference_t<const RangeType>>
+    [[nodiscard]]
+    auto get_closest_target_by_fov(const RangeType& range, const CameraType& camera,
+                                   auto get_position,
+                                   const std::optional<std::function<FilterT>>& filter_func = std::nullopt)
+    {
+        return get_closest_target_by_fov<CameraType, decltype(std::ranges::begin(range)), FilterT>(
+                std::ranges::begin(range), std::ranges::end(range), camera, get_position, filter_func);
     }
 
 } // namespace omath::algorithm
