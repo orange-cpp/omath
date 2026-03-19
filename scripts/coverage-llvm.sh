@@ -16,15 +16,27 @@ echo "[*] Output dir: ${OUTPUT_DIR}"
 # Find llvm tools - handle versioned names (Linux) and xcrun (macOS)
 find_llvm_tool() {
     local tool_name="$1"
-    
-    # macOS: use xcrun
+
+    # macOS: derive from the same directory as the active clang to guarantee
+    # the profraw format version matches the compiler that instrumented the binary.
     if [[ "$(uname)" == "Darwin" ]]; then
+        local clang_path
+        clang_path=$(xcrun --find clang 2>/dev/null)
+        if [[ -n "$clang_path" ]]; then
+            local tool_path
+            tool_path="$(dirname "$clang_path")/${tool_name}"
+            if [[ -x "$tool_path" ]]; then
+                echo "$tool_path"
+                return 0
+            fi
+        fi
+        # Fallback: xcrun
         if xcrun --find "${tool_name}" &>/dev/null; then
             echo "xcrun ${tool_name}"
             return 0
         fi
     fi
-    
+
     # Try versioned names (Linux with LLVM 21, 20, 19, etc.)
     for version in 21 20 19 18 17 ""; do
         local versioned_name="${tool_name}${version:+-$version}"
@@ -33,7 +45,7 @@ find_llvm_tool() {
             return 0
         fi
     done
-    
+
     echo ""
     return 1
 }
@@ -50,6 +62,12 @@ fi
 
 echo "[*] Using: ${LLVM_PROFDATA}"
 echo "[*] Using: ${LLVM_COV}"
+
+# Print version info for debugging version mismatches
+if [[ "$(uname)" == "Darwin" ]]; then
+    echo "[*] Compiler: $(xcrun clang --version | head -1)"
+    echo "[*] profdata: $(${LLVM_PROFDATA} show --version 2>&1 | head -1 || true)"
+fi
 
 # Find test binary
 if [[ -z "${TEST_BINARY}" ]]; then
