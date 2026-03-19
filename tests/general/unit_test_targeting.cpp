@@ -33,6 +33,12 @@ namespace
         return omath::algorithm::get_closest_target_by_fov<Camera, Iter, FilterSig>(
                 begin, end, camera, get_pos);
     }
+
+    Iter find_nearest(const Iter begin, const Iter end, const omath::Vector3<float>& origin)
+    {
+        return omath::algorithm::get_closest_target_by_distance<Iter, FilterSig>(
+                begin, end, origin, get_pos);
+    }
 }
 
 TEST(unit_test_targeting, returns_end_for_empty_range)
@@ -148,6 +154,106 @@ TEST(unit_test_targeting, many_targets_picks_best)
     };
 
     const auto result = find_closest(targets.cbegin(), targets.cend(), camera);
+
+    ASSERT_NE(result, targets.cend());
+    EXPECT_EQ(result, targets.cbegin() + 4);
+}
+
+// ── get_closest_target_by_distance tests ────────────────────────────────────
+
+TEST(unit_test_targeting, distance_returns_end_for_empty_range)
+{
+    Targets targets;
+
+    EXPECT_EQ(find_nearest(targets.cbegin(), targets.cend(), {0, 0, 0}), targets.cend());
+}
+
+TEST(unit_test_targeting, distance_single_target)
+{
+    Targets targets = {{50.f, 0.f, 0.f}};
+
+    EXPECT_EQ(find_nearest(targets.cbegin(), targets.cend(), {0, 0, 0}), targets.cbegin());
+}
+
+TEST(unit_test_targeting, distance_picks_nearest)
+{
+    const omath::Vector3<float> origin{0.f, 0.f, 0.f};
+
+    Targets targets = {
+            {100.f, 0.f, 0.f},  // distance = 100
+            {10.f, 0.f, 0.f},   // distance = 10  (closest)
+            {50.f, 0.f, 0.f},   // distance = 50
+    };
+
+    const auto result = find_nearest(targets.cbegin(), targets.cend(), origin);
+
+    ASSERT_NE(result, targets.cend());
+    EXPECT_EQ(result, targets.cbegin() + 1);
+}
+
+TEST(unit_test_targeting, distance_considers_all_axes)
+{
+    const omath::Vector3<float> origin{0.f, 0.f, 0.f};
+
+    Targets targets = {
+            {30.f, 30.f, 30.f}, // distance = sqrt(2700) ~ 51.96
+            {50.f, 0.f, 0.f},   // distance = 50
+            {0.f, 0.f, 10.f},   // distance = 10  (closest)
+    };
+
+    const auto result = find_nearest(targets.cbegin(), targets.cend(), origin);
+
+    ASSERT_NE(result, targets.cend());
+    EXPECT_EQ(result, targets.cbegin() + 2);
+}
+
+TEST(unit_test_targeting, distance_from_nonzero_origin)
+{
+    const omath::Vector3<float> origin{100.f, 100.f, 100.f};
+
+    Targets targets = {
+            {0.f, 0.f, 0.f},       // distance = sqrt(30000) ~ 173
+            {105.f, 100.f, 100.f},  // distance = 5  (closest)
+            {200.f, 200.f, 200.f},  // distance = sqrt(30000) ~ 173
+    };
+
+    const auto result = find_nearest(targets.cbegin(), targets.cend(), origin);
+
+    ASSERT_NE(result, targets.cend());
+    EXPECT_EQ(result, targets.cbegin() + 1);
+}
+
+TEST(unit_test_targeting, distance_equidistant_returns_first)
+{
+    const omath::Vector3<float> origin{0.f, 0.f, 0.f};
+
+    // Both targets at distance 100, symmetric
+    Targets targets = {
+            {100.f, 0.f, 0.f},
+            {-100.f, 0.f, 0.f},
+    };
+
+    const auto result = find_nearest(targets.cbegin(), targets.cend(), origin);
+
+    ASSERT_NE(result, targets.cend());
+    EXPECT_EQ(result, targets.cbegin());
+}
+
+TEST(unit_test_targeting, distance_many_targets)
+{
+    const omath::Vector3<float> origin{0.f, 0.f, 0.f};
+
+    Targets targets = {
+            {500.f, 0.f, 0.f},
+            {200.f, 200.f, 0.f},
+            {100.f, 100.f, 100.f},
+            {50.f, 50.f, 50.f},
+            {1.f, 1.f, 1.f},    // distance = sqrt(3) ~ 1.73  (closest)
+            {10.f, 10.f, 10.f},
+            {80.f, 0.f, 0.f},
+    };
+
+    const auto result = find_nearest(targets.cbegin(), targets.cend(), origin);
 
     ASSERT_NE(result, targets.cend());
     EXPECT_EQ(result, targets.cbegin() + 4);
