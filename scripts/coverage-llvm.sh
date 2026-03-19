@@ -17,8 +17,23 @@ echo "[*] Output dir: ${OUTPUT_DIR}"
 find_llvm_tool() {
     local tool_name="$1"
 
-    # macOS: derive from the same directory as the active clang to guarantee
-    # the profraw format version matches the compiler that instrumented the binary.
+    # First priority: derive from the actual compiler used by cmake (CMakeCache.txt).
+    # This guarantees the profraw format version matches the instrumented binary.
+    local cache_file="${BINARY_DIR}/CMakeCache.txt"
+    if [[ -f "$cache_file" ]]; then
+        local cmake_cxx
+        cmake_cxx=$(grep '^CMAKE_CXX_COMPILER:' "$cache_file" | cut -d= -f2)
+        if [[ -n "$cmake_cxx" && -x "$cmake_cxx" ]]; then
+            local tool_path
+            tool_path="$(dirname "$cmake_cxx")/${tool_name}"
+            if [[ -x "$tool_path" ]]; then
+                echo "$tool_path"
+                return 0
+            fi
+        fi
+    fi
+
+    # macOS: derive from xcrun clang as fallback
     if [[ "$(uname)" == "Darwin" ]]; then
         local clang_path
         clang_path=$(xcrun --find clang 2>/dev/null)
@@ -65,7 +80,13 @@ echo "[*] Using: ${LLVM_COV}"
 
 # Print version info for debugging version mismatches
 if [[ "$(uname)" == "Darwin" ]]; then
-    echo "[*] Compiler: $(xcrun clang --version | head -1)"
+    echo "[*] Default clang: $(xcrun clang --version 2>&1 | head -1)"
+    # Show actual compiler used by the build (from CMakeCache.txt if available)
+    CACHE_FILE="${BINARY_DIR}/CMakeCache.txt"
+    if [[ -f "$CACHE_FILE" ]]; then
+        ACTUAL_CXX=$(grep '^CMAKE_CXX_COMPILER:' "$CACHE_FILE" | cut -d= -f2)
+        echo "[*] Build compiler: ${ACTUAL_CXX} ($(${ACTUAL_CXX} --version 2>&1 | head -1))"
+    fi
     echo "[*] profdata: $(${LLVM_PROFDATA} show --version 2>&1 | head -1 || true)"
 fi
 

@@ -370,6 +370,8 @@ jobs:
         shell: bash
         run: |
           cmake --preset ${{ matrix.preset }} \
+            -DCMAKE_C_COMPILER=$(xcrun --find clang) \
+            -DCMAKE_CXX_COMPILER=$(xcrun --find clang++) \
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
             -DOMATH_ENABLE_COVERAGE=${{ matrix.coverage == true && 'ON' || 'OFF' }} \
@@ -389,8 +391,6 @@ jobs:
         shell: bash
         run: |
           brew install lcov
-          # Clean stale profraw files before running coverage
-          find cmake-build/build/${{ matrix.preset }} -name "*.profraw" -delete 2>/dev/null || true
           chmod +x scripts/coverage-llvm.sh
           ./scripts/coverage-llvm.sh \
             "${{ github.workspace }}" \
