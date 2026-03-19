@@ -82,6 +82,11 @@ namespace omath::projection
             m_view_projection_matrix = std::nullopt;
             m_view_matrix = std::nullopt;
         }
+        [[nodiscard]]
+        ViewAnglesType calc_look_at_angles(const Vector3<float>& look_to) const
+        {
+            return TraitClass::calc_look_at_angle(m_origin, look_to);
+        }
 
         [[nodiscard]]
         Vector3<float> get_forward() const noexcept
