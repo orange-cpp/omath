@@ -138,16 +138,16 @@ namespace omath::projection
             m_projection_matrix = std::nullopt;
         }
 
-        void set_near_plane(const float near) noexcept
+        void set_near_plane(const float near_plane) noexcept
         {
-            m_near_plane_distance = near;
+            m_near_plane_distance = near_plane;
             m_view_projection_matrix = std::nullopt;
             m_projection_matrix = std::nullopt;
         }
 
-        void set_far_plane(const float far) noexcept
+        void set_far_plane(const float far_plane) noexcept
         {
-            m_far_plane_distance = far;
+            m_far_plane_distance = far_plane;
             m_view_projection_matrix = std::nullopt;
             m_projection_matrix = std::nullopt;
         }
