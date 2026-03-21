@@ -50,7 +50,7 @@ TEST(UnitTestProjection, ScreenToNdcBottomLeft)
     EXPECT_NEAR(ndc_bottom_left.y, 0.519615293f, 0.0001f);
 }
 
-TEST(UnitTestProjection, NotClipWorldToScreenInBounds)
+TEST(UnitTestProjection, UnclippedWorldToScreenInBounds)
 {
     constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
@@ -62,7 +62,7 @@ TEST(UnitTestProjection, NotClipWorldToScreenInBounds)
     EXPECT_NEAR(projected->y, 504.f, 0.001f);
 }
 
-TEST(UnitTestProjection, NotClipWorldToScreenMatchesWorldToScreenWhenInBounds)
+TEST(UnitTestProjection, UnclippedWorldToScreenMatchesWorldToScreenWhenInBounds)
 {
     constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
@@ -78,7 +78,7 @@ TEST(UnitTestProjection, NotClipWorldToScreenMatchesWorldToScreenWhenInBounds)
     EXPECT_NEAR(w2s->z, no_clip->z, 0.001f);
 }
 
-TEST(UnitTestProjection, NotClipWorldToScreenRejectsBehindCamera)
+TEST(UnitTestProjection, UnclippedWorldToScreenRejectsBehindCamera)
 {
     constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
@@ -89,30 +89,29 @@ TEST(UnitTestProjection, NotClipWorldToScreenRejectsBehindCamera)
     EXPECT_EQ(projected.error(), omath::projection::Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 }
 
-TEST(UnitTestProjection, NotClipWorldToScreenRejectsOutOfBoundsNdc)
+TEST(UnitTestProjection, UnclippedWorldToScreenAllowsOutOfBoundsNdc)
 {
     constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    // Point far to the side should exceed NDC [-1,1] bounds
+    // Point far to the side exceeds NDC [-1,1] bounds but unclipped returns it anyway
     const auto projected = cam.world_to_screen_unclipped({100.f, 5000.f, 0});
-    EXPECT_FALSE(projected.has_value());
-    EXPECT_EQ(projected.error(), omath::projection::Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
-}
-
-TEST(UnitTestProjection, WorldToScreenAllowsOutOfBoundsNdc)
-{
-    constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
-    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
-                                                  0.01f, 1000.f);
-
-    // Same point that not_clip rejects should succeed with world_to_screen
-    const auto projected = cam.world_to_screen({100.f, 5000.f, 0});
     EXPECT_TRUE(projected.has_value());
 }
 
-TEST(UnitTestProjection, NotClipWorldToScreenBottomLeftCorner)
+TEST(UnitTestProjection, WorldToScreenRejectsOutOfBoundsNdc)
+{
+    constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Same point that unclipped allows — clipped world_to_screen rejects it
+    const auto projected = cam.world_to_screen({100.f, 5000.f, 0});
+    EXPECT_FALSE(projected.has_value());
+}
+
+TEST(UnitTestProjection, UnclippedWorldToScreenBottomLeftCorner)
 {
     constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
@@ -129,7 +128,7 @@ TEST(UnitTestProjection, NotClipWorldToScreenBottomLeftCorner)
     EXPECT_NEAR(top_left->y + bottom_left->y, 1080.f, 0.001f);
 }
 
-TEST(UnitTestProjection, NotClipWorldToScreenRoundTrip)
+TEST(UnitTestProjection, UnclippedWorldToScreenRoundTrip)
 {
     std::mt19937 gen(42);
     std::uniform_real_distribution dist_fwd(100.f, 900.f);
@@ -158,7 +157,7 @@ TEST(UnitTestProjection, NotClipWorldToScreenRoundTrip)
     }
 }
 
-TEST(UnitTestProjection, NotClipWorldToScreenUnityEngine)
+TEST(UnitTestProjection, UnclippedWorldToScreenUnityEngine)
 {
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
     const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
