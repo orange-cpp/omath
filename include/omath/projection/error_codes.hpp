@@ -11,5 +11,6 @@ namespace omath::projection
     {
         WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS,
         INV_VIEW_PROJ_MAT_DET_EQ_ZERO,
+        PERSPECTIVE_DIVIDER_LESS_EQ_ZERO,
     };
 }

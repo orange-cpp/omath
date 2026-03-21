@@ -294,12 +294,21 @@ namespace omath::projection
                              * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(world_position);
 
             const auto& w = projected.at(3, 0);
-            if (w <= std::numeric_limits<float>::epsilon())
-                return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
+            constexpr auto eps = std::numeric_limits<float>::epsilon();
+            if (w <= eps)
+                return std::unexpected(Error::PERSPECTIVE_DIVIDER_LESS_EQ_ZERO);
 
             projected /= w;
 
-            if (clipping == ViewPortClipping::AUTO && is_ndc_out_of_bounds(projected))
+            // ReSharper disable once CppTooWideScope
+            const auto clipped_automatically = clipping == ViewPortClipping::AUTO && is_ndc_out_of_bounds(projected);
+            if (clipped_automatically)
+                return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
+
+            // ReSharper disable once CppTooWideScope
+            const auto clipped_manually = clipping == ViewPortClipping::MANUAL && (projected.at(2, 0) < 0.0f - eps
+                                          || projected.at(2, 0) > 1.0f + eps);
+            if (clipped_manually)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
             return Vector3<float>{projected.at(0, 0), projected.at(1, 0), projected.at(2, 0)};
