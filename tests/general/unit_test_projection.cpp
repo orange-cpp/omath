@@ -86,7 +86,7 @@ TEST(UnitTestProjection, UnclippedWorldToScreenRejectsBehindCamera)
 
     const auto projected = cam.world_to_screen_unclipped({-1000.f, 0, 0});
     EXPECT_FALSE(projected.has_value());
-    EXPECT_EQ(projected.error(), omath::projection::Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
+    EXPECT_EQ(projected.error(), omath::projection::Error::PERSPECTIVE_DIVIDER_LESS_EQ_ZERO);
 }
 
 TEST(UnitTestProjection, UnclippedWorldToScreenAllowsOutOfBoundsNdc)
