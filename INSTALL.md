@@ -28,6 +28,29 @@ target("...")
     add_packages("omath")
 ```
 
+## <img width="28px" src="https://conan.io/favicon.png" /> Using Conan
+**Note**: Support Conan for package management
+1. Install [Conan](https://conan.io/downloads)
+2. Run the following command to install the omath package:
+```
+conan install --requires="omath/[*]" --build=missing
+```
+conanfile.txt
+```ini
+[requires]
+omath/[*]
+
+[generators]
+CMakeDeps
+CMakeToolchain
+```
+CMakeLists.txt
+```cmake
+find_package(omath CONFIG REQUIRED)
+target_link_libraries(main PRIVATE omath::omath)
+```
+For more details, see the [Conan documentation](https://docs.conan.io/2/).
+
 ## <img width="28px" src="https://github.githubassets.com/favicons/favicon.svg" /> Using prebuilt binaries (GitHub Releases)
 
 **Note**: This is the fastest option if you don’t want to build from source.
