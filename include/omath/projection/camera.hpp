@@ -204,9 +204,9 @@ namespace omath::projection
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]] std::expected<Vector3<float>, Error>
-        world_to_screen(const Vector3<float>& world_position) const noexcept
+        world_to_screen(const Vector3<float>& world_position, const bool auto_clip = true) const noexcept
         {
-            const auto normalized_cords = world_to_view_port(world_position);
+            const auto normalized_cords = world_to_view_port(world_position, auto_clip);
 
             if (!normalized_cords.has_value())
                 return std::unexpected{normalized_cords.error()};
@@ -267,7 +267,7 @@ namespace omath::projection
         }
 
         [[nodiscard]] std::expected<Vector3<float>, Error>
-        world_to_view_port(const Vector3<float>& world_position) const noexcept
+        world_to_view_port(const Vector3<float>& world_position, const bool auto_clip = true) const noexcept
         {
             auto projected = get_view_projection_matrix()
                              * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(world_position);
@@ -278,13 +278,13 @@ namespace omath::projection
 
             projected /= w;
 
-            if (is_ndc_out_of_bounds(projected))
+            if (auto_clip && is_ndc_out_of_bounds(projected))
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
             return Vector3<float>{projected.at(0, 0), projected.at(1, 0), projected.at(2, 0)};
         }
         [[nodiscard]]
-        std::expected<Vector3<float>, Error> view_port_to_screen(const Vector3<float>& ndc) const noexcept
+        std::expected<Vector3<float>, Error> view_port_to_world(const Vector3<float>& ndc) const noexcept
         {
             const auto inv_view_proj = get_view_projection_matrix().inverted();
 
@@ -309,7 +309,7 @@ namespace omath::projection
         [[nodiscard]]
         std::expected<Vector3<float>, Error> screen_to_world(const Vector3<float>& screen_pos) const noexcept
         {
-            return view_port_to_screen(screen_to_ndc<screen_start>(screen_pos));
+            return view_port_to_world(screen_to_ndc<screen_start>(screen_pos));
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
