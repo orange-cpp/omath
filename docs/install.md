@@ -1,6 +1,6 @@
-# Installation
+# Installation Guide
 
-## <img width="28px" src="https://vcpkg.io/assets/mark/mark.svg" /> Using vcpkg
+## <img width="28px" src="https://vcpkg.io/assets/mark/mark.svg" /> Using vcpkg (recomended)
 **Note**: Support vcpkg for package management
 1. Install [vcpkg](https://github.com/microsoft/vcpkg)
 2. Run the following command to install the orange-math package:
@@ -28,6 +28,69 @@ target("...")
     add_packages("omath")
 ```
 
+## <img width="28px" src="https://conan.io/favicon.png" /> Using Conan
+**Note**: Support Conan for package management
+1. Install [Conan](https://conan.io/downloads)
+2. Run the following command to install the omath package:
+```
+conan install --requires="omath/[*]" --build=missing
+```
+conanfile.txt
+```ini
+[requires]
+omath/[*]
+
+[generators]
+CMakeDeps
+CMakeToolchain
+```
+CMakeLists.txt
+```cmake
+find_package(omath CONFIG REQUIRED)
+target_link_libraries(main PRIVATE omath::omath)
+```
+For more details, see the [Conan documentation](https://docs.conan.io/2/).
+
+## <img width="28px" src="https://github.githubassets.com/favicons/favicon.svg" /> Using prebuilt binaries (GitHub Releases)
+
+**Note**: This is the fastest option if you don’t want to build from source.
+
+1. **Go to the Releases page**
+    - Open the project’s GitHub **Releases** page and choose the latest version.
+
+2. **Download the correct asset for your platform**
+    - Pick the archive that matches your OS and architecture (for example: Windows x64 / Linux x64 / macOS arm64).
+
+3. **Extract the archive**
+    - You should end up with something like:
+        - `include/` (headers)
+        - `lib/` or `bin/` (library files / DLLs)
+        - sometimes `cmake/` (CMake package config)
+
+4. **Use it in your project**
+
+   ### Option A: CMake package (recommended if the release includes CMake config files)
+   If the extracted folder contains something like `lib/cmake/omath` or `cmake/omath`, you can point CMake to it:
+
+   ```cmake
+   # Example: set this to the extracted prebuilt folder
+   list(APPEND CMAKE_PREFIX_PATH "path/to/omath-prebuilt")
+
+   find_package(omath CONFIG REQUIRED)
+   target_link_libraries(main PRIVATE omath::omath)
+   ```
+   ### Option B: Manual include + link (works with any layout)
+   If there’s no CMake package config, link it manually:
+   ```cmake
+   target_include_directories(main PRIVATE "path/to/omath-prebuilt/include")
+
+    # Choose ONE depending on what you downloaded:
+    # - Static library: .lib / .a
+    # - Shared library: .dll + .lib import (Windows), .so (Linux), .dylib (macOS)
+    
+    target_link_directories(main PRIVATE "path/to/omath-prebuilt/lib")
+    target_link_libraries(main PRIVATE omath)  # or the actual library filename
+    ```
 ## <img width="28px" src="https://upload.wikimedia.org/wikipedia/commons/e/ef/CMake_logo.svg?" /> Build from source using CMake
 1. **Preparation**
 
@@ -62,7 +125,7 @@ target("...")
    Use **\<platform\>-\<build configuration\>** preset to build suitable version for yourself. Like **windows-release** or **linux-release**.
 
    | Platform Name | Build Config  |
-          |---------------|---------------|
+       |---------------|---------------|
    | windows       | release/debug |
    | linux         | release/debug |
    | darwin        | release/debug |
