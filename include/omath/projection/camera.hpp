@@ -204,9 +204,25 @@ namespace omath::projection
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]] std::expected<Vector3<float>, Error>
-        world_to_screen(const Vector3<float>& world_position, const bool auto_clip = true) const noexcept
+        world_to_screen(const Vector3<float>& world_position) const noexcept
         {
-            const auto normalized_cords = world_to_view_port(world_position, auto_clip);
+            const auto normalized_cords = world_to_view_port(world_position);
+
+            if (!normalized_cords.has_value())
+                return std::unexpected{normalized_cords.error()};
+
+            if constexpr (screen_start == ScreenStart::TOP_LEFT_CORNER)
+                return ndc_to_screen_position_from_top_left_corner(*normalized_cords);
+            else if constexpr (screen_start == ScreenStart::BOTTOM_LEFT_CORNER)
+                return ndc_to_screen_position_from_bottom_left_corner(*normalized_cords);
+            else
+                std::unreachable();
+        }
+        template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
+        [[nodiscard]] std::expected<Vector3<float>, Error>
+        not_clip_world_to_screen(const Vector3<float>& world_position) const noexcept
+        {
+            const auto normalized_cords = world_to_view_port(world_position, false);
 
             if (!normalized_cords.has_value())
                 return std::unexpected{normalized_cords.error()};
