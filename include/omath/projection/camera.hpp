@@ -224,7 +224,7 @@ namespace omath::projection
         }
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]] std::expected<Vector3<float>, Error>
-        not_clip_world_to_screen(const Vector3<float>& world_position) const noexcept
+        world_to_screen_unclipped(const Vector3<float>& world_position) const noexcept
         {
             const auto normalized_cords = world_to_view_port(world_position, ViewPortClipping::MANUAL);
 
@@ -299,7 +299,7 @@ namespace omath::projection
 
             projected /= w;
 
-            if (clipping == ViewPortClipping::MANUAL && is_ndc_out_of_bounds(projected))
+            if (clipping == ViewPortClipping::AUTO && is_ndc_out_of_bounds(projected))
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
             return Vector3<float>{projected.at(0, 0), projected.at(1, 0), projected.at(2, 0)};

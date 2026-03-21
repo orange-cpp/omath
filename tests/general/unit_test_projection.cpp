@@ -56,7 +56,7 @@ TEST(UnitTestProjection, NotClipWorldToScreenInBounds)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto projected = cam.not_clip_world_to_screen({1000.f, 0, 50.f});
+    const auto projected = cam.world_to_screen_unclipped({1000.f, 0, 50.f});
     ASSERT_TRUE(projected.has_value());
     EXPECT_NEAR(projected->x, 960.f, 0.001f);
     EXPECT_NEAR(projected->y, 504.f, 0.001f);
@@ -69,7 +69,7 @@ TEST(UnitTestProjection, NotClipWorldToScreenMatchesWorldToScreenWhenInBounds)
                                                   0.01f, 1000.f);
 
     const auto w2s = cam.world_to_screen({1000.f, 0, 50.f});
-    const auto no_clip = cam.not_clip_world_to_screen({1000.f, 0, 50.f});
+    const auto no_clip = cam.world_to_screen_unclipped({1000.f, 0, 50.f});
 
     ASSERT_TRUE(w2s.has_value());
     ASSERT_TRUE(no_clip.has_value());
@@ -84,7 +84,7 @@ TEST(UnitTestProjection, NotClipWorldToScreenRejectsBehindCamera)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto projected = cam.not_clip_world_to_screen({-1000.f, 0, 0});
+    const auto projected = cam.world_to_screen_unclipped({-1000.f, 0, 0});
     EXPECT_FALSE(projected.has_value());
     EXPECT_EQ(projected.error(), omath::projection::Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 }
@@ -96,7 +96,7 @@ TEST(UnitTestProjection, NotClipWorldToScreenRejectsOutOfBoundsNdc)
                                                   0.01f, 1000.f);
 
     // Point far to the side should exceed NDC [-1,1] bounds
-    const auto projected = cam.not_clip_world_to_screen({100.f, 5000.f, 0});
+    const auto projected = cam.world_to_screen_unclipped({100.f, 5000.f, 0});
     EXPECT_FALSE(projected.has_value());
     EXPECT_EQ(projected.error(), omath::projection::Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 }
@@ -119,8 +119,8 @@ TEST(UnitTestProjection, NotClipWorldToScreenBottomLeftCorner)
                                                   0.01f, 1000.f);
     using ScreenStart = omath::source_engine::Camera::ScreenStart;
 
-    const auto top_left = cam.not_clip_world_to_screen<ScreenStart::TOP_LEFT_CORNER>({1000.f, 0, 50.f});
-    const auto bottom_left = cam.not_clip_world_to_screen<ScreenStart::BOTTOM_LEFT_CORNER>({1000.f, 0, 50.f});
+    const auto top_left = cam.world_to_screen_unclipped<ScreenStart::TOP_LEFT_CORNER>({1000.f, 0, 50.f});
+    const auto bottom_left = cam.world_to_screen_unclipped<ScreenStart::BOTTOM_LEFT_CORNER>({1000.f, 0, 50.f});
 
     ASSERT_TRUE(top_left.has_value());
     ASSERT_TRUE(bottom_left.has_value());
@@ -143,14 +143,14 @@ TEST(UnitTestProjection, NotClipWorldToScreenRoundTrip)
     for (int i = 0; i < 100; i++)
     {
         const omath::Vector3<float> world_pos{dist_fwd(gen), dist_side(gen), dist_up(gen)};
-        const auto screen = cam.not_clip_world_to_screen(world_pos);
+        const auto screen = cam.world_to_screen_unclipped(world_pos);
         if (!screen.has_value())
             continue;
 
         const auto back_to_world = cam.screen_to_world(screen.value());
         ASSERT_TRUE(back_to_world.has_value());
 
-        const auto back_to_screen = cam.not_clip_world_to_screen(back_to_world.value());
+        const auto back_to_screen = cam.world_to_screen_unclipped(back_to_world.value());
         ASSERT_TRUE(back_to_screen.has_value());
 
         EXPECT_NEAR(screen->x, back_to_screen->x, 0.01f);
@@ -165,7 +165,7 @@ TEST(UnitTestProjection, NotClipWorldToScreenUnityEngine)
     using ScreenStart = omath::unity_engine::Camera::ScreenStart;
 
     // Point directly in front
-    const auto projected = cam.not_clip_world_to_screen<ScreenStart::BOTTOM_LEFT_CORNER>({0, 0, 500.f});
+    const auto projected = cam.world_to_screen_unclipped<ScreenStart::BOTTOM_LEFT_CORNER>({0, 0, 500.f});
     ASSERT_TRUE(projected.has_value());
     EXPECT_NEAR(projected->x, 640.f, 0.5f);
     EXPECT_NEAR(projected->y, 360.f, 0.5f);
