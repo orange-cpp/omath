@@ -36,7 +36,7 @@ namespace
         case omath::projection::Error::INV_VIEW_PROJ_MAT_DET_EQ_ZERO:
             return "inverse view-projection matrix determinant is zero";
         case omath::projection::Error::PERSPECTIVE_DIVIDER_LESS_EQ_ZERO:
-            "perspective divider is less or equal to zero";
+            return "perspective divider is less or equal to zero";
         }
         return "unknown error";
     }
