@@ -36,7 +36,11 @@ namespace omath::projection
         }
     };
     using FieldOfView = Angle<float, 0.f, 180.f, AngleFlags::Clamped>;
-
+    enum class ViewPortClipping
+    {
+        AUTO,
+        MANUAL,
+    };
     template<class T, class MatType, class ViewAnglesType>
     concept CameraEngineConcept =
             requires(const Vector3<float>& cam_origin, const Vector3<float>& look_at, const ViewAnglesType& angles,
@@ -222,7 +226,7 @@ namespace omath::projection
         [[nodiscard]] std::expected<Vector3<float>, Error>
         not_clip_world_to_screen(const Vector3<float>& world_position) const noexcept
         {
-            const auto normalized_cords = world_to_view_port(world_position, false);
+            const auto normalized_cords = world_to_view_port(world_position, ViewPortClipping::MANUAL);
 
             if (!normalized_cords.has_value())
                 return std::unexpected{normalized_cords.error()};
@@ -283,7 +287,8 @@ namespace omath::projection
         }
 
         [[nodiscard]] std::expected<Vector3<float>, Error>
-        world_to_view_port(const Vector3<float>& world_position, const bool auto_clip = true) const noexcept
+        world_to_view_port(const Vector3<float>& world_position,
+                           const ViewPortClipping& clipping = ViewPortClipping::AUTO) const noexcept
         {
             auto projected = get_view_projection_matrix()
                              * mat_column_from_vector<float, Mat4X4Type::get_store_ordering()>(world_position);
@@ -294,7 +299,7 @@ namespace omath::projection
 
             projected /= w;
 
-            if (auto_clip && is_ndc_out_of_bounds(projected))
+            if (clipping == ViewPortClipping::MANUAL && is_ndc_out_of_bounds(projected))
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
             return Vector3<float>{projected.at(0, 0), projected.at(1, 0), projected.at(2, 0)};
