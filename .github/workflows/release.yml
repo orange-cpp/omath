@@ -13,6 +13,35 @@ permissions:
 
 jobs:
   ##############################################################################
+  # 0)  Documentation  –  MkDocs
+  ##############################################################################
+  docs-release:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install mkdocs and dependencies
+        run: pip install mkdocs mkdocs-bootswatch
+
+      - name: Build documentation
+        run: mkdocs build --strict
+
+      - name: Package
+        run: tar -czf omath-docs.tar.gz -C site .
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" omath-docs.tar.gz --clobber
+
+  ##############################################################################
   # 1)  Linux  –  Clang / Ninja
   ##############################################################################
   linux-release:
