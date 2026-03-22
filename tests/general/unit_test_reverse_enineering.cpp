@@ -27,6 +27,47 @@ inline const void* get_vtable_entry(const void* obj, const std::size_t index)
     return vtable[index];
 }
 
+class BaseA
+{
+public:
+    virtual ~BaseA() = default;
+    [[nodiscard]] virtual int get_a() const { return 10; }
+    [[nodiscard]] virtual int get_a2() const { return 11; }
+};
+
+class BaseB
+{
+public:
+    virtual ~BaseB() = default;
+    [[nodiscard]] virtual int get_b() const { return 20; }
+    [[nodiscard]] virtual int get_b2() const { return 21; }
+};
+
+class MultiPlayer final : public BaseA, public BaseB
+{
+public:
+    [[nodiscard]] int get_a() const override { return 100; }
+    [[nodiscard]] int get_a2() const override { return 101; }
+    [[nodiscard]] int get_b() const override { return 200; }
+    [[nodiscard]] int get_b2() const override { return 201; }
+};
+
+class RevMultiPlayer final : omath::rev_eng::InternalReverseEngineeredObject
+{
+public:
+    // Table 0 (BaseA vtable): index 0 = destructor, 1 = get_a, 2 = get_a2
+    [[nodiscard]] int rev_get_a() const { return call_virtual_method<0, 1, int>(); }
+    [[nodiscard]] int rev_get_a2() const { return call_virtual_method<0, 2, int>(); }
+
+    // Table 1 (BaseB vtable): index 0 = destructor, 1 = get_b, 2 = get_b2
+    [[nodiscard]] int rev_get_b() const { return call_virtual_method<1, 1, int>(); }
+    [[nodiscard]] int rev_get_b2() const { return call_virtual_method<1, 2, int>(); }
+
+    // Non-const versions
+    int rev_get_a_mut() { return call_virtual_method<0, 1, int>(); }
+    int rev_get_b_mut() { return call_virtual_method<1, 1, int>(); }
+};
+
 class RevPlayer final : omath::rev_eng::InternalReverseEngineeredObject
 {
 public:
@@ -117,4 +158,45 @@ TEST(unit_test_reverse_enineering, call_virtual_method_delegates_to_call_method)
     EXPECT_EQ(1, rev->rev_foo());
     EXPECT_EQ(2, rev->rev_bar());
     EXPECT_EQ(2, rev->rev_bar_const());
+}
+
+TEST(unit_test_reverse_enineering, call_virtual_method_table_index_first_table)
+{
+    MultiPlayer mp;
+    const auto* rev = reinterpret_cast<const RevMultiPlayer*>(&mp);
+
+    EXPECT_EQ(mp.get_a(), rev->rev_get_a());
+    EXPECT_EQ(mp.get_a2(), rev->rev_get_a2());
+    EXPECT_EQ(100, rev->rev_get_a());
+    EXPECT_EQ(101, rev->rev_get_a2());
+}
+
+TEST(unit_test_reverse_enineering, call_virtual_method_table_index_second_table)
+{
+    MultiPlayer mp;
+    const auto* rev = reinterpret_cast<const RevMultiPlayer*>(&mp);
+
+    EXPECT_EQ(mp.get_b(), rev->rev_get_b());
+    EXPECT_EQ(mp.get_b2(), rev->rev_get_b2());
+    EXPECT_EQ(200, rev->rev_get_b());
+    EXPECT_EQ(201, rev->rev_get_b2());
+}
+
+TEST(unit_test_reverse_enineering, call_virtual_method_table_index_non_const)
+{
+    MultiPlayer mp;
+    auto* rev = reinterpret_cast<RevMultiPlayer*>(&mp);
+
+    EXPECT_EQ(100, rev->rev_get_a_mut());
+    EXPECT_EQ(200, rev->rev_get_b_mut());
+}
+
+TEST(unit_test_reverse_enineering, call_virtual_method_table_zero_matches_default)
+{
+    // Table 0 with the TableIndex overload should match the original non-TableIndex overload
+    MultiPlayer mp;
+    const auto* rev = reinterpret_cast<const RevMultiPlayer*>(&mp);
+
+    // Both access table 0, method index 1 — should return the same value
+    EXPECT_EQ(rev->rev_get_a(), 100);
 }
