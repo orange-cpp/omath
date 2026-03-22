@@ -30,6 +30,7 @@ inline const void* get_vtable_entry(const void* obj, const std::size_t index)
 class BaseA
 {
 public:
+    int m_field_a{42};
     [[nodiscard]] virtual int get_a() const { return 10; }
     [[nodiscard]] virtual int get_a2() const { return 11; }
 };
@@ -37,6 +38,8 @@ public:
 class BaseB
 {
 public:
+    float m_field_b{3.14f};
+    double m_field_b2{2.71};
     [[nodiscard]] virtual int get_b() const { return 20; }
     [[nodiscard]] virtual int get_b2() const { return 21; }
 };
@@ -44,28 +47,31 @@ public:
 class MultiPlayer final : public BaseA, public BaseB
 {
 public:
+    int m_own_field{999};
     [[nodiscard]] int get_a() const override { return 100; }
     [[nodiscard]] int get_a2() const override { return 101; }
     [[nodiscard]] int get_b() const override { return 200; }
     [[nodiscard]] int get_b2() const override { return 201; }
 };
 
+// BaseA layout: [vptr_a][m_field_a(int)] — sizeof(BaseA) gives the full subobject size
+// BaseB starts right after BaseA in MultiPlayer's layout
+constexpr std::ptrdiff_t BASE_B_OFFSET = static_cast<std::ptrdiff_t>(sizeof(BaseA));
+
 class RevMultiPlayer final : omath::rev_eng::InternalReverseEngineeredObject
 {
-    static constexpr std::ptrdiff_t TABLE_A_OFFSET = 0;
-    static constexpr std::ptrdiff_t TABLE_B_OFFSET = sizeof(void*);
 public:
     // Table at offset 0 (BaseA vtable): index 0 = get_a, 1 = get_a2
-    [[nodiscard]] int rev_get_a() const { return call_virtual_method<TABLE_A_OFFSET, 0, int>(); }
-    [[nodiscard]] int rev_get_a2() const { return call_virtual_method<TABLE_A_OFFSET, 1, int>(); }
+    [[nodiscard]] int rev_get_a() const { return call_virtual_method<0, 0, int>(); }
+    [[nodiscard]] int rev_get_a2() const { return call_virtual_method<0, 1, int>(); }
 
-    // Table at offset sizeof(void*) (BaseB vtable): index 0 = get_b, 1 = get_b2
-    [[nodiscard]] int rev_get_b() const { return call_virtual_method<TABLE_B_OFFSET, 0, int>(); }
-    [[nodiscard]] int rev_get_b2() const { return call_virtual_method<TABLE_B_OFFSET, 1, int>(); }
+    // Table at BaseB offset (BaseB vtable): index 0 = get_b, 1 = get_b2
+    [[nodiscard]] int rev_get_b() const { return call_virtual_method<BASE_B_OFFSET, 0, int>(); }
+    [[nodiscard]] int rev_get_b2() const { return call_virtual_method<BASE_B_OFFSET, 1, int>(); }
 
     // Non-const versions
-    int rev_get_a_mut() { return call_virtual_method<TABLE_A_OFFSET, 0, int>(); }
-    int rev_get_b_mut() { return call_virtual_method<TABLE_B_OFFSET, 0, int>(); }
+    int rev_get_a_mut() { return call_virtual_method<0, 0, int>(); }
+    int rev_get_b_mut() { return call_virtual_method<BASE_B_OFFSET, 0, int>(); }
 };
 
 class RevPlayer final : omath::rev_eng::InternalReverseEngineeredObject
@@ -158,6 +164,15 @@ TEST(unit_test_reverse_enineering, call_virtual_method_delegates_to_call_method)
     EXPECT_EQ(1, rev->rev_foo());
     EXPECT_EQ(2, rev->rev_bar());
     EXPECT_EQ(2, rev->rev_bar_const());
+}
+
+TEST(unit_test_reverse_enineering, multi_player_base_b_offset_is_correct)
+{
+    // Verify our compile-time offset matches the actual layout
+    MultiPlayer mp;
+    const auto* mp_addr = reinterpret_cast<const char*>(&mp);
+    const auto* b_addr = reinterpret_cast<const char*>(static_cast<const BaseB*>(&mp));
+    EXPECT_EQ(b_addr - mp_addr, BASE_B_OFFSET);
 }
 
 TEST(unit_test_reverse_enineering, call_virtual_method_table_index_first_table)
