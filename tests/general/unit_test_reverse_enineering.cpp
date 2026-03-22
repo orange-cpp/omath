@@ -30,7 +30,6 @@ inline const void* get_vtable_entry(const void* obj, const std::size_t index)
 class BaseA
 {
 public:
-    virtual ~BaseA() = default;
     [[nodiscard]] virtual int get_a() const { return 10; }
     [[nodiscard]] virtual int get_a2() const { return 11; }
 };
@@ -38,7 +37,6 @@ public:
 class BaseB
 {
 public:
-    virtual ~BaseB() = default;
     [[nodiscard]] virtual int get_b() const { return 20; }
     [[nodiscard]] virtual int get_b2() const { return 21; }
 };
@@ -55,17 +53,17 @@ public:
 class RevMultiPlayer final : omath::rev_eng::InternalReverseEngineeredObject
 {
 public:
-    // Table 0 (BaseA vtable): index 0 = destructor, 1 = get_a, 2 = get_a2
-    [[nodiscard]] int rev_get_a() const { return call_virtual_method<0, 1, int>(); }
-    [[nodiscard]] int rev_get_a2() const { return call_virtual_method<0, 2, int>(); }
+    // Table 0 (BaseA vtable): index 0 = get_a, 1 = get_a2
+    [[nodiscard]] int rev_get_a() const { return call_virtual_method<0, 0, int>(); }
+    [[nodiscard]] int rev_get_a2() const { return call_virtual_method<0, 1, int>(); }
 
-    // Table 1 (BaseB vtable): index 0 = destructor, 1 = get_b, 2 = get_b2
-    [[nodiscard]] int rev_get_b() const { return call_virtual_method<1, 1, int>(); }
-    [[nodiscard]] int rev_get_b2() const { return call_virtual_method<1, 2, int>(); }
+    // Table 1 (BaseB vtable): index 0 = get_b, 1 = get_b2
+    [[nodiscard]] int rev_get_b() const { return call_virtual_method<1, 0, int>(); }
+    [[nodiscard]] int rev_get_b2() const { return call_virtual_method<1, 1, int>(); }
 
     // Non-const versions
-    int rev_get_a_mut() { return call_virtual_method<0, 1, int>(); }
-    int rev_get_b_mut() { return call_virtual_method<1, 1, int>(); }
+    int rev_get_a_mut() { return call_virtual_method<0, 0, int>(); }
+    int rev_get_b_mut() { return call_virtual_method<1, 0, int>(); }
 };
 
 class RevPlayer final : omath::rev_eng::InternalReverseEngineeredObject
