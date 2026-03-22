@@ -116,6 +116,21 @@ namespace omath::rev_eng
             return call_method<ReturnType>(vtable[Id], arg_list...);
         }
 
+        template<std::size_t TableIndex, std::size_t Id, class ReturnType>
+        ReturnType call_virtual_method(auto... arg_list)
+        {
+            const auto vtable = *reinterpret_cast<void***>(
+                reinterpret_cast<std::uintptr_t>(this) + TableIndex * sizeof(std::uintptr_t));
+            return call_method<ReturnType>(vtable[Id], arg_list...);
+        }
+        template<std::size_t TableIndex, std::size_t Id, class ReturnType>
+        ReturnType call_virtual_method(auto... arg_list) const
+        {
+            const auto vtable = *reinterpret_cast<void* const* const*>(
+                reinterpret_cast<std::uintptr_t>(this) + TableIndex * sizeof(std::uintptr_t));
+            return call_method<ReturnType>(vtable[Id], arg_list...);
+        }
+
     private:
         [[nodiscard]]
         static const void* resolve_pattern(const std::string_view module_name, const std::string_view pattern)
