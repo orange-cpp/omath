@@ -119,7 +119,7 @@ namespace omath::rev_eng
         template<std::size_t TableIndex, std::size_t Id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list)
         {
-            void* sub_this = reinterpret_cast<void*>(
+            auto sub_this = reinterpret_cast<void*>(
                 reinterpret_cast<std::uintptr_t>(this) + TableIndex * sizeof(std::uintptr_t));
             const auto vtable = *reinterpret_cast<void***>(sub_this);
 #ifdef _MSC_VER
@@ -132,7 +132,7 @@ namespace omath::rev_eng
         template<std::size_t TableIndex, std::size_t Id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list) const
         {
-            const void* sub_this = reinterpret_cast<const void*>(
+            auto sub_this = reinterpret_cast<const void*>(
                 reinterpret_cast<std::uintptr_t>(this) + TableIndex * sizeof(std::uintptr_t));
             const auto vtable = *reinterpret_cast<void* const* const*>(sub_this);
 #ifdef _MSC_VER
