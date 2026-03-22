@@ -116,11 +116,11 @@ namespace omath::rev_eng
             return call_method<ReturnType>(vtable[Id], arg_list...);
         }
 
-        template<std::size_t TableIndex, std::size_t Id, class ReturnType>
+        template<std::ptrdiff_t TableOffset, std::size_t Id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list)
         {
             auto sub_this = reinterpret_cast<void*>(
-                reinterpret_cast<std::uintptr_t>(this) + TableIndex * sizeof(std::uintptr_t));
+                reinterpret_cast<std::uintptr_t>(this) + TableOffset);
             const auto vtable = *reinterpret_cast<void***>(sub_this);
 #ifdef _MSC_VER
             using Fn = ReturnType(__thiscall*)(void*, decltype(arg_list)...);
@@ -129,11 +129,11 @@ namespace omath::rev_eng
 #endif
             return reinterpret_cast<Fn>(vtable[Id])(sub_this, arg_list...);
         }
-        template<std::size_t TableIndex, std::size_t Id, class ReturnType>
+        template<std::ptrdiff_t TableOffset, std::size_t Id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list) const
         {
             auto sub_this = reinterpret_cast<const void*>(
-                reinterpret_cast<std::uintptr_t>(this) + TableIndex * sizeof(std::uintptr_t));
+                reinterpret_cast<std::uintptr_t>(this) + TableOffset);
             const auto vtable = *reinterpret_cast<void* const* const*>(sub_this);
 #ifdef _MSC_VER
             using Fn = ReturnType(__thiscall*)(const void*, decltype(arg_list)...);

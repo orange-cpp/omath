@@ -52,18 +52,20 @@ public:
 
 class RevMultiPlayer final : omath::rev_eng::InternalReverseEngineeredObject
 {
+    static constexpr std::ptrdiff_t TABLE_A_OFFSET = 0;
+    static constexpr std::ptrdiff_t TABLE_B_OFFSET = sizeof(void*);
 public:
-    // Table 0 (BaseA vtable): index 0 = get_a, 1 = get_a2
-    [[nodiscard]] int rev_get_a() const { return call_virtual_method<0, 0, int>(); }
-    [[nodiscard]] int rev_get_a2() const { return call_virtual_method<0, 1, int>(); }
+    // Table at offset 0 (BaseA vtable): index 0 = get_a, 1 = get_a2
+    [[nodiscard]] int rev_get_a() const { return call_virtual_method<TABLE_A_OFFSET, 0, int>(); }
+    [[nodiscard]] int rev_get_a2() const { return call_virtual_method<TABLE_A_OFFSET, 1, int>(); }
 
-    // Table 1 (BaseB vtable): index 0 = get_b, 1 = get_b2
-    [[nodiscard]] int rev_get_b() const { return call_virtual_method<1, 0, int>(); }
-    [[nodiscard]] int rev_get_b2() const { return call_virtual_method<1, 1, int>(); }
+    // Table at offset sizeof(void*) (BaseB vtable): index 0 = get_b, 1 = get_b2
+    [[nodiscard]] int rev_get_b() const { return call_virtual_method<TABLE_B_OFFSET, 0, int>(); }
+    [[nodiscard]] int rev_get_b2() const { return call_virtual_method<TABLE_B_OFFSET, 1, int>(); }
 
     // Non-const versions
-    int rev_get_a_mut() { return call_virtual_method<0, 0, int>(); }
-    int rev_get_b_mut() { return call_virtual_method<1, 0, int>(); }
+    int rev_get_a_mut() { return call_virtual_method<TABLE_A_OFFSET, 0, int>(); }
+    int rev_get_b_mut() { return call_virtual_method<TABLE_B_OFFSET, 0, int>(); }
 };
 
 class RevPlayer final : omath::rev_eng::InternalReverseEngineeredObject
