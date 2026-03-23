@@ -19,8 +19,9 @@ namespace omath::unreal_engine
     }
     Mat4X4 CameraTrait::calc_projection_matrix(const projection::FieldOfView& fov,
                                                const projection::ViewPort& view_port, const float near,
-                                               const float far) noexcept
+                                               const float far, const NDCDepthRange ndc_depth_range) noexcept
     {
-        return calc_perspective_projection_matrix(fov.as_degrees(), view_port.aspect_ratio(), near, far);
+        return calc_perspective_projection_matrix(fov.as_degrees(), view_port.aspect_ratio(), near, far,
+                                                  ndc_depth_range);
     }
 } // namespace omath::unreal_engine
