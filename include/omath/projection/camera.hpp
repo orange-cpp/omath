@@ -411,13 +411,6 @@ namespace omath::projection
                     return true;
             }
 
-            // w
-            if constexpr (ndc.size().rows * ndc.size().columns > 3)
-            {
-                if (data[3] < -1.0f - eps || data[3] > 1.0f + eps)
-                    return true;
-            }
-
             return false;
         }
 
