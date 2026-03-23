@@ -9,5 +9,5 @@
 
 namespace omath::cry_engine
 {
-    using Camera = projection::Camera<Mat4X4, ViewAngles, CameraTrait>;
+    using Camera = projection::Camera<Mat4X4, ViewAngles, CameraTrait, false, NDCDepthRange::ZERO_TO_ONE>;
 } // namespace omath::cry_engine
