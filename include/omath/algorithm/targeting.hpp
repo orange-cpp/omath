@@ -35,13 +35,8 @@ namespace omath::algorithm
             const auto current_target_angles = camera.calc_look_at_angles(get_position(*current));
             const auto best_target_angles = camera.calc_look_at_angles(get_position(*best_target));
 
-            const Vector2<float> current_angles_vec = {current_target_angles.pitch.as_degrees(),
-                                                       current_target_angles.yaw.as_degrees()};
-            const Vector2<float> best_angles_vec = {best_target_angles.pitch.as_degrees(),
-                                                    best_target_angles.yaw.as_degrees()};
-
-            const auto current_target_distance = camera_angles_vec.distance_to(current_angles_vec);
-            const auto best_target_distance = camera_angles_vec.distance_to(best_angles_vec);
+            const auto current_target_distance = camera_angles_vec.distance_to(current_target_angles.as_vector3());
+            const auto best_target_distance = camera_angles.as_vector3().distance_to(best_target_angles.as_vector3());
             if (current_target_distance < best_target_distance)
                 best_target = current;
         }
