@@ -36,6 +36,7 @@ namespace omath
         }
 
     public:
+        using ArithmeticType = Type;
         [[nodiscard]]
         constexpr static Angle from_degrees(const Type& degrees) noexcept
         {

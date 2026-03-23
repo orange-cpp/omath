@@ -188,7 +188,7 @@ TEST(unit_test_reverse_enineering, call_virtual_method_table_index_first_table)
 
 TEST(unit_test_reverse_enineering, call_virtual_method_table_index_second_table)
 {
-    MultiPlayer mp;
+    constexpr MultiPlayer mp;
     const auto* rev = reinterpret_cast<const RevMultiPlayer*>(&mp);
 
     EXPECT_EQ(mp.get_b(), rev->rev_get_b());
@@ -209,7 +209,7 @@ TEST(unit_test_reverse_enineering, call_virtual_method_table_index_non_const)
 TEST(unit_test_reverse_enineering, call_virtual_method_table_zero_matches_default)
 {
     // Table 0 with the TableIndex overload should match the original non-TableIndex overload
-    MultiPlayer mp;
+    constexpr MultiPlayer mp;
     const auto* rev = reinterpret_cast<const RevMultiPlayer*>(&mp);
 
     // Both access table 0, method index 1 — should return the same value

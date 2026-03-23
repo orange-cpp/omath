@@ -395,3 +395,51 @@ TEST(unit_test_opengl_engine, look_at_down)
     for (const auto& [result, etalon] : std::views::zip(dir_vector.as_array(), (-omath::opengl_engine::k_abs_up).as_array()))
         EXPECT_NEAR(result, etalon, 0.0001f);
 }
+
+TEST(unit_test_opengl, ViewAnglesAsVector3Zero)
+{
+    const omath::opengl_engine::ViewAngles angles{};
+    const auto vec = angles.as_vector3();
+
+    EXPECT_FLOAT_EQ(vec.x, 0.f);
+    EXPECT_FLOAT_EQ(vec.y, 0.f);
+    EXPECT_FLOAT_EQ(vec.z, 0.f);
+}
+
+TEST(unit_test_opengl, ViewAnglesAsVector3Values)
+{
+    const omath::opengl_engine::ViewAngles angles{
+        omath::opengl_engine::PitchAngle::from_degrees(45.f),
+        omath::opengl_engine::YawAngle::from_degrees(-90.f),
+        omath::opengl_engine::RollAngle::from_degrees(30.f)
+    };
+    const auto vec = angles.as_vector3();
+
+    EXPECT_FLOAT_EQ(vec.x, 45.f);
+    EXPECT_FLOAT_EQ(vec.y, -90.f);
+    EXPECT_FLOAT_EQ(vec.z, 30.f);
+}
+
+TEST(unit_test_opengl, ViewAnglesAsVector3ClampedPitch)
+{
+    const omath::opengl_engine::ViewAngles angles{
+        omath::opengl_engine::PitchAngle::from_degrees(120.f),
+        omath::opengl_engine::YawAngle::from_degrees(0.f),
+        omath::opengl_engine::RollAngle::from_degrees(0.f)
+    };
+    const auto vec = angles.as_vector3();
+
+    EXPECT_FLOAT_EQ(vec.x, 90.f);
+}
+
+TEST(unit_test_opengl, ViewAnglesAsVector3NormalizedYaw)
+{
+    const omath::opengl_engine::ViewAngles angles{
+        omath::opengl_engine::PitchAngle::from_degrees(0.f),
+        omath::opengl_engine::YawAngle::from_degrees(270.f),
+        omath::opengl_engine::RollAngle::from_degrees(0.f)
+    };
+    const auto vec = angles.as_vector3();
+
+    EXPECT_NEAR(vec.y, -90.f, 0.01f);
+}

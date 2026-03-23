@@ -281,3 +281,53 @@ TEST(unit_test_iw_engine, look_at_down)
     EXPECT_NEAR(dir_vector.x,- 0.017f, 0.01f);
     EXPECT_NEAR(dir_vector.y, 0.f, 0.001f);
 }
+
+TEST(unit_test_iw_engine, ViewAnglesAsVector3Zero)
+{
+    const omath::iw_engine::ViewAngles angles{};
+    const auto vec = angles.as_vector3();
+
+    EXPECT_FLOAT_EQ(vec.x, 0.f);
+    EXPECT_FLOAT_EQ(vec.y, 0.f);
+    EXPECT_FLOAT_EQ(vec.z, 0.f);
+}
+
+TEST(unit_test_iw_engine, ViewAnglesAsVector3Values)
+{
+    const omath::iw_engine::ViewAngles angles{
+        omath::iw_engine::PitchAngle::from_degrees(45.f),
+        omath::iw_engine::YawAngle::from_degrees(-90.f),
+        omath::iw_engine::RollAngle::from_degrees(30.f)
+    };
+    const auto vec = angles.as_vector3();
+
+    EXPECT_FLOAT_EQ(vec.x, 45.f);
+    EXPECT_FLOAT_EQ(vec.y, -90.f);
+    EXPECT_FLOAT_EQ(vec.z, 30.f);
+}
+
+TEST(unit_test_iw_engine, ViewAnglesAsVector3ClampedPitch)
+{
+    // Pitch is clamped to [-89, 89]
+    const omath::iw_engine::ViewAngles angles{
+        omath::iw_engine::PitchAngle::from_degrees(120.f),
+        omath::iw_engine::YawAngle::from_degrees(0.f),
+        omath::iw_engine::RollAngle::from_degrees(0.f)
+    };
+    const auto vec = angles.as_vector3();
+
+    EXPECT_FLOAT_EQ(vec.x, 89.f);
+}
+
+TEST(unit_test_iw_engine, ViewAnglesAsVector3NormalizedYaw)
+{
+    // Yaw is normalized to [-180, 180], 270 wraps to -90
+    const omath::iw_engine::ViewAngles angles{
+        omath::iw_engine::PitchAngle::from_degrees(0.f),
+        omath::iw_engine::YawAngle::from_degrees(270.f),
+        omath::iw_engine::RollAngle::from_degrees(0.f)
+    };
+    const auto vec = angles.as_vector3();
+
+    EXPECT_NEAR(vec.y, -90.f, 0.01f);
+}
