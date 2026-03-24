@@ -677,11 +677,13 @@ namespace omath
                     {0.f, 1.f / fov_half_tan, 0.f, 0.f},
                     {0.f, 0.f, far / (far - near), -(near * far) / (far - near)},
                     {0.f, 0.f, 1.f, 0.f}};
-        else
+        else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
                     {0.f, 1.f / fov_half_tan, 0.f, 0.f},
                     {0.f, 0.f, (far + near) / (far - near), -(2.f * near * far) / (far - near)},
                     {0.f, 0.f, 1.f, 0.f}};
+        else
+            std::unreachable();
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
@@ -697,11 +699,13 @@ namespace omath
                     {0.f, 1.f / fov_half_tan, 0.f, 0.f},
                     {0.f, 0.f, -far / (far - near), -(near * far) / (far - near)},
                     {0.f, 0.f, -1.f, 0.f}};
-        else
+        else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
                     {0.f, 1.f / fov_half_tan, 0.f, 0.f},
                     {0.f, 0.f, -(far + near) / (far - near), -(2.f * near * far) / (far - near)},
                     {0.f, 0.f, -1.f, 0.f}};
+        else
+            std::unreachable();
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
@@ -717,7 +721,7 @@ namespace omath
                 { 0.f,      0.f,       static_cast<Type>(1) / (far - near), -near / (far - near)            },
                 { 0.f,      0.f,       0.f,                                 1.f                             }
             };
-        else
+        else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return
             {
                 { static_cast<Type>(2) / (right - left), 0.f,       0.f,    -(right + left) / (right - left)},
@@ -725,6 +729,8 @@ namespace omath
                 { 0.f,      0.f,       static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
                 { 0.f,      0.f,       0.f,                                 1.f                             }
             };
+        else
+            std::unreachable();
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
@@ -740,7 +746,7 @@ namespace omath
                     { 0.f,      0.f,       -static_cast<Type>(1) / (far - near), -near / (far - near)            },
                     { 0.f,      0.f,       0.f,                                  1.f                             }
             };
-        else
+        else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return
             {
                     { static_cast<Type>(2) / (right - left), 0.f,       0.f,     -(right + left) / (right - left)},
@@ -748,6 +754,8 @@ namespace omath
                     { 0.f,      0.f,       -static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
                     { 0.f,      0.f,       0.f,                                  1.f                             }
             };
+        else
+            std::unreachable();
     }
     template<class T = float, MatStoreType St = MatStoreType::COLUMN_MAJOR>
    Mat<4, 4, T, St> mat_look_at_left_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)
