@@ -50,12 +50,13 @@ namespace omath::source_engine
                     {0, 0, far / (far - near), -(near * far) / (far - near)},
                     {0, 0, 1, 0},
             };
-
-        return {
-                {1.f / (aspect_ratio * fov_half_tan), 0, 0, 0},
-                {0, 1.f / (fov_half_tan), 0, 0},
-                {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
-                {0, 0, 1, 0},
-        };
+        if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
+            return {
+                    {1.f / (aspect_ratio * fov_half_tan), 0, 0, 0},
+                    {0, 1.f / (fov_half_tan), 0, 0},
+                    {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
+                    {0, 0, 1, 0},
+            };
+        std::unreachable();
     }
 } // namespace omath::source_engine
