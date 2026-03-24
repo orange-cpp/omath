@@ -41,6 +41,10 @@ namespace omath::frostbite_engine
             return mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
                     field_of_view, aspect_ratio, near, far);
 
-        return mat_perspective_left_handed(field_of_view, aspect_ratio, near, far);
+        if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
+            return mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
+                    field_of_view, aspect_ratio, near, far);
+
+        std::unreachable();
     }
 } // namespace omath::unity_engine

@@ -8,15 +8,15 @@ namespace omath::opengl_engine
 
     Vector3<float> forward_vector(const ViewAngles& angles) noexcept
     {
-        const auto vec
-                = rotation_matrix(angles) * mat_column_from_vector<float, MatStoreType::COLUMN_MAJOR>(k_abs_forward);
+        const auto vec =
+                rotation_matrix(angles) * mat_column_from_vector<float, MatStoreType::COLUMN_MAJOR>(k_abs_forward);
 
         return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
     }
     Vector3<float> right_vector(const ViewAngles& angles) noexcept
     {
-        const auto vec
-                = rotation_matrix(angles) * mat_column_from_vector<float, MatStoreType::COLUMN_MAJOR>(k_abs_right);
+        const auto vec =
+                rotation_matrix(angles) * mat_column_from_vector<float, MatStoreType::COLUMN_MAJOR>(k_abs_right);
 
         return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
     }
@@ -28,7 +28,7 @@ namespace omath::opengl_engine
     }
     Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
     {
-        return mat_look_at_right_handed(cam_origin, cam_origin+forward_vector(angles), up_vector(angles));
+        return mat_look_at_right_handed(cam_origin, cam_origin + forward_vector(angles), up_vector(angles));
     }
     Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
@@ -39,21 +39,14 @@ namespace omath::opengl_engine
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
                                               const float far, const NDCDepthRange ndc_depth_range) noexcept
     {
-        const float fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / 2.f);
+        if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
+            return mat_perspective_right_handed<float, MatStoreType::COLUMN_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
+                    field_of_view, aspect_ratio, near, far);
 
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
-            return {
-                    {1.f / (aspect_ratio * fov_half_tan), 0, 0, 0},
-                    {0, 1.f / (fov_half_tan), 0, 0},
-                    {0, 0, -far / (far - near), -(near * far) / (far - near)},
-                    {0, 0, -1, 0},
-            };
+            return mat_perspective_right_handed<float, MatStoreType::COLUMN_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+                        field_of_view, aspect_ratio, near, far);
 
-        return {
-                {1.f / (aspect_ratio * fov_half_tan), 0, 0, 0},
-                {0, 1.f / (fov_half_tan), 0, 0},
-                {0, 0, -(far + near) / (far - near), -(2.f * far * near) / (far - near)},
-                {0, 0, -1, 0},
-        };
+        std::unreachable();
     }
 } // namespace omath::opengl_engine

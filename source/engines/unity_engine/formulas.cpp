@@ -40,7 +40,10 @@ namespace omath::unity_engine
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
             return omath::mat_perspective_right_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
                     field_of_view, aspect_ratio, near, far);
-
-        return omath::mat_perspective_right_handed(field_of_view, aspect_ratio, near, far);
+        if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
+            return omath::mat_perspective_right_handed<float, MatStoreType::ROW_MAJOR,
+                                                       NDCDepthRange::NEGATIVE_ONE_TO_ONE>(field_of_view, aspect_ratio,
+                                                                                           near, far);
+        std::unreachable();
     }
 } // namespace omath::unity_engine
