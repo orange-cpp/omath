@@ -398,20 +398,19 @@ namespace omath::projection
                 return true;
             if (data[1] < -1.0f - eps || data[1] > 1.0f + eps)
                 return true;
-
-            // z range depends on the NDC depth convention
+            return is_ndc_z_value_out_of_bounds(data[3]);
+        }
+        template<class ZType>
+         [[nodiscard]]
+        constexpr static bool is_ndc_z_value_out_of_bounds(const ZType& z_ndc) noexcept
+        {
+            constexpr auto eps = std::numeric_limits<float>::epsilon();
             if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
-            {
-                if (data[2] < 0.0f - eps || data[2] > 1.0f + eps)
-                    return true;
-            }
-            else
-            {
-                if (data[2] < -1.0f - eps || data[2] > 1.0f + eps)
-                    return true;
-            }
+                return z_ndc < 0.0f - eps || z_ndc > 1.0f + eps;
+            if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
+                return z_ndc < -1.0f - eps || z_ndc > 1.0f + eps;
 
-            return false;
+            std::unreachable();
         }
 
         // NDC REPRESENTATION:
