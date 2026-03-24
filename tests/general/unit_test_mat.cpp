@@ -241,3 +241,125 @@ TEST(UnitTestMatStandalone, MatPerspectiveLeftHanded)
 
     EXPECT_TRUE(projected.at(2, 0) > -1.0f && projected.at(2, 0) < 0.f);
 }
+
+TEST(UnitTestMatStandalone, MatPerspectiveLeftHandedZeroToOne)
+{
+    const auto proj = mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+            90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    // Near plane point should map to z ~ 0
+    auto near_pt = proj * mat_column_from_vector<float>({0, 0, 0.1f});
+    near_pt /= near_pt.at(3, 0);
+    EXPECT_NEAR(near_pt.at(2, 0), 0.0f, 1e-4f);
+
+    // Far plane point should map to z ~ 1
+    auto far_pt = proj * mat_column_from_vector<float>({0, 0, 1000.f});
+    far_pt /= far_pt.at(3, 0);
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-4f);
+
+    // Mid-range point should be in [0, 1]
+    auto mid_pt = proj * mat_column_from_vector<float>({0, 0, 500.f});
+    mid_pt /= mid_pt.at(3, 0);
+    EXPECT_GT(mid_pt.at(2, 0), 0.0f);
+    EXPECT_LT(mid_pt.at(2, 0), 1.0f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveRightHandedZeroToOne)
+{
+    const auto proj = mat_perspective_right_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+            90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    // Near plane point (negative z for right-handed) should map to z ~ 0
+    auto near_pt = proj * mat_column_from_vector<float>({0, 0, -0.1f});
+    near_pt /= near_pt.at(3, 0);
+    EXPECT_NEAR(near_pt.at(2, 0), 0.0f, 1e-4f);
+
+    // Far plane point should map to z ~ 1
+    auto far_pt = proj * mat_column_from_vector<float>({0, 0, -1000.f});
+    far_pt /= far_pt.at(3, 0);
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-4f);
+
+    // Mid-range point should be in [0, 1]
+    auto mid_pt = proj * mat_column_from_vector<float>({0, 0, -500.f});
+    mid_pt /= mid_pt.at(3, 0);
+    EXPECT_GT(mid_pt.at(2, 0), 0.0f);
+    EXPECT_LT(mid_pt.at(2, 0), 1.0f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveNegativeOneToOneRange)
+{
+    // Verify existing [-1, 1] behavior with explicit template arg matches default
+    const auto proj_default = mat_perspective_left_handed(90.f, 16.f / 9.f, 0.1f, 1000.f);
+    const auto proj_explicit = mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR,
+            NDCDepthRange::NEGATIVE_ONE_TO_ONE>(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    EXPECT_EQ(proj_default, proj_explicit);
+
+    // Near plane should map to z ~ -1
+    auto near_pt = proj_default * mat_column_from_vector<float>({0, 0, 0.1f});
+    near_pt /= near_pt.at(3, 0);
+    EXPECT_NEAR(near_pt.at(2, 0), -1.0f, 1e-3f);
+
+    // Far plane should map to z ~ 1
+    auto far_pt = proj_default * mat_column_from_vector<float>({0, 0, 1000.f});
+    far_pt /= far_pt.at(3, 0);
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-3f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveZeroToOneEquanity)
+{
+    // LH and RH should produce same NDC for mirrored z
+    constexpr omath::Vector3<float> left_handed = {0, 2, 10};
+    constexpr omath::Vector3<float> right_handed = {0, 2, -10};
+
+    const auto proj_lh = mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+            90.f, 16.f / 9.f, 0.1f, 1000.f);
+    const auto proj_rh = mat_perspective_right_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+            90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    auto ndc_lh = proj_lh * mat_column_from_vector(left_handed);
+    auto ndc_rh = proj_rh * mat_column_from_vector(right_handed);
+
+    ndc_lh /= ndc_lh.at(3, 0);
+    ndc_rh /= ndc_rh.at(3, 0);
+
+    EXPECT_EQ(ndc_lh, ndc_rh);
+}
+
+TEST(UnitTestMatStandalone, MatOrthoLeftHandedZeroToOne)
+{
+    const auto ortho = mat_ortho_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+            -1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
+
+    // Near plane should map to z ~ 0
+    auto near_pt = ortho * mat_column_from_vector<float>({0, 0, 0.1f});
+    EXPECT_NEAR(near_pt.at(2, 0), 0.0f, 1e-4f);
+
+    // Far plane should map to z ~ 1
+    auto far_pt = ortho * mat_column_from_vector<float>({0, 0, 100.f});
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-4f);
+}
+
+TEST(UnitTestMatStandalone, MatOrthoRightHandedZeroToOne)
+{
+    const auto ortho = mat_ortho_right_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+            -1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
+
+    // Near plane (negative z for RH) should map to z ~ 0
+    auto near_pt = ortho * mat_column_from_vector<float>({0, 0, -0.1f});
+    EXPECT_NEAR(near_pt.at(2, 0), 0.0f, 1e-4f);
+
+    // Far plane should map to z ~ 1
+    auto far_pt = ortho * mat_column_from_vector<float>({0, 0, -100.f});
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-4f);
+}
+
+TEST(UnitTestMatStandalone, MatOrthoNegativeOneToOneDefault)
+{
+    // Verify explicit [-1, 1] matches default
+    const auto ortho_default = mat_ortho_left_handed(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
+    const auto ortho_explicit = mat_ortho_left_handed<float, MatStoreType::ROW_MAJOR,
+            NDCDepthRange::NEGATIVE_ONE_TO_ONE>(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
+
+    EXPECT_EQ(ortho_default, ortho_explicit);
+}

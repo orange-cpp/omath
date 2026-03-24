@@ -35,8 +35,12 @@ namespace omath::unity_engine
                * mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(angles.pitch);
     }
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
-                                              const float far) noexcept
+                                              const float far, const NDCDepthRange ndc_depth_range) noexcept
     {
+        if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
+            return omath::mat_perspective_right_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+                    field_of_view, aspect_ratio, near, far);
+
         return omath::mat_perspective_right_handed(field_of_view, aspect_ratio, near, far);
     }
 } // namespace omath::unity_engine

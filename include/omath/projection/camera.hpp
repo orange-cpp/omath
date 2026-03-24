@@ -44,19 +44,21 @@ namespace omath::projection
     template<class T, class MatType, class ViewAnglesType>
     concept CameraEngineConcept =
             requires(const Vector3<float>& cam_origin, const Vector3<float>& look_at, const ViewAnglesType& angles,
-                     const FieldOfView& fov, const ViewPort& viewport, float znear, float zfar) {
+                     const FieldOfView& fov, const ViewPort& viewport, float znear, float zfar,
+                     NDCDepthRange ndc_depth_range) {
                 // Presence + return types
                 { T::calc_look_at_angle(cam_origin, look_at) } -> std::same_as<ViewAnglesType>;
                 { T::calc_view_matrix(angles, cam_origin) } -> std::same_as<MatType>;
-                { T::calc_projection_matrix(fov, viewport, znear, zfar) } -> std::same_as<MatType>;
+                { T::calc_projection_matrix(fov, viewport, znear, zfar, ndc_depth_range) } -> std::same_as<MatType>;
 
                 // Enforce noexcept as in the trait declaration
                 requires noexcept(T::calc_look_at_angle(cam_origin, look_at));
                 requires noexcept(T::calc_view_matrix(angles, cam_origin));
-                requires noexcept(T::calc_projection_matrix(fov, viewport, znear, zfar));
+                requires noexcept(T::calc_projection_matrix(fov, viewport, znear, zfar, ndc_depth_range));
             };
 
-    template<class Mat4X4Type, class ViewAnglesType, class TraitClass, bool inverted_z = false>
+    template<class Mat4X4Type, class ViewAnglesType, class TraitClass, bool inverted_z = false,
+             NDCDepthRange depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     requires CameraEngineConcept<TraitClass, Mat4X4Type, ViewAnglesType>
     class Camera final
     {
@@ -135,7 +137,8 @@ namespace omath::projection
         {
             if (!m_projection_matrix.has_value())
                 m_projection_matrix = TraitClass::calc_projection_matrix(m_field_of_view, m_view_port,
-                                                                         m_near_plane_distance, m_far_plane_distance);
+                                                                         m_near_plane_distance, m_far_plane_distance,
+                                                                         depth_range);
 
             return m_projection_matrix.value();
         }
@@ -271,17 +274,36 @@ namespace omath::projection
                 return a[axis] < -a[3] && b[axis] < -b[3] && c[axis] < -c[3];
             };
 
-            // Clip volume in clip space (OpenGL-style):
+            // Clip volume in clip space:
             // -w <= x <= w
             // -w <= y <= w
-            // -w <= z <= w
+            // z_min <= z <= w  (z_min = -w for [-1,1], 0 for [0,1])
 
-            for (int i = 0; i < 3; i++)
+            // x and y planes
+            for (int i = 0; i < 2; i++)
             {
                 if (all_outside_plane(i, c0, c1, c2, false))
-                    return true; // x < -w (left)
+                    return true;
                 if (all_outside_plane(i, c0, c1, c2, true))
-                    return true; // x >  w (right)
+                    return true;
+            }
+
+            // z far plane: z > w
+            if (all_outside_plane(2, c0, c1, c2, true))
+                return true;
+
+            // z near plane
+            if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
+            {
+                // 0 <= z, so reject if z < 0 for all vertices
+                if (c0[2] < 0.f && c1[2] < 0.f && c2[2] < 0.f)
+                    return true;
+            }
+            else
+            {
+                // -w <= z
+                if (all_outside_plane(2, c0, c1, c2, false))
+                    return true;
             }
             return false;
         }
@@ -306,7 +328,8 @@ namespace omath::projection
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
             // ReSharper disable once CppTooWideScope
-            const auto clipped_manually = clipping == ViewPortClipping::MANUAL && (projected.at(2, 0) < 0.0f - eps
+            constexpr auto z_min = depth_range == NDCDepthRange::ZERO_TO_ONE ? 0.0f : -1.0f;
+            const auto clipped_manually = clipping == ViewPortClipping::MANUAL && (projected.at(2, 0) < z_min - eps
                                           || projected.at(2, 0) > 1.0f + eps);
             if (clipped_manually)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
@@ -368,8 +391,27 @@ namespace omath::projection
         [[nodiscard]] constexpr static bool is_ndc_out_of_bounds(const Type& ndc) noexcept
         {
             constexpr auto eps = std::numeric_limits<float>::epsilon();
-            return std::ranges::any_of(ndc.raw_array(),
-                                       [](const auto& val) { return val < -1.0f - eps || val > 1.0f + eps; });
+
+            const auto& data = ndc.raw_array();
+            // x and y are always in [-1, 1]
+            if (data[0] < -1.0f - eps || data[0] > 1.0f + eps)
+                return true;
+            if (data[1] < -1.0f - eps || data[1] > 1.0f + eps)
+                return true;
+
+            // z range depends on the NDC depth convention
+            if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
+            {
+                if (data[2] < 0.0f - eps || data[2] > 1.0f + eps)
+                    return true;
+            }
+            else
+            {
+                if (data[2] < -1.0f - eps || data[2] > 1.0f + eps)
+                    return true;
+            }
+
+            return false;
         }
 
         // NDC REPRESENTATION:

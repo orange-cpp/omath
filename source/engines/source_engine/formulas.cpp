@@ -36,12 +36,20 @@ namespace omath::source_engine
     }
 
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
-                                              const float far) noexcept
+                                              const float far, const NDCDepthRange ndc_depth_range) noexcept
     {
         // NOTE: Need magic number to fix fov calculation, since source inherit Quake proj matrix calculation
         constexpr auto k_multiply_factor = 0.75f;
 
         const float fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / 2.f) * k_multiply_factor;
+
+        if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
+            return {
+                    {1.f / (aspect_ratio * fov_half_tan), 0, 0, 0},
+                    {0, 1.f / (fov_half_tan), 0, 0},
+                    {0, 0, far / (far - near), -(near * far) / (far - near)},
+                    {0, 0, 1, 0},
+            };
 
         return {
                 {1.f / (aspect_ratio * fov_half_tan), 0, 0, 0},

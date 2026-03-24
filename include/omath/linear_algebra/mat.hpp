@@ -37,6 +37,12 @@ namespace omath
         COLUMN_MAJOR
     };
 
+    enum class NDCDepthRange : uint8_t
+    {
+        NEGATIVE_ONE_TO_ONE = 0, // OpenGL: [-1.0, 1.0]
+        ZERO_TO_ONE              // DirectX / Vulkan: [0.0, 1.0]
+    };
+
     template<typename M1, typename M2> concept MatTemplateEqual
             = (M1::rows == M2::rows) && (M1::columns == M2::columns)
               && std::is_same_v<typename M1::value_type, typename M2::value_type> && (M1::store_type == M2::store_type);
@@ -658,56 +664,90 @@ namespace omath
         } * mat_translation<Type, St>(-camera_origin);
     }
 
-    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
+             NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
     Mat<4, 4, Type, St> mat_perspective_left_handed(const float field_of_view, const float aspect_ratio,
                                                     const float near, const float far) noexcept
     {
         const float fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / 2.f);
 
-        return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
-                {0.f, 1.f / fov_half_tan, 0.f, 0.f},
-                {0.f, 0.f, (far + near) / (far - near), -(2.f * near * far) / (far - near)},
-                {0.f, 0.f, 1.f, 0.f}};
+        if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
+            return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
+                    {0.f, 1.f / fov_half_tan, 0.f, 0.f},
+                    {0.f, 0.f, far / (far - near), -(near * far) / (far - near)},
+                    {0.f, 0.f, 1.f, 0.f}};
+        else
+            return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
+                    {0.f, 1.f / fov_half_tan, 0.f, 0.f},
+                    {0.f, 0.f, (far + near) / (far - near), -(2.f * near * far) / (far - near)},
+                    {0.f, 0.f, 1.f, 0.f}};
     }
 
-    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
+             NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
     Mat<4, 4, Type, St> mat_perspective_right_handed(const float field_of_view, const float aspect_ratio,
                                                      const float near, const float far) noexcept
     {
         const float fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / 2.f);
 
-        return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
-                {0.f, 1.f / fov_half_tan, 0.f, 0.f},
-                {0.f, 0.f, -(far + near) / (far - near), -(2.f * near * far) / (far - near)},
-                {0.f, 0.f, -1.f, 0.f}};
+        if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
+            return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
+                    {0.f, 1.f / fov_half_tan, 0.f, 0.f},
+                    {0.f, 0.f, -far / (far - near), -(near * far) / (far - near)},
+                    {0.f, 0.f, -1.f, 0.f}};
+        else
+            return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
+                    {0.f, 1.f / fov_half_tan, 0.f, 0.f},
+                    {0.f, 0.f, -(far + near) / (far - near), -(2.f * near * far) / (far - near)},
+                    {0.f, 0.f, -1.f, 0.f}};
     }
-    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
+             NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
     Mat<4, 4, Type, St> mat_ortho_left_handed(const Type left, const Type right, const Type bottom, const Type top,
                                               const Type near, const Type far) noexcept
     {
-        return
-        {
-            { static_cast<Type>(2) / (right - left), 0.f,       0.f,    -(right + left) / (right - left)},
-            { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,    -(top + bottom) / (top - bottom)},
-            { 0.f,      0.f,       static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
-            { 0.f,      0.f,       0.f,                                 1.f                             }
-        };
+        if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
+            return
+            {
+                { static_cast<Type>(2) / (right - left), 0.f,       0.f,    -(right + left) / (right - left)},
+                { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,    -(top + bottom) / (top - bottom)},
+                { 0.f,      0.f,       static_cast<Type>(1) / (far - near), -near / (far - near)            },
+                { 0.f,      0.f,       0.f,                                 1.f                             }
+            };
+        else
+            return
+            {
+                { static_cast<Type>(2) / (right - left), 0.f,       0.f,    -(right + left) / (right - left)},
+                { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,    -(top + bottom) / (top - bottom)},
+                { 0.f,      0.f,       static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
+                { 0.f,      0.f,       0.f,                                 1.f                             }
+            };
     }
-    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
+             NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
     Mat<4, 4, Type, St> mat_ortho_right_handed(const Type left, const Type right, const Type bottom, const Type top,
                                                const Type near, const Type far) noexcept
     {
-        return
-        {
-                { static_cast<Type>(2) / (right - left), 0.f,       0.f,     -(right + left) / (right - left)},
-                { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,     -(top + bottom) / (top - bottom)},
-                { 0.f,      0.f,       -static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
-                { 0.f,      0.f,       0.f,                                  1.f                             }
-        };
+        if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
+            return
+            {
+                    { static_cast<Type>(2) / (right - left), 0.f,       0.f,     -(right + left) / (right - left)},
+                    { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,     -(top + bottom) / (top - bottom)},
+                    { 0.f,      0.f,       -static_cast<Type>(1) / (far - near), -near / (far - near)            },
+                    { 0.f,      0.f,       0.f,                                  1.f                             }
+            };
+        else
+            return
+            {
+                    { static_cast<Type>(2) / (right - left), 0.f,       0.f,     -(right + left) / (right - left)},
+                    { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,     -(top + bottom) / (top - bottom)},
+                    { 0.f,      0.f,       -static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
+                    { 0.f,      0.f,       0.f,                                  1.f                             }
+            };
     }
     template<class T = float, MatStoreType St = MatStoreType::COLUMN_MAJOR>
    Mat<4, 4, T, St> mat_look_at_left_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)

@@ -8,5 +8,5 @@
 
 namespace omath::opengl_engine
 {
-    using Camera =  projection::Camera<Mat4X4, ViewAngles, CameraTrait, true>;
+    using Camera =  projection::Camera<Mat4X4, ViewAngles, CameraTrait, true, NDCDepthRange::NEGATIVE_ONE_TO_ONE>;
 } // namespace omath::opengl_engine
