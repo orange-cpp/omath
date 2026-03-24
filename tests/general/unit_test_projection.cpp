@@ -4,6 +4,8 @@
 #include "omath/engines/unity_engine/camera.hpp"
 #include <complex>
 #include <gtest/gtest.h>
+#include <omath/3d_primitives/aabb.hpp>
+#include <omath/engines/opengl_engine/camera.hpp>
 #include <omath/engines/source_engine/camera.hpp>
 #include <omath/projection/camera.hpp>
 #include <print>
@@ -216,4 +218,296 @@ TEST(UnitTestProjection, ScreenToWorldBottomLeftCorner)
         EXPECT_NEAR(screen_cords->x, initial_screen_cords.x, 0.001f);
         EXPECT_NEAR(screen_cords->y, initial_screen_cords.y, 0.001f);
     }
+}
+
+TEST(UnitTestProjection, AabbInsideFrustumNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Small box directly in front of camera (Source Engine: +X forward, +Y left, +Z up)
+    const omath::primitives::Aabb<float> aabb{{90.f, -1.f, -1.f}, {110.f, 1.f, 1.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbBehindCameraCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box entirely behind the camera
+    const omath::primitives::Aabb<float> aabb{{-200.f, -1.f, -1.f}, {-100.f, 1.f, 1.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbBeyondFarPlaneCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box beyond far plane (1000)
+    const omath::primitives::Aabb<float> aabb{{1500.f, -1.f, -1.f}, {2000.f, 1.f, 1.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbFarLeftCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box far to the side, outside the frustum
+    const omath::primitives::Aabb<float> aabb{{90.f, 4000.f, -1.f}, {110.f, 5000.f, 1.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbFarRightCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box far to the other side, outside the frustum
+    const omath::primitives::Aabb<float> aabb{{90.f, -5000.f, -1.f}, {110.f, -4000.f, 1.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbAboveCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box far above the frustum
+    const omath::primitives::Aabb<float> aabb{{90.f, -1.f, 5000.f}, {110.f, 1.f, 6000.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbPartiallyInsideNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Large box that straddles the frustum boundary — partially inside
+    const omath::primitives::Aabb<float> aabb{{50.f, -5000.f, -5000.f}, {500.f, 5000.f, 5000.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbStraddlesNearPlaneNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box that straddles the near plane — partially in front
+    const omath::primitives::Aabb<float> aabb{{-5.f, -1.f, -1.f}, {5.f, 1.f, 1.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbStraddlesFarPlaneNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box that straddles the far plane
+    const omath::primitives::Aabb<float> aabb{{900.f, -1.f, -1.f}, {1100.f, 1.f, 1.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbCulledUnityEngine)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
+    const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
+
+    // Box in front — not culled
+    const omath::primitives::Aabb<float> inside{{-1.f, -1.f, 50.f}, {1.f, 1.f, 100.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(inside));
+
+    // Box behind — culled
+    const omath::primitives::Aabb<float> behind{{-1.f, -1.f, -200.f}, {1.f, 1.f, -100.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(behind));
+}
+
+TEST(UnitTestProjection, AabbBelowCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box far below the frustum (Source Engine: +Z up)
+    const omath::primitives::Aabb<float> aabb{{90.f, -1.f, -6000.f}, {110.f, 1.f, -5000.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbEnclosesCameraNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Huge box that fully encloses the camera
+    const omath::primitives::Aabb<float> aabb{{-500.f, -500.f, -500.f}, {500.f, 500.f, 500.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbExactlyAtNearPlaneNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box starting exactly at the near plane distance
+    const omath::primitives::Aabb<float> aabb{{0.01f, -1.f, -1.f}, {10.f, 1.f, 1.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbExactlyAtFarPlaneNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Box ending exactly at the far plane distance
+    const omath::primitives::Aabb<float> aabb{{990.f, -1.f, -1.f}, {1000.f, 1.f, 1.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbNarrowFovCulledAtEdge)
+{
+    // Narrow FOV — box that would be visible at 90 is culled at 30
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(30.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    const omath::primitives::Aabb<float> aabb{{100.f, 200.f, -1.f}, {110.f, 210.f, 1.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbWideFovNotCulledAtEdge)
+{
+    // Wide FOV — same box is visible
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(120.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    const omath::primitives::Aabb<float> aabb{{100.f, 200.f, -1.f}, {110.f, 210.f, 1.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbCameraOffOrigin)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({500.f, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f},
+                                                  fov, 0.01f, 1000.f);
+
+    // Box in front of shifted camera
+    const omath::primitives::Aabb<float> in_front{{600.f, -1.f, -1.f}, {700.f, 1.f, 1.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(in_front));
+
+    // Box behind shifted camera
+    const omath::primitives::Aabb<float> behind{{0.f, -1.f, -1.f}, {100.f, 1.f, 1.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(behind));
+}
+
+TEST(UnitTestProjection, AabbShortFarPlaneCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    // Very short far plane
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 50.f);
+
+    // Box at distance 100 — beyond the 50-unit far plane
+    const omath::primitives::Aabb<float> aabb{{90.f, -1.f, -1.f}, {110.f, 1.f, 1.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+
+    // Box at distance 30 — within range
+    const omath::primitives::Aabb<float> near_box{{25.f, -1.f, -1.f}, {35.f, 1.f, 1.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(near_box));
+}
+
+TEST(UnitTestProjection, AabbPointSizedInsideNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    // Degenerate zero-volume AABB (a point) inside the frustum
+    const omath::primitives::Aabb<float> aabb{{100.f, 0.f, 0.f}, {100.f, 0.f, 0.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbOpenGlEngineInsideNotCulled)
+{
+    // OpenGL: COLUMN_MAJOR, NEGATIVE_ONE_TO_ONE, inverted_z, forward = -Z
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Box in front of camera (OpenGL: -Z forward)
+    const omath::primitives::Aabb<float> aabb{{-1.f, -1.f, -110.f}, {1.f, 1.f, -90.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbOpenGlEngineBehindCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Box behind (OpenGL: +Z is behind the camera)
+    const omath::primitives::Aabb<float> aabb{{-1.f, -1.f, 100.f}, {1.f, 1.f, 200.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbOpenGlEngineBeyondFarCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Box beyond far plane along -Z
+    const omath::primitives::Aabb<float> aabb{{-1.f, -1.f, -2000.f}, {1.f, 1.f, -1500.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbOpenGlEngineSideCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Box far to the right (OpenGL: +X right)
+    const omath::primitives::Aabb<float> aabb{{4000.f, -1.f, -110.f}, {5000.f, 1.f, -90.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbUnityEngineBeyondFarCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
+    const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 500.f);
+
+    // Box beyond 500-unit far plane (Unity: +Z forward)
+    const omath::primitives::Aabb<float> aabb{{-1.f, -1.f, 600.f}, {1.f, 1.f, 700.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbUnityEngineSideCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
+    const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
+
+    // Box far above (Unity: +Y up)
+    const omath::primitives::Aabb<float> aabb{{-1.f, 5000.f, 50.f}, {1.f, 6000.f, 100.f}};
+    EXPECT_TRUE(cam.is_aabb_culled_by_frustum(aabb));
+}
+
+TEST(UnitTestProjection, AabbUnityEngineStraddlesNearNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
+    const auto cam = omath::unity_engine::Camera({0, 0, 0}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
+
+    // Box straddles near plane (Unity: +Z forward)
+    const omath::primitives::Aabb<float> aabb{{-1.f, -1.f, -5.f}, {1.f, 1.f, 5.f}};
+    EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
 }
