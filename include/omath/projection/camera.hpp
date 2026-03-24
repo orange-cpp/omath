@@ -405,10 +405,10 @@ namespace omath::projection
         constexpr static bool is_ndc_z_value_out_of_bounds(const ZType& z_ndc) noexcept
         {
             constexpr auto eps = std::numeric_limits<float>::epsilon();
+            if constexpr (depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
+                return z_ndc < -1.0f - eps || z_ndc > 1.0f + eps;
             if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
                 return z_ndc < 0.0f - eps || z_ndc > 1.0f + eps;
-            if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
-                return z_ndc < -1.0f - eps || z_ndc > 1.0f + eps;
 
             std::unreachable();
         }
