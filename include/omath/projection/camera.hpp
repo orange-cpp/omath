@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "omath/3d_primitives/aabb.hpp"
 #include "omath/linear_algebra/mat.hpp"
 #include "omath/linear_algebra/triangle.hpp"
 #include "omath/linear_algebra/vector3.hpp"
@@ -305,6 +306,63 @@ namespace omath::projection
                 if (all_outside_plane(2, c0, c1, c2, false))
                     return true;
             }
+            return false;
+        }
+
+        [[nodiscard]] bool is_aabb_culled_by_frustum(const primitives::Aabb<float>& aabb) const noexcept
+        {
+            const auto& m = get_view_projection_matrix();
+
+            // Gribb-Hartmann: extract 6 frustum planes from the view-projection matrix.
+            // Each plane is (a, b, c, d) such that ax + by + cz + d >= 0 means inside.
+            // For a 4x4 matrix with rows r0..r3:
+            //   Left   = r3 + r0
+            //   Right  = r3 - r0
+            //   Bottom = r3 + r1
+            //   Top    = r3 - r1
+            //   Near   = r3 + r2  ([-1,1]) or r2 ([0,1])
+            //   Far    = r3 - r2
+            struct Plane final
+            {
+                float a, b, c, d;
+            };
+
+            const auto extract_plane = [&m](const int sign, const int row) -> Plane
+            {
+                return {
+                        m.at(3, 0) + static_cast<float>(sign) * m.at(row, 0),
+                        m.at(3, 1) + static_cast<float>(sign) * m.at(row, 1),
+                        m.at(3, 2) + static_cast<float>(sign) * m.at(row, 2),
+                        m.at(3, 3) + static_cast<float>(sign) * m.at(row, 3),
+                };
+            };
+
+            std::array<Plane, 6> planes = {
+                    extract_plane(1, 0), // left
+                    extract_plane(-1, 0), // right
+                    extract_plane(1, 1), // bottom
+                    extract_plane(-1, 1), // top
+                    extract_plane(-1, 2), // far
+            };
+
+            // Near plane depends on NDC depth range
+            if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
+                planes[5] = {m.at(2, 0), m.at(2, 1), m.at(2, 2), m.at(2, 3)};
+            else
+                planes[5] = extract_plane(1, 2);
+
+            // For each plane, find the AABB corner most in the direction of the plane normal
+            // (the "positive vertex"). If it's outside, the entire AABB is outside.
+            for (const auto& [a, b, c, d] : planes)
+            {
+                const float px = a >= 0.f ? aabb.max.x : aabb.min.x;
+                const float py = b >= 0.f ? aabb.max.y : aabb.min.y;
+                const float pz = c >= 0.f ? aabb.max.z : aabb.min.z;
+
+                if (a * px + b * py + c * pz + d < 0.f)
+                    return true;
+            }
+
             return false;
         }
 
