@@ -398,7 +398,7 @@ namespace omath::projection
                 return true;
             if (data[1] < -1.0f - eps || data[1] > 1.0f + eps)
                 return true;
-            return is_ndc_z_value_out_of_bounds(data[3]);
+            return is_ndc_z_value_out_of_bounds(data[2]);
         }
         template<class ZType>
          [[nodiscard]]
