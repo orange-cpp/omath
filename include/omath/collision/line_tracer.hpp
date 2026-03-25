@@ -3,6 +3,7 @@
 //
 #pragma once
 
+#include "omath/linear_algebra/aabb.hpp"
 #include "omath/linear_algebra/triangle.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 
@@ -34,6 +35,7 @@ namespace omath::collision
     class LineTracer final
     {
         using TriangleType = Triangle<typename RayType::VectorType>;
+        using AABBType = AABB<typename RayType::VectorType>;
 
     public:
         LineTracer() = delete;
@@ -85,6 +87,54 @@ namespace omath::collision
                 return ray.end;
 
             return ray.start + ray_dir * t_hit;
+        }
+
+        // Slab method ray-AABB intersection
+        // Returns the hit point on the AABB surface, or ray.end if no intersection
+        [[nodiscard]]
+        constexpr static auto get_ray_hit_point(const RayType& ray, const AABBType& aabb) noexcept
+        {
+            using T = typename RayType::VectorType::ContainedType;
+            const auto dir = ray.direction_vector();
+
+            auto t_min = -std::numeric_limits<T>::infinity();
+            auto t_max = std::numeric_limits<T>::infinity();
+
+            const auto process_axis = [&](const T& d, const T& origin, const T& box_min,
+                                          const T& box_max) -> bool
+            {
+                constexpr T k_epsilon = std::numeric_limits<T>::epsilon();
+                if (std::abs(d) < k_epsilon)
+                    return origin >= box_min && origin <= box_max;
+
+                const T inv = T(1) / d;
+                T t0 = (box_min - origin) * inv;
+                T t1 = (box_max - origin) * inv;
+                if (t0 > t1)
+                    std::swap(t0, t1);
+
+                t_min = std::max(t_min, t0);
+                t_max = std::min(t_max, t1);
+                return t_min <= t_max;
+            };
+
+            if (!process_axis(dir.x, ray.start.x, aabb.min.x, aabb.max.x))
+                return ray.end;
+            if (!process_axis(dir.y, ray.start.y, aabb.min.y, aabb.max.y))
+                return ray.end;
+            if (!process_axis(dir.z, ray.start.z, aabb.min.z, aabb.max.z))
+                return ray.end;
+
+            // t_hit: use entry point if in front of origin, otherwise 0 (started inside)
+            const T t_hit = std::max(T(0), t_min);
+
+            if (t_max < T(0))
+                return ray.end; // box entirely behind origin
+
+            if (!ray.infinite_length && t_hit > T(1))
+                return ray.end; // box beyond ray endpoint
+
+            return ray.start + dir * t_hit;
         }
 
         template<class MeshType>
