@@ -12,5 +12,17 @@ namespace omath::primitives
     {
         Vector3<Type> min;
         Vector3<Type> max;
+
+        [[nodiscard]]
+        constexpr Vector3<Type> center() const noexcept
+        {
+            return (min + max) / static_cast<Type>(2);
+        }
+
+        [[nodiscard]]
+        constexpr Vector3<Type> extents() const noexcept
+        {
+            return (max - min) / static_cast<Type>(2);
+        }
     };
 } // namespace omath::primitives

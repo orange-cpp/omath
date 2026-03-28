@@ -2,14 +2,13 @@
 // Created by Vlad on 3/25/2025.
 //
 #include "omath/collision/line_tracer.hpp"
-#include "omath/linear_algebra/aabb.hpp"
-#include "omath/linear_algebra/vector3.hpp"
+#include "omath/3d_primitives/aabb.hpp"
 #include <gtest/gtest.h>
 
 using Vec3 = omath::Vector3<float>;
 using Ray = omath::collision::Ray<>;
 using LineTracer = omath::collision::LineTracer<>;
-using AABB = omath::AABB<Vec3>;
+using AABB = omath::primitives::Aabb<float>;
 
 static Ray make_ray(Vec3 start, Vec3 end, bool infinite = false)
 {

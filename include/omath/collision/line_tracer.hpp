@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "omath/linear_algebra/aabb.hpp"
+#include "omath/3d_primitives/aabb.hpp"
 #include "omath/linear_algebra/triangle.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 
@@ -35,7 +35,7 @@ namespace omath::collision
     class LineTracer final
     {
         using TriangleType = Triangle<typename RayType::VectorType>;
-        using AABBType = AABB<typename RayType::VectorType>;
+        using AABBType = primitives::Aabb<typename RayType::VectorType::ContainedType>;
 
     public:
         LineTracer() = delete;
