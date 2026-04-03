@@ -1,32 +1,36 @@
-## 🤝 Contributing to OMath or other Orange's Projects
+# Contributing
 
-### ❕ Prerequisites
+## Prerequisites
 
-- A working up-to-date OMath installation
-- C++ knowledge
-- Git knowledge
-- Ability to ask for help (Feel free to create empty pull-request or PM a maintainer
-  in [Telegram](https://t.me/orange_cpp))
+- C++ compiler with C++23 support (Clang 18+, GCC 14+, MSVC 19.38+)
+- CMake 3.25+
+- Git
+- Familiarity with the codebase (see `INSTALL.md` for setup)
 
-### ⏬ Setting up OMath
+For questions, create a draft PR or reach out via [Telegram](https://t.me/orange_cpp).
 
-Please read INSTALL.md file in repository
+## Workflow
 
-### 🔀 Pull requests and Branches
+1. [Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) the repository.
+2. Create a feature branch from `main`.
+3. Make your changes, ensuring tests pass.
+4. Open a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) against `main`.
 
-In order to send code back to the official OMath repository, you must first create a copy of OMath on your github
-account ([fork](https://help.github.com/articles/creating-a-pull-request-from-a-fork/)) and
-then [create a pull request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/) back to OMath.
+## Code Style
 
-OMath development is performed on multiple branches. Changes are then pull requested into master. By default, changes
-merged into master will not roll out to stable build users unless the `stable` tag is updated.
+Follow the project `.clang-format`. Run `clang-format` before committing.
 
-### 📜 Code-Style
+## Building
 
-The orange code-style can be found in `.clang-format`.
+Use one of the CMake presets defined in `CMakePresets.json`:
 
-### 📦 Building
+```bash
+cmake --preset <preset-name> -DOMATH_BUILD_TESTS=ON
+cmake --build --preset <preset-name>
+```
 
-OMath has already created the  `cmake-build` and `out` directories where cmake/bin files are located. By default, you
-can build OMath by running `cmake --build cmake-build/build/windows-release --target omath -j 6` in the source
-directory.
+Run `cmake --list-presets` to see available configurations.
+
+## Tests
+
+All new functionality must include unit tests. Run the test binary after building to verify nothing is broken.
