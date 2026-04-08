@@ -71,18 +71,18 @@ void drawChar(char c, float x, float y, float scale, const Color& color, std::ve
         lines.push_back(x + x1 * w);
         lines.push_back(y + y1 * h);
         lines.push_back(0.0f);
-        lines.push_back(color.x);
-        lines.push_back(color.y);
-        lines.push_back(color.z);
+        lines.push_back(color.value().x);
+        lines.push_back(color.value().y);
+        lines.push_back(color.value().z);
         lines.push_back(1.0f); // size
         lines.push_back(1.0f); // isLine
 
         lines.push_back(x + x2 * w);
         lines.push_back(y + y2 * h);
         lines.push_back(0.0f);
-        lines.push_back(color.x);
-        lines.push_back(color.y);
-        lines.push_back(color.z);
+        lines.push_back(color.value().x);
+        lines.push_back(color.value().y);
+        lines.push_back(color.value().z);
         lines.push_back(1.0f); // size
         lines.push_back(1.0f); // isLine
     };
