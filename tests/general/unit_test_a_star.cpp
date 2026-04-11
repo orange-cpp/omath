@@ -40,8 +40,9 @@ TEST(AStarExtra, TrivialNeighbor)
     nav.m_vertex_map[v2] = {v1};
 
     const auto path = Astar::find_path(v1, v2, nav);
-    ASSERT_EQ(path.size(), 1u);
-    EXPECT_EQ(path.front(), v2);
+    ASSERT_EQ(path.size(), 2u);
+    EXPECT_EQ(path.front(), v1);
+    EXPECT_EQ(path.back(), v2);
 }
 
 TEST(AStarExtra, StartEqualsGoal)
@@ -101,7 +102,7 @@ TEST(AStarExtra, LongerPathAvoidsBlock)
     constexpr Vector3<float> goal = idx(2, 1);
     const auto path = Astar::find_path(start, goal, nav);
     ASSERT_FALSE(path.empty());
-    EXPECT_EQ(path.front(), goal);
+    EXPECT_EQ(path.back(), goal);
 }
 
 TEST(AstarTests, TrivialDirectNeighborPath)
@@ -114,8 +115,9 @@ TEST(AstarTests, TrivialDirectNeighborPath)
     nav.m_vertex_map.emplace(v2, std::vector<Vector3<float>>{v1});
 
     const auto path = Astar::find_path(v1, v2, nav);
-    ASSERT_EQ(path.size(), 1u);
-    EXPECT_EQ(path.front(), v2);
+    ASSERT_EQ(path.size(), 2u);
+    EXPECT_EQ(path.front(), v1);
+    EXPECT_EQ(path.back(), v2);
 }
 
 TEST(AstarTests, NoPathWhenDisconnected)
