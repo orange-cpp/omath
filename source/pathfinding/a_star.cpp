@@ -87,10 +87,10 @@ namespace omath::pathfinding
 
             const auto current_node = current_node_it->second;
 
+            closed_list.emplace(current, current_node);
+
             if (current == end_vertex)
                 return reconstruct_final_path(closed_list, current);
-
-            closed_list.emplace(current, current_node);
 
             for (const auto& neighbor: nav_mesh.get_neighbors(current))
             {
