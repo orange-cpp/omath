@@ -28,4 +28,8 @@ namespace omath::pathfinding
         else
             m_on_next_path_node->operator()(path.front());
     }
+    void WalkBot::on_path(std::function<void(const Vector3<float>&)> callback)
+    {
+        m_on_next_path_node = callback;
+    }
 } // namespace omath::pathfinding

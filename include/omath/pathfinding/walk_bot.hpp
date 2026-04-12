@@ -12,9 +12,9 @@ namespace omath::pathfinding
     public:
         void update(const Vector3<float>& bot_position, const Vector3<float>& target_position, float min_node_distance) const;
 
+        void on_path(std::function<void(const Vector3<float>&)> callback);
     private:
         std::weak_ptr<NavigationMesh> m_mav_mesh;
-        float m_min_distance_to_path_point;
         std::optional<std::function<void(const Vector3<float>&)>> m_on_next_path_node = nullptr;
     };
 } // namespace omath::pathfinding
