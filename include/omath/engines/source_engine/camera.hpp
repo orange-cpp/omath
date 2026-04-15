@@ -7,5 +7,5 @@
 #include "traits/camera_trait.hpp"
 namespace omath::source_engine
 {
-    using Camera =  projection::Camera<Mat4X4, ViewAngles, CameraTrait, false, NDCDepthRange::ZERO_TO_ONE>;
+    using Camera =  projection::Camera<Mat4X4, ViewAngles, CameraTrait, NDCDepthRange::ZERO_TO_ONE>;
 } // namespace omath::source_engine
