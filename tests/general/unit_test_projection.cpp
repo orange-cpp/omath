@@ -5,8 +5,12 @@
 #include <complex>
 #include <gtest/gtest.h>
 #include <omath/3d_primitives/aabb.hpp>
+#include <omath/engines/cry_engine/camera.hpp>
+#include <omath/engines/frostbite_engine/camera.hpp>
+#include <omath/engines/iw_engine/camera.hpp>
 #include <omath/engines/opengl_engine/camera.hpp>
 #include <omath/engines/source_engine/camera.hpp>
+#include <omath/engines/unreal_engine/camera.hpp>
 #include <omath/projection/camera.hpp>
 #include <print>
 #include <random>
@@ -781,4 +785,159 @@ TEST(UnitTestProjection, Unity_CalcOriginFromViewMatrix_WithRotation)
     EXPECT_NEAR(origin.x, 300.f, k_eps);
     EXPECT_NEAR(origin.y, -100.f, k_eps);
     EXPECT_NEAR(origin.z, 75.f, k_eps);
+}
+// ---- Camera basis vectors at zero angles ----
+
+TEST(UnitTestProjection, SourceEngine_ZeroAngles_BasisVectors)
+{
+    constexpr float k_eps = 1e-5f;
+    const auto cam = omath::source_engine::Camera({}, {}, {1920.f, 1080.f},
+                                                  omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
+    const auto fwd   = cam.get_forward();
+    const auto right = cam.get_right();
+    const auto up    = cam.get_up();
+
+    EXPECT_NEAR(fwd.x,   omath::source_engine::k_abs_forward.x, k_eps);
+    EXPECT_NEAR(fwd.y,   omath::source_engine::k_abs_forward.y, k_eps);
+    EXPECT_NEAR(fwd.z,   omath::source_engine::k_abs_forward.z, k_eps);
+
+    EXPECT_NEAR(right.x, omath::source_engine::k_abs_right.x, k_eps);
+    EXPECT_NEAR(right.y, omath::source_engine::k_abs_right.y, k_eps);
+    EXPECT_NEAR(right.z, omath::source_engine::k_abs_right.z, k_eps);
+
+    EXPECT_NEAR(up.x,    omath::source_engine::k_abs_up.x, k_eps);
+    EXPECT_NEAR(up.y,    omath::source_engine::k_abs_up.y, k_eps);
+    EXPECT_NEAR(up.z,    omath::source_engine::k_abs_up.z, k_eps);
+}
+
+TEST(UnitTestProjection, UnityEngine_ZeroAngles_BasisVectors)
+{
+    constexpr float k_eps = 1e-5f;
+    const auto cam = omath::unity_engine::Camera({}, {}, {1280.f, 720.f},
+                                                 omath::projection::FieldOfView::from_degrees(60.f), 0.03f, 1000.f);
+    const auto fwd   = cam.get_forward();
+    const auto right = cam.get_right();
+    const auto up    = cam.get_up();
+
+    EXPECT_NEAR(fwd.x,   omath::unity_engine::k_abs_forward.x, k_eps);
+    EXPECT_NEAR(fwd.y,   omath::unity_engine::k_abs_forward.y, k_eps);
+    EXPECT_NEAR(fwd.z,   omath::unity_engine::k_abs_forward.z, k_eps);
+
+    EXPECT_NEAR(right.x, omath::unity_engine::k_abs_right.x, k_eps);
+    EXPECT_NEAR(right.y, omath::unity_engine::k_abs_right.y, k_eps);
+    EXPECT_NEAR(right.z, omath::unity_engine::k_abs_right.z, k_eps);
+
+    EXPECT_NEAR(up.x,    omath::unity_engine::k_abs_up.x, k_eps);
+    EXPECT_NEAR(up.y,    omath::unity_engine::k_abs_up.y, k_eps);
+    EXPECT_NEAR(up.z,    omath::unity_engine::k_abs_up.z, k_eps);
+}
+
+TEST(UnitTestProjection, OpenGLEngine_ZeroAngles_BasisVectors)
+{
+    constexpr float k_eps = 1e-5f;
+    const auto cam = omath::opengl_engine::Camera({}, {}, {1920.f, 1080.f},
+                                                  omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
+    const auto fwd   = cam.get_forward();
+    const auto right = cam.get_right();
+    const auto up    = cam.get_up();
+
+    EXPECT_NEAR(fwd.x,   omath::opengl_engine::k_abs_forward.x, k_eps);
+    EXPECT_NEAR(fwd.y,   omath::opengl_engine::k_abs_forward.y, k_eps);
+    EXPECT_NEAR(fwd.z,   omath::opengl_engine::k_abs_forward.z, k_eps);
+
+    EXPECT_NEAR(right.x, omath::opengl_engine::k_abs_right.x, k_eps);
+    EXPECT_NEAR(right.y, omath::opengl_engine::k_abs_right.y, k_eps);
+    EXPECT_NEAR(right.z, omath::opengl_engine::k_abs_right.z, k_eps);
+
+    EXPECT_NEAR(up.x,    omath::opengl_engine::k_abs_up.x, k_eps);
+    EXPECT_NEAR(up.y,    omath::opengl_engine::k_abs_up.y, k_eps);
+    EXPECT_NEAR(up.z,    omath::opengl_engine::k_abs_up.z, k_eps);
+}
+
+TEST(UnitTestProjection, UnrealEngine_ZeroAngles_BasisVectors)
+{
+    constexpr float k_eps = 1e-5f;
+    const auto cam = omath::unreal_engine::Camera({}, {}, {1920.f, 1080.f},
+                                                  omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
+    const auto fwd   = cam.get_forward();
+    const auto right = cam.get_right();
+    const auto up    = cam.get_up();
+
+    EXPECT_NEAR(fwd.x,   omath::unreal_engine::k_abs_forward.x, k_eps);
+    EXPECT_NEAR(fwd.y,   omath::unreal_engine::k_abs_forward.y, k_eps);
+    EXPECT_NEAR(fwd.z,   omath::unreal_engine::k_abs_forward.z, k_eps);
+
+    EXPECT_NEAR(right.x, omath::unreal_engine::k_abs_right.x, k_eps);
+    EXPECT_NEAR(right.y, omath::unreal_engine::k_abs_right.y, k_eps);
+    EXPECT_NEAR(right.z, omath::unreal_engine::k_abs_right.z, k_eps);
+
+    EXPECT_NEAR(up.x,    omath::unreal_engine::k_abs_up.x, k_eps);
+    EXPECT_NEAR(up.y,    omath::unreal_engine::k_abs_up.y, k_eps);
+    EXPECT_NEAR(up.z,    omath::unreal_engine::k_abs_up.z, k_eps);
+}
+
+TEST(UnitTestProjection, FrostbiteEngine_ZeroAngles_BasisVectors)
+{
+    constexpr float k_eps = 1e-5f;
+    const auto cam = omath::frostbite_engine::Camera({}, {}, {1920.f, 1080.f},
+                                                     omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
+    const auto fwd   = cam.get_forward();
+    const auto right = cam.get_right();
+    const auto up    = cam.get_up();
+
+    EXPECT_NEAR(fwd.x,   omath::frostbite_engine::k_abs_forward.x, k_eps);
+    EXPECT_NEAR(fwd.y,   omath::frostbite_engine::k_abs_forward.y, k_eps);
+    EXPECT_NEAR(fwd.z,   omath::frostbite_engine::k_abs_forward.z, k_eps);
+
+    EXPECT_NEAR(right.x, omath::frostbite_engine::k_abs_right.x, k_eps);
+    EXPECT_NEAR(right.y, omath::frostbite_engine::k_abs_right.y, k_eps);
+    EXPECT_NEAR(right.z, omath::frostbite_engine::k_abs_right.z, k_eps);
+
+    EXPECT_NEAR(up.x,    omath::frostbite_engine::k_abs_up.x, k_eps);
+    EXPECT_NEAR(up.y,    omath::frostbite_engine::k_abs_up.y, k_eps);
+    EXPECT_NEAR(up.z,    omath::frostbite_engine::k_abs_up.z, k_eps);
+}
+
+TEST(UnitTestProjection, CryEngine_ZeroAngles_BasisVectors)
+{
+    constexpr float k_eps = 1e-5f;
+    const auto cam = omath::cry_engine::Camera({}, {}, {1920.f, 1080.f},
+                                               omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
+    const auto fwd   = cam.get_forward();
+    const auto right = cam.get_right();
+    const auto up    = cam.get_up();
+
+    EXPECT_NEAR(fwd.x,   omath::cry_engine::k_abs_forward.x, k_eps);
+    EXPECT_NEAR(fwd.y,   omath::cry_engine::k_abs_forward.y, k_eps);
+    EXPECT_NEAR(fwd.z,   omath::cry_engine::k_abs_forward.z, k_eps);
+
+    EXPECT_NEAR(right.x, omath::cry_engine::k_abs_right.x, k_eps);
+    EXPECT_NEAR(right.y, omath::cry_engine::k_abs_right.y, k_eps);
+    EXPECT_NEAR(right.z, omath::cry_engine::k_abs_right.z, k_eps);
+
+    EXPECT_NEAR(up.x,    omath::cry_engine::k_abs_up.x, k_eps);
+    EXPECT_NEAR(up.y,    omath::cry_engine::k_abs_up.y, k_eps);
+    EXPECT_NEAR(up.z,    omath::cry_engine::k_abs_up.z, k_eps);
+}
+
+TEST(UnitTestProjection, IWEngine_ZeroAngles_BasisVectors)
+{
+    constexpr float k_eps = 1e-5f;
+    const auto cam = omath::iw_engine::Camera({}, {}, {1920.f, 1080.f},
+                                              omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
+    const auto fwd   = cam.get_forward();
+    const auto right = cam.get_right();
+    const auto up    = cam.get_up();
+
+    EXPECT_NEAR(fwd.x,   omath::iw_engine::k_abs_forward.x, k_eps);
+    EXPECT_NEAR(fwd.y,   omath::iw_engine::k_abs_forward.y, k_eps);
+    EXPECT_NEAR(fwd.z,   omath::iw_engine::k_abs_forward.z, k_eps);
+
+    EXPECT_NEAR(right.x, omath::iw_engine::k_abs_right.x, k_eps);
+    EXPECT_NEAR(right.y, omath::iw_engine::k_abs_right.y, k_eps);
+    EXPECT_NEAR(right.z, omath::iw_engine::k_abs_right.z, k_eps);
+
+    EXPECT_NEAR(up.x,    omath::iw_engine::k_abs_up.x, k_eps);
+    EXPECT_NEAR(up.y,    omath::iw_engine::k_abs_up.y, k_eps);
+    EXPECT_NEAR(up.z,    omath::iw_engine::k_abs_up.z, k_eps);
 }

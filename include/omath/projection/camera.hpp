@@ -42,6 +42,12 @@ namespace omath::projection
         AUTO,
         MANUAL,
     };
+    struct CameraAxes
+    {
+        bool inverted_forward = false;
+        bool inverted_right   = false;
+    };
+
     template<class T, class MatType, class ViewAnglesType>
     concept CameraEngineConcept =
             requires(const Vector3<float>& cam_origin, const Vector3<float>& look_at, const ViewAnglesType& angles,
@@ -58,8 +64,9 @@ namespace omath::projection
                 requires noexcept(T::calc_projection_matrix(fov, viewport, znear, zfar, ndc_depth_range));
             };
 
-    template<class Mat4X4Type, class ViewAnglesType, class TraitClass, bool inverted_z = false,
-             NDCDepthRange depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
+    template<class Mat4X4Type, class ViewAnglesType, class TraitClass,
+             NDCDepthRange depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE,
+             CameraAxes axes = {}>
     requires CameraEngineConcept<TraitClass, Mat4X4Type, ViewAnglesType>
     class Camera final
     {
@@ -87,7 +94,7 @@ namespace omath::projection
         static ViewAnglesType calc_view_angles_from_view_matrix(const Mat4X4Type& view_matrix) noexcept
         {
             Vector3<float> forward_vector = {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
-            if constexpr (inverted_z)
+            if constexpr (axes.inverted_forward)
                 forward_vector = -forward_vector;
             return TraitClass::calc_look_at_angle({}, forward_vector);
         }
@@ -121,7 +128,7 @@ namespace omath::projection
         {
             const auto& view_matrix = get_view_matrix();
 
-            if constexpr (inverted_z)
+            if constexpr (axes.inverted_forward)
                 return -Vector3<float>{view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
             return {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
         }
@@ -130,6 +137,8 @@ namespace omath::projection
         Vector3<float> get_right() const noexcept
         {
             const auto& view_matrix = get_view_matrix();
+            if constexpr (axes.inverted_right)
+                return -Vector3<float>{view_matrix[0, 0], view_matrix[0, 1], view_matrix[0, 2]};
             return {view_matrix[0, 0], view_matrix[0, 1], view_matrix[0, 2]};
         }
 
