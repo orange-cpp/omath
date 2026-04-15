@@ -10,4 +10,4 @@
 namespace omath::frostbite_engine
 {
     using Camera =  projection::Camera<Mat4X4, ViewAngles, CameraTrait, NDCDepthRange::ZERO_TO_ONE>;
-} // namespace omath::unity_engine
+} // namespace omath::frostbite_engine
