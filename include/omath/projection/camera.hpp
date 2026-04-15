@@ -86,9 +86,24 @@ namespace omath::projection
         [[nodiscard]]
         static ViewAnglesType calc_view_angles_from_view_matrix(const Mat4X4Type& view_matrix) noexcept
         {
-            const Vector3<float> forward_vector = {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
+            Vector3<float> forward_vector = {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
+            if constexpr (inverted_z)
+                forward_vector = -forward_vector;
             return TraitClass::calc_look_at_angle({}, forward_vector);
         }
+
+        [[nodiscard]]
+        static Vector3<float> calc_origin_from_view_matrix(const Mat4X4Type& view_matrix) noexcept
+        {
+            // The view matrix is R * T(-origin), so the last column stores t = -R * origin.
+            // Recovering origin: origin = -R^T * t
+            return {
+                -(view_matrix[0, 0] * view_matrix[0, 3] + view_matrix[1, 0] * view_matrix[1, 3] + view_matrix[2, 0] * view_matrix[2, 3]),
+                -(view_matrix[0, 1] * view_matrix[0, 3] + view_matrix[1, 1] * view_matrix[1, 3] + view_matrix[2, 1] * view_matrix[2, 3]),
+                -(view_matrix[0, 2] * view_matrix[0, 3] + view_matrix[1, 2] * view_matrix[1, 3] + view_matrix[2, 2] * view_matrix[2, 3]),
+            };
+        }
+
         void look_at(const Vector3<float>& target)
         {
             m_view_angles = TraitClass::calc_look_at_angle(m_origin, target);
