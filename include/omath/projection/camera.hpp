@@ -83,6 +83,12 @@ namespace omath::projection
         {
         }
 
+        [[nodiscard]]
+        static ViewAnglesType calc_view_angles_from_view_matrix(const Mat4X4Type& view_matrix) noexcept
+        {
+            const Vector3<float> forward_vector = {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
+            return TraitClass::calc_look_at_angle({}, forward_vector);
+        }
         void look_at(const Vector3<float>& target)
         {
             m_view_angles = TraitClass::calc_look_at_angle(m_origin, target);
