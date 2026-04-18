@@ -90,6 +90,25 @@ namespace omath::projection
         {
         }
 
+        struct ProjectionParams
+        {
+            FieldOfView fov;
+            float aspect_ratio;
+        };
+
+        // Recovers vertical FOV and aspect ratio from a perspective projection matrix
+        // built by any of the engine traits.  Both variants (ZERO_TO_ONE and
+        // NEGATIVE_ONE_TO_ONE) share the same m[0,0]/m[1,1] layout, so this works
+        // regardless of the NDC depth range.
+        [[nodiscard]]
+        static ProjectionParams extract_projection_params(const Mat4X4Type& proj_matrix) noexcept
+        {
+            // m[1,1] == 1 / tan(fov/2)  =>  fov = 2 * atan(1 / m[1,1])
+            const float f = proj_matrix.at(1, 1);
+            // m[0,0] == m[1,1] / aspect_ratio  =>  aspect = m[1,1] / m[0,0]
+            return {FieldOfView::from_radians(2.f * std::atan(1.f / f)), f / proj_matrix.at(0, 0)};
+        }
+
         [[nodiscard]]
         static ViewAnglesType calc_view_angles_from_view_matrix(const Mat4X4Type& view_matrix) noexcept
         {

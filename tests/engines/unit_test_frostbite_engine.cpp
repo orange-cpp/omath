@@ -453,3 +453,184 @@ TEST(unit_test_frostbite_engine, ViewAnglesAsVector3NormalizedYaw)
 
     EXPECT_NEAR(vec.y, -90.f, 0.01f);
 }
+
+// ---------------------------------------------------------------------------
+// extract_projection_params
+// ---------------------------------------------------------------------------
+
+// Tolerance: tan/atan round-trip in single precision introduces ~1e-5 rad
+// error, which is ~5.7e-4 degrees.
+static constexpr float k_fov_tolerance_deg  = 0.001f;
+static constexpr float k_aspect_tolerance   = 1e-5f;
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_BasicRoundTrip)
+{
+    // Build a matrix with known inputs and verify both outputs are recovered.
+    constexpr float fov_deg    = 60.f;
+    constexpr float aspect     = 16.f / 9.f;
+    const auto mat = omath::frostbite_engine::calc_perspective_projection_matrix(
+        fov_deg, aspect, 0.1f, 1000.f, omath::NDCDepthRange::ZERO_TO_ONE);
+
+    const auto [fov, ar] = omath::frostbite_engine::Camera::extract_projection_params(mat);
+
+    EXPECT_NEAR(fov.as_degrees(), fov_deg, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, aspect, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_NegOneToOneDepthRange)
+{
+    // The FOV/aspect encoding in rows 0 and 1 is identical for both NDC
+    // depth ranges, so extraction must work the same way.
+    constexpr float fov_deg = 75.f;
+    constexpr float aspect  = 4.f / 3.f;
+    const auto mat = omath::frostbite_engine::calc_perspective_projection_matrix(
+        fov_deg, aspect, 0.1f, 500.f, omath::NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+
+    const auto [fov, ar] = omath::frostbite_engine::Camera::extract_projection_params(mat);
+
+    EXPECT_NEAR(fov.as_degrees(), fov_deg, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, aspect, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_Fov45)
+{
+    constexpr float fov_deg = 45.f;
+    constexpr float aspect  = 16.f / 9.f;
+    const auto mat = omath::frostbite_engine::calc_perspective_projection_matrix(
+        fov_deg, aspect, 0.01f, 1000.f);
+
+    const auto [fov, ar] = omath::frostbite_engine::Camera::extract_projection_params(mat);
+
+    EXPECT_NEAR(fov.as_degrees(), fov_deg, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, aspect, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_Fov90)
+{
+    constexpr float fov_deg = 90.f;
+    constexpr float aspect  = 16.f / 9.f;
+    const auto mat = omath::frostbite_engine::calc_perspective_projection_matrix(
+        fov_deg, aspect, 0.01f, 1000.f);
+
+    const auto [fov, ar] = omath::frostbite_engine::Camera::extract_projection_params(mat);
+
+    EXPECT_NEAR(fov.as_degrees(), fov_deg, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, aspect, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_Fov120)
+{
+    constexpr float fov_deg = 120.f;
+    constexpr float aspect  = 16.f / 9.f;
+    const auto mat = omath::frostbite_engine::calc_perspective_projection_matrix(
+        fov_deg, aspect, 0.01f, 1000.f);
+
+    const auto [fov, ar] = omath::frostbite_engine::Camera::extract_projection_params(mat);
+
+    EXPECT_NEAR(fov.as_degrees(), fov_deg, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, aspect, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_AspectRatio_4by3)
+{
+    constexpr float fov_deg = 60.f;
+    constexpr float aspect  = 4.f / 3.f;
+    const auto mat = omath::frostbite_engine::calc_perspective_projection_matrix(
+        fov_deg, aspect, 0.1f, 500.f);
+
+    const auto [fov, ar] = omath::frostbite_engine::Camera::extract_projection_params(mat);
+
+    EXPECT_NEAR(fov.as_degrees(), fov_deg, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, aspect, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_AspectRatio_Ultrawide)
+{
+    constexpr float fov_deg = 90.f;
+    constexpr float aspect  = 21.f / 9.f;
+    const auto mat = omath::frostbite_engine::calc_perspective_projection_matrix(
+        fov_deg, aspect, 0.1f, 500.f);
+
+    const auto [fov, ar] = omath::frostbite_engine::Camera::extract_projection_params(mat);
+
+    EXPECT_NEAR(fov.as_degrees(), fov_deg, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, aspect, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_AspectRatio_Square)
+{
+    constexpr float fov_deg = 90.f;
+    constexpr float aspect  = 1.f;
+    const auto mat = omath::frostbite_engine::calc_perspective_projection_matrix(
+        fov_deg, aspect, 0.1f, 500.f);
+
+    const auto [fov, ar] = omath::frostbite_engine::Camera::extract_projection_params(mat);
+
+    EXPECT_NEAR(fov.as_degrees(), fov_deg, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, aspect, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_FovAndAspectAreIndependent)
+{
+    // Changing only FOV must not affect recovered aspect ratio, and vice versa.
+    constexpr float aspect = 16.f / 9.f;
+
+    for (const float fov_deg : {45.f, 60.f, 90.f, 110.f})
+    {
+        const auto mat = omath::frostbite_engine::calc_perspective_projection_matrix(
+            fov_deg, aspect, 0.1f, 1000.f);
+        const auto [fov, ar] = omath::frostbite_engine::Camera::extract_projection_params(mat);
+
+        EXPECT_NEAR(fov.as_degrees(), fov_deg, k_fov_tolerance_deg);
+        EXPECT_NEAR(ar, aspect, k_aspect_tolerance);
+    }
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_ViaCamera_RoundTrip)
+{
+    // End-to-end: construct a Camera, retrieve its projection matrix, then
+    // recover the FOV and aspect ratio and compare against the original inputs.
+    constexpr auto fov_in  = omath::projection::FieldOfView::from_degrees(90.f);
+    constexpr float aspect = 1920.f / 1080.f;
+
+    const auto cam = omath::frostbite_engine::Camera(
+        {0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov_in, 0.01f, 1000.f);
+
+    const auto [fov_out, ar_out] =
+        omath::frostbite_engine::Camera::extract_projection_params(cam.get_projection_matrix());
+
+    EXPECT_NEAR(fov_out.as_degrees(), fov_in.as_degrees(), k_fov_tolerance_deg);
+    EXPECT_NEAR(ar_out, aspect, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_ViaCamera_AfterFovChange)
+{
+    // Verify that the extracted FOV tracks the camera's FOV after set_field_of_view().
+    auto cam = omath::frostbite_engine::Camera(
+        {0.f, 0.f, 0.f}, {}, {1920.f, 1080.f},
+        omath::projection::FieldOfView::from_degrees(60.f), 0.01f, 1000.f);
+
+    cam.set_field_of_view(omath::projection::FieldOfView::from_degrees(110.f));
+
+    const auto [fov, ar] =
+        omath::frostbite_engine::Camera::extract_projection_params(cam.get_projection_matrix());
+
+    EXPECT_NEAR(fov.as_degrees(), 110.f, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, 1920.f / 1080.f, k_aspect_tolerance);
+}
+
+TEST(unit_test_frostbite_engine, ExtractProjectionParams_ViaCamera_AfterViewportChange)
+{
+    // Verify that the extracted aspect ratio tracks the viewport after set_view_port().
+    auto cam = omath::frostbite_engine::Camera(
+        {0.f, 0.f, 0.f}, {}, {1920.f, 1080.f},
+        omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
+
+    cam.set_view_port({1280.f, 720.f});
+
+    const auto [fov, ar] =
+        omath::frostbite_engine::Camera::extract_projection_params(cam.get_projection_matrix());
+
+    EXPECT_NEAR(fov.as_degrees(), 90.f, k_fov_tolerance_deg);
+    EXPECT_NEAR(ar, 1280.f / 720.f, k_aspect_tolerance);
+}
