@@ -318,22 +318,22 @@ int main()
         glfwPollEvents();
         omath::Vector3<float> move_dir;
         if (glfwGetKey(window, GLFW_KEY_W))
-            move_dir += camera.get_forward();
+            move_dir += camera.get_abs_forward();
 
         if (glfwGetKey(window, GLFW_KEY_A))
-            move_dir -= camera.get_right();
+            move_dir -= camera.get_abs_right();
 
         if (glfwGetKey(window, GLFW_KEY_S))
-            move_dir -= camera.get_forward();
+            move_dir -= camera.get_abs_forward();
 
         if (glfwGetKey(window, GLFW_KEY_D))
-            move_dir += camera.get_right();
+            move_dir += camera.get_abs_right();
 
         if (glfwGetKey(window, GLFW_KEY_SPACE))
-            move_dir += camera.get_up();
+            move_dir += camera.get_abs_up();
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL))
-            move_dir -= camera.get_up();
+            move_dir -= camera.get_abs_up();
 
 
         auto delta = glfwGetTime() - old_mouse_time;

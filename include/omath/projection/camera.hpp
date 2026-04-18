@@ -127,9 +127,6 @@ namespace omath::projection
         Vector3<float> get_forward() const noexcept
         {
             const auto& view_matrix = get_view_matrix();
-
-            if constexpr (axes.inverted_forward)
-                return -Vector3<float>{view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
             return {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
         }
 
@@ -137,8 +134,6 @@ namespace omath::projection
         Vector3<float> get_right() const noexcept
         {
             const auto& view_matrix = get_view_matrix();
-            if constexpr (axes.inverted_right)
-                return -Vector3<float>{view_matrix[0, 0], view_matrix[0, 1], view_matrix[0, 2]};
             return {view_matrix[0, 0], view_matrix[0, 1], view_matrix[0, 2]};
         }
 
@@ -147,6 +142,27 @@ namespace omath::projection
         {
             const auto& view_matrix = get_view_matrix();
             return {view_matrix[1, 0], view_matrix[1, 1], view_matrix[1, 2]};
+        }
+        [[nodiscard]]
+        Vector3<float> get_abs_forward() const noexcept
+        {
+            if constexpr (axes.inverted_forward)
+                return -get_forward();
+            return get_forward();
+        }
+
+        [[nodiscard]]
+        Vector3<float> get_abs_right() const noexcept
+        {
+            if constexpr (axes.inverted_right)
+                return -get_right();
+            return get_right();
+        }
+
+        [[nodiscard]]
+        Vector3<float> get_abs_up() const noexcept
+        {
+            return get_up();
         }
 
         [[nodiscard]] const Mat4X4Type& get_view_projection_matrix() const noexcept

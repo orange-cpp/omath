@@ -793,9 +793,9 @@ TEST(UnitTestProjection, SourceEngine_ZeroAngles_BasisVectors)
     constexpr float k_eps = 1e-5f;
     const auto cam = omath::source_engine::Camera({}, {}, {1920.f, 1080.f},
                                                   omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
-    const auto fwd   = cam.get_forward();
-    const auto right = cam.get_right();
-    const auto up    = cam.get_up();
+    const auto fwd   = cam.get_abs_forward();
+    const auto right = cam.get_abs_right();
+    const auto up    = cam.get_abs_up();
 
     EXPECT_NEAR(fwd.x,   omath::source_engine::k_abs_forward.x, k_eps);
     EXPECT_NEAR(fwd.y,   omath::source_engine::k_abs_forward.y, k_eps);
@@ -815,9 +815,9 @@ TEST(UnitTestProjection, UnityEngine_ZeroAngles_BasisVectors)
     constexpr float k_eps = 1e-5f;
     const auto cam = omath::unity_engine::Camera({}, {}, {1280.f, 720.f},
                                                  omath::projection::FieldOfView::from_degrees(60.f), 0.03f, 1000.f);
-    const auto fwd   = cam.get_forward();
-    const auto right = cam.get_right();
-    const auto up    = cam.get_up();
+    const auto fwd   = cam.get_abs_forward();
+    const auto right = cam.get_abs_right();
+    const auto up    = cam.get_abs_up();
 
     EXPECT_NEAR(fwd.x,   omath::unity_engine::k_abs_forward.x, k_eps);
     EXPECT_NEAR(fwd.y,   omath::unity_engine::k_abs_forward.y, k_eps);
@@ -837,9 +837,9 @@ TEST(UnitTestProjection, OpenGLEngine_ZeroAngles_BasisVectors)
     constexpr float k_eps = 1e-5f;
     const auto cam = omath::opengl_engine::Camera({}, {}, {1920.f, 1080.f},
                                                   omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
-    const auto fwd   = cam.get_forward();
-    const auto right = cam.get_right();
-    const auto up    = cam.get_up();
+    const auto fwd   = cam.get_abs_forward();
+    const auto right = cam.get_abs_right();
+    const auto up    = cam.get_abs_up();
 
     EXPECT_NEAR(fwd.x,   omath::opengl_engine::k_abs_forward.x, k_eps);
     EXPECT_NEAR(fwd.y,   omath::opengl_engine::k_abs_forward.y, k_eps);
@@ -859,9 +859,9 @@ TEST(UnitTestProjection, UnrealEngine_ZeroAngles_BasisVectors)
     constexpr float k_eps = 1e-5f;
     const auto cam = omath::unreal_engine::Camera({}, {}, {1920.f, 1080.f},
                                                   omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
-    const auto fwd   = cam.get_forward();
-    const auto right = cam.get_right();
-    const auto up    = cam.get_up();
+    const auto fwd   = cam.get_abs_forward();
+    const auto right = cam.get_abs_right();
+    const auto up    = cam.get_abs_up();
 
     EXPECT_NEAR(fwd.x,   omath::unreal_engine::k_abs_forward.x, k_eps);
     EXPECT_NEAR(fwd.y,   omath::unreal_engine::k_abs_forward.y, k_eps);
@@ -881,9 +881,9 @@ TEST(UnitTestProjection, FrostbiteEngine_ZeroAngles_BasisVectors)
     constexpr float k_eps = 1e-5f;
     const auto cam = omath::frostbite_engine::Camera({}, {}, {1920.f, 1080.f},
                                                      omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
-    const auto fwd   = cam.get_forward();
-    const auto right = cam.get_right();
-    const auto up    = cam.get_up();
+    const auto fwd   = cam.get_abs_forward();
+    const auto right = cam.get_abs_right();
+    const auto up    = cam.get_abs_up();
 
     EXPECT_NEAR(fwd.x,   omath::frostbite_engine::k_abs_forward.x, k_eps);
     EXPECT_NEAR(fwd.y,   omath::frostbite_engine::k_abs_forward.y, k_eps);
@@ -903,9 +903,9 @@ TEST(UnitTestProjection, CryEngine_ZeroAngles_BasisVectors)
     constexpr float k_eps = 1e-5f;
     const auto cam = omath::cry_engine::Camera({}, {}, {1920.f, 1080.f},
                                                omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
-    const auto fwd   = cam.get_forward();
-    const auto right = cam.get_right();
-    const auto up    = cam.get_up();
+    const auto fwd   = cam.get_abs_forward();
+    const auto right = cam.get_abs_right();
+    const auto up    = cam.get_abs_up();
 
     EXPECT_NEAR(fwd.x,   omath::cry_engine::k_abs_forward.x, k_eps);
     EXPECT_NEAR(fwd.y,   omath::cry_engine::k_abs_forward.y, k_eps);
@@ -925,9 +925,9 @@ TEST(UnitTestProjection, IWEngine_ZeroAngles_BasisVectors)
     constexpr float k_eps = 1e-5f;
     const auto cam = omath::iw_engine::Camera({}, {}, {1920.f, 1080.f},
                                               omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
-    const auto fwd   = cam.get_forward();
-    const auto right = cam.get_right();
-    const auto up    = cam.get_up();
+    const auto fwd   = cam.get_abs_forward();
+    const auto right = cam.get_abs_right();
+    const auto up    = cam.get_abs_up();
 
     EXPECT_NEAR(fwd.x,   omath::iw_engine::k_abs_forward.x, k_eps);
     EXPECT_NEAR(fwd.y,   omath::iw_engine::k_abs_forward.y, k_eps);
