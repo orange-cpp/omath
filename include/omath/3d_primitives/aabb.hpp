@@ -24,5 +24,11 @@ namespace omath::primitives
         {
             return (max - min) / static_cast<Type>(2);
         }
+        [[nodiscard]]
+        constexpr bool is_collide(const Aabb& other) const noexcept
+        {
+            return min.x <= other.max.x && max.x >= other.min.x &&
+                min.y <= other.max.y && max.y >= other.min.y &&min.z <= other.max.z && max.z >= other.min.z;
+        }
     };
 } // namespace omath::primitives
