@@ -11,6 +11,7 @@
 #include <omath/engines/opengl_engine/camera.hpp>
 #include <omath/engines/source_engine/camera.hpp>
 #include <omath/engines/unreal_engine/camera.hpp>
+#include <omath/linear_algebra/triangle.hpp>
 #include <omath/projection/camera.hpp>
 #include <print>
 #include <random>
@@ -940,4 +941,248 @@ TEST(UnitTestProjection, IWEngine_ZeroAngles_BasisVectors)
     EXPECT_NEAR(up.x,    omath::iw_engine::k_abs_up.x, k_eps);
     EXPECT_NEAR(up.y,    omath::iw_engine::k_abs_up.y, k_eps);
     EXPECT_NEAR(up.z,    omath::iw_engine::k_abs_up.z, k_eps);
+}
+
+// ---- extract_projection_params ----
+
+TEST(UnitTestProjection, ExtractProjectionParams_FovRoundTrip)
+{
+    // Source engine applies a 0.75 scale factor to its projection matrix, so
+    // extract_projection_params (standard formula) does not round-trip with it.
+    // Use Unity engine, which uses a standard projection matrix.
+    constexpr float k_eps = 1e-4f;
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(75.f);
+    const auto cam = omath::unity_engine::Camera({}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
+
+    const auto params = omath::unity_engine::Camera::extract_projection_params(cam.get_projection_matrix());
+
+    EXPECT_NEAR(params.fov.as_degrees(), 75.f, k_eps);
+}
+
+TEST(UnitTestProjection, ExtractProjectionParams_AspectRatioRoundTrip)
+{
+    constexpr float k_eps = 1e-4f;
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    const auto params = omath::source_engine::Camera::extract_projection_params(cam.get_projection_matrix());
+
+    EXPECT_NEAR(params.aspect_ratio, 1920.f / 1080.f, k_eps);
+}
+
+TEST(UnitTestProjection, ExtractProjectionParams_UnityEngine)
+{
+    constexpr float k_eps = 1e-4f;
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(60.f);
+    const auto cam = omath::unity_engine::Camera({}, {}, {1280.f, 720.f}, fov, 0.03f, 1000.f);
+
+    const auto params = omath::unity_engine::Camera::extract_projection_params(cam.get_projection_matrix());
+
+    EXPECT_NEAR(params.fov.as_degrees(), 60.f, k_eps);
+    EXPECT_NEAR(params.aspect_ratio, 1280.f / 720.f, k_eps);
+}
+
+// ---- Accessors ----
+
+TEST(UnitTestProjection, Accessors_GetFovNearFarOrigin)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const omath::Vector3<float> origin{10.f, 20.f, 30.f};
+    const auto cam = omath::source_engine::Camera(origin, {}, {1920.f, 1080.f}, fov, 0.1f, 500.f);
+
+    EXPECT_NEAR(cam.get_field_of_view().as_degrees(), 90.f, 1e-4f);
+    EXPECT_FLOAT_EQ(cam.get_near_plane(), 0.1f);
+    EXPECT_FLOAT_EQ(cam.get_far_plane(), 500.f);
+    EXPECT_FLOAT_EQ(cam.get_origin().x, 10.f);
+    EXPECT_FLOAT_EQ(cam.get_origin().y, 20.f);
+    EXPECT_FLOAT_EQ(cam.get_origin().z, 30.f);
+}
+
+// ---- Setters + cache invalidation ----
+
+TEST(UnitTestProjection, SetFieldOfView_InvalidatesProjection)
+{
+    constexpr auto fov_a = omath::projection::FieldOfView::from_degrees(90.f);
+    constexpr auto fov_b = omath::projection::FieldOfView::from_degrees(45.f);
+    auto cam = omath::source_engine::Camera({}, {}, {1920.f, 1080.f}, fov_a, 0.01f, 1000.f);
+
+    const auto proj_before = cam.get_projection_matrix();
+    cam.set_field_of_view(fov_b);
+    const auto proj_after = cam.get_projection_matrix();
+
+    EXPECT_NE(proj_before.at(0, 0), proj_after.at(0, 0));
+    EXPECT_NEAR(cam.get_field_of_view().as_degrees(), 45.f, 1e-4f);
+}
+
+TEST(UnitTestProjection, SetNearPlane_InvalidatesProjection)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    const auto proj_before = cam.get_projection_matrix();
+    cam.set_near_plane(1.f);
+    const auto proj_after = cam.get_projection_matrix();
+
+    EXPECT_FLOAT_EQ(cam.get_near_plane(), 1.f);
+    EXPECT_NE(proj_before.at(2, 2), proj_after.at(2, 2));
+}
+
+TEST(UnitTestProjection, SetFarPlane_InvalidatesProjection)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    const auto proj_before = cam.get_projection_matrix();
+    cam.set_far_plane(100.f);
+    const auto proj_after = cam.get_projection_matrix();
+
+    EXPECT_FLOAT_EQ(cam.get_far_plane(), 100.f);
+    EXPECT_NE(proj_before.at(2, 2), proj_after.at(2, 2));
+}
+
+TEST(UnitTestProjection, SetOrigin_InvalidatesViewMatrix)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Target is off to the side — stays at the same world position while camera
+    // moves laterally, so the projected X must change.
+    const auto screen_before = cam.world_to_screen({500.f, 100.f, 0.f});
+    cam.set_origin({0.f, 100.f, 0.f}); // lateral shift
+    const auto screen_after = cam.world_to_screen({500.f, 100.f, 0.f});
+
+    ASSERT_TRUE(screen_before.has_value());
+    ASSERT_TRUE(screen_after.has_value());
+    EXPECT_NE(screen_before->x, screen_after->x);
+    EXPECT_FLOAT_EQ(cam.get_origin().y, 100.f);
+}
+
+TEST(UnitTestProjection, SetViewPort_InvalidatesProjection)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    const auto proj_before = cam.get_projection_matrix();
+    // 1280x800 is 8:5, different aspect ratio from 1920x1080 (16:9)
+    cam.set_view_port({1280.f, 800.f});
+    const auto proj_after = cam.get_projection_matrix();
+
+    EXPECT_NE(proj_before.at(0, 0), proj_after.at(0, 0));
+}
+
+TEST(UnitTestProjection, SetViewAngles_InvalidatesViewMatrix)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    const auto view_before = cam.get_view_matrix();
+    const omath::source_engine::ViewAngles rotated{
+        omath::source_engine::PitchAngle::from_degrees(30.f),
+        omath::source_engine::YawAngle::from_degrees(45.f),
+        omath::source_engine::RollAngle::from_degrees(0.f)
+    };
+    cam.set_view_angles(rotated);
+    const auto view_after = cam.get_view_matrix();
+
+    EXPECT_NE(view_before.at(0, 0), view_after.at(0, 0));
+}
+
+// ---- calc_look_at_angles / look_at ----
+
+TEST(UnitTestProjection, CalcLookAtAngles_ForwardTarget)
+{
+    // Source engine: +X is forward. Camera at origin, target on +X axis.
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    const auto angles = cam.calc_look_at_angles({100.f, 0.f, 0.f});
+
+    EXPECT_NEAR(angles.pitch.as_degrees(), 0.f, 1e-4f);
+    EXPECT_NEAR(angles.yaw.as_degrees(),   0.f, 1e-4f);
+}
+
+TEST(UnitTestProjection, LookAt_ForwardVectorPointsAtTarget)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    cam.look_at({200.f, 0.f, 0.f});
+    const auto fwd = cam.get_abs_forward();
+
+    // After pointing at +X target the forward vector should be ~(1,0,0)
+    EXPECT_NEAR(fwd.x, 1.f, 1e-4f);
+    EXPECT_NEAR(fwd.y, 0.f, 1e-4f);
+    EXPECT_NEAR(fwd.z, 0.f, 1e-4f);
+}
+
+// ---- is_culled_by_frustum (triangle) ----
+
+TEST(UnitTestProjection, TriangleInsideFrustumNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Small triangle directly in front (Source: +X forward)
+    const omath::Triangle<omath::Vector3<float>> tri{
+        {100.f,  0.f,  1.f},
+        {100.f,  1.f, -1.f},
+        {100.f, -1.f, -1.f}
+    };
+    EXPECT_FALSE(cam.is_culled_by_frustum(tri));
+}
+
+TEST(UnitTestProjection, TriangleBehindCameraCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Triangle entirely behind the camera (-X)
+    const omath::Triangle<omath::Vector3<float>> tri{
+        {-100.f,  0.f,  1.f},
+        {-100.f,  1.f, -1.f},
+        {-100.f, -1.f, -1.f}
+    };
+    EXPECT_TRUE(cam.is_culled_by_frustum(tri));
+}
+
+TEST(UnitTestProjection, TriangleBeyondFarPlaneCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Triangle beyond the 1000-unit far plane
+    const omath::Triangle<omath::Vector3<float>> tri{
+        {2000.f,  0.f,  1.f},
+        {2000.f,  1.f, -1.f},
+        {2000.f, -1.f, -1.f}
+    };
+    EXPECT_TRUE(cam.is_culled_by_frustum(tri));
+}
+
+TEST(UnitTestProjection, TriangleFarToSideCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Triangle far outside the side frustum planes
+    const omath::Triangle<omath::Vector3<float>> tri{
+        {100.f, 5000.f,  0.f},
+        {100.f, 5001.f,  1.f},
+        {100.f, 5001.f, -1.f}
+    };
+    EXPECT_TRUE(cam.is_culled_by_frustum(tri));
+}
+
+TEST(UnitTestProjection, TriangleStraddlingFrustumNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    // Large triangle with vertices on both sides of the frustum — should not be culled
+    const omath::Triangle<omath::Vector3<float>> tri{
+        { 100.f,    0.f,   0.f},
+        { 100.f, 5000.f,   0.f},
+        { 100.f,    0.f, 5000.f}
+    };
+    EXPECT_FALSE(cam.is_culled_by_frustum(tri));
 }
