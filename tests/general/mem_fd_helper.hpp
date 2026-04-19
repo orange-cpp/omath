@@ -20,19 +20,19 @@
 #include <vector>
 
 #if defined(__linux__)
-#  include <unistd.h>
-#  include <fcntl.h>
-#  if defined(__ANDROID__)
-#    if __ANDROID_API__ >= 30
-#      include <sys/mman.h>
-#      define OMATH_TEST_USE_MEMFD 1
-#    endif
+#include <fcntl.h>
+#include <unistd.h>
+#if defined(__ANDROID__)
+#if __ANDROID_API__ >= 30
+#include <sys/mman.h>
+#define OMATH_TEST_USE_MEMFD 1
+#endif
 // Android < 30: fall through to tmpfile() path below
-#  else
+#else
 // Desktop Linux: memfd_create available since glibc 2.27 / kernel 3.17
-#    include <sys/mman.h>
-#    define OMATH_TEST_USE_MEMFD 1
-#  endif
+#include <sys/mman.h>
+#define OMATH_TEST_USE_MEMFD 1
+#endif
 #endif
 
 class MemFdFile
@@ -57,9 +57,11 @@ public:
     MemFdFile(MemFdFile&& o) noexcept
         : m_path(std::move(o.m_path))
 #if defined(OMATH_TEST_USE_MEMFD)
-        , m_fd(o.m_fd)
+          ,
+          m_fd(o.m_fd)
 #else
-        , m_temp_path(std::move(o.m_temp_path))
+          ,
+          m_temp_path(std::move(o.m_temp_path))
 #endif
     {
 #if defined(OMATH_TEST_USE_MEMFD)
@@ -69,9 +71,15 @@ public:
 #endif
     }
 
-    [[nodiscard]] bool valid() const { return !m_path.empty(); }
+    [[nodiscard]] bool valid() const
+    {
+        return !m_path.empty();
+    }
 
-    [[nodiscard]] const std::filesystem::path& path() const { return m_path; }
+    [[nodiscard]] const std::filesystem::path& path() const
+    {
+        return m_path;
+    }
 
     static MemFdFile create(const std::vector<std::uint8_t>& data)
     {
@@ -101,7 +109,7 @@ public:
         std::mt19937_64 rng(std::random_device{}());
         const auto unique_name = "omath_test_" + std::to_string(rng()) + ".bin";
         f.m_temp_path = (tmp_dir / unique_name).string();
-        f.m_path      = f.m_temp_path;
+        f.m_path = f.m_temp_path;
 
         std::ofstream out(f.m_temp_path, std::ios::binary | std::ios::trunc);
         if (!out.is_open())
@@ -153,38 +161,40 @@ private:
 // ---------------------------------------------------------------------------
 inline std::vector<std::uint8_t> build_minimal_pe(const std::vector<std::uint8_t>& section_bytes)
 {
-    constexpr std::uint32_t e_lfanew  = 0x80u;
-    constexpr std::uint16_t size_opt  = 0xF0u;
-    constexpr std::size_t   nt_off    = e_lfanew;
-    constexpr std::size_t   fh_off    = nt_off + 4;
-    constexpr std::size_t   oh_off    = fh_off + 20;
-    constexpr std::size_t   sh_off    = oh_off + size_opt;
-    constexpr std::size_t   data_off  = sh_off + 44;
+    constexpr std::uint32_t e_lfanew = 0x80u;
+    constexpr std::uint16_t size_opt = 0xF0u;
+    constexpr std::size_t nt_off = e_lfanew;
+    constexpr std::size_t fh_off = nt_off + 4;
+    constexpr std::size_t oh_off = fh_off + 20;
+    constexpr std::size_t sh_off = oh_off + size_opt;
+    constexpr std::size_t data_off = sh_off + 44;
 
     std::vector<std::uint8_t> buf(data_off + section_bytes.size(), 0u);
 
-    buf[0] = 'M'; buf[1] = 'Z';
+    buf[0] = 'M';
+    buf[1] = 'Z';
     std::memcpy(buf.data() + 0x3Cu, &e_lfanew, 4);
 
-    buf[nt_off] = 'P'; buf[nt_off + 1] = 'E';
+    buf[nt_off] = 'P';
+    buf[nt_off + 1] = 'E';
 
-    const std::uint16_t machine = 0x8664u, num_sections = 1u;
-    std::memcpy(buf.data() + fh_off,      &machine,      2);
-    std::memcpy(buf.data() + fh_off + 2,  &num_sections, 2);
-    std::memcpy(buf.data() + fh_off + 16, &size_opt,     2);
+    constexpr std::uint16_t machine = 0x8664u, num_sections = 1u;
+    std::memcpy(buf.data() + fh_off, &machine, 2);
+    std::memcpy(buf.data() + fh_off + 2, &num_sections, 2);
+    std::memcpy(buf.data() + fh_off + 16, &size_opt, 2);
 
-    const std::uint16_t magic = 0x20Bu;
+    constexpr std::uint16_t magic = 0x20Bu;
     std::memcpy(buf.data() + oh_off, &magic, 2);
 
-    const char name[8] = {'.','t','e','x','t',0,0,0};
+    constexpr char name[8] = {'.', 't', 'e', 'x', 't', 0, 0, 0};
     std::memcpy(buf.data() + sh_off, name, 8);
 
-    const auto vsize   = static_cast<std::uint32_t>(section_bytes.size());
-    const std::uint32_t vaddr   = 0x1000u;
-    const auto ptr_raw = static_cast<std::uint32_t>(data_off);
-    std::memcpy(buf.data() + sh_off + 8,  &vsize,   4);
-    std::memcpy(buf.data() + sh_off + 12, &vaddr,   4);
-    std::memcpy(buf.data() + sh_off + 16, &vsize,   4);
+    const auto vsize = static_cast<std::uint32_t>(section_bytes.size());
+    constexpr std::uint32_t vaddr = 0x1000u;
+    constexpr auto ptr_raw = static_cast<std::uint32_t>(data_off);
+    std::memcpy(buf.data() + sh_off + 8, &vsize, 4);
+    std::memcpy(buf.data() + sh_off + 12, &vaddr, 4);
+    std::memcpy(buf.data() + sh_off + 16, &vsize, 4);
     std::memcpy(buf.data() + sh_off + 20, &ptr_raw, 4);
 
     std::memcpy(buf.data() + data_off, section_bytes.data(), section_bytes.size());
