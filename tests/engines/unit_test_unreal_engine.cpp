@@ -32,7 +32,7 @@ TEST(unit_test_unreal_engine, ForwardVectorRotationPitch)
 {
     omath::unreal_engine::ViewAngles angles;
 
-    angles.pitch = omath::unreal_engine::PitchAngle::from_degrees(-90.f);
+    angles.pitch = omath::unreal_engine::PitchAngle::from_degrees(90.f);
 
     const auto forward = omath::unreal_engine::forward_vector(angles);
     EXPECT_NEAR(forward.x, omath::unreal_engine::k_abs_up.x, 0.00001f);

@@ -32,7 +32,7 @@ namespace omath::unreal_engine
     {
         return mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(angles.roll)
                * mat_rotation_axis_z<float, MatStoreType::ROW_MAJOR>(angles.yaw)
-               * mat_rotation_axis_y<float, MatStoreType::ROW_MAJOR>(angles.pitch);
+               * mat_rotation_axis_y<float, MatStoreType::ROW_MAJOR>(-angles.pitch);
     }
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
                                               const float far, const NDCDepthRange ndc_depth_range) noexcept
