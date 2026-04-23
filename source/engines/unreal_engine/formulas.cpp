@@ -2,7 +2,6 @@
 // Created by Vlad on 3/22/2025.
 //
 #include "omath/engines/unreal_engine/formulas.hpp"
-
 namespace omath::unreal_engine
 {
     Vector3<float> forward_vector(const ViewAngles& angles) noexcept
@@ -25,22 +24,34 @@ namespace omath::unreal_engine
     }
     Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
     {
-        return mat_camera_view<float, MatStoreType::ROW_MAJOR>(forward_vector(angles), -right_vector(angles),
+        return mat_camera_view<float, MatStoreType::ROW_MAJOR>(forward_vector(angles), right_vector(angles),
                                                                up_vector(angles), cam_origin);
     }
     Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
-        return mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(angles.roll)
-               * mat_rotation_axis_z<float, MatStoreType::ROW_MAJOR>(angles.yaw)
-               * mat_rotation_axis_y<float, MatStoreType::ROW_MAJOR>(-angles.pitch);
+        // UE FRotator is intrinsic Z-Y-X (Yaw → Pitch → Roll applied in local
+        // frame), which for column-vector composition is Rz·Ry·Rx.
+        // Pitch and roll axes in omath spin opposite to UE's convention, so
+        // both carry a sign flip.
+        return mat_rotation_axis_z<float, MatStoreType::ROW_MAJOR>(angles.yaw)
+               * mat_rotation_axis_y<float, MatStoreType::ROW_MAJOR>(-angles.pitch)
+               * mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(-angles.roll);
     }
+
+
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
                                               const float far, const NDCDepthRange ndc_depth_range) noexcept
     {
+        // UE stores horizontal FOV in FMinimalViewInfo — use the left-handed
+        // horizontal-FOV builder directly.
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
-            return mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+            return mat_perspective_left_handed_horizontal_fov<
+                    float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
                     field_of_view, aspect_ratio, near, far);
-
-        return mat_perspective_left_handed(field_of_view, aspect_ratio, near, far);
+        if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
+            return mat_perspective_left_handed_horizontal_fov<
+                    float, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
+                    field_of_view, aspect_ratio, near, far);
+        std::unreachable();
     }
 } // namespace omath::unreal_engine

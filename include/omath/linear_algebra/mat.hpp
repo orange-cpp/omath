@@ -707,6 +707,59 @@ namespace omath
         else
             std::unreachable();
     }
+
+    // Horizontal-FOV variants — use these when the engine reports FOV as
+    // horizontal (UE's FMinimalViewInfo::FOV, Quake-family fov_x, etc.).
+    // X and Y scales derived as: X = 1 / tan(hfov/2), Y = aspect / tan(hfov/2).
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
+             NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
+    [[nodiscard]]
+    Mat<4, 4, Type, St> mat_perspective_left_handed_horizontal_fov(const float horizontal_fov,
+                                                                   const float aspect_ratio, const float near,
+                                                                   const float far) noexcept
+    {
+        const float inv_tan_half_hfov = 1.f / std::tan(angles::degrees_to_radians(horizontal_fov) / 2.f);
+        const float x_axis = inv_tan_half_hfov;
+        const float y_axis = inv_tan_half_hfov * aspect_ratio;
+
+        if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
+            return {{x_axis, 0.f,    0.f,                          0.f},
+                    {0.f,    y_axis, 0.f,                          0.f},
+                    {0.f,    0.f,    far / (far - near),          -(near * far) / (far - near)},
+                    {0.f,    0.f,    1.f,                          0.f}};
+        else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
+            return {{x_axis, 0.f,    0.f,                                  0.f},
+                    {0.f,    y_axis, 0.f,                                  0.f},
+                    {0.f,    0.f,    (far + near) / (far - near),         -(2.f * near * far) / (far - near)},
+                    {0.f,    0.f,    1.f,                                  0.f}};
+        else
+            std::unreachable();
+    }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
+             NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
+    [[nodiscard]]
+    Mat<4, 4, Type, St> mat_perspective_right_handed_horizontal_fov(const float horizontal_fov,
+                                                                    const float aspect_ratio, const float near,
+                                                                    const float far) noexcept
+    {
+        const float inv_tan_half_hfov = 1.f / std::tan(angles::degrees_to_radians(horizontal_fov) / 2.f);
+        const float x_axis = inv_tan_half_hfov;
+        const float y_axis = inv_tan_half_hfov * aspect_ratio;
+
+        if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
+            return {{x_axis, 0.f,    0.f,                          0.f},
+                    {0.f,    y_axis, 0.f,                          0.f},
+                    {0.f,    0.f,   -far / (far - near),          -(near * far) / (far - near)},
+                    {0.f,    0.f,   -1.f,                          0.f}};
+        else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
+            return {{x_axis, 0.f,    0.f,                                  0.f},
+                    {0.f,    y_axis, 0.f,                                  0.f},
+                    {0.f,    0.f,   -(far + near) / (far - near),         -(2.f * near * far) / (far - near)},
+                    {0.f,    0.f,   -1.f,                                  0.f}};
+        else
+            std::unreachable();
+    }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
