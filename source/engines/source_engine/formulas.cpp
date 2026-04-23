@@ -38,24 +38,30 @@ namespace omath::source_engine
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
                                               const float far, const NDCDepthRange ndc_depth_range) noexcept
     {
-        // NOTE: Need magic number to fix fov calculation, since source inherit Quake proj matrix calculation
-        constexpr auto k_multiply_factor = 0.75f;
+        // Source (inherited from Quake) stores FOV as horizontal FOV at a 4:3
+        // reference aspect. Convert to vertical FOV first, then use the
+        // standard vfov-based projection against the caller's actual aspect.
+        //   vfov = 2 · atan( tan(hfov_4:3 / 2) / (4/3) )
+        constexpr float k_source_reference_aspect = 4.f / 3.f;
+        const float half_hfov_4_3 = angles::degrees_to_radians(field_of_view) / 2.f;
+        const float tan_half_vfov = std::tan(half_hfov_4_3) / k_source_reference_aspect;
 
-        const float fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / 2.f) * k_multiply_factor;
+        const float x_axis = 1.f / (aspect_ratio * tan_half_vfov);
+        const float y_axis = 1.f / tan_half_vfov;
 
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
             return {
-                    {1.f / (aspect_ratio * fov_half_tan), 0, 0, 0},
-                    {0, 1.f / (fov_half_tan), 0, 0},
-                    {0, 0, far / (far - near), -(near * far) / (far - near)},
-                    {0, 0, 1, 0},
+                    {x_axis, 0,      0,                     0},
+                    {0,      y_axis, 0,                     0},
+                    {0,      0,      far / (far - near),   -(near * far) / (far - near)},
+                    {0,      0,      1,                     0},
             };
         if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return {
-                    {1.f / (aspect_ratio * fov_half_tan), 0, 0, 0},
-                    {0, 1.f / (fov_half_tan), 0, 0},
-                    {0, 0, (far + near) / (far - near), -(2.f * far * near) / (far - near)},
-                    {0, 0, 1, 0},
+                    {x_axis, 0,      0,                             0},
+                    {0,      y_axis, 0,                             0},
+                    {0,      0,      (far + near) / (far - near),  -(2.f * far * near) / (far - near)},
+                    {0,      0,      1,                             0},
             };
         std::unreachable();
     }
