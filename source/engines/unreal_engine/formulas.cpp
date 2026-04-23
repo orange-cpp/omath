@@ -38,28 +38,16 @@ namespace omath::unreal_engine
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
                                               const float far, const NDCDepthRange ndc_depth_range) noexcept
     {
-        // UE stores horizontal FOV in FMinimalViewInfo — mirror engine's
-        // FMinimalViewInfo::CalculateProjectionMatrixGivenViewRectangle:
-        //   XAxisMultiplier = 1 / tan(hfov/2)
-        //   YAxisMultiplier = aspect / tan(hfov/2)
-        const float inv_tan_half_hfov = 1.f / std::tan(angles::degrees_to_radians(field_of_view) / 2.f);
-        const float x_axis = inv_tan_half_hfov;
-        const float y_axis = inv_tan_half_hfov * aspect_ratio;
-
+        // UE stores horizontal FOV in FMinimalViewInfo — use the left-handed
+        // horizontal-FOV builder directly.
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
-            return {
-                        {x_axis, 0,      0,                     0},
-                        {0,      y_axis, 0,                     0},
-                        {0,      0,      far / (far - near),   -(near * far) / (far - near)},
-                        {0,      0,      1,                     0},
-                };
+            return mat_perspective_left_handed_horizontal_fov<
+                    float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+                    field_of_view, aspect_ratio, near, far);
         if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {
-                        {x_axis, 0,      0,                             0},
-                        {0,      y_axis, 0,                             0},
-                        {0,      0,      (far + near) / (far - near),  -(2.f * far * near) / (far - near)},
-                        {0,      0,      1,                             0},
-                };
+            return mat_perspective_left_handed_horizontal_fov<
+                    float, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
+                    field_of_view, aspect_ratio, near, far);
         std::unreachable();
     }
 } // namespace omath::unreal_engine

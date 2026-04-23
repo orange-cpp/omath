@@ -39,30 +39,23 @@ namespace omath::source_engine
                                               const float far, const NDCDepthRange ndc_depth_range) noexcept
     {
         // Source (inherited from Quake) stores FOV as horizontal FOV at a 4:3
-        // reference aspect. Convert to vertical FOV first, then use the
-        // standard vfov-based projection against the caller's actual aspect.
+        // reference aspect. Convert to true vertical FOV, then delegate to the
+        // standard vertical-FOV left-handed builder with the caller's actual
+        // aspect ratio.
         //   vfov = 2 · atan( tan(hfov_4:3 / 2) / (4/3) )
         constexpr float k_source_reference_aspect = 4.f / 3.f;
         const float half_hfov_4_3 = angles::degrees_to_radians(field_of_view) / 2.f;
-        const float tan_half_vfov = std::tan(half_hfov_4_3) / k_source_reference_aspect;
-
-        const float x_axis = 1.f / (aspect_ratio * tan_half_vfov);
-        const float y_axis = 1.f / tan_half_vfov;
+        const float vfov_deg = angles::radians_to_degrees(
+                2.f * std::atan(std::tan(half_hfov_4_3) / k_source_reference_aspect));
 
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
-            return {
-                    {x_axis, 0,      0,                     0},
-                    {0,      y_axis, 0,                     0},
-                    {0,      0,      far / (far - near),   -(near * far) / (far - near)},
-                    {0,      0,      1,                     0},
-            };
+            return mat_perspective_left_handed<
+                    float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+                    vfov_deg, aspect_ratio, near, far);
         if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {
-                    {x_axis, 0,      0,                             0},
-                    {0,      y_axis, 0,                             0},
-                    {0,      0,      (far + near) / (far - near),  -(2.f * far * near) / (far - near)},
-                    {0,      0,      1,                             0},
-            };
+            return mat_perspective_left_handed<
+                    float, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
+                    vfov_deg, aspect_ratio, near, far);
         std::unreachable();
     }
 } // namespace omath::source_engine
