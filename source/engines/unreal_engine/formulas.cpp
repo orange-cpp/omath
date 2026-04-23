@@ -29,9 +29,13 @@ namespace omath::unreal_engine
     }
     Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
-        return mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(angles.roll)
-               * mat_rotation_axis_z<float, MatStoreType::ROW_MAJOR>(angles.yaw)
-               * mat_rotation_axis_y<float, MatStoreType::ROW_MAJOR>(-angles.pitch);
+        // UE FRotator is intrinsic Z-Y-X (Yaw → Pitch → Roll applied in local
+        // frame), which for column-vector composition is Rz·Ry·Rx.
+        // Pitch and roll axes in omath spin opposite to UE's convention, so
+        // both carry a sign flip.
+        return mat_rotation_axis_z<float, MatStoreType::ROW_MAJOR>(angles.yaw)
+               * mat_rotation_axis_y<float, MatStoreType::ROW_MAJOR>(-angles.pitch)
+               * mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(-angles.roll);
     }
 
 
