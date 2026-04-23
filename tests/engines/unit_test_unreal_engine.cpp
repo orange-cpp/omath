@@ -44,7 +44,7 @@ TEST(unit_test_unreal_engine, ForwardVectorRotationRoll)
 {
     omath::unreal_engine::ViewAngles angles;
 
-    angles.roll = omath::unreal_engine::RollAngle::from_degrees(-90.f);
+    angles.roll = omath::unreal_engine::RollAngle::from_degrees(90.f);
 
     const auto forward = omath::unreal_engine::up_vector(angles);
     EXPECT_NEAR(forward.x, omath::unreal_engine::k_abs_right.x, 0.00001f);
