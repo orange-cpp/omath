@@ -26,6 +26,12 @@ namespace omath
         // Constructors
         constexpr Vector2() = default;
 
+        template<class CastedType>
+        requires std::is_arithmetic_v<CastedType>
+        [[nodiscard]] constexpr explicit operator Vector2<CastedType>() const noexcept
+        {
+            return {static_cast<CastedType>(x), static_cast<CastedType>(y)};
+        }
         constexpr Vector2(const Type& x, const Type& y) noexcept: x(x), y(y)
         {
         }

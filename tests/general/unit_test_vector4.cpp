@@ -261,3 +261,77 @@ TEST_F(UnitTestVector4, GreaterEqualOperator)
     EXPECT_TRUE(omath::Vector4<float>{} >= omath::Vector4<float>{});
     EXPECT_TRUE(omath::Vector4(1.f, 1.f, 1.f, 1.f) >= omath::Vector4<float>{});
 }
+
+// ── Cast operator tests ──────────────────────────────────────────────────────
+
+using namespace omath;
+
+TEST(Vector4Cast, FloatToDouble)
+{
+    constexpr Vector4<float> v{1.5f, -2.5f, 3.0f, 4.25f};
+    constexpr auto result = static_cast<Vector4<double>>(v);
+    EXPECT_DOUBLE_EQ(result.x, 1.5);
+    EXPECT_DOUBLE_EQ(result.y, -2.5);
+    EXPECT_DOUBLE_EQ(result.z, 3.0);
+    EXPECT_DOUBLE_EQ(result.w, 4.25);
+}
+
+TEST(Vector4Cast, DoubleToFloat)
+{
+    constexpr Vector4<double> v{1.25, -3.75, 0.5, -0.125};
+    constexpr auto result = static_cast<Vector4<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, 1.25f);
+    EXPECT_FLOAT_EQ(result.y, -3.75f);
+    EXPECT_FLOAT_EQ(result.z, 0.5f);
+    EXPECT_FLOAT_EQ(result.w, -0.125f);
+}
+
+TEST(Vector4Cast, FloatToInt_Truncates)
+{
+    constexpr Vector4<float> v{3.9f, -2.1f, 7.7f, -0.9f};
+    constexpr auto result = static_cast<Vector4<int>>(v);
+    EXPECT_EQ(result.x, 3);
+    EXPECT_EQ(result.y, -2);
+    EXPECT_EQ(result.z, 7);
+    EXPECT_EQ(result.w, 0);
+}
+
+TEST(Vector4Cast, IntToFloat_Exact)
+{
+    constexpr Vector4<int> v{7, -4, 0, 1};
+    constexpr auto result = static_cast<Vector4<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, 7.f);
+    EXPECT_FLOAT_EQ(result.y, -4.f);
+    EXPECT_FLOAT_EQ(result.z, 0.f);
+    EXPECT_FLOAT_EQ(result.w, 1.f);
+}
+
+TEST(Vector4Cast, ZeroPreserved)
+{
+    constexpr Vector4<float> v{0.f, 0.f, 0.f, 0.f};
+    constexpr auto result = static_cast<Vector4<double>>(v);
+    EXPECT_DOUBLE_EQ(result.x, 0.0);
+    EXPECT_DOUBLE_EQ(result.y, 0.0);
+    EXPECT_DOUBLE_EQ(result.z, 0.0);
+    EXPECT_DOUBLE_EQ(result.w, 0.0);
+}
+
+TEST(Vector4Cast, NegativeValues)
+{
+    constexpr Vector4<double> v{-100.0, -200.0, -300.0, -400.0};
+    constexpr auto result = static_cast<Vector4<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, -100.f);
+    EXPECT_FLOAT_EQ(result.y, -200.f);
+    EXPECT_FLOAT_EQ(result.z, -300.f);
+    EXPECT_FLOAT_EQ(result.w, -400.f);
+}
+
+TEST(Vector4Cast, SameTypeRoundtrip)
+{
+    constexpr Vector4<float> v{1.f, 2.f, 3.f, 4.f};
+    constexpr auto result = static_cast<Vector4<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, v.x);
+    EXPECT_FLOAT_EQ(result.y, v.y);
+    EXPECT_FLOAT_EQ(result.z, v.z);
+    EXPECT_FLOAT_EQ(result.w, v.w);
+}

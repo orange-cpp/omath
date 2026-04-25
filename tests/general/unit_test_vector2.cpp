@@ -368,6 +368,64 @@ TEST_F(UnitTestVector2, GreaterEqualOperator)
 }
 
 
+// ── Cast operator tests ──────────────────────────────────────────────────────
+
+TEST(Vector2Cast, FloatToDouble)
+{
+    constexpr Vector2<float> v{1.5f, -2.5f};
+    constexpr auto result = static_cast<Vector2<double>>(v);
+    EXPECT_DOUBLE_EQ(result.x, 1.5);
+    EXPECT_DOUBLE_EQ(result.y, -2.5);
+}
+
+TEST(Vector2Cast, DoubleToFloat)
+{
+    constexpr Vector2<double> v{1.25, -3.75};
+    constexpr auto result = static_cast<Vector2<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, 1.25f);
+    EXPECT_FLOAT_EQ(result.y, -3.75f);
+}
+
+TEST(Vector2Cast, FloatToInt_Truncates)
+{
+    constexpr Vector2<float> v{3.9f, -2.1f};
+    constexpr auto result = static_cast<Vector2<int>>(v);
+    EXPECT_EQ(result.x, 3);
+    EXPECT_EQ(result.y, -2);
+}
+
+TEST(Vector2Cast, IntToFloat_Exact)
+{
+    constexpr Vector2<int> v{7, -4};
+    constexpr auto result = static_cast<Vector2<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, 7.f);
+    EXPECT_FLOAT_EQ(result.y, -4.f);
+}
+
+TEST(Vector2Cast, ZeroPreserved)
+{
+    constexpr Vector2<float> v{0.f, 0.f};
+    constexpr auto result = static_cast<Vector2<double>>(v);
+    EXPECT_DOUBLE_EQ(result.x, 0.0);
+    EXPECT_DOUBLE_EQ(result.y, 0.0);
+}
+
+TEST(Vector2Cast, NegativeValues)
+{
+    constexpr Vector2<double> v{-100.0, -200.0};
+    constexpr auto result = static_cast<Vector2<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, -100.f);
+    EXPECT_FLOAT_EQ(result.y, -200.f);
+}
+
+TEST(Vector2Cast, SameTypeRoundtrip)
+{
+    constexpr Vector2<float> v{1.f, 2.f};
+    constexpr auto result = static_cast<Vector2<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, v.x);
+    EXPECT_FLOAT_EQ(result.y, v.y);
+}
+
 // Static assertions (compile-time checks)
 static_assert(Vector2(1.0f, 2.0f).length_sqr() == 5.0f, "LengthSqr should be 5");
 static_assert(Vector2(1.0f, 2.0f).dot(Vector2(4.0f, 5.0f)) == 14.0f, "Dot product should be 14");

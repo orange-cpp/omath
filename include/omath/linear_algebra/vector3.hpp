@@ -30,6 +30,13 @@ namespace omath
         }
         constexpr Vector3() noexcept: Vector2<Type>() {};
 
+        template<class CastedType>
+        requires std::is_arithmetic_v<CastedType>
+        [[nodiscard]] constexpr explicit operator Vector3<CastedType>() const noexcept
+        {
+            return {static_cast<CastedType>(this->x), static_cast<CastedType>(this->y),
+                    static_cast<CastedType>(this->z)};
+        }
         [[nodiscard]] constexpr bool operator==(const Vector3& other) const noexcept
         {
             return Vector2<Type>::operator==(other) && (other.z == z);

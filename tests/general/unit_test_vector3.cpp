@@ -480,6 +480,71 @@ TEST_F(UnitTestVector3, GreaterEqualOperator)
     EXPECT_TRUE(omath::Vector3(1.f, 1.f, 1.f) >= omath::Vector3<float>{});
 }
 
+// ── Cast operator tests ──────────────────────────────────────────────────────
+
+TEST(Vector3Cast, FloatToDouble)
+{
+    constexpr Vector3<float> v{1.5f, -2.5f, 3.0f};
+    constexpr auto result = static_cast<Vector3<double>>(v);
+    EXPECT_DOUBLE_EQ(result.x, 1.5);
+    EXPECT_DOUBLE_EQ(result.y, -2.5);
+    EXPECT_DOUBLE_EQ(result.z, 3.0);
+}
+
+TEST(Vector3Cast, DoubleToFloat)
+{
+    constexpr Vector3<double> v{1.25, -3.75, 0.5};
+    constexpr auto result = static_cast<Vector3<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, 1.25f);
+    EXPECT_FLOAT_EQ(result.y, -3.75f);
+    EXPECT_FLOAT_EQ(result.z, 0.5f);
+}
+
+TEST(Vector3Cast, FloatToInt_Truncates)
+{
+    constexpr Vector3<float> v{3.9f, -2.1f, 7.7f};
+    constexpr auto result = static_cast<Vector3<int>>(v);
+    EXPECT_EQ(result.x, 3);
+    EXPECT_EQ(result.y, -2);
+    EXPECT_EQ(result.z, 7);
+}
+
+TEST(Vector3Cast, IntToFloat_Exact)
+{
+    constexpr Vector3<int> v{7, -4, 0};
+    constexpr auto result = static_cast<Vector3<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, 7.f);
+    EXPECT_FLOAT_EQ(result.y, -4.f);
+    EXPECT_FLOAT_EQ(result.z, 0.f);
+}
+
+TEST(Vector3Cast, ZeroPreserved)
+{
+    constexpr Vector3<float> v{0.f, 0.f, 0.f};
+    constexpr auto result = static_cast<Vector3<double>>(v);
+    EXPECT_DOUBLE_EQ(result.x, 0.0);
+    EXPECT_DOUBLE_EQ(result.y, 0.0);
+    EXPECT_DOUBLE_EQ(result.z, 0.0);
+}
+
+TEST(Vector3Cast, NegativeValues)
+{
+    constexpr Vector3<double> v{-100.0, -200.0, -300.0};
+    constexpr auto result = static_cast<Vector3<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, -100.f);
+    EXPECT_FLOAT_EQ(result.y, -200.f);
+    EXPECT_FLOAT_EQ(result.z, -300.f);
+}
+
+TEST(Vector3Cast, SameTypeRoundtrip)
+{
+    constexpr Vector3<float> v{1.f, 2.f, 3.f};
+    constexpr auto result = static_cast<Vector3<float>>(v);
+    EXPECT_FLOAT_EQ(result.x, v.x);
+    EXPECT_FLOAT_EQ(result.y, v.y);
+    EXPECT_FLOAT_EQ(result.z, v.z);
+}
+
 // Static assertions (compile-time checks)
 static_assert(Vector3(1.0f, 2.0f, 3.0f).length_sqr() == 14.0f, "LengthSqr should be 14");
 static_assert(Vector3(1.0f, 2.0f, 3.0f).dot(Vector3(4.0f, 5.0f, 6.0f)) == 32.0f, "Dot product should be 32");
