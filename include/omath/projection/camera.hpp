@@ -331,7 +331,7 @@ namespace omath::projection
             const auto c2 = to_clip(triangle.m_vertex3);
 
             // If all vertices are behind the camera (w <= 0), trivially reject
-            if (c0[3] <= 0.f && c1[3] <= 0.f && c2[3] <= 0.f)
+            if (c0[3] <= NumericType{0} && c1[3] <= NumericType{0} && c2[3] <= NumericType{0})
                 return true;
 
             // Helper: all three vertices outside the same clip plane
