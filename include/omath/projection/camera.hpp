@@ -498,7 +498,7 @@ namespace omath::projection
         screen_to_world(const Vector2<NumericType>& screen_pos) const noexcept
         {
             const auto& [x, y] = screen_pos;
-            return screen_to_world<screen_start>({x, y, 1.f});
+            return screen_to_world<screen_start>({x, y, 1});
         }
 
     protected:
