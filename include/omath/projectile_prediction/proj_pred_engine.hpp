@@ -8,22 +8,24 @@
 
 namespace omath::projectile_prediction
 {
+    template<class ArithmeticType = float>
     struct AimAngles
     {
-        float pitch{};
-        float yaw{};
+        ArithmeticType pitch{};
+        ArithmeticType yaw{};
     };
 
+    template<class ArithmeticType = float>
     class ProjPredEngineInterface
     {
     public:
         [[nodiscard]]
-        virtual std::optional<Vector3<float>> maybe_calculate_aim_point(const Projectile& projectile,
-                                                                        const Target& target) const = 0;
+        virtual std::optional<Vector3<ArithmeticType>> maybe_calculate_aim_point(
+            const Projectile<ArithmeticType>& projectile, const Target<ArithmeticType>& target) const = 0;
 
         [[nodiscard]]
-        virtual std::optional<AimAngles> maybe_calculate_aim_angles(const Projectile& projectile,
-                                                                     const Target& target) const = 0;
+        virtual std::optional<AimAngles<ArithmeticType>> maybe_calculate_aim_angles(
+            const Projectile<ArithmeticType>& projectile, const Target<ArithmeticType>& target) const = 0;
 
         virtual ~ProjPredEngineInterface() = default;
     };

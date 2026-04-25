@@ -44,46 +44,46 @@ static void expect_matrix_near(const MatT& a, const MatT& b, float eps = 1e-5f)
 #include <omath/engines/cry_engine/traits/pred_engine_trait.hpp>
 
 // Helper: verify that zero offset matches default-initialized offset behavior
-template<typename Trait>
-static void verify_launch_offset_at_time_zero(const Vector3<float>& origin, const Vector3<float>& offset)
+template<typename Trait, typename AT = float>
+static void verify_launch_offset_at_time_zero(const Vector3<AT>& origin, const Vector3<AT>& offset)
 {
-    projectile_prediction::Projectile p;
+    projectile_prediction::Projectile<AT> p;
     p.m_origin = origin;
     p.m_launch_offset = offset;
-    p.m_launch_speed = 100.f;
-    p.m_gravity_scale = 1.f;
+    p.m_launch_speed = static_cast<AT>(100);
+    p.m_gravity_scale = static_cast<AT>(1);
 
-    const auto pos = Trait::predict_projectile_position(p, 0.f, 0.f, 0.f, 9.81f);
+    const auto pos = Trait::predict_projectile_position(p, AT{0}, AT{0}, AT{0}, static_cast<AT>(9.81));
     const auto expected = origin + offset;
-    EXPECT_NEAR(pos.x, expected.x, 1e-4f);
-    EXPECT_NEAR(pos.y, expected.y, 1e-4f);
-    EXPECT_NEAR(pos.z, expected.z, 1e-4f);
+    EXPECT_NEAR(static_cast<double>(pos.x), static_cast<double>(expected.x), 1e-4);
+    EXPECT_NEAR(static_cast<double>(pos.y), static_cast<double>(expected.y), 1e-4);
+    EXPECT_NEAR(static_cast<double>(pos.z), static_cast<double>(expected.z), 1e-4);
 }
 
-template<typename Trait>
+template<typename Trait, typename AT = float>
 static void verify_zero_offset_matches_default()
 {
-    projectile_prediction::Projectile p;
-    p.m_origin = {10.f, 20.f, 30.f};
-    p.m_launch_offset = {0.f, 0.f, 0.f};
-    p.m_launch_speed = 50.f;
-    p.m_gravity_scale = 1.f;
+    projectile_prediction::Projectile<AT> p;
+    p.m_origin = {static_cast<AT>(10), static_cast<AT>(20), static_cast<AT>(30)};
+    p.m_launch_offset = {};
+    p.m_launch_speed = static_cast<AT>(50);
+    p.m_gravity_scale = static_cast<AT>(1);
 
-    projectile_prediction::Projectile p2;
-    p2.m_origin = {10.f, 20.f, 30.f};
-    p2.m_launch_speed = 50.f;
-    p2.m_gravity_scale = 1.f;
+    projectile_prediction::Projectile<AT> p2;
+    p2.m_origin = {static_cast<AT>(10), static_cast<AT>(20), static_cast<AT>(30)};
+    p2.m_launch_speed = static_cast<AT>(50);
+    p2.m_gravity_scale = static_cast<AT>(1);
 
-    const auto pos1 = Trait::predict_projectile_position(p, 15.f, 30.f, 1.f, 9.81f);
-    const auto pos2 = Trait::predict_projectile_position(p2, 15.f, 30.f, 1.f, 9.81f);
+    const auto pos1 = Trait::predict_projectile_position(p, static_cast<AT>(15), static_cast<AT>(30), static_cast<AT>(1), static_cast<AT>(9.81));
+    const auto pos2 = Trait::predict_projectile_position(p2, static_cast<AT>(15), static_cast<AT>(30), static_cast<AT>(1), static_cast<AT>(9.81));
 #if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || defined(_M_ARM64)
-    constexpr float tol = 1e-6f;
+    constexpr double tol = 1e-6;
 #else
-    constexpr float tol = 1e-4f;
+    constexpr double tol = 1e-4;
 #endif
-    EXPECT_NEAR(pos1.x, pos2.x, tol);
-    EXPECT_NEAR(pos1.y, pos2.y, tol);
-    EXPECT_NEAR(pos1.z, pos2.z, tol);
+    EXPECT_NEAR(static_cast<double>(pos1.x), static_cast<double>(pos2.x), tol);
+    EXPECT_NEAR(static_cast<double>(pos1.y), static_cast<double>(pos2.y), tol);
+    EXPECT_NEAR(static_cast<double>(pos1.z), static_cast<double>(pos2.z), tol);
 }
 
 TEST(LaunchOffsetTests, Source_OffsetAtTimeZero)
@@ -128,11 +128,11 @@ TEST(LaunchOffsetTests, Unity_ZeroOffsetMatchesDefault)
 }
 TEST(LaunchOffsetTests, Unreal_OffsetAtTimeZero)
 {
-    verify_launch_offset_at_time_zero<unreal_engine::PredEngineTrait>({0, 0, 0}, {5, 3, -2});
+    verify_launch_offset_at_time_zero<unreal_engine::PredEngineTrait, double>({0, 0, 0}, {5, 3, -2});
 }
 TEST(LaunchOffsetTests, Unreal_ZeroOffsetMatchesDefault)
 {
-    verify_zero_offset_matches_default<unreal_engine::PredEngineTrait>();
+    verify_zero_offset_matches_default<unreal_engine::PredEngineTrait, double>();
 }
 TEST(LaunchOffsetTests, CryEngine_OffsetAtTimeZero)
 {
@@ -401,38 +401,38 @@ TEST(TraitTests, Unreal_Pred_And_Mesh_And_Camera)
 {
     namespace e = omath::unreal_engine;
 
-    projectile_prediction::Projectile p;
-    p.m_origin = {0.f, 0.f, 0.f};
-    p.m_launch_speed = 10.f;
-    p.m_gravity_scale = 1.f;
+    projectile_prediction::Projectile<double> p;
+    p.m_origin = {0.0, 0.0, 0.0};
+    p.m_launch_speed = 10.0;
+    p.m_gravity_scale = 1.0;
 
-    const auto pos = e::PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 1.f, 9.81f);
-    EXPECT_NEAR(pos.x, 10.f, 1e-4f);
-    EXPECT_NEAR(pos.y, -9.81f * 0.5f, 1e-4f);
+    const auto pos = e::PredEngineTrait::predict_projectile_position(p, 0.0, 0.0, 1.0, 9.81);
+    EXPECT_NEAR(pos.x, 10.0, 1e-4);
+    EXPECT_NEAR(pos.y, -9.81 * 0.5, 1e-4);
 
-    projectile_prediction::Target t;
-    t.m_origin = {0.f, 5.f, 0.f};
-    t.m_velocity = {2.f, 0.f, 0.f};
+    projectile_prediction::Target<double> t;
+    t.m_origin = {0.0, 5.0, 0.0};
+    t.m_velocity = {2.0, 0.0, 0.0};
     t.m_is_airborne = true;
-    const auto pred = e::PredEngineTrait::predict_target_position(t, 2.f, 9.81f);
-    EXPECT_NEAR(pred.x, 4.f, 1e-6f);
-    EXPECT_NEAR(pred.y, 5.f - 9.81f * (2.f * 2.f) * 0.5f, 1e-6f);
+    const auto pred = e::PredEngineTrait::predict_target_position(t, 2.0, 9.81);
+    EXPECT_NEAR(pred.x, 4.0, 1e-6);
+    EXPECT_NEAR(pred.y, 5.0 - 9.81 * (2.0 * 2.0) * 0.5, 1e-6);
 
-    EXPECT_NEAR(e::PredEngineTrait::calc_vector_2d_distance({3.f, 0.f, 4.f}), 5.f, 1e-6f);
-    EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate({1.f, 2.5f, 3.f}), 2.5f, 1e-6f);
+    EXPECT_NEAR(e::PredEngineTrait::calc_vector_2d_distance({3.0, 0.0, 4.0}), 5.0, 1e-6);
+    EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate({1.0, 2.5, 3.0}), 2.5, 1e-6);
 
-    std::optional<float> pitch = 45.f;
-    auto vp = e::PredEngineTrait::calc_viewpoint_from_angles(p, {10.f, 0.f, 0.f}, pitch);
-    EXPECT_NEAR(vp.z, 0.f + 10.f * std::tan(angles::degrees_to_radians(45.f)), 1e-6f);
+    std::optional<double> pitch = 45.0;
+    auto vp = e::PredEngineTrait::calc_viewpoint_from_angles(p, Vector3<double>{10.0, 0.0, 0.0}, pitch);
+    EXPECT_NEAR(vp.z, 0.0 + 10.0 * std::tan(angles::degrees_to_radians(45.0)), 1e-6);
 
-    Vector3<float> origin{0.f, 0.f, 0.f};
-    Vector3<float> view_to{1.f, 1.f, 1.f};
+    Vector3<double> origin{0.0, 0.0, 0.0};
+    Vector3<double> view_to{1.0, 1.0, 1.0};
     const auto pitch_calc = e::PredEngineTrait::calc_direct_pitch_angle(origin, view_to);
     const auto dir = (view_to - origin).normalized();
-    EXPECT_NEAR(pitch_calc, angles::radians_to_degrees(std::asin(dir.z)), 1e-3f);
+    EXPECT_NEAR(pitch_calc, angles::radians_to_degrees(std::asin(dir.z)), 1e-3);
 
     const auto yaw_calc = e::PredEngineTrait::calc_direct_yaw_angle(origin, view_to);
-    EXPECT_NEAR(yaw_calc, angles::radians_to_degrees(std::atan2(dir.y, dir.x)), 1e-3f);
+    EXPECT_NEAR(yaw_calc, angles::radians_to_degrees(std::atan2(dir.y, dir.x)), 1e-3);
 
     e::ViewAngles va;
     expect_matrix_near(e::MeshTrait::rotation_matrix(va), e::rotation_matrix(va));
@@ -448,8 +448,8 @@ TEST(TraitTests, Unreal_Pred_And_Mesh_And_Camera)
 
     // non-airborne
     t.m_is_airborne = false;
-    const auto pred_ground_unreal = e::PredEngineTrait::predict_target_position(t, 2.f, 9.81f);
-    EXPECT_NEAR(pred_ground_unreal.x, 4.f, 1e-6f);
+    const auto pred_ground_unreal = e::PredEngineTrait::predict_target_position(t, 2.0, 9.81);
+    EXPECT_NEAR(pred_ground_unreal.x, 4.0, 1e-6);
 }
 
 // ── NDC Depth Range tests for Source and CryEngine camera traits ────────────

@@ -13,24 +13,23 @@
 
 namespace omath::projectile_prediction
 {
-    template<class T>
+    template<class T, class ArithmeticType>
     concept PredEngineConcept =
-            requires(const Projectile& projectile, const Target& target, const Vector3<float>& vec_a,
-                     const Vector3<float>& vec_b,
-                     Vector3<float> v3, // by-value for calc_viewpoint_from_angles
-                     float pitch, float yaw, float time, float gravity, std::optional<float> maybe_pitch) {
-                // Presence + return types
+            requires(const Projectile<ArithmeticType>& projectile, const Target<ArithmeticType>& target,
+                     const Vector3<ArithmeticType>& vec_a, const Vector3<ArithmeticType>& vec_b,
+                     Vector3<ArithmeticType> v3,
+                     ArithmeticType pitch, ArithmeticType yaw, ArithmeticType time, ArithmeticType gravity,
+                     std::optional<ArithmeticType> maybe_pitch) {
                 {
                     T::predict_projectile_position(projectile, pitch, yaw, time, gravity)
-                } -> std::same_as<Vector3<float>>;
-                { T::predict_target_position(target, time, gravity) } -> std::same_as<Vector3<float>>;
-                { T::calc_vector_2d_distance(vec_a) } -> std::same_as<float>;
-                { T::get_vector_height_coordinate(vec_b) } -> std::same_as<float>;
-                { T::calc_viewpoint_from_angles(projectile, v3, maybe_pitch) } -> std::same_as<Vector3<float>>;
-                { T::calc_direct_pitch_angle(vec_a, vec_b) } -> std::same_as<float>;
-                { T::calc_direct_yaw_angle(vec_a, vec_b) } -> std::same_as<float>;
+                } -> std::same_as<Vector3<ArithmeticType>>;
+                { T::predict_target_position(target, time, gravity) } -> std::same_as<Vector3<ArithmeticType>>;
+                { T::calc_vector_2d_distance(vec_a) } -> std::same_as<ArithmeticType>;
+                { T::get_vector_height_coordinate(vec_b) } -> std::same_as<ArithmeticType>;
+                { T::calc_viewpoint_from_angles(projectile, v3, maybe_pitch) } -> std::same_as<Vector3<ArithmeticType>>;
+                { T::calc_direct_pitch_angle(vec_a, vec_b) } -> std::same_as<ArithmeticType>;
+                { T::calc_direct_yaw_angle(vec_a, vec_b) } -> std::same_as<ArithmeticType>;
 
-                // Enforce noexcept as in PredEngineTrait
                 requires noexcept(T::predict_projectile_position(projectile, pitch, yaw, time, gravity));
                 requires noexcept(T::predict_target_position(target, time, gravity));
                 requires noexcept(T::calc_vector_2d_distance(vec_a));
@@ -39,21 +38,24 @@ namespace omath::projectile_prediction
                 requires noexcept(T::calc_direct_pitch_angle(vec_a, vec_b));
                 requires noexcept(T::calc_direct_yaw_angle(vec_a, vec_b));
             };
-    template<class EngineTrait = source_engine::PredEngineTrait>
-    requires PredEngineConcept<EngineTrait>
-    class ProjPredEngineLegacy final : public ProjPredEngineInterface
+
+    template<class EngineTrait = source_engine::PredEngineTrait, class ArithmeticType = float>
+    requires PredEngineConcept<EngineTrait, ArithmeticType>
+    class ProjPredEngineLegacy final : public ProjPredEngineInterface<ArithmeticType>
     {
     public:
-        explicit ProjPredEngineLegacy(const float gravity_constant, const float simulation_time_step,
-                                      const float maximum_simulation_time, const float distance_tolerance)
+        explicit ProjPredEngineLegacy(const ArithmeticType gravity_constant,
+                                      const ArithmeticType simulation_time_step,
+                                      const ArithmeticType maximum_simulation_time,
+                                      const ArithmeticType distance_tolerance)
             : m_gravity_constant(gravity_constant), m_simulation_time_step(simulation_time_step),
               m_maximum_simulation_time(maximum_simulation_time), m_distance_tolerance(distance_tolerance)
         {
         }
 
         [[nodiscard]]
-        std::optional<Vector3<float>> maybe_calculate_aim_point(const Projectile& projectile,
-                                                                const Target& target) const override
+        std::optional<Vector3<ArithmeticType>> maybe_calculate_aim_point(
+            const Projectile<ArithmeticType>& projectile, const Target<ArithmeticType>& target) const override
         {
             const auto solution = find_solution(projectile, target);
             if (!solution)
@@ -64,28 +66,31 @@ namespace omath::projectile_prediction
         }
 
         [[nodiscard]]
-        std::optional<AimAngles> maybe_calculate_aim_angles(const Projectile& projectile,
-                                                             const Target& target) const override
+        std::optional<AimAngles<ArithmeticType>> maybe_calculate_aim_angles(
+            const Projectile<ArithmeticType>& projectile, const Target<ArithmeticType>& target) const override
         {
             const auto solution = find_solution(projectile, target);
             if (!solution)
                 return std::nullopt;
 
-            const auto yaw = EngineTrait::calc_direct_yaw_angle(projectile.m_origin + projectile.m_launch_offset, solution->predicted_target_position);
-            return AimAngles{solution->pitch, yaw};
+            const auto yaw = EngineTrait::calc_direct_yaw_angle(
+                projectile.m_origin + projectile.m_launch_offset, solution->predicted_target_position);
+            return AimAngles<ArithmeticType>{solution->pitch, yaw};
         }
 
     private:
         struct Solution
         {
-            Vector3<float> predicted_target_position;
-            float pitch;
+            Vector3<ArithmeticType> predicted_target_position;
+            ArithmeticType pitch;
         };
 
         [[nodiscard]]
-        std::optional<Solution> find_solution(const Projectile& projectile, const Target& target) const
+        std::optional<Solution> find_solution(const Projectile<ArithmeticType>& projectile,
+                                              const Target<ArithmeticType>& target) const
         {
-            for (float time = 0.f; time < m_maximum_simulation_time; time += m_simulation_time_step)
+            for (ArithmeticType time = ArithmeticType{0}; time < m_maximum_simulation_time;
+                 time += m_simulation_time_step)
             {
                 const auto predicted_target_position =
                         EngineTrait::predict_target_position(target, time, m_gravity_constant);
@@ -105,10 +110,10 @@ namespace omath::projectile_prediction
             return std::nullopt;
         }
 
-        const float m_gravity_constant;
-        const float m_simulation_time_step;
-        const float m_maximum_simulation_time;
-        const float m_distance_tolerance;
+        const ArithmeticType m_gravity_constant;
+        const ArithmeticType m_simulation_time_step;
+        const ArithmeticType m_maximum_simulation_time;
+        const ArithmeticType m_distance_tolerance;
 
         // Realization of this formula:
         // https://stackoverflow.com/questions/54917375/how-to-calculate-the-angle-to-shoot-a-bullet-in-order-to-hit-a-moving-target
@@ -123,15 +128,15 @@ namespace omath::projectile_prediction
        \]
         */
         [[nodiscard]]
-        std::optional<float>
-        maybe_calculate_projectile_launch_pitch_angle(const Projectile& projectile,
-                                                      const Vector3<float>& target_position) const noexcept
+        std::optional<ArithmeticType>
+        maybe_calculate_projectile_launch_pitch_angle(const Projectile<ArithmeticType>& projectile,
+                                                      const Vector3<ArithmeticType>& target_position) const noexcept
         {
             const auto bullet_gravity = m_gravity_constant * projectile.m_gravity_scale;
 
             const auto launch_origin = projectile.m_origin + projectile.m_launch_offset;
 
-            if (bullet_gravity == 0.f)
+            if (bullet_gravity == ArithmeticType{0})
                 return EngineTrait::calc_direct_pitch_angle(launch_origin, target_position);
 
             const auto delta = target_position - launch_origin;
@@ -140,24 +145,28 @@ namespace omath::projectile_prediction
             const auto distance2d_sqr = distance2d * distance2d;
             const auto launch_speed_sqr = projectile.m_launch_speed * projectile.m_launch_speed;
 
-            float root = launch_speed_sqr * launch_speed_sqr
-                         - bullet_gravity
-                                   * (bullet_gravity * distance2d_sqr
-                                      + 2.0f * EngineTrait::get_vector_height_coordinate(delta) * launch_speed_sqr);
+            ArithmeticType root = launch_speed_sqr * launch_speed_sqr
+                                  - bullet_gravity
+                                            * (bullet_gravity * distance2d_sqr
+                                               + ArithmeticType{2} * EngineTrait::get_vector_height_coordinate(delta)
+                                                         * launch_speed_sqr);
 
-            if (root < 0.0f) [[unlikely]]
+            if (root < ArithmeticType{0}) [[unlikely]]
                 return std::nullopt;
 
             root = std::sqrt(root);
-            const float angle = std::atan((launch_speed_sqr - root) / (bullet_gravity * distance2d));
+            const ArithmeticType angle = std::atan((launch_speed_sqr - root) / (bullet_gravity * distance2d));
 
             return angles::radians_to_degrees(angle);
         }
+
         [[nodiscard]]
-        bool is_projectile_reached_target(const Vector3<float>& target_position, const Projectile& projectile,
-                                          const float pitch, const float time) const noexcept
+        bool is_projectile_reached_target(const Vector3<ArithmeticType>& target_position,
+                                          const Projectile<ArithmeticType>& projectile,
+                                          const ArithmeticType pitch, const ArithmeticType time) const noexcept
         {
-            const auto yaw = EngineTrait::calc_direct_yaw_angle(projectile.m_origin + projectile.m_launch_offset, target_position);
+            const auto yaw = EngineTrait::calc_direct_yaw_angle(
+                projectile.m_origin + projectile.m_launch_offset, target_position);
             const auto projectile_position =
                     EngineTrait::predict_projectile_position(projectile, pitch, yaw, time, m_gravity_constant);
 

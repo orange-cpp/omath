@@ -4,8 +4,8 @@
 #include <omath/projectile_prediction/target.hpp>
 #include <omath/linear_algebra/vector3.hpp>
 
-using omath::projectile_prediction::Projectile;
-using omath::projectile_prediction::Target;
+using Projectile = omath::projectile_prediction::Projectile<float>;
+using Target     = omath::projectile_prediction::Target<float>;
 using omath::Vector3;
 
 // Fake engine trait where gravity is effectively zero and projectile prediction always hits the target
