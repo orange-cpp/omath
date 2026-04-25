@@ -51,17 +51,17 @@ namespace omath::projection
     template<class T, class MatType, class ViewAnglesType, class NumericType>
     concept CameraEngineConcept =
             requires(const Vector3<NumericType>& cam_origin, const Vector3<NumericType>& look_at,
-                     const ViewAnglesType& angles, const FieldOfView& fov, const ViewPort& viewport,
-                     NumericType znear, NumericType zfar, NDCDepthRange ndc_depth_range) {
+                     const ViewAnglesType& angles, const FieldOfView& fov, const ViewPort& viewport, NumericType z_near,
+                     NumericType z_far, NDCDepthRange ndc_depth_range) {
                 // Presence + return types
                 { T::calc_look_at_angle(cam_origin, look_at) } -> std::same_as<ViewAnglesType>;
                 { T::calc_view_matrix(angles, cam_origin) } -> std::same_as<MatType>;
-                { T::calc_projection_matrix(fov, viewport, znear, zfar, ndc_depth_range) } -> std::same_as<MatType>;
+                { T::calc_projection_matrix(fov, viewport, z_near, z_far, ndc_depth_range) } -> std::same_as<MatType>;
                 requires std::is_floating_point_v<NumericType>;
                 // Enforce noexcept as in the trait declaration
                 requires noexcept(T::calc_look_at_angle(cam_origin, look_at));
                 requires noexcept(T::calc_view_matrix(angles, cam_origin));
-                requires noexcept(T::calc_projection_matrix(fov, viewport, znear, zfar, ndc_depth_range));
+                requires noexcept(T::calc_projection_matrix(fov, viewport, z_near, z_far, ndc_depth_range));
             };
 
     template<class Mat4X4Type, class ViewAnglesType, class TraitClass,
@@ -93,7 +93,7 @@ namespace omath::projection
         struct ProjectionParams final
         {
             FieldOfView fov;
-            float aspect_ratio{};
+            NumericType aspect_ratio{};
         };
 
         // Recovers vertical FOV and aspect ratio from a perspective projection matrix
@@ -106,7 +106,8 @@ namespace omath::projection
             // m[1,1] == 1 / tan(fov/2)  =>  fov = 2 * atan(1 / m[1,1])
             const auto f = proj_matrix.at(1, 1);
             // m[0,0] == m[1,1] / aspect_ratio  =>  aspect = m[1,1] / m[0,0]
-            return {FieldOfView::from_radians(2.f * std::atan(1.f / f)), f / proj_matrix.at(0, 0)};
+            return {FieldOfView::from_radians(NumericType{2} * std::atan(NumericType{1} / f)),
+                    f / proj_matrix.at(0, 0)};
         }
 
         [[nodiscard]]
@@ -423,11 +424,11 @@ namespace omath::projection
             // (the "positive vertex"). If it's outside, the entire AABB is outside.
             for (const auto& [a, b, c, d] : planes)
             {
-                const auto px = a >= 0.f ? aabb.max.x : aabb.min.x;
-                const auto py = b >= 0.f ? aabb.max.y : aabb.min.y;
-                const auto pz = c >= 0.f ? aabb.max.z : aabb.min.z;
+                const auto px = a >= NumericType{0} ? aabb.max.x : aabb.min.x;
+                const auto py = b >= NumericType{0} ? aabb.max.y : aabb.min.y;
+                const auto pz = c >= NumericType{0} ? aabb.max.z : aabb.min.z;
 
-                if (a * px + b * py + c * pz + d < 0.f)
+                if (a * px + b * py + c * pz + d < NumericType{0})
                     return true;
             }
 
@@ -454,9 +455,10 @@ namespace omath::projection
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
             // ReSharper disable once CppTooWideScope
-            constexpr auto z_min = depth_range == NDCDepthRange::ZERO_TO_ONE ? 0.0f : -1.0f;
-            const auto clipped_manually = clipping == ViewPortClipping::MANUAL
-                                          && (projected.at(2, 0) < z_min - eps || projected.at(2, 0) > 1.0f + eps);
+            constexpr auto z_min = depth_range == NDCDepthRange::ZERO_TO_ONE ? NumericType{0} : -NumericType{1};
+            const auto clipped_manually =
+                    clipping == ViewPortClipping::MANUAL
+                    && (projected.at(2, 0) < z_min - eps || projected.at(2, 0) > NumericType{1} + eps);
             if (clipped_manually)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
@@ -522,9 +524,9 @@ namespace omath::projection
 
             const auto& data = ndc.raw_array();
             // x and y are always in [-1, 1]
-            if (data[0] < -1.0f - eps || data[0] > 1.0f + eps)
+            if (data[0] < -NumericType{1} - eps || data[0] > NumericType{1} + eps)
                 return true;
-            if (data[1] < -1.0f - eps || data[1] > 1.0f + eps)
+            if (data[1] < -NumericType{1} - eps || data[1] > NumericType{1} + eps)
                 return true;
             return is_ndc_z_value_out_of_bounds(data[2]);
         }
@@ -534,9 +536,9 @@ namespace omath::projection
         {
             constexpr auto eps = std::numeric_limits<NumericType>::epsilon();
             if constexpr (depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-                return z_ndc < -1.0f - eps || z_ndc > 1.0f + eps;
+                return z_ndc < -NumericType{1} - eps || z_ndc > NumericType{1} + eps;
             if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
-                return z_ndc < 0.0f - eps || z_ndc > 1.0f + eps;
+                return z_ndc < NumericType{0} - eps || z_ndc > NumericType{1} + eps;
 
             std::unreachable();
         }
@@ -569,7 +571,8 @@ namespace omath::projection
             |
             ⌄
             */
-            return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (ndc.y / -2.f + 0.5f) * m_view_port.m_height, ndc.z};
+            return {(ndc.x + NumericType{1}) / NumericType{2} * m_view_port.m_width,
+                    (ndc.y / -NumericType{2} + NumericType{0.5}) * m_view_port.m_height, ndc.z};
         }
 
         [[nodiscard]] Vector3<NumericType>
@@ -586,18 +589,19 @@ namespace omath::projection
              | (0, 0)
              +------------------------>
              */
-            return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (ndc.y / 2.f + 0.5f) * m_view_port.m_height, ndc.z};
+            return {(ndc.x + NumericType{1}) / NumericType{2} * m_view_port.m_width,
+                    (ndc.y / NumericType{2} + NumericType{0.5}) * m_view_port.m_height, ndc.z};
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]] Vector3<NumericType> screen_to_ndc(const Vector3<NumericType>& screen_pos) const noexcept
         {
             if constexpr (screen_start == ScreenStart::TOP_LEFT_CORNER)
-                return {screen_pos.x / m_view_port.m_width * 2.f - 1.f, 1.f - screen_pos.y / m_view_port.m_height * 2.f,
-                        screen_pos.z};
+                return {screen_pos.x / m_view_port.m_width * NumericType{2} - NumericType{1},
+                        NumericType{1} - screen_pos.y / m_view_port.m_height * NumericType{2}, screen_pos.z};
             else if constexpr (screen_start == ScreenStart::BOTTOM_LEFT_CORNER)
-                return {screen_pos.x / m_view_port.m_width * 2.f - 1.f,
-                        (screen_pos.y / m_view_port.m_height - 0.5f) * 2.f, screen_pos.z};
+                return {screen_pos.x / m_view_port.m_width * NumericType{2} - NumericType{1},
+                        (screen_pos.y / m_view_port.m_height - NumericType{0.5}) * NumericType{2}, screen_pos.z};
             else
                 std::unreachable();
         }
