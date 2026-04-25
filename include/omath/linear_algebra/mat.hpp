@@ -720,7 +720,7 @@ namespace omath
     {
         const auto inv_tan_half_hfov = 1.f / std::tan(angles::degrees_to_radians(horizontal_fov) / 2.f);
         const auto x_axis = inv_tan_half_hfov;
-        const auto y_axis = inv_tan_half_hfov / aspect_ratio;
+        const auto y_axis = inv_tan_half_hfov * aspect_ratio;
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
             return {{x_axis, 0.f,    0.f,                          0.f},
