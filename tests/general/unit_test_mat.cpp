@@ -220,8 +220,8 @@ TEST(UnitTestMatStandalone, Equanity)
     constexpr omath::Vector3<float> left_handed = {0, 2, 10};
     constexpr omath::Vector3<float> right_handed = {0, 2, -10};
 
-    const auto proj_left_handed = omath::mat_perspective_left_handed(90.f, 16.f / 9.f, 0.1, 1000);
-    const auto proj_right_handed = omath::mat_perspective_right_handed(90.f, 16.f / 9.f, 0.1, 1000);
+    const auto proj_left_handed = omath::mat_perspective_left_handed(90.f, 16.f / 9.f, 0.1f, 1000.f);
+    const auto proj_right_handed = omath::mat_perspective_right_handed(90.f, 16.f / 9.f, 0.1f, 1000.f);
 
     auto ndc_left_handed = proj_left_handed * omath::mat_column_from_vector(left_handed);
     auto ndc_right_handed = proj_right_handed * omath::mat_column_from_vector(right_handed);

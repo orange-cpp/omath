@@ -667,8 +667,8 @@ namespace omath
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_perspective_left_handed(const float field_of_view, const float aspect_ratio,
-                                                    const float near, const float far) noexcept
+    Mat<4, 4, Type, St> mat_perspective_left_handed(const Type field_of_view, const Type aspect_ratio,
+                                                    const Type near, const Type far) noexcept
     {
         const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
 
@@ -689,8 +689,8 @@ namespace omath
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_perspective_right_handed(const float field_of_view, const float aspect_ratio,
-                                                     const float near, const float far) noexcept
+    Mat<4, 4, Type, St> mat_perspective_right_handed(const Type field_of_view, const Type aspect_ratio,
+                                                     const Type near, const Type far) noexcept
     {
         const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
 
@@ -748,10 +748,10 @@ namespace omath
         const auto y_axis = inv_tan_half_hfov * aspect_ratio;
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return {{x_axis,     Type{0},    Type{0},             Type{0}},
-                    {Type{0},    y_axis,     Type{0},             Type{0}},
-                    {Type{0},    Type{0},    -far / (far - near), -(near * far) / (far - near)},
-                    {Type{0},    Type{0},    -Type{1},            Type{0}}};
+            return {{x_axis,  Type{0}, Type{0},             Type{0}},
+                    {Type{0}, y_axis,  Type{0},             Type{0}},
+                    {Type{0}, Type{0}, -far / (far - near), -(near * far) / (far - near)},
+                    {Type{0}, Type{0}, -Type{1},            Type{0}}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return {{x_axis,  Type{0}, Type{0},                      Type{0}},
                     {Type{0}, y_axis,  Type{0},                      Type{0}},
