@@ -17,9 +17,11 @@ namespace omath::unreal_engine
                                                                     const float time, const float gravity) noexcept
         {
             const auto launch_pos = projectile.m_origin + projectile.m_launch_offset;
+            const auto fwd_d = forward_vector({PitchAngle::from_degrees(-pitch), YawAngle::from_degrees(yaw),
+                                               RollAngle::from_degrees(0)});
             auto current_pos = launch_pos
-                               + forward_vector({PitchAngle::from_degrees(-pitch), YawAngle::from_degrees(yaw),
-                                                 RollAngle::from_degrees(0)})
+                               + Vector3<float>{static_cast<float>(fwd_d.x), static_cast<float>(fwd_d.y),
+                                                static_cast<float>(fwd_d.z)}
                                          * projectile.m_launch_speed * time;
             current_pos.y -= (gravity * projectile.m_gravity_scale) * (time * time) * 0.5f;
 

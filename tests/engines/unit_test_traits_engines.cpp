@@ -499,10 +499,11 @@ TEST(NDCDepthRangeTests, CryEngine_BothDepthRanges)
 // ── Verify Z mapping for ZERO_TO_ONE across all engines ─────────────────────
 
 // Helper: projects a point at given z through a left-handed projection matrix and returns NDC z
-static float project_z_lh(const Mat<4, 4>& proj, float z)
+template<class Type = float, MatStoreType Store = MatStoreType::ROW_MAJOR>
+static float project_z_lh(const Mat<4, 4, Type, Store>& proj, float z)
 {
-    auto clip = proj * mat_column_from_vector<float>({0, 0, z});
-    return clip.at(2, 0) / clip.at(3, 0);
+    auto clip = proj * mat_column_from_vector<Type, Store>({0, 0, static_cast<Type>(z)});
+    return static_cast<float>(clip.at(2, 0) / clip.at(3, 0));
 }
 
 TEST(NDCDepthRangeTests, Source_ZeroToOne_ZRange)

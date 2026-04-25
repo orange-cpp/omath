@@ -9,5 +9,5 @@
 
 namespace omath::unreal_engine
 {
-    using Camera = projection::Camera<Mat4X4, ViewAngles, CameraTrait, NDCDepthRange::ZERO_TO_ONE>;
+    using Camera = projection::Camera<Mat4X4, ViewAngles, CameraTrait, NDCDepthRange::ZERO_TO_ONE, {}, double>;
 } // namespace omath::unreal_engine

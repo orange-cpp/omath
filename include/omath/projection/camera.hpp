@@ -45,14 +45,14 @@ namespace omath::projection
     struct CameraAxes
     {
         bool inverted_forward = false;
-        bool inverted_right   = false;
+        bool inverted_right = false;
     };
 
     template<class T, class MatType, class ViewAnglesType, class NumericType>
     concept CameraEngineConcept =
-            requires(const Vector3<float>& cam_origin, const Vector3<float>& look_at, const ViewAnglesType& angles,
-                     const FieldOfView& fov, const ViewPort& viewport, float znear, float zfar,
-                     NDCDepthRange ndc_depth_range) {
+            requires(const Vector3<NumericType>& cam_origin, const Vector3<NumericType>& look_at,
+                     const ViewAnglesType& angles, const FieldOfView& fov, const ViewPort& viewport,
+                     NumericType znear, NumericType zfar, NDCDepthRange ndc_depth_range) {
                 // Presence + return types
                 { T::calc_look_at_angle(cam_origin, look_at) } -> std::same_as<ViewAnglesType>;
                 { T::calc_view_matrix(angles, cam_origin) } -> std::same_as<MatType>;
@@ -65,8 +65,8 @@ namespace omath::projection
             };
 
     template<class Mat4X4Type, class ViewAnglesType, class TraitClass,
-             NDCDepthRange depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE,
-             CameraAxes axes = {}, class NumericType = float>
+             NDCDepthRange depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE, CameraAxes axes = {},
+             class NumericType = float>
     requires CameraEngineConcept<TraitClass, Mat4X4Type, ViewAnglesType, NumericType>
     class Camera final
     {
@@ -83,17 +83,17 @@ namespace omath::projection
         };
 
         ~Camera() = default;
-        Camera(const Vector3<float>& position, const ViewAnglesType& view_angles, const ViewPort& view_port,
+        Camera(const Vector3<NumericType>& position, const ViewAnglesType& view_angles, const ViewPort& view_port,
                const FieldOfView& fov, const NumericType near, const NumericType far) noexcept
             : m_view_port(view_port), m_field_of_view(fov), m_far_plane_distance(far), m_near_plane_distance(near),
               m_view_angles(view_angles), m_origin(position)
         {
         }
 
-        struct ProjectionParams
+        struct ProjectionParams final
         {
             FieldOfView fov;
-            float aspect_ratio;
+            float aspect_ratio{};
         };
 
         // Recovers vertical FOV and aspect ratio from a perspective projection matrix
@@ -124,9 +124,12 @@ namespace omath::projection
             // The view matrix is R * T(-origin), so the last column stores t = -R * origin.
             // Recovering origin: origin = -R^T * t
             return {
-                -(view_matrix[0, 0] * view_matrix[0, 3] + view_matrix[1, 0] * view_matrix[1, 3] + view_matrix[2, 0] * view_matrix[2, 3]),
-                -(view_matrix[0, 1] * view_matrix[0, 3] + view_matrix[1, 1] * view_matrix[1, 3] + view_matrix[2, 1] * view_matrix[2, 3]),
-                -(view_matrix[0, 2] * view_matrix[0, 3] + view_matrix[1, 2] * view_matrix[1, 3] + view_matrix[2, 2] * view_matrix[2, 3]),
+                    -(view_matrix[0, 0] * view_matrix[0, 3] + view_matrix[1, 0] * view_matrix[1, 3]
+                      + view_matrix[2, 0] * view_matrix[2, 3]),
+                    -(view_matrix[0, 1] * view_matrix[0, 3] + view_matrix[1, 1] * view_matrix[1, 3]
+                      + view_matrix[2, 1] * view_matrix[2, 3]),
+                    -(view_matrix[0, 2] * view_matrix[0, 3] + view_matrix[1, 2] * view_matrix[1, 3]
+                      + view_matrix[2, 2] * view_matrix[2, 3]),
             };
         }
 
@@ -202,9 +205,8 @@ namespace omath::projection
         [[nodiscard]] const Mat4X4Type& get_projection_matrix() const noexcept
         {
             if (!m_projection_matrix.has_value())
-                m_projection_matrix = TraitClass::calc_projection_matrix(m_field_of_view, m_view_port,
-                                                                         m_near_plane_distance, m_far_plane_distance,
-                                                                         depth_range);
+                m_projection_matrix = TraitClass::calc_projection_matrix(
+                        m_field_of_view, m_view_port, m_near_plane_distance, m_far_plane_distance, depth_range);
 
             return m_projection_matrix.value();
         }
@@ -293,7 +295,7 @@ namespace omath::projection
         }
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]] std::expected<Vector3<NumericType>, Error>
-        world_to_screen_unclipped(const Vector3<float>& world_position) const noexcept
+        world_to_screen_unclipped(const Vector3<NumericType>& world_position) const noexcept
         {
             const auto normalized_cords = world_to_view_port(world_position, ViewPortClipping::MANUAL);
 
@@ -332,8 +334,9 @@ namespace omath::projection
                 return true;
 
             // Helper: all three vertices outside the same clip plane
-            auto all_outside_plane = [](const int axis, const std::array<NumericType, 4>& a, const std::array<NumericType, 4>& b,
-                                        const std::array<NumericType, 4>& c, const bool positive_side)
+            auto all_outside_plane = [](const int axis, const std::array<NumericType, 4>& a,
+                                        const std::array<NumericType, 4>& b, const std::array<NumericType, 4>& c,
+                                        const bool positive_side)
             {
                 if (positive_side)
                     return a[axis] > a[3] && b[axis] > b[3] && c[axis] > c[3];
@@ -389,16 +392,16 @@ namespace omath::projection
             //   Far    = r3 - r2
             struct Plane final
             {
-                float a, b, c, d;
+                NumericType a, b, c, d;
             };
 
             const auto extract_plane = [&m](const int sign, const int row) -> Plane
             {
                 return {
-                        m.at(3, 0) + static_cast<float>(sign) * m.at(row, 0),
-                        m.at(3, 1) + static_cast<float>(sign) * m.at(row, 1),
-                        m.at(3, 2) + static_cast<float>(sign) * m.at(row, 2),
-                        m.at(3, 3) + static_cast<float>(sign) * m.at(row, 3),
+                        m.at(3, 0) + static_cast<NumericType>(sign) * m.at(row, 0),
+                        m.at(3, 1) + static_cast<NumericType>(sign) * m.at(row, 1),
+                        m.at(3, 2) + static_cast<NumericType>(sign) * m.at(row, 2),
+                        m.at(3, 3) + static_cast<NumericType>(sign) * m.at(row, 3),
                 };
             };
 
@@ -452,12 +455,12 @@ namespace omath::projection
 
             // ReSharper disable once CppTooWideScope
             constexpr auto z_min = depth_range == NDCDepthRange::ZERO_TO_ONE ? 0.0f : -1.0f;
-            const auto clipped_manually = clipping == ViewPortClipping::MANUAL && (projected.at(2, 0) < z_min - eps
-                                          || projected.at(2, 0) > 1.0f + eps);
+            const auto clipped_manually = clipping == ViewPortClipping::MANUAL
+                                          && (projected.at(2, 0) < z_min - eps || projected.at(2, 0) > 1.0f + eps);
             if (clipped_manually)
                 return std::unexpected(Error::WORLD_POSITION_IS_OUT_OF_SCREEN_BOUNDS);
 
-            return Vector3<float>{projected.at(0, 0), projected.at(1, 0), projected.at(2, 0)};
+            return Vector3<NumericType>{projected.at(0, 0), projected.at(1, 0), projected.at(2, 0)};
         }
         [[nodiscard]]
         std::expected<Vector3<NumericType>, Error> view_port_to_world(const Vector3<NumericType>& ndc) const noexcept
@@ -478,19 +481,21 @@ namespace omath::projection
             inverted_projection /= w;
 
             return Vector3<NumericType>{inverted_projection.at(0, 0), inverted_projection.at(1, 0),
-                                  inverted_projection.at(2, 0)};
+                                        inverted_projection.at(2, 0)};
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]]
-        std::expected<Vector3<NumericType>, Error> screen_to_world(const Vector3<NumericType>& screen_pos) const noexcept
+        std::expected<Vector3<NumericType>, Error>
+        screen_to_world(const Vector3<NumericType>& screen_pos) const noexcept
         {
             return view_port_to_world(screen_to_ndc<screen_start>(screen_pos));
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
         [[nodiscard]]
-        std::expected<Vector3<NumericType>, Error> screen_to_world(const Vector2<NumericType>& screen_pos) const noexcept
+        std::expected<Vector3<NumericType>, Error>
+        screen_to_world(const Vector2<NumericType>& screen_pos) const noexcept
         {
             const auto& [x, y] = screen_pos;
             return screen_to_world<screen_start>({x, y, 1.f});
@@ -498,13 +503,13 @@ namespace omath::projection
 
     protected:
         ViewPort m_view_port{};
-        Angle<NumericType, 0.f, 180.f, AngleFlags::Clamped> m_field_of_view;
+        FieldOfView m_field_of_view;
 
         mutable std::optional<Mat4X4Type> m_view_projection_matrix;
         mutable std::optional<Mat4X4Type> m_projection_matrix;
         mutable std::optional<Mat4X4Type> m_view_matrix;
-        float m_far_plane_distance;
-        float m_near_plane_distance;
+        NumericType m_far_plane_distance;
+        NumericType m_near_plane_distance;
 
         ViewAnglesType m_view_angles;
         Vector3<NumericType> m_origin;
@@ -524,10 +529,10 @@ namespace omath::projection
             return is_ndc_z_value_out_of_bounds(data[2]);
         }
         template<class ZType>
-         [[nodiscard]]
+        [[nodiscard]]
         constexpr static bool is_ndc_z_value_out_of_bounds(const ZType& z_ndc) noexcept
         {
-            constexpr auto eps = std::numeric_limits<float>::epsilon();
+            constexpr auto eps = std::numeric_limits<NumericType>::epsilon();
             if constexpr (depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
                 return z_ndc < -1.0f - eps || z_ndc > 1.0f + eps;
             if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
@@ -550,8 +555,8 @@ namespace omath::projection
                                 v
             */
 
-        [[nodiscard]] Vector3<float>
-        ndc_to_screen_position_from_top_left_corner(const Vector3<float>& ndc) const noexcept
+        [[nodiscard]] Vector3<NumericType>
+        ndc_to_screen_position_from_top_left_corner(const Vector3<NumericType>& ndc) const noexcept
         {
             /*
             +------------------------>
@@ -567,8 +572,8 @@ namespace omath::projection
             return {(ndc.x + 1.f) / 2.f * m_view_port.m_width, (ndc.y / -2.f + 0.5f) * m_view_port.m_height, ndc.z};
         }
 
-        [[nodiscard]] Vector3<float>
-        ndc_to_screen_position_from_bottom_left_corner(const Vector3<float>& ndc) const noexcept
+        [[nodiscard]] Vector3<NumericType>
+        ndc_to_screen_position_from_bottom_left_corner(const Vector3<NumericType>& ndc) const noexcept
         {
             /*
              ^
@@ -585,7 +590,7 @@ namespace omath::projection
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
-        [[nodiscard]] Vector3<float> screen_to_ndc(const Vector3<float>& screen_pos) const noexcept
+        [[nodiscard]] Vector3<NumericType> screen_to_ndc(const Vector3<NumericType>& screen_pos) const noexcept
         {
             if constexpr (screen_start == ScreenStart::TOP_LEFT_CORNER)
                 return {screen_pos.x / m_view_port.m_width * 2.f - 1.f, 1.f - screen_pos.y / m_view_port.m_height * 2.f,
