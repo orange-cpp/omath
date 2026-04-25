@@ -667,21 +667,21 @@ namespace omath
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_perspective_left_handed(const float field_of_view, const float aspect_ratio,
-                                                    const float near, const float far) noexcept
+    Mat<4, 4, Type, St> mat_perspective_left_handed(const Type field_of_view, const Type aspect_ratio,
+                                                    const Type near, const Type far) noexcept
     {
-        const float fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / 2.f);
+        const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
-                    {0.f, 1.f / fov_half_tan, 0.f, 0.f},
-                    {0.f, 0.f, far / (far - near), -(near * far) / (far - near)},
-                    {0.f, 0.f, 1.f, 0.f}};
+            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},             Type{0}},
+                    {Type{0},                                 Type{1} / fov_half_tan, Type{0},             Type{0}},
+                    {Type{0},                                 Type{0},                far / (far - near), -(near * far) / (far - near)},
+                    {Type{0},                                 Type{0},                Type{1},            Type{0}}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
-                    {0.f, 1.f / fov_half_tan, 0.f, 0.f},
-                    {0.f, 0.f, (far + near) / (far - near), -(2.f * near * far) / (far - near)},
-                    {0.f, 0.f, 1.f, 0.f}};
+            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},                      Type{0}},
+                    {Type{0},                                 Type{1} / fov_half_tan, Type{0},                      Type{0}},
+                    {Type{0},                                 Type{0},                (far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
+                    {Type{0},                                 Type{0},                Type{1},                     Type{0}}};
         else
             std::unreachable();
     }
@@ -689,21 +689,21 @@ namespace omath
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_perspective_right_handed(const float field_of_view, const float aspect_ratio,
-                                                     const float near, const float far) noexcept
+    Mat<4, 4, Type, St> mat_perspective_right_handed(const Type field_of_view, const Type aspect_ratio,
+                                                     const Type near, const Type far) noexcept
     {
-        const float fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / 2.f);
+        const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
-                    {0.f, 1.f / fov_half_tan, 0.f, 0.f},
-                    {0.f, 0.f, -far / (far - near), -(near * far) / (far - near)},
-                    {0.f, 0.f, -1.f, 0.f}};
+            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},             Type{0}},
+                    {Type{0},                                 Type{1} / fov_half_tan, Type{0},             Type{0}},
+                    {Type{0},                                 Type{0},                -far / (far - near), -(near * far) / (far - near)},
+                    {Type{0},                                 Type{0},                -Type{1},            Type{0}}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {{1.f / (aspect_ratio * fov_half_tan), 0.f, 0.f, 0.f},
-                    {0.f, 1.f / fov_half_tan, 0.f, 0.f},
-                    {0.f, 0.f, -(far + near) / (far - near), -(2.f * near * far) / (far - near)},
-                    {0.f, 0.f, -1.f, 0.f}};
+            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},                      Type{0}},
+                    {Type{0},                                 Type{1} / fov_half_tan, Type{0},                      Type{0}},
+                    {Type{0},                                 Type{0},                -(far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
+                    {Type{0},                                 Type{0},                -Type{1},                     Type{0}}};
         else
             std::unreachable();
     }
@@ -714,24 +714,24 @@ namespace omath
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_perspective_left_handed_horizontal_fov(const float horizontal_fov,
-                                                                   const float aspect_ratio, const float near,
-                                                                   const float far) noexcept
+    Mat<4, 4, Type, St> mat_perspective_left_handed_horizontal_fov(const Type horizontal_fov,
+                                                                   const Type aspect_ratio, const Type near,
+                                                                   const Type far) noexcept
     {
-        const float inv_tan_half_hfov = 1.f / std::tan(angles::degrees_to_radians(horizontal_fov) / 2.f);
-        const float x_axis = inv_tan_half_hfov;
-        const float y_axis = inv_tan_half_hfov * aspect_ratio;
+        const auto inv_tan_half_hfov = Type{1} / std::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
+        const auto x_axis = inv_tan_half_hfov;
+        const auto y_axis = inv_tan_half_hfov * aspect_ratio;
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return {{x_axis, 0.f,    0.f,                          0.f},
-                    {0.f,    y_axis, 0.f,                          0.f},
-                    {0.f,    0.f,    far / (far - near),          -(near * far) / (far - near)},
-                    {0.f,    0.f,    1.f,                          0.f}};
+            return {{x_axis,     Type{0},    Type{0},             Type{0}},
+                    {Type{0},    y_axis,     Type{0},             Type{0}},
+                    {Type{0},    Type{0},    far / (far - near),  -(near * far) / (far - near)},
+                    {Type{0},    Type{0},    Type{1},             Type{0}}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {{x_axis, 0.f,    0.f,                                  0.f},
-                    {0.f,    y_axis, 0.f,                                  0.f},
-                    {0.f,    0.f,    (far + near) / (far - near),         -(2.f * near * far) / (far - near)},
-                    {0.f,    0.f,    1.f,                                  0.f}};
+            return {{x_axis,  Type{0}, Type{0},                     Type{0}},
+                    {Type{0}, y_axis,  Type{0},                     Type{0}},
+                    {Type{0}, Type{0}, (far + near) / (far - near), -(2.f * near * far) / (far - near)},
+                    {Type{0}, Type{0}, Type{1},                     Type{0}}};
         else
             std::unreachable();
     }
@@ -739,24 +739,24 @@ namespace omath
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_perspective_right_handed_horizontal_fov(const float horizontal_fov,
-                                                                    const float aspect_ratio, const float near,
-                                                                    const float far) noexcept
+    Mat<4, 4, Type, St> mat_perspective_right_handed_horizontal_fov(const Type horizontal_fov,
+                                                                    const Type aspect_ratio, const Type near,
+                                                                    const Type far) noexcept
     {
-        const float inv_tan_half_hfov = 1.f / std::tan(angles::degrees_to_radians(horizontal_fov) / 2.f);
-        const float x_axis = inv_tan_half_hfov;
-        const float y_axis = inv_tan_half_hfov * aspect_ratio;
+        const auto inv_tan_half_hfov = Type{1} / std::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
+        const auto x_axis = inv_tan_half_hfov;
+        const auto y_axis = inv_tan_half_hfov * aspect_ratio;
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return {{x_axis, 0.f,    0.f,                          0.f},
-                    {0.f,    y_axis, 0.f,                          0.f},
-                    {0.f,    0.f,   -far / (far - near),          -(near * far) / (far - near)},
-                    {0.f,    0.f,   -1.f,                          0.f}};
+            return {{x_axis,  Type{0}, Type{0},             Type{0}},
+                    {Type{0}, y_axis,  Type{0},             Type{0}},
+                    {Type{0}, Type{0}, -far / (far - near), -(near * far) / (far - near)},
+                    {Type{0}, Type{0}, -Type{1},            Type{0}}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {{x_axis, 0.f,    0.f,                                  0.f},
-                    {0.f,    y_axis, 0.f,                                  0.f},
-                    {0.f,    0.f,   -(far + near) / (far - near),         -(2.f * near * far) / (far - near)},
-                    {0.f,    0.f,   -1.f,                                  0.f}};
+            return {{x_axis,  Type{0}, Type{0},                      Type{0}},
+                    {Type{0}, y_axis,  Type{0},                      Type{0}},
+                    {Type{0}, Type{0}, -(far + near) / (far - near), -(2.f * near * far) / (far - near)},
+                    {Type{0}, Type{0}, -Type{1},                     Type{0}}};
         else
             std::unreachable();
     }

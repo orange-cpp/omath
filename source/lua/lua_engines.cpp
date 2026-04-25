@@ -78,7 +78,8 @@ namespace
     }
 
     // Register an engine: alias shared types, register unique Camera
-    template<class EngineTraits>
+    template<class EngineTraits, class ArithmeticType = float>
+    requires std::is_arithmetic_v<ArithmeticType>
     void register_engine(sol::table& omath_table, const char* subtable_name)
     {
         using PitchAngle = typename EngineTraits::PitchAngle;
@@ -92,9 +93,9 @@ namespace
 
         engine_table.new_usertype<Camera>(
                 "Camera",
-                sol::constructors<Camera(const omath::Vector3<float>&, const ViewAngles&,
+                sol::constructors<Camera(const omath::Vector3<ArithmeticType>&, const ViewAngles&,
                                          const omath::projection::ViewPort&, const omath::projection::FieldOfView&,
-                                         float, float)>(),
+                                         ArithmeticType, ArithmeticType)>(),
                 "look_at", &Camera::look_at, "get_forward", &Camera::get_forward, "get_right", &Camera::get_right,
                 "get_up", &Camera::get_up, "get_origin", &Camera::get_origin, "get_view_angles",
                 &Camera::get_view_angles, "get_near_plane", &Camera::get_near_plane, "get_far_plane",
@@ -104,8 +105,8 @@ namespace
                 &Camera::set_near_plane, "set_far_plane", &Camera::set_far_plane,
 
                 "world_to_screen",
-                [](const Camera& cam, const omath::Vector3<float>& pos)
-                        -> std::tuple<sol::optional<omath::Vector3<float>>, sol::optional<std::string>>
+                [](const Camera& cam, const omath::Vector3<ArithmeticType>& pos)
+                        -> std::tuple<sol::optional<omath::Vector3<ArithmeticType>>, sol::optional<std::string>>
                 {
                     auto result = cam.world_to_screen(pos);
                     if (result)
@@ -114,8 +115,8 @@ namespace
                 },
 
                 "screen_to_world",
-                [](const Camera& cam, const omath::Vector3<float>& pos)
-                        -> std::tuple<sol::optional<omath::Vector3<float>>, sol::optional<std::string>>
+                [](const Camera& cam, const omath::Vector3<ArithmeticType>& pos)
+                        -> std::tuple<sol::optional<omath::Vector3<ArithmeticType>>, sol::optional<std::string>>
                 {
                     auto result = cam.screen_to_world(pos);
                     if (result)
@@ -224,7 +225,7 @@ namespace omath::lua
         register_engine<IWEngineTraits>(omath_table, "iw");
         register_engine<SourceEngineTraits>(omath_table, "source");
         register_engine<UnityEngineTraits>(omath_table, "unity");
-        register_engine<UnrealEngineTraits>(omath_table, "unreal");
+        register_engine<UnrealEngineTraits, double>(omath_table, "unreal");
         register_engine<CryEngineTraits>(omath_table, "cry");
     }
 } // namespace omath::lua::detail

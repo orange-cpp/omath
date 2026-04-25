@@ -7,11 +7,12 @@
 
 namespace omath::projectile_prediction
 {
+    template <class ArithmeticType = float>
     class Target final
     {
     public:
-        Vector3<float> m_origin;
-        Vector3<float> m_velocity;
+        Vector3<ArithmeticType> m_origin;
+        Vector3<ArithmeticType> m_velocity;
         bool m_is_airborne{};
     };
 } // namespace omath::projectile_prediction

@@ -14,8 +14,8 @@
 namespace omath::projectile_prediction
 {
     std::optional<Vector3<float>>
-    ProjPredEngineAvx2::maybe_calculate_aim_point([[maybe_unused]] const Projectile& projectile,
-                                                  [[maybe_unused]] const Target& target) const
+    ProjPredEngineAvx2::maybe_calculate_aim_point([[maybe_unused]] const Projectile<float>& projectile,
+                                                  [[maybe_unused]] const Target<float>& target) const
     {
 #if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
         const float bullet_gravity = m_gravity_constant * projectile.m_gravity_scale;
@@ -124,9 +124,9 @@ namespace omath::projectile_prediction
                 std::format("{} AVX2 feature is not enabled!", std::source_location::current().function_name()));
 #endif
     }
-    std::optional<AimAngles>
-    ProjPredEngineAvx2::maybe_calculate_aim_angles([[maybe_unused]] const Projectile& projectile,
-                                                    [[maybe_unused]] const Target& target) const
+    std::optional<AimAngles<float>>
+    ProjPredEngineAvx2::maybe_calculate_aim_angles([[maybe_unused]] const Projectile<float>& projectile,
+                                                    [[maybe_unused]] const Target<float>& target) const
     {
 #if defined(OMATH_USE_AVX2) && defined(__i386__) && defined(__x86_64__)
         const float bullet_gravity = m_gravity_constant * projectile.m_gravity_scale;
@@ -201,7 +201,7 @@ namespace omath::projectile_prediction
 
                     const Vector3 delta = target_pos - projectile.m_origin;
                     const float yaw = angles::radians_to_degrees(std::atan2(delta.y, delta.x));
-                    return AimAngles{*pitch, yaw};
+                    return AimAngles<float>{*pitch, yaw};
                 }
             }
         }

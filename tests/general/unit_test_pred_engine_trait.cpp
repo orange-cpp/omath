@@ -7,9 +7,12 @@
 using namespace omath;
 using namespace omath::source_engine;
 
+using Projectile = projectile_prediction::Projectile<float>;
+using Target     = projectile_prediction::Target<float>;
+
 TEST(PredEngineTrait, PredictProjectilePositionBasic)
 {
-    projectile_prediction::Projectile p;
+    Projectile p;
     p.m_origin = {0.f, 0.f, 0.f};
     p.m_launch_speed = 10.f;
     p.m_gravity_scale = 1.f;
@@ -23,7 +26,7 @@ TEST(PredEngineTrait, PredictProjectilePositionBasic)
 
 TEST(PredEngineTrait, PredictTargetPositionAirborne)
 {
-    projectile_prediction::Target t;
+    Target t;
     t.m_origin = {0.f, 0.f, 10.f};
     t.m_velocity = {1.f, 0.f, 0.f};
     t.m_is_airborne = true;
@@ -42,7 +45,7 @@ TEST(PredEngineTrait, CalcVector2dDistance)
 
 TEST(PredEngineTrait, CalcViewpointFromAngles)
 {
-    projectile_prediction::Projectile p;
+    Projectile p;
     p.m_origin = {0.f, 0.f, 0.f};
     p.m_launch_speed = 10.f;
 
@@ -55,7 +58,7 @@ TEST(PredEngineTrait, CalcViewpointFromAngles)
 
 TEST(PredEngineTrait, PredictProjectilePositionWithLaunchOffset)
 {
-    projectile_prediction::Projectile p;
+    Projectile p;
     p.m_origin = {0.f, 0.f, 0.f};
     p.m_launch_offset = {5.f, 3.f, -2.f};
     p.m_launch_speed = 10.f;
@@ -76,13 +79,13 @@ TEST(PredEngineTrait, PredictProjectilePositionWithLaunchOffset)
 
 TEST(PredEngineTrait, ZeroLaunchOffsetMatchesOriginalBehavior)
 {
-    projectile_prediction::Projectile p;
+    Projectile p;
     p.m_origin = {10.f, 20.f, 30.f};
     p.m_launch_offset = {0.f, 0.f, 0.f};
     p.m_launch_speed = 15.f;
     p.m_gravity_scale = 0.5f;
 
-    projectile_prediction::Projectile p_no_offset;
+    Projectile p_no_offset;
     p_no_offset.m_origin = {10.f, 20.f, 30.f};
     p_no_offset.m_launch_speed = 15.f;
     p_no_offset.m_gravity_scale = 0.5f;

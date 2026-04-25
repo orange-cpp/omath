@@ -6,14 +6,14 @@
 
 namespace omath::projectile_prediction
 {
-    class ProjPredEngineAvx2 final : public ProjPredEngineInterface
+    class ProjPredEngineAvx2 final : public ProjPredEngineInterface<float>
     {
     public:
         [[nodiscard]] std::optional<Vector3<float>>
-        maybe_calculate_aim_point(const Projectile& projectile, const Target& target) const override;
+        maybe_calculate_aim_point(const Projectile<float>& projectile, const Target<float>& target) const override;
 
-        [[nodiscard]] std::optional<AimAngles>
-        maybe_calculate_aim_angles(const Projectile& projectile, const Target& target) const override;
+        [[nodiscard]] std::optional<AimAngles<float>>
+        maybe_calculate_aim_angles(const Projectile<float>& projectile, const Target<float>& target) const override;
 
         ProjPredEngineAvx2(float gravity_constant, float simulation_time_step, float maximum_simulation_time);
         ~ProjPredEngineAvx2() override = default;
@@ -21,7 +21,7 @@ namespace omath::projectile_prediction
     private:
         [[nodiscard]] static std::optional<float> calculate_pitch(const Vector3<float>& proj_origin,
                                                                   const Vector3<float>& target_pos,
-                                                                  float bullet_gravity, float v0, float time) ;
+                                                                  float bullet_gravity, float v0, float time);
 
         // We use [[maybe_unused]] here since AVX2 is not available for ARM and ARM64 CPU
         [[maybe_unused]] const float m_gravity_constant;

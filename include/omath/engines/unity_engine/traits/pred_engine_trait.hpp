@@ -12,7 +12,7 @@ namespace omath::unity_engine
     class PredEngineTrait final
     {
     public:
-        constexpr static Vector3<float> predict_projectile_position(const projectile_prediction::Projectile& projectile,
+        constexpr static Vector3<float> predict_projectile_position(const projectile_prediction::Projectile<float>& projectile,
                                                                     const float pitch, const float yaw,
                                                                     const float time, const float gravity) noexcept
         {
@@ -26,7 +26,7 @@ namespace omath::unity_engine
             return current_pos;
         }
         [[nodiscard]]
-        static constexpr Vector3<float> predict_target_position(const projectile_prediction::Target& target,
+        static constexpr Vector3<float> predict_target_position(const projectile_prediction::Target<float>& target,
                                                                 const float time, const float gravity) noexcept
         {
             auto predicted = target.m_origin + target.m_velocity * time;
@@ -49,7 +49,7 @@ namespace omath::unity_engine
         }
 
         [[nodiscard]]
-        static Vector3<float> calc_viewpoint_from_angles(const projectile_prediction::Projectile& projectile,
+        static Vector3<float> calc_viewpoint_from_angles(const projectile_prediction::Projectile<float>& projectile,
                                                          Vector3<float> predicted_target_position,
                                                          const std::optional<float> projectile_pitch) noexcept
         {
