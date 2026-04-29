@@ -44,18 +44,16 @@ namespace omath::iw_engine
         // aspect ratio.
         //   vfov = 2 · atan( tan(hfov_4:3 / 2) / (4/3) )
         constexpr float k_source_reference_aspect = 4.f / 3.f;
-        const float half_hfov_4_3 = angles::degrees_to_radians(field_of_view) / 2.f;
-        const float vfov_deg = angles::radians_to_degrees(
-                2.f * std::atan(std::tan(half_hfov_4_3) / k_source_reference_aspect));
+        const auto vertical_fov = angles::horizontal_fov_to_vertical(field_of_view, k_source_reference_aspect);
 
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
             return mat_perspective_left_handed<
                     float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
-                    vfov_deg, aspect_ratio, near, far);
+                    vertical_fov, aspect_ratio, near, far);
         if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return mat_perspective_left_handed<
                     float, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
-                    vfov_deg, aspect_ratio, near, far);
+                    vertical_fov, aspect_ratio, near, far);
         std::unreachable();
     };
 } // namespace omath::iw_engine
