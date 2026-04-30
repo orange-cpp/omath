@@ -129,7 +129,6 @@ namespace omath
             return Vector2<Type>::dot(other) + z * other.z;
         }
 
-#ifndef _MSC_VER
         [[nodiscard]] constexpr Type length() const
         {
             return std::hypot(this->x, this->y, z);
@@ -149,29 +148,6 @@ namespace omath
 
             return length_value != 0 ? *this / length_value : *this;
         }
-#else
-        [[nodiscard]] Type length() const noexcept
-        {
-            return std::hypot(this->x, this->y, z);
-        }
-
-        [[nodiscard]] Vector3 normalized() const noexcept
-        {
-            const Type len = this->length();
-
-            return len != static_cast<Type>(0) ? *this / len : *this;
-        }
-
-        [[nodiscard]] Type length_2d() const noexcept
-        {
-            return Vector2<Type>::length();
-        }
-
-        [[nodiscard]] Type distance_to(const Vector3& v_other) const noexcept
-        {
-            return (*this - v_other).length();
-        }
-#endif
 
         [[nodiscard]] constexpr Type length_sqr() const noexcept
         {

@@ -129,8 +129,7 @@ namespace omath
         {
             return x * other.x + y * other.y;
         }
-
-#ifndef _MSC_VER
+        
         [[nodiscard]] constexpr Type length() const noexcept
         {
             return std::hypot(this->x, this->y);
@@ -141,18 +140,6 @@ namespace omath
             const Type len = length();
             return len > 0.f ? *this / len : *this;
         }
-#else
-        [[nodiscard]] Type length() const noexcept
-        {
-            return std::hypot(x, y);
-        }
-
-        [[nodiscard]] Vector2 normalized() const noexcept
-        {
-            const Type len = length();
-            return len > static_cast<Type>(0) ? *this / len : *this;
-        }
-#endif
         [[nodiscard]] constexpr Type length_sqr() const noexcept
         {
             return x * x + y * y;
