@@ -24,7 +24,7 @@ namespace omath::angles
 
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] Type horizontal_fov_to_vertical(const Type& horizontal_fov, const Type& aspect) noexcept
+    [[nodiscard]] constexpr Type horizontal_fov_to_vertical(const Type& horizontal_fov, const Type& aspect) noexcept
     {
         const auto fov_rad = degrees_to_radians(horizontal_fov);
 
@@ -35,7 +35,7 @@ namespace omath::angles
 
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] Type vertical_fov_to_horizontal(const Type& vertical_fov, const Type& aspect) noexcept
+    [[nodiscard]] constexpr Type vertical_fov_to_horizontal(const Type& vertical_fov, const Type& aspect) noexcept
     {
         const auto fov_as_radians = degrees_to_radians(vertical_fov);
 
@@ -47,7 +47,7 @@ namespace omath::angles
 
     template<class Type>
     requires std::is_arithmetic_v<Type>
-    [[nodiscard]] Type wrap_angle(const Type& angle, const Type& min, const Type& max) noexcept
+    [[nodiscard]] constexpr Type wrap_angle(const Type& angle, const Type& min, const Type& max) noexcept
     {
         if (angle <= max && angle >= min)
             return angle;

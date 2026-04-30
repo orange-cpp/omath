@@ -70,31 +70,31 @@ namespace omath
         }
 
         [[nodiscard]]
-        Type sin() const noexcept
+        constexpr Type sin() const noexcept
         {
             return std::sin(as_radians());
         }
 
         [[nodiscard]]
-        Type cos() const noexcept
+        constexpr Type cos() const noexcept
         {
             return std::cos(as_radians());
         }
 
         [[nodiscard]]
-        Type tan() const noexcept
+        constexpr Type tan() const noexcept
         {
             return std::tan(as_radians());
         }
 
         [[nodiscard]]
-        Type atan() const noexcept
+        constexpr Type atan() const noexcept
         {
             return std::atan(as_radians());
         }
 
         [[nodiscard]]
-        Type cot() const noexcept
+        constexpr Type cot() const noexcept
         {
             return cos() / sin();
         }
