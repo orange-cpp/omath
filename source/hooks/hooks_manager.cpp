@@ -1,7 +1,6 @@
 #include "omath/hooks/hooks_manager.hpp"
 
 #ifdef OMATH_ENABLE_HOOKING
-#include <cstring>
 
 namespace
 {
@@ -32,26 +31,10 @@ namespace
         [[nodiscard]] bool valid()  const { return m_window_handle != nullptr; }
     };
 
-    // Method counts per interface (vtable slots including inherited ones)
-    constexpr std::size_t k_device_methods           = 44;
-    constexpr std::size_t k_command_queue_methods     = 19;
-    constexpr std::size_t k_command_allocator_methods = 9;
-    constexpr std::size_t k_command_list_methods      = 60;
-    constexpr std::size_t k_swap_chain_methods        = 18;
-    constexpr std::size_t k_total_methods = k_device_methods + k_command_queue_methods +
-                                            k_command_allocator_methods + k_command_list_methods +
-                                            k_swap_chain_methods; // 150
-
-    // Base offsets in the combined table
-    constexpr std::size_t k_cmd_queue_base  = k_device_methods; // 44
-    constexpr std::size_t k_swap_chain_base = k_device_methods + k_command_queue_methods +
-                                              k_command_allocator_methods + k_command_list_methods; // 132
-
-    // IDXGISwapChain vtable: Present=8, ResizeBuffers=13 (from IUnknown base)
-    // ID3D12CommandQueue vtable: ExecuteCommandLists=8 (from IUnknown base)
-    constexpr std::size_t k_present_index          = k_swap_chain_base + 8;   // 140
-    constexpr std::size_t k_resize_buffers_index   = k_swap_chain_base + 13;  // 145
-    constexpr std::size_t k_execute_cmd_lists_index = k_cmd_queue_base + 8;   // 52
+    void* vtable_fn(void* com_obj, std::size_t index)
+    {
+        return (*reinterpret_cast<void***>(com_obj))[index];
+    }
 } // namespace
 
 namespace omath::hooks
@@ -68,8 +51,12 @@ namespace omath::hooks
         unhook_dx12();
     }
 
-    bool HooksManager::build_vtable()
+    bool HooksManager::hook_dx12()
     {
+        std::unique_lock lock(m_mutex);
+        if (m_is_dx12_hooked)
+            return true;
+
         const DummyWindow window;
         if (!window.valid())
             return false;
@@ -170,18 +157,19 @@ namespace omath::hooks
             return false;
         }
 
-        m_vtable.resize(k_total_methods);
+        // Read the 3 needed vtable slots directly — these addresses live in the DLL,
+        // not in the objects, so they remain valid after the objects are released.
+        m_present_hook = safetyhook::create_inline(
+            vtable_fn(swap_chain, 8),   // IDXGISwapChain::Present
+            reinterpret_cast<void*>(&present_detour));
 
-        const auto copy_vtable = [](uintptr_t* dst, void* com_obj, std::size_t count)
-        {
-            std::memcpy(dst, *reinterpret_cast<uintptr_t**>(com_obj), count * sizeof(uintptr_t));
-        };
+        m_resize_buffers_hook = safetyhook::create_inline(
+            vtable_fn(swap_chain, 13),  // IDXGISwapChain::ResizeBuffers
+            reinterpret_cast<void*>(&resize_buffers_detour));
 
-        copy_vtable(m_vtable.data(),                                                                           device,           k_device_methods);
-        copy_vtable(m_vtable.data() + k_device_methods,                                                        command_queue,    k_command_queue_methods);
-        copy_vtable(m_vtable.data() + k_device_methods + k_command_queue_methods,                              command_allocator, k_command_allocator_methods);
-        copy_vtable(m_vtable.data() + k_device_methods + k_command_queue_methods + k_command_allocator_methods, command_list,    k_command_list_methods);
-        copy_vtable(m_vtable.data() + k_swap_chain_base,                                                       swap_chain,       k_swap_chain_methods);
+        m_execute_command_lists_hook = safetyhook::create_inline(
+            vtable_fn(command_queue, 8), // ID3D12CommandQueue::ExecuteCommandLists
+            reinterpret_cast<void*>(&execute_command_lists_detour));
 
         swap_chain->Release();
         command_list->Release();
@@ -189,30 +177,6 @@ namespace omath::hooks
         command_queue->Release();
         device->Release();
         factory->Release();
-
-        return true;
-    }
-
-    bool HooksManager::hook_dx12()
-    {
-        std::unique_lock lock(m_mutex);
-        if (m_is_dx12_hooked)
-            return true;
-
-        if (!build_vtable())
-            return false;
-
-        m_present_hook = safetyhook::create_inline(
-            reinterpret_cast<void*>(m_vtable[k_present_index]),
-            reinterpret_cast<void*>(&present_detour));
-
-        m_resize_buffers_hook = safetyhook::create_inline(
-            reinterpret_cast<void*>(m_vtable[k_resize_buffers_index]),
-            reinterpret_cast<void*>(&resize_buffers_detour));
-
-        m_execute_command_lists_hook = safetyhook::create_inline(
-            reinterpret_cast<void*>(m_vtable[k_execute_cmd_lists_index]),
-            reinterpret_cast<void*>(&execute_command_lists_detour));
 
         if (!m_present_hook || !m_resize_buffers_hook || !m_execute_command_lists_hook)
         {
@@ -232,7 +196,6 @@ namespace omath::hooks
         m_present_hook               = {};
         m_resize_buffers_hook        = {};
         m_execute_command_lists_hook = {};
-        m_vtable.clear();
         m_is_dx12_hooked = false;
     }
 
@@ -265,8 +228,8 @@ namespace omath::hooks
         if (!prev)
             return false;
 
-        m_hooked_hwnd       = hwnd;
-        m_original_wndproc  = prev;
+        m_hooked_hwnd        = hwnd;
+        m_original_wndproc   = prev;
         m_is_wnd_proc_hooked = true;
         return true;
     }

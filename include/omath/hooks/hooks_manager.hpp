@@ -4,7 +4,6 @@
 #include <functional>
 #include <optional>
 #include <shared_mutex>
-#include <vector>
 #include <cstdint>
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -24,11 +23,11 @@ namespace omath::hooks
     {
         HooksManager() = default;
     public:
-        using present_callback              = std::function<void(IDXGISwapChain*, UINT, UINT)>;
-        using resize_buffers_callback       = std::function<void(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)>;
+        using present_callback               = std::function<void(IDXGISwapChain*, UINT, UINT)>;
+        using resize_buffers_callback        = std::function<void(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)>;
         using execute_command_lists_callback = std::function<void(ID3D12CommandQueue*, UINT, ID3D12CommandList* const*)>;
         // Return nullopt to pass the message to the original WndProc; return a value to intercept it.
-        using wnd_proc_callback             = std::function<std::optional<LRESULT>(HWND, UINT, WPARAM, LPARAM)>;
+        using wnd_proc_callback              = std::function<std::optional<LRESULT>(HWND, UINT, WPARAM, LPARAM)>;
 
         [[nodiscard]] static HooksManager& get();
         HooksManager(const HooksManager&)            = delete;
@@ -48,8 +47,6 @@ namespace omath::hooks
         void set_on_wnd_proc(wnd_proc_callback callback);
 
     private:
-        [[nodiscard]] bool build_vtable();
-
         static HRESULT __stdcall present_detour(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags);
         static HRESULT __stdcall resize_buffers_detour(IDXGISwapChain* p_swap_chain, UINT buffer_count,
                                                        UINT width, UINT height, DXGI_FORMAT new_format,
@@ -64,7 +61,6 @@ namespace omath::hooks
         bool m_is_dx12_hooked     = false;
         bool m_is_wnd_proc_hooked = false;
 
-        std::vector<uintptr_t> m_vtable;
         HWND    m_hooked_hwnd      = nullptr;
         WNDPROC m_original_wndproc = nullptr;
 
@@ -72,10 +68,10 @@ namespace omath::hooks
         safetyhook::InlineHook m_resize_buffers_hook;
         safetyhook::InlineHook m_execute_command_lists_hook;
 
-        present_callback              m_present_cb;
-        resize_buffers_callback       m_resize_buffers_cb;
+        present_callback               m_present_cb;
+        resize_buffers_callback        m_resize_buffers_cb;
         execute_command_lists_callback m_execute_command_lists_cb;
-        wnd_proc_callback             m_wnd_proc_cb;
+        wnd_proc_callback              m_wnd_proc_cb;
     };
 }
 
