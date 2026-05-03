@@ -9,26 +9,27 @@
 #include "omath/hooks/hooks_manager.hpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
+bool show_menu = true;
 
 namespace
 {
     struct frame_context
     {
-        ID3D12CommandAllocator* command_allocator = nullptr;
-        ID3D12Resource*         render_target     = nullptr;
+        ID3D12Resource*             render_target = nullptr;
+        D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle    = {};
     };
 
     bool g_initialized    = false;
     bool g_init_attempted = false;
 
-    ID3D12Device*              g_device             = nullptr;
-    ID3D12CommandQueue*        g_command_queue       = nullptr;
-    IDXGISwapChain3*           g_swap_chain          = nullptr;
-    ID3D12DescriptorHeap*      g_rtv_heap            = nullptr;
-    ID3D12DescriptorHeap*      g_srv_heap            = nullptr;
-    ID3D12GraphicsCommandList* g_command_list        = nullptr;
+    ID3D12Device*              g_device           = nullptr;
+    ID3D12CommandQueue*        g_command_queue    = nullptr;
+    IDXGISwapChain3*           g_swap_chain       = nullptr;
+    ID3D12DescriptorHeap*      g_rtv_heap         = nullptr;
+    ID3D12DescriptorHeap*      g_srv_heap         = nullptr;
+    ID3D12GraphicsCommandList* g_command_list     = nullptr;
+    ID3D12CommandAllocator*    g_command_allocator = nullptr;
     std::vector<frame_context> g_frames;
-    UINT                       g_rtv_descriptor_size = 0;
 
     void init(IDXGISwapChain* swap_chain)
     {
@@ -47,7 +48,7 @@ namespace
         {
             D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
             heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-            heap_desc.NumDescriptors = 1;
+            heap_desc.NumDescriptors = buffer_count;
             heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             if (FAILED(g_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&g_srv_heap))))
                 return;
@@ -56,27 +57,31 @@ namespace
             D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
             heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
             heap_desc.NumDescriptors = buffer_count;
+            heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+            heap_desc.NodeMask       = 1;
             if (FAILED(g_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&g_rtv_heap))))
                 return;
         }
 
-        g_rtv_descriptor_size = g_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-        g_frames.resize(buffer_count);
+        if (FAILED(g_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                                     IID_PPV_ARGS(&g_command_allocator))))
+            return;
 
+        g_frames.resize(buffer_count);
+        const UINT rtv_size = g_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = g_rtv_heap->GetCPUDescriptorHandleForHeapStart();
+
         for (UINT i = 0; i < buffer_count; ++i)
         {
-            if (FAILED(g_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                                         IID_PPV_ARGS(&g_frames[i].command_allocator))))
-                return;
+            g_frames[i].rtv_handle = rtv_handle;
             if (FAILED(swap_chain->GetBuffer(i, IID_PPV_ARGS(&g_frames[i].render_target))))
                 return;
             g_device->CreateRenderTargetView(g_frames[i].render_target, nullptr, rtv_handle);
-            rtv_handle.ptr += g_rtv_descriptor_size;
+            rtv_handle.ptr += rtv_size;
         }
 
         if (FAILED(g_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                                g_frames[0].command_allocator, nullptr,
+                                                g_command_allocator, nullptr,
                                                 IID_PPV_ARGS(&g_command_list))))
             return;
         g_command_list->Close();
@@ -85,19 +90,22 @@ namespace
         ImGui::StyleColorsDark();
         ImGui::GetIO().IniFilename = nullptr;
         ImGui::GetIO().LogFilename = nullptr;
-        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
         ImGui_ImplWin32_Init(desc.OutputWindow);
         ImGui_ImplDX12_Init(g_device, static_cast<int>(buffer_count),
                              desc.BufferDesc.Format, g_srv_heap,
                              g_srv_heap->GetCPUDescriptorHandleForHeapStart(),
                              g_srv_heap->GetGPUDescriptorHandleForHeapStart());
+        ImGui_ImplDX12_CreateDeviceObjects();
 
         auto& mgr = omath::hooks::HooksManager::get();
         mgr.set_on_wnd_proc([](HWND h, UINT msg, WPARAM wp, LPARAM lp) -> std::optional<LRESULT> {
-            if (ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp))
-                return 0;
-            return std::nullopt;
+            if (!show_menu)
+                return std::nullopt;
+
+            ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp);
+            return true;
         });
         mgr.hook_wnd_proc(desc.OutputWindow);
 
@@ -112,7 +120,6 @@ namespace
 
     void on_present(IDXGISwapChain* swap_chain, UINT, UINT)
     {
-        // Delay init until we have the command queue (captured from ExecuteCommandLists).
         if (!g_initialized)
         {
             if (!g_init_attempted && g_command_queue)
@@ -120,41 +127,42 @@ namespace
             return;
         }
 
+        if (!g_command_queue)
+            return;
+
+        if (GetAsyncKeyState(VK_INSERT) & 1)
+            show_menu = !show_menu;
+
+        if (!show_menu)
+            return;
+
+        ImGui_ImplDX12_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
+        ImGui::GetIO().MouseDrawCursor = true;
+        ImGui::ShowDemoWindow();
+        ImGui::EndFrame();
+
         const UINT buf_idx = g_swap_chain->GetCurrentBackBufferIndex();
         auto& fc = g_frames[buf_idx];
 
-        fc.command_allocator->Reset();
-        g_command_list->Reset(fc.command_allocator, nullptr);
+        g_command_allocator->Reset();
+        g_command_list->Reset(g_command_allocator, nullptr);
 
-        // Transition back buffer: Present → RenderTarget
         D3D12_RESOURCE_BARRIER barrier{};
         barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
         barrier.Transition.pResource   = fc.render_target;
         barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
         barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
         barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_RENDER_TARGET;
         g_command_list->ResourceBarrier(1, &barrier);
-
-        D3D12_CPU_DESCRIPTOR_HANDLE rtv = g_rtv_heap->GetCPUDescriptorHandleForHeapStart();
-        rtv.ptr += buf_idx * g_rtv_descriptor_size;
-        g_command_list->OMSetRenderTargets(1, &rtv, FALSE, nullptr);
+        g_command_list->OMSetRenderTargets(1, &fc.rtv_handle, FALSE, nullptr);
         g_command_list->SetDescriptorHeaps(1, &g_srv_heap);
-
-        ImGui_ImplDX12_NewFrame();
-        ImGui_ImplWin32_NewFrame();
-        ImGui::NewFrame();
-
-        ImGui::SetNextWindowSize({300.f, 80.f}, ImGuiCond_Once);
-        ImGui::SetNextWindowPos({10.f, 10.f}, ImGuiCond_Once);
-        ImGui::Begin("omath | DX12 hook");
-        ImGui::Text("Hook active");
-        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-        ImGui::End();
 
         ImGui::Render();
         ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), g_command_list);
 
-        // Transition back buffer: RenderTarget → Present
         barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
         barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_PRESENT;
         g_command_list->ResourceBarrier(1, &barrier);
@@ -168,15 +176,15 @@ namespace
     {
         for (auto& fc : g_frames)
         {
-            if (fc.command_allocator) { fc.command_allocator->Release(); fc.command_allocator = nullptr; }
-            if (fc.render_target)     { fc.render_target->Release();     fc.render_target     = nullptr; }
+            if (fc.render_target) { fc.render_target->Release(); fc.render_target = nullptr; }
         }
         g_frames.clear();
-        if (g_command_list) { g_command_list->Release(); g_command_list = nullptr; }
-        if (g_srv_heap)     { g_srv_heap->Release();     g_srv_heap     = nullptr; }
-        if (g_rtv_heap)     { g_rtv_heap->Release();     g_rtv_heap     = nullptr; }
-        if (g_swap_chain)   { g_swap_chain->Release();   g_swap_chain   = nullptr; }
-        if (g_device)       { g_device->Release();       g_device       = nullptr; }
+        if (g_command_allocator) { g_command_allocator->Release(); g_command_allocator = nullptr; }
+        if (g_command_list)      { g_command_list->Release();      g_command_list      = nullptr; }
+        if (g_srv_heap)          { g_srv_heap->Release();          g_srv_heap          = nullptr; }
+        if (g_rtv_heap)          { g_rtv_heap->Release();          g_rtv_heap          = nullptr; }
+        if (g_swap_chain)        { g_swap_chain->Release();        g_swap_chain        = nullptr; }
+        if (g_device)            { g_device->Release();            g_device            = nullptr; }
     }
 } // namespace
 

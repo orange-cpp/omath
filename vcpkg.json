@@ -42,6 +42,21 @@
       ],
       "supports": "(windows | linux) & !arm & !uwp"
     },
+    "hooking-examples": {
+      "description": "ImGui overlay examples for DX9/DX11/DX12 hooking (requires hooking feature)",
+      "dependencies": [
+        {
+          "name": "omath",
+          "features": ["hooking"]
+        },
+        {
+          "name": "imgui",
+          "features": ["dx9-binding", "dx11-binding", "dx12-binding", "win32-binding"],
+          "default-features": false
+        }
+      ],
+      "supports": "windows & !arm & !uwp"
+    },
     "examples": {
       "description": "Build examples",
       "dependencies": [
@@ -50,7 +65,7 @@
         "opengl",
         {
           "name": "imgui",
-          "features": ["glfw-binding", "opengl3-binding"]
+          "features": ["glfw-binding", "opengl3-binding", "dx12-binding", "dx9-binding", "dx11-binding", "win32-binding"]
         }
       ]
     },
