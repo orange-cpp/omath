@@ -36,6 +36,113 @@ namespace
     {
         return (*reinterpret_cast<void***>(com_obj))[index];
     }
+
+    struct dx12_vtable_fns
+    {
+        void* present;
+        void* resize_buffers;
+        void* execute_command_lists;
+    };
+
+    // RAII wrapper so all early-return paths release COM objects automatically.
+    struct dx12_com_objects
+    {
+        IDXGIFactory*              factory           = nullptr;
+        ID3D12Device*              device            = nullptr;
+        ID3D12CommandQueue*        command_queue     = nullptr;
+        ID3D12CommandAllocator*    command_allocator = nullptr;
+        ID3D12GraphicsCommandList* command_list      = nullptr;
+        IDXGISwapChain*            swap_chain        = nullptr;
+
+        dx12_com_objects() = default;
+        dx12_com_objects(const dx12_com_objects&)            = delete;
+        dx12_com_objects& operator=(const dx12_com_objects&) = delete;
+
+        ~dx12_com_objects()
+        {
+            if (swap_chain)        swap_chain->Release();
+            if (command_list)      command_list->Release();
+            if (command_allocator) command_allocator->Release();
+            if (command_queue)     command_queue->Release();
+            if (device)            device->Release();
+            if (factory)           factory->Release();
+        }
+    };
+
+    std::optional<dx12_vtable_fns> read_dx12_vtable_fns(HWND hwnd)
+    {
+        using create_dxgi_factory_fn = HRESULT(__stdcall*)(REFIID, void**);
+        using d3d12_create_device_fn = HRESULT(__stdcall*)(IUnknown*, D3D_FEATURE_LEVEL, REFIID, void**);
+
+        const HMODULE d3d12_module = GetModuleHandle("d3d12.dll");
+        const HMODULE dxgi_module  = GetModuleHandle("dxgi.dll");
+        if (!d3d12_module || !dxgi_module)
+            return std::nullopt;
+
+        const auto create_dxgi_factory = reinterpret_cast<create_dxgi_factory_fn>(
+            GetProcAddress(dxgi_module, "CreateDXGIFactory"));
+        const auto d3d12_create_device = reinterpret_cast<d3d12_create_device_fn>(
+            GetProcAddress(d3d12_module, "D3D12CreateDevice"));
+
+        if (!create_dxgi_factory || !d3d12_create_device)
+            return std::nullopt;
+
+        dx12_com_objects objs;
+
+        if (FAILED(create_dxgi_factory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&objs.factory))))
+            return std::nullopt;
+
+        IDXGIAdapter* adapter = nullptr;
+        if (objs.factory->EnumAdapters(0, &adapter) == DXGI_ERROR_NOT_FOUND)
+            return std::nullopt;
+
+        const HRESULT device_hr = d3d12_create_device(adapter, D3D_FEATURE_LEVEL_11_0,
+                                                       __uuidof(ID3D12Device),
+                                                       reinterpret_cast<void**>(&objs.device));
+        adapter->Release();
+        if (FAILED(device_hr))
+            return std::nullopt;
+
+        D3D12_COMMAND_QUEUE_DESC queue_desc{};
+        queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+        if (FAILED(objs.device->CreateCommandQueue(&queue_desc, __uuidof(ID3D12CommandQueue),
+                                                   reinterpret_cast<void**>(&objs.command_queue))))
+            return std::nullopt;
+
+        if (FAILED(objs.device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                                        __uuidof(ID3D12CommandAllocator),
+                                                        reinterpret_cast<void**>(&objs.command_allocator))))
+            return std::nullopt;
+
+        if (FAILED(objs.device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, objs.command_allocator,
+                                                   nullptr, __uuidof(ID3D12GraphicsCommandList),
+                                                   reinterpret_cast<void**>(&objs.command_list))))
+            return std::nullopt;
+
+        DXGI_SWAP_CHAIN_DESC swap_chain_desc{};
+        swap_chain_desc.BufferDesc.Width       = 100;
+        swap_chain_desc.BufferDesc.Height      = 100;
+        swap_chain_desc.BufferDesc.RefreshRate = {60, 1};
+        swap_chain_desc.BufferDesc.Format      = DXGI_FORMAT_R8G8B8A8_UNORM;
+        swap_chain_desc.SampleDesc             = {1, 0};
+        swap_chain_desc.BufferUsage            = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        swap_chain_desc.BufferCount            = 2;
+        swap_chain_desc.OutputWindow           = hwnd;
+        swap_chain_desc.Windowed               = TRUE;
+        swap_chain_desc.SwapEffect             = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        swap_chain_desc.Flags                  = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+        if (FAILED(objs.factory->CreateSwapChain(objs.command_queue, &swap_chain_desc, &objs.swap_chain)))
+            return std::nullopt;
+
+        // objs destructor releases all COM objects after we capture the addresses.
+        return dx12_vtable_fns{
+            vtable_fn(objs.swap_chain, 8),    // IDXGISwapChain::Present
+            vtable_fn(objs.swap_chain, 13),   // IDXGISwapChain::ResizeBuffers
+            vtable_fn(objs.command_queue, 8), // ID3D12CommandQueue::ExecuteCommandLists
+        };
+    }
 } // namespace
 
 namespace omath::hooks
@@ -238,122 +345,21 @@ namespace omath::hooks
         if (!window.valid())
             return false;
 
-        const HMODULE d3d12_module = GetModuleHandle("d3d12.dll");
-        const HMODULE dxgi_module  = GetModuleHandle("dxgi.dll");
-        if (!d3d12_module || !dxgi_module)
+        const auto fns = read_dx12_vtable_fns(window.handle());
+        if (!fns)
             return false;
 
-        using create_dxgi_factory_fn = HRESULT(__stdcall*)(REFIID, void**);
-        using d3d12_create_device_fn = HRESULT(__stdcall*)(IUnknown*, D3D_FEATURE_LEVEL, REFIID, void**);
-
-        const auto create_dxgi_factory = reinterpret_cast<create_dxgi_factory_fn>(
-            GetProcAddress(dxgi_module, "CreateDXGIFactory"));
-        const auto d3d12_create_device = reinterpret_cast<d3d12_create_device_fn>(
-            GetProcAddress(d3d12_module, "D3D12CreateDevice"));
-
-        if (!create_dxgi_factory || !d3d12_create_device)
-            return false;
-
-        IDXGIFactory* factory = nullptr;
-        if (FAILED(create_dxgi_factory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory))))
-            return false;
-
-        IDXGIAdapter* adapter = nullptr;
-        if (factory->EnumAdapters(0, &adapter) == DXGI_ERROR_NOT_FOUND)
-        {
-            factory->Release();
-            return false;
-        }
-
-        ID3D12Device* device = nullptr;
-        if (FAILED(d3d12_create_device(adapter, D3D_FEATURE_LEVEL_11_0,
-                                       __uuidof(ID3D12Device), reinterpret_cast<void**>(&device))))
-        {
-            adapter->Release();
-            factory->Release();
-            return false;
-        }
-        adapter->Release();
-
-        D3D12_COMMAND_QUEUE_DESC queue_desc{};
-        queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-        ID3D12CommandQueue* command_queue = nullptr;
-        if (FAILED(device->CreateCommandQueue(&queue_desc, __uuidof(ID3D12CommandQueue),
-                                              reinterpret_cast<void**>(&command_queue))))
-        {
-            device->Release();
-            factory->Release();
-            return false;
-        }
-
-        ID3D12CommandAllocator* command_allocator = nullptr;
-        if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                                   __uuidof(ID3D12CommandAllocator),
-                                                   reinterpret_cast<void**>(&command_allocator))))
-        {
-            command_queue->Release();
-            device->Release();
-            factory->Release();
-            return false;
-        }
-
-        ID3D12GraphicsCommandList* command_list = nullptr;
-        if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, command_allocator, nullptr,
-                                              __uuidof(ID3D12GraphicsCommandList),
-                                              reinterpret_cast<void**>(&command_list))))
-        {
-            command_allocator->Release();
-            command_queue->Release();
-            device->Release();
-            factory->Release();
-            return false;
-        }
-
-        DXGI_SWAP_CHAIN_DESC swap_chain_desc{};
-        swap_chain_desc.BufferDesc.Width       = 100;
-        swap_chain_desc.BufferDesc.Height      = 100;
-        swap_chain_desc.BufferDesc.RefreshRate = {60, 1};
-        swap_chain_desc.BufferDesc.Format      = DXGI_FORMAT_R8G8B8A8_UNORM;
-        swap_chain_desc.SampleDesc             = {1, 0};
-        swap_chain_desc.BufferUsage            = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swap_chain_desc.BufferCount            = 2;
-        swap_chain_desc.OutputWindow           = window.handle();
-        swap_chain_desc.Windowed               = TRUE;
-        swap_chain_desc.SwapEffect             = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        swap_chain_desc.Flags                  = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
-        IDXGISwapChain* swap_chain = nullptr;
-        if (FAILED(factory->CreateSwapChain(command_queue, &swap_chain_desc, &swap_chain)))
-        {
-            command_list->Release();
-            command_allocator->Release();
-            command_queue->Release();
-            device->Release();
-            factory->Release();
-            return false;
-        }
-
-        // Read the needed vtable slots directly — addresses live in the DLL,
-        // not in the objects, so they remain valid after the objects are released.
         m_dx12_present_hook = safetyhook::create_inline(
-            vtable_fn(swap_chain, 8),    // IDXGISwapChain::Present
+            fns->present,
             reinterpret_cast<void*>(&dx12_present_detour));
 
         m_dx12_resize_buffers_hook = safetyhook::create_inline(
-            vtable_fn(swap_chain, 13),   // IDXGISwapChain::ResizeBuffers
+            fns->resize_buffers,
             reinterpret_cast<void*>(&dx12_resize_buffers_detour));
 
         m_dx12_execute_command_lists_hook = safetyhook::create_inline(
-            vtable_fn(command_queue, 8), // ID3D12CommandQueue::ExecuteCommandLists
+            fns->execute_command_lists,
             reinterpret_cast<void*>(&dx12_execute_command_lists_detour));
-
-        swap_chain->Release();
-        command_list->Release();
-        command_allocator->Release();
-        command_queue->Release();
-        device->Release();
-        factory->Release();
 
         if (!m_dx12_present_hook || !m_dx12_resize_buffers_hook || !m_dx12_execute_command_lists_hook)
         {
