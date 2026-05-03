@@ -16,6 +16,15 @@
     }
   ],
   "features": {
+    "all": {
+      "description": "Enable all additional features",
+      "dependencies": [
+        {
+          "name": "omath",
+          "features": ["imgui", "lua", "hooking"]
+        }
+      ]
+    },
     "avx2": {
       "description": "omath will use AVX2 to boost performance",
       "supports": "!arm"
@@ -25,6 +34,13 @@
       "dependencies": [
         "benchmark"
       ]
+    },
+    "hooking": {
+      "description": "Add interface for automatic hooking of DirectX",
+      "dependencies": [
+        "safetyhook"
+      ],
+      "supports": "(windows | linux) & !arm & !uwp"
     },
     "examples": {
       "description": "Build examples",
