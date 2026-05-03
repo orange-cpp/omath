@@ -1,0 +1,138 @@
+#include <Windows.h>
+#include <d3d11.h>
+#include <dxgi.h>
+#include <imgui.h>
+#include <imgui_impl_dx11.h>
+#include <imgui_impl_win32.h>
+
+#include "omath/hooks/hooks_manager.hpp"
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
+
+namespace
+{
+    bool g_initialized    = false;
+    bool g_init_attempted = false;
+
+    ID3D11Device*            g_device             = nullptr;
+    ID3D11DeviceContext*     g_context             = nullptr;
+    ID3D11RenderTargetView*  g_render_target_view  = nullptr;
+
+    void create_render_target(IDXGISwapChain* swap_chain)
+    {
+        ID3D11Texture2D* back_buffer = nullptr;
+        if (FAILED(swap_chain->GetBuffer(0, IID_PPV_ARGS(&back_buffer))))
+            return;
+        g_device->CreateRenderTargetView(back_buffer, nullptr, &g_render_target_view);
+        back_buffer->Release();
+    }
+
+    void init(IDXGISwapChain* swap_chain)
+    {
+        g_init_attempted = true;
+
+        if (FAILED(swap_chain->GetDevice(IID_PPV_ARGS(&g_device))))
+            return;
+
+        g_device->GetImmediateContext(&g_context);
+
+        DXGI_SWAP_CHAIN_DESC desc{};
+        swap_chain->GetDesc(&desc);
+
+        create_render_target(swap_chain);
+
+        ImGui::CreateContext();
+        ImGui::StyleColorsDark();
+        ImGui::GetIO().IniFilename = nullptr;
+        ImGui::GetIO().LogFilename = nullptr;
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+
+        ImGui_ImplWin32_Init(desc.OutputWindow);
+        ImGui_ImplDX11_Init(g_device, g_context);
+
+        auto& mgr = omath::hooks::HooksManager::get();
+        mgr.set_on_wnd_proc([](HWND h, UINT msg, WPARAM wp, LPARAM lp) -> std::optional<LRESULT> {
+            if (ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp))
+                return 0;
+            return std::nullopt;
+        });
+        mgr.hook_wnd_proc(desc.OutputWindow);
+
+        g_initialized = true;
+    }
+
+    void on_present(IDXGISwapChain* swap_chain, UINT, UINT)
+    {
+        if (!g_initialized)
+        {
+            if (!g_init_attempted)
+                init(swap_chain);
+            return;
+        }
+
+        if (!g_render_target_view)
+            create_render_target(swap_chain);
+
+        g_context->OMSetRenderTargets(1, &g_render_target_view, nullptr);
+
+        ImGui_ImplDX11_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::SetNextWindowSize({300.f, 80.f}, ImGuiCond_Once);
+        ImGui::SetNextWindowPos({10.f, 10.f}, ImGuiCond_Once);
+        ImGui::Begin("omath | DX11 hook");
+        ImGui::Text("Hook active");
+        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void on_resize_buffers(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)
+    {
+        if (g_render_target_view)
+        {
+            g_render_target_view->Release();
+            g_render_target_view = nullptr;
+        }
+    }
+} // namespace
+
+BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
+{
+    if (reason == DLL_PROCESS_ATTACH)
+    {
+        DisableThreadLibraryCalls(h_instance);
+        CreateThread(nullptr, 0, [](LPVOID) -> DWORD
+        {
+            while (!GetModuleHandle("d3d11.dll"))
+                Sleep(100);
+
+            auto& mgr = omath::hooks::HooksManager::get();
+            mgr.set_on_present(on_present);
+            mgr.set_on_resize_buffers(on_resize_buffers);
+            mgr.hook_dx11();
+            return 0;
+        }, nullptr, 0, nullptr);
+    }
+    else if (reason == DLL_PROCESS_DETACH)
+    {
+        auto& mgr = omath::hooks::HooksManager::get();
+        mgr.unhook_wnd_proc();
+        mgr.unhook_dx11();
+
+        if (g_initialized)
+        {
+            ImGui_ImplDX11_Shutdown();
+            ImGui_ImplWin32_Shutdown();
+            ImGui::DestroyContext();
+        }
+
+        if (g_render_target_view) { g_render_target_view->Release(); g_render_target_view = nullptr; }
+        if (g_context)            { g_context->Release();            g_context            = nullptr; }
+        if (g_device)             { g_device->Release();             g_device             = nullptr; }
+    }
+    return TRUE;
+}

@@ -140,7 +140,7 @@ namespace
         return dx12_vtable_fns{
             vtable_fn(objs.swap_chain, 8),    // IDXGISwapChain::Present
             vtable_fn(objs.swap_chain, 13),   // IDXGISwapChain::ResizeBuffers
-            vtable_fn(objs.command_queue, 8), // ID3D12CommandQueue::ExecuteCommandLists
+            vtable_fn(objs.command_queue, 10), // ID3D12CommandQueue::ExecuteCommandLists
         };
     }
 } // namespace
