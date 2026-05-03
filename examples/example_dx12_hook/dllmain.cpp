@@ -1,12 +1,11 @@
+#include "omath/hooks/hooks_manager.hpp"
 #include <Windows.h>
 #include <d3d12.h>
 #include <dxgi1_4.h>
-#include <vector>
 #include <imgui.h>
 #include <imgui_impl_dx12.h>
 #include <imgui_impl_win32.h>
-
-#include "omath/hooks/hooks_manager.hpp"
+#include <vector>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 bool show_menu = true;
@@ -15,20 +14,20 @@ namespace
 {
     struct frame_context
     {
-        ID3D12Resource*             render_target = nullptr;
-        D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle    = {};
+        ID3D12Resource* render_target = nullptr;
+        D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = {};
     };
 
-    bool g_initialized    = false;
+    bool g_initialized = false;
     bool g_init_attempted = false;
 
-    ID3D12Device*              g_device           = nullptr;
-    ID3D12CommandQueue*        g_command_queue    = nullptr;
-    IDXGISwapChain3*           g_swap_chain       = nullptr;
-    ID3D12DescriptorHeap*      g_rtv_heap         = nullptr;
-    ID3D12DescriptorHeap*      g_srv_heap         = nullptr;
-    ID3D12GraphicsCommandList* g_command_list     = nullptr;
-    ID3D12CommandAllocator*    g_command_allocator = nullptr;
+    ID3D12Device* g_device = nullptr;
+    ID3D12CommandQueue* g_command_queue = nullptr;
+    IDXGISwapChain3* g_swap_chain = nullptr;
+    ID3D12DescriptorHeap* g_rtv_heap = nullptr;
+    ID3D12DescriptorHeap* g_srv_heap = nullptr;
+    ID3D12GraphicsCommandList* g_command_list = nullptr;
+    ID3D12CommandAllocator* g_command_allocator = nullptr;
     std::vector<frame_context> g_frames;
 
     void init(IDXGISwapChain* swap_chain)
@@ -47,24 +46,24 @@ namespace
 
         {
             D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
-            heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+            heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
             heap_desc.NumDescriptors = buffer_count;
-            heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             if (FAILED(g_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&g_srv_heap))))
                 return;
         }
         {
             D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
-            heap_desc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+            heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
             heap_desc.NumDescriptors = buffer_count;
-            heap_desc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-            heap_desc.NodeMask       = 1;
+            heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+            heap_desc.NodeMask = 1;
             if (FAILED(g_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&g_rtv_heap))))
                 return;
         }
 
         if (FAILED(g_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                                     IID_PPV_ARGS(&g_command_allocator))))
+                                                    IID_PPV_ARGS(&g_command_allocator))))
             return;
 
         g_frames.resize(buffer_count);
@@ -80,9 +79,8 @@ namespace
             rtv_handle.ptr += rtv_size;
         }
 
-        if (FAILED(g_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                                g_command_allocator, nullptr,
-                                                IID_PPV_ARGS(&g_command_list))))
+        if (FAILED(g_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, g_command_allocator, nullptr,
+                                               IID_PPV_ARGS(&g_command_list))))
             return;
         g_command_list->Close();
 
@@ -93,21 +91,22 @@ namespace
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
         ImGui_ImplWin32_Init(desc.OutputWindow);
-        ImGui_ImplDX12_Init(g_device, static_cast<int>(buffer_count),
-                             desc.BufferDesc.Format, g_srv_heap,
-                             g_srv_heap->GetCPUDescriptorHandleForHeapStart(),
-                             g_srv_heap->GetGPUDescriptorHandleForHeapStart());
+        ImGui_ImplDX12_Init(g_device, static_cast<int>(buffer_count), desc.BufferDesc.Format, g_srv_heap,
+                            g_srv_heap->GetCPUDescriptorHandleForHeapStart(),
+                            g_srv_heap->GetGPUDescriptorHandleForHeapStart());
         ImGui_ImplDX12_CreateDeviceObjects();
 
         auto& mgr = omath::hooks::HooksManager::get();
-        mgr.set_on_wnd_proc([](HWND h, UINT msg, WPARAM wp, LPARAM lp) -> std::optional<LRESULT> {
-            if (!show_menu)
-                return std::nullopt;
+        mgr.set_on_wnd_proc(
+                [](HWND h, UINT msg, WPARAM wp, LPARAM lp) -> std::optional<LRESULT>
+                {
+                    if (!show_menu)
+                        return std::nullopt;
 
-            ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp);
-            return true;
-        });
-        mgr.hook_wnd_proc(desc.OutputWindow);
+                    ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp);
+                    return true;
+                });
+        std::ignore = mgr.hook_wnd_proc(desc.OutputWindow);
 
         g_initialized = true;
     }
@@ -150,12 +149,12 @@ namespace
         g_command_list->Reset(g_command_allocator, nullptr);
 
         D3D12_RESOURCE_BARRIER barrier{};
-        barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-        barrier.Transition.pResource   = fc.render_target;
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barrier.Transition.pResource = fc.render_target;
         barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
         barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-        barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
         g_command_list->ResourceBarrier(1, &barrier);
         g_command_list->OMSetRenderTargets(1, &fc.rtv_handle, FALSE, nullptr);
         g_command_list->SetDescriptorHeaps(1, &g_srv_heap);
@@ -164,7 +163,7 @@ namespace
         ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), g_command_list);
 
         barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-        barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_PRESENT;
+        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
         g_command_list->ResourceBarrier(1, &barrier);
         g_command_list->Close();
 
@@ -176,15 +175,43 @@ namespace
     {
         for (auto& fc : g_frames)
         {
-            if (fc.render_target) { fc.render_target->Release(); fc.render_target = nullptr; }
+            if (fc.render_target)
+            {
+                fc.render_target->Release();
+                fc.render_target = nullptr;
+            }
         }
         g_frames.clear();
-        if (g_command_allocator) { g_command_allocator->Release(); g_command_allocator = nullptr; }
-        if (g_command_list)      { g_command_list->Release();      g_command_list      = nullptr; }
-        if (g_srv_heap)          { g_srv_heap->Release();          g_srv_heap          = nullptr; }
-        if (g_rtv_heap)          { g_rtv_heap->Release();          g_rtv_heap          = nullptr; }
-        if (g_swap_chain)        { g_swap_chain->Release();        g_swap_chain        = nullptr; }
-        if (g_device)            { g_device->Release();            g_device            = nullptr; }
+        if (g_command_allocator)
+        {
+            g_command_allocator->Release();
+            g_command_allocator = nullptr;
+        }
+        if (g_command_list)
+        {
+            g_command_list->Release();
+            g_command_list = nullptr;
+        }
+        if (g_srv_heap)
+        {
+            g_srv_heap->Release();
+            g_srv_heap = nullptr;
+        }
+        if (g_rtv_heap)
+        {
+            g_rtv_heap->Release();
+            g_rtv_heap = nullptr;
+        }
+        if (g_swap_chain)
+        {
+            g_swap_chain->Release();
+            g_swap_chain = nullptr;
+        }
+        if (g_device)
+        {
+            g_device->Release();
+            g_device = nullptr;
+        }
     }
 } // namespace
 
@@ -193,17 +220,20 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
     if (reason == DLL_PROCESS_ATTACH)
     {
         DisableThreadLibraryCalls(h_instance);
-        CreateThread(nullptr, 0, [](LPVOID) -> DWORD
-        {
-            while (!GetModuleHandle("d3d12.dll"))
-                Sleep(100);
+        CreateThread(
+                nullptr, 0,
+                [](LPVOID) -> DWORD
+                {
+                    while (!GetModuleHandle("d3d12.dll"))
+                        Sleep(100);
 
-            auto& mgr = omath::hooks::HooksManager::get();
-            mgr.set_on_present(on_present);
-            mgr.set_on_execute_command_lists(on_execute_command_lists);
-            mgr.hook_dx12();
-            return 0;
-        }, nullptr, 0, nullptr);
+                    auto& mgr = omath::hooks::HooksManager::get();
+                    mgr.set_on_present(on_present);
+                    mgr.set_on_execute_command_lists(on_execute_command_lists);
+                    mgr.hook_dx12();
+                    return 0;
+                },
+                nullptr, 0, nullptr);
     }
     else if (reason == DLL_PROCESS_DETACH)
     {
