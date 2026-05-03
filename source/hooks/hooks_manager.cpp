@@ -49,8 +49,104 @@ namespace omath::hooks
     HooksManager::~HooksManager()
     {
         unhook_wnd_proc();
+        unhook_dx9();
         unhook_dx11();
         unhook_dx12();
+    }
+
+    bool HooksManager::hook_dx9()
+    {
+        std::unique_lock lock(m_mutex);
+        if (m_is_dx9_hooked)
+            return true;
+
+        const DummyWindow window;
+        if (!window.valid())
+            return false;
+
+        const HMODULE d3d9_module = GetModuleHandle("d3d9.dll");
+        if (!d3d9_module)
+            return false;
+
+        using direct3d_create9_fn = IDirect3D9*(__stdcall*)(UINT);
+        const auto direct3d_create9 = reinterpret_cast<direct3d_create9_fn>(
+            GetProcAddress(d3d9_module, "Direct3DCreate9"));
+        if (!direct3d_create9)
+            return false;
+
+        IDirect3D9* d3d9 = direct3d_create9(D3D_SDK_VERSION);
+        if (!d3d9)
+            return false;
+
+        D3DPRESENT_PARAMETERS pp{};
+        pp.SwapEffect    = D3DSWAPEFFECT_DISCARD;
+        pp.hDeviceWindow = window.handle();
+        pp.Windowed      = TRUE;
+
+        IDirect3DDevice9* device = nullptr;
+        if (FAILED(d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, window.handle(),
+                                      D3DCREATE_SOFTWARE_VERTEXPROCESSING, &pp, &device)))
+        {
+            d3d9->Release();
+            return false;
+        }
+
+        // IDirect3DDevice9 vtable indices (from IUnknown base):
+        //   Reset    = 16
+        //   Present  = 17
+        //   EndScene = 42
+        m_dx9_present_hook = safetyhook::create_inline(
+            vtable_fn(device, 17),
+            reinterpret_cast<void*>(&dx9_present_detour));
+
+        m_dx9_reset_hook = safetyhook::create_inline(
+            vtable_fn(device, 16),
+            reinterpret_cast<void*>(&dx9_reset_detour));
+
+        m_dx9_end_scene_hook = safetyhook::create_inline(
+            vtable_fn(device, 42),
+            reinterpret_cast<void*>(&dx9_end_scene_detour));
+
+        device->Release();
+        d3d9->Release();
+
+        if (!m_dx9_present_hook || !m_dx9_reset_hook || !m_dx9_end_scene_hook)
+        {
+            m_dx9_present_hook   = {};
+            m_dx9_reset_hook     = {};
+            m_dx9_end_scene_hook = {};
+            return false;
+        }
+
+        m_is_dx9_hooked = true;
+        return true;
+    }
+
+    void HooksManager::unhook_dx9()
+    {
+        std::unique_lock lock(m_mutex);
+        m_dx9_present_hook   = {};
+        m_dx9_reset_hook     = {};
+        m_dx9_end_scene_hook = {};
+        m_is_dx9_hooked = false;
+    }
+
+    void HooksManager::set_on_dx9_present(dx9_present_callback callback)
+    {
+        std::unique_lock lock(m_mutex);
+        m_dx9_present_cb = std::move(callback);
+    }
+
+    void HooksManager::set_on_dx9_reset(dx9_reset_callback callback)
+    {
+        std::unique_lock lock(m_mutex);
+        m_dx9_reset_cb = std::move(callback);
+    }
+
+    void HooksManager::set_on_dx9_end_scene(dx9_end_scene_callback callback)
+    {
+        std::unique_lock lock(m_mutex);
+        m_dx9_end_scene_cb = std::move(callback);
     }
 
     bool HooksManager::hook_dx11()
@@ -335,6 +431,49 @@ namespace omath::hooks
 
     // Detour implementations: copy callback under shared lock, call it unlocked,
     // then call original. This avoids a deadlock if the callback itself calls set_on_*().
+
+    HRESULT __stdcall HooksManager::dx9_present_detour(IDirect3DDevice9* p_device, const RECT* p_source_rect,
+                                                       const RECT* p_dest_rect, HWND h_dest_window_override,
+                                                       const RGNDATA* p_dirty_region)
+    {
+        auto& mgr = get();
+        dx9_present_callback cb;
+        {
+            std::shared_lock lock(mgr.m_mutex);
+            cb = mgr.m_dx9_present_cb;
+        }
+        if (cb)
+            cb(p_device, p_source_rect, p_dest_rect, h_dest_window_override, p_dirty_region);
+        return mgr.m_dx9_present_hook.call<HRESULT>(p_device, p_source_rect, p_dest_rect,
+                                                    h_dest_window_override, p_dirty_region);
+    }
+
+    HRESULT __stdcall HooksManager::dx9_reset_detour(IDirect3DDevice9* p_device,
+                                                     D3DPRESENT_PARAMETERS* p_presentation_parameters)
+    {
+        auto& mgr = get();
+        dx9_reset_callback cb;
+        {
+            std::shared_lock lock(mgr.m_mutex);
+            cb = mgr.m_dx9_reset_cb;
+        }
+        if (cb)
+            cb(p_device, p_presentation_parameters);
+        return mgr.m_dx9_reset_hook.call<HRESULT>(p_device, p_presentation_parameters);
+    }
+
+    HRESULT __stdcall HooksManager::dx9_end_scene_detour(IDirect3DDevice9* p_device)
+    {
+        auto& mgr = get();
+        dx9_end_scene_callback cb;
+        {
+            std::shared_lock lock(mgr.m_mutex);
+            cb = mgr.m_dx9_end_scene_cb;
+        }
+        if (cb)
+            cb(p_device);
+        return mgr.m_dx9_end_scene_hook.call<HRESULT>(p_device);
+    }
 
     HRESULT __stdcall HooksManager::dx11_present_detour(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags)
     {
