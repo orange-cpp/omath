@@ -110,7 +110,7 @@ if (OMATH_ENABLE_HOOKING)
     target_link_libraries(${PROJECT_NAME} PRIVATE safetyhook::safetyhook)
 
     if (WIN32)
-        target_link_libraries(${PROJECT_NAME} PRIVATE d3d12 dxgi)
+        target_link_libraries(${PROJECT_NAME} PRIVATE d3d11 d3d12 dxgi)
     endif ()
 endif ()
 

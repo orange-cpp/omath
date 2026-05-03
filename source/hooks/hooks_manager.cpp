@@ -1,6 +1,7 @@
 #include "omath/hooks/hooks_manager.hpp"
 
 #ifdef OMATH_ENABLE_HOOKING
+#include <d3d11.h>
 
 namespace
 {
@@ -48,7 +49,87 @@ namespace omath::hooks
     HooksManager::~HooksManager()
     {
         unhook_wnd_proc();
+        unhook_dx11();
         unhook_dx12();
+    }
+
+    bool HooksManager::hook_dx11()
+    {
+        std::unique_lock lock(m_mutex);
+        if (m_is_dx11_hooked)
+            return true;
+
+        const DummyWindow window;
+        if (!window.valid())
+            return false;
+
+        const HMODULE d3d11_module = GetModuleHandle("d3d11.dll");
+        if (!d3d11_module)
+            return false;
+
+        using d3d11_create_device_and_swap_chain_fn =
+            HRESULT(__stdcall*)(IDXGIAdapter*, D3D_DRIVER_TYPE, HMODULE, UINT,
+                                const D3D_FEATURE_LEVEL*, UINT, UINT,
+                                const DXGI_SWAP_CHAIN_DESC*, IDXGISwapChain**,
+                                ID3D11Device**, D3D_FEATURE_LEVEL*, ID3D11DeviceContext**);
+
+        const auto create_device_and_swap_chain = reinterpret_cast<d3d11_create_device_and_swap_chain_fn>(
+            GetProcAddress(d3d11_module, "D3D11CreateDeviceAndSwapChain"));
+        if (!create_device_and_swap_chain)
+            return false;
+
+        DXGI_SWAP_CHAIN_DESC swap_chain_desc{};
+        swap_chain_desc.BufferDesc.Width       = 100;
+        swap_chain_desc.BufferDesc.Height      = 100;
+        swap_chain_desc.BufferDesc.RefreshRate = {60, 1};
+        swap_chain_desc.BufferDesc.Format      = DXGI_FORMAT_R8G8B8A8_UNORM;
+        swap_chain_desc.SampleDesc             = {1, 0};
+        swap_chain_desc.BufferUsage            = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        swap_chain_desc.BufferCount            = 1;
+        swap_chain_desc.OutputWindow           = window.handle();
+        swap_chain_desc.Windowed               = TRUE;
+        swap_chain_desc.SwapEffect             = DXGI_SWAP_EFFECT_DISCARD;
+
+        constexpr D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_0};
+        ID3D11Device*        device         = nullptr;
+        ID3D11DeviceContext* device_context = nullptr;
+        IDXGISwapChain*      swap_chain     = nullptr;
+
+        if (FAILED(create_device_and_swap_chain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
+                                                feature_levels, 1, D3D11_SDK_VERSION,
+                                                &swap_chain_desc, &swap_chain,
+                                                &device, nullptr, &device_context)))
+            return false;
+
+        m_dx11_present_hook = safetyhook::create_inline(
+            vtable_fn(swap_chain, 8),   // IDXGISwapChain::Present
+            reinterpret_cast<void*>(&dx11_present_detour));
+
+        m_dx11_resize_buffers_hook = safetyhook::create_inline(
+            vtable_fn(swap_chain, 13),  // IDXGISwapChain::ResizeBuffers
+            reinterpret_cast<void*>(&dx11_resize_buffers_detour));
+
+        swap_chain->Release();
+        device_context->Release();
+        device->Release();
+
+        if (!m_dx11_present_hook || !m_dx11_resize_buffers_hook)
+        {
+            m_dx11_present_hook        = {};
+            m_dx11_resize_buffers_hook = {};
+            return false;
+        }
+
+        m_is_dx11_hooked = true;
+        return true;
+    }
+
+    void HooksManager::unhook_dx11()
+    {
+        std::unique_lock lock(m_mutex);
+        m_dx11_present_hook        = {};
+        m_dx11_resize_buffers_hook = {};
+        m_is_dx11_hooked = false;
     }
 
     bool HooksManager::hook_dx12()
@@ -157,19 +238,19 @@ namespace omath::hooks
             return false;
         }
 
-        // Read the 3 needed vtable slots directly — these addresses live in the DLL,
+        // Read the needed vtable slots directly — addresses live in the DLL,
         // not in the objects, so they remain valid after the objects are released.
-        m_present_hook = safetyhook::create_inline(
-            vtable_fn(swap_chain, 8),   // IDXGISwapChain::Present
-            reinterpret_cast<void*>(&present_detour));
+        m_dx12_present_hook = safetyhook::create_inline(
+            vtable_fn(swap_chain, 8),    // IDXGISwapChain::Present
+            reinterpret_cast<void*>(&dx12_present_detour));
 
-        m_resize_buffers_hook = safetyhook::create_inline(
-            vtable_fn(swap_chain, 13),  // IDXGISwapChain::ResizeBuffers
-            reinterpret_cast<void*>(&resize_buffers_detour));
+        m_dx12_resize_buffers_hook = safetyhook::create_inline(
+            vtable_fn(swap_chain, 13),   // IDXGISwapChain::ResizeBuffers
+            reinterpret_cast<void*>(&dx12_resize_buffers_detour));
 
-        m_execute_command_lists_hook = safetyhook::create_inline(
+        m_dx12_execute_command_lists_hook = safetyhook::create_inline(
             vtable_fn(command_queue, 8), // ID3D12CommandQueue::ExecuteCommandLists
-            reinterpret_cast<void*>(&execute_command_lists_detour));
+            reinterpret_cast<void*>(&dx12_execute_command_lists_detour));
 
         swap_chain->Release();
         command_list->Release();
@@ -178,11 +259,11 @@ namespace omath::hooks
         device->Release();
         factory->Release();
 
-        if (!m_present_hook || !m_resize_buffers_hook || !m_execute_command_lists_hook)
+        if (!m_dx12_present_hook || !m_dx12_resize_buffers_hook || !m_dx12_execute_command_lists_hook)
         {
-            m_present_hook               = {};
-            m_resize_buffers_hook        = {};
-            m_execute_command_lists_hook = {};
+            m_dx12_present_hook               = {};
+            m_dx12_resize_buffers_hook        = {};
+            m_dx12_execute_command_lists_hook = {};
             return false;
         }
 
@@ -193,9 +274,9 @@ namespace omath::hooks
     void HooksManager::unhook_dx12()
     {
         std::unique_lock lock(m_mutex);
-        m_present_hook               = {};
-        m_resize_buffers_hook        = {};
-        m_execute_command_lists_hook = {};
+        m_dx12_present_hook               = {};
+        m_dx12_resize_buffers_hook        = {};
+        m_dx12_execute_command_lists_hook = {};
         m_is_dx12_hooked = false;
     }
 
@@ -254,7 +335,8 @@ namespace omath::hooks
 
     // Detour implementations: copy callback under shared lock, call it unlocked,
     // then call original. This avoids a deadlock if the callback itself calls set_on_*().
-    HRESULT __stdcall HooksManager::present_detour(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags)
+
+    HRESULT __stdcall HooksManager::dx11_present_detour(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags)
     {
         auto& mgr = get();
         present_callback cb;
@@ -264,12 +346,12 @@ namespace omath::hooks
         }
         if (cb)
             cb(p_swap_chain, sync_interval, flags);
-        return mgr.m_present_hook.call<HRESULT>(p_swap_chain, sync_interval, flags);
+        return mgr.m_dx11_present_hook.call<HRESULT>(p_swap_chain, sync_interval, flags);
     }
 
-    HRESULT __stdcall HooksManager::resize_buffers_detour(IDXGISwapChain* p_swap_chain, UINT buffer_count,
-                                                          UINT width, UINT height, DXGI_FORMAT new_format,
-                                                          UINT swap_chain_flags)
+    HRESULT __stdcall HooksManager::dx11_resize_buffers_detour(IDXGISwapChain* p_swap_chain, UINT buffer_count,
+                                                               UINT width, UINT height, DXGI_FORMAT new_format,
+                                                               UINT swap_chain_flags)
     {
         auto& mgr = get();
         resize_buffers_callback cb;
@@ -279,13 +361,42 @@ namespace omath::hooks
         }
         if (cb)
             cb(p_swap_chain, buffer_count, width, height, new_format, swap_chain_flags);
-        return mgr.m_resize_buffers_hook.call<HRESULT>(p_swap_chain, buffer_count, width, height, new_format,
-                                                       swap_chain_flags);
+        return mgr.m_dx11_resize_buffers_hook.call<HRESULT>(p_swap_chain, buffer_count, width, height,
+                                                            new_format, swap_chain_flags);
     }
 
-    void __stdcall HooksManager::execute_command_lists_detour(ID3D12CommandQueue* p_command_queue,
-                                                              UINT num_command_lists,
-                                                              ID3D12CommandList* const* pp_command_lists)
+    HRESULT __stdcall HooksManager::dx12_present_detour(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags)
+    {
+        auto& mgr = get();
+        present_callback cb;
+        {
+            std::shared_lock lock(mgr.m_mutex);
+            cb = mgr.m_present_cb;
+        }
+        if (cb)
+            cb(p_swap_chain, sync_interval, flags);
+        return mgr.m_dx12_present_hook.call<HRESULT>(p_swap_chain, sync_interval, flags);
+    }
+
+    HRESULT __stdcall HooksManager::dx12_resize_buffers_detour(IDXGISwapChain* p_swap_chain, UINT buffer_count,
+                                                               UINT width, UINT height, DXGI_FORMAT new_format,
+                                                               UINT swap_chain_flags)
+    {
+        auto& mgr = get();
+        resize_buffers_callback cb;
+        {
+            std::shared_lock lock(mgr.m_mutex);
+            cb = mgr.m_resize_buffers_cb;
+        }
+        if (cb)
+            cb(p_swap_chain, buffer_count, width, height, new_format, swap_chain_flags);
+        return mgr.m_dx12_resize_buffers_hook.call<HRESULT>(p_swap_chain, buffer_count, width, height,
+                                                            new_format, swap_chain_flags);
+    }
+
+    void __stdcall HooksManager::dx12_execute_command_lists_detour(ID3D12CommandQueue* p_command_queue,
+                                                                   UINT num_command_lists,
+                                                                   ID3D12CommandList* const* pp_command_lists)
     {
         auto& mgr = get();
         execute_command_lists_callback cb;
@@ -295,7 +406,7 @@ namespace omath::hooks
         }
         if (cb)
             cb(p_command_queue, num_command_lists, pp_command_lists);
-        mgr.m_execute_command_lists_hook.call<void>(p_command_queue, num_command_lists, pp_command_lists);
+        mgr.m_dx12_execute_command_lists_hook.call<void>(p_command_queue, num_command_lists, pp_command_lists);
     }
 
     LRESULT __stdcall HooksManager::wnd_proc_detour(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param)
