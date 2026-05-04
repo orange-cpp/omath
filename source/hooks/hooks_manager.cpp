@@ -173,7 +173,7 @@ namespace omath::hooks
 
     bool HooksManager::hook_dx9()
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_hook_state_mutex);
         if (m_is_dx9_hooked)
             return true;
 
@@ -237,7 +237,7 @@ namespace omath::hooks
 
     void HooksManager::unhook_dx9()
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_hook_state_mutex);
         m_dx9_present_hook = {};
         m_dx9_reset_hook = {};
         m_dx9_end_scene_hook = {};
@@ -246,25 +246,25 @@ namespace omath::hooks
 
     void HooksManager::set_on_dx9_present(dx9_present_callback callback)
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_dx9_present_mutex);
         m_dx9_present_cb = std::move(callback);
     }
 
     void HooksManager::set_on_dx9_reset(dx9_reset_callback callback)
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_dx9_reset_mutex);
         m_dx9_reset_cb = std::move(callback);
     }
 
     void HooksManager::set_on_dx9_end_scene(dx9_end_scene_callback callback)
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_dx9_end_scene_mutex);
         m_dx9_end_scene_cb = std::move(callback);
     }
 
     bool HooksManager::hook_dx11()
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_hook_state_mutex);
         if (m_is_dx11_hooked)
             return true;
 
@@ -332,7 +332,7 @@ namespace omath::hooks
 
     void HooksManager::unhook_dx11()
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_hook_state_mutex);
         m_dx11_present_hook = {};
         m_dx11_resize_buffers_hook = {};
         m_is_dx11_hooked = false;
@@ -340,7 +340,7 @@ namespace omath::hooks
 
     bool HooksManager::hook_dx12()
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_hook_state_mutex);
         if (m_is_dx12_hooked)
             return true;
 
@@ -374,7 +374,7 @@ namespace omath::hooks
 
     void HooksManager::unhook_dx12()
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_hook_state_mutex);
         m_dx12_present_hook = {};
         m_dx12_resize_buffers_hook = {};
         m_dx12_execute_command_lists_hook = {};
@@ -383,25 +383,25 @@ namespace omath::hooks
 
     void HooksManager::set_on_present(present_callback callback)
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_present_mutex);
         m_present_cb = std::move(callback);
     }
 
     void HooksManager::set_on_resize_buffers(resize_buffers_callback callback)
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_resize_buffers_mutex);
         m_resize_buffers_cb = std::move(callback);
     }
 
     void HooksManager::set_on_execute_command_lists(execute_command_lists_callback callback)
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_execute_command_lists_mutex);
         m_execute_command_lists_cb = std::move(callback);
     }
 
     bool HooksManager::hook_wnd_proc(HWND hwnd)
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_hook_state_mutex);
         if (m_is_wnd_proc_hooked)
             return true;
 
@@ -418,7 +418,7 @@ namespace omath::hooks
 
     void HooksManager::unhook_wnd_proc()
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_hook_state_mutex);
         if (!m_is_wnd_proc_hooked)
             return;
 
@@ -430,7 +430,7 @@ namespace omath::hooks
 
     void HooksManager::set_on_wnd_proc(wnd_proc_callback callback)
     {
-        std::unique_lock lock(m_mutex);
+        std::unique_lock lock(m_wnd_proc_mutex);
         m_wnd_proc_cb = std::move(callback);
     }
 
@@ -444,7 +444,7 @@ namespace omath::hooks
         auto& mgr = get();
         dx9_present_callback cb;
         {
-            std::shared_lock lock(mgr.m_mutex);
+            std::shared_lock lock(mgr.m_dx9_present_mutex);
             cb = mgr.m_dx9_present_cb;
         }
         if (cb)
@@ -459,7 +459,7 @@ namespace omath::hooks
         auto& mgr = get();
         dx9_reset_callback cb;
         {
-            std::shared_lock lock(mgr.m_mutex);
+            std::shared_lock lock(mgr.m_dx9_reset_mutex);
             cb = mgr.m_dx9_reset_cb;
         }
         if (cb)
@@ -472,7 +472,7 @@ namespace omath::hooks
         auto& mgr = get();
         dx9_end_scene_callback cb;
         {
-            std::shared_lock lock(mgr.m_mutex);
+            std::shared_lock lock(mgr.m_dx9_end_scene_mutex);
             cb = mgr.m_dx9_end_scene_cb;
         }
         if (cb)
@@ -485,7 +485,7 @@ namespace omath::hooks
         auto& mgr = get();
         present_callback cb;
         {
-            std::shared_lock lock(mgr.m_mutex);
+            std::shared_lock lock(mgr.m_present_mutex);
             cb = mgr.m_present_cb;
         }
         if (cb)
@@ -500,7 +500,7 @@ namespace omath::hooks
         auto& mgr = get();
         resize_buffers_callback cb;
         {
-            std::shared_lock lock(mgr.m_mutex);
+            std::shared_lock lock(mgr.m_resize_buffers_mutex);
             cb = mgr.m_resize_buffers_cb;
         }
         if (cb)
@@ -514,7 +514,7 @@ namespace omath::hooks
         auto& mgr = get();
         present_callback cb;
         {
-            std::shared_lock lock(mgr.m_mutex);
+            std::shared_lock lock(mgr.m_present_mutex);
             cb = mgr.m_present_cb;
         }
         if (cb)
@@ -529,7 +529,7 @@ namespace omath::hooks
         auto& mgr = get();
         resize_buffers_callback cb;
         {
-            std::shared_lock lock(mgr.m_mutex);
+            std::shared_lock lock(mgr.m_resize_buffers_mutex);
             cb = mgr.m_resize_buffers_cb;
         }
         if (cb)
@@ -545,7 +545,7 @@ namespace omath::hooks
         auto& mgr = get();
         execute_command_lists_callback cb;
         {
-            std::shared_lock lock(mgr.m_mutex);
+            std::shared_lock lock(mgr.m_execute_command_lists_mutex);
             cb = mgr.m_execute_command_lists_cb;
         }
         if (cb)
@@ -559,7 +559,7 @@ namespace omath::hooks
         wnd_proc_callback cb;
         WNDPROC original;
         {
-            std::shared_lock lock(mgr.m_mutex);
+            std::shared_lock lock(mgr.m_wnd_proc_mutex);
             cb = mgr.m_wnd_proc_cb;
             original = mgr.m_original_wndproc;
         }

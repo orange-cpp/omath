@@ -94,7 +94,17 @@ namespace omath::hooks
         [[nodiscard]]
         static LRESULT __stdcall wnd_proc_detour(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
 
-        mutable std::shared_mutex m_mutex;
+        mutable std::shared_mutex m_hook_state_mutex;
+
+        mutable std::shared_mutex m_dx9_present_mutex;
+        mutable std::shared_mutex m_dx9_reset_mutex;
+        mutable std::shared_mutex m_dx9_end_scene_mutex;
+
+        mutable std::shared_mutex m_present_mutex;
+        mutable std::shared_mutex m_resize_buffers_mutex;
+        mutable std::shared_mutex m_execute_command_lists_mutex;
+
+        mutable std::shared_mutex m_wnd_proc_mutex;
 
         bool m_is_dx9_hooked = false;
         bool m_is_dx11_hooked = false;
