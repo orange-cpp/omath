@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.26)
-
 file(READ VERSION OMATH_VERSION)
 project(omath VERSION ${OMATH_VERSION} LANGUAGES CXX)
 

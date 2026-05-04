@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <imgui_impl_dx12.h>
 #include <imgui_impl_win32.h>
+#include <tuple>
 #include <vector>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
@@ -230,7 +231,7 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
                     auto& mgr = omath::hooks::HooksManager::get();
                     mgr.set_on_present(on_present);
                     mgr.set_on_execute_command_lists(on_execute_command_lists);
-                    mgr.hook_dx12();
+                    std::ignore = mgr.hook_dx12();
                     return 0;
                 },
                 nullptr, 0, nullptr);
