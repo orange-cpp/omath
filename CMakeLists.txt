@@ -82,6 +82,10 @@ if(${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: Lua feature status ${OMATH_ENABLE_LUA}")
 endif()
 
+if(OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "" FORCE)
+endif()
+
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
 file(GLOB_RECURSE OMATH_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
 
@@ -160,10 +164,6 @@ set_target_properties(
                CXX_STANDARD 23
                CXX_STANDARD_REQUIRED ON)
 
-if(OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
-    set_target_properties(${PROJECT_NAME} PROPERTIES MSVC_RUNTIME_LIBRARY
-                                                     "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
 
 if(OMATH_USE_AVX2)
     if(MSVC)
