@@ -16,6 +16,15 @@
     }
   ],
   "features": {
+    "all": {
+      "description": "Enable all additional features",
+      "dependencies": [
+        {
+          "name": "omath",
+          "features": ["imgui", "lua", "hooking"]
+        }
+      ]
+    },
     "avx2": {
       "description": "omath will use AVX2 to boost performance",
       "supports": "!arm"
@@ -26,6 +35,13 @@
         "benchmark"
       ]
     },
+    "hooking": {
+      "description": "Add interface for automatic hooking of DirectX",
+      "dependencies": [
+        "safetyhook"
+      ],
+      "supports": "(windows | linux) & !arm & !uwp"
+    },
     "examples": {
       "description": "Build examples",
       "dependencies": [
@@ -33,8 +49,18 @@
         "glew",
         "opengl",
         {
+          "name": "omath",
+          "features": ["hooking"],
+          "platform": "windows & !arm & !uwp"
+        },
+        {
           "name": "imgui",
           "features": ["glfw-binding", "opengl3-binding"]
+        },
+        {
+          "name": "imgui",
+          "features": ["dx9-binding", "dx11-binding", "dx12-binding", "win32-binding"],
+          "platform": "windows & !arm & !uwp"
         }
       ]
     },

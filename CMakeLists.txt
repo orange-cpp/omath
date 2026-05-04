@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.26)
-
 file(READ VERSION OMATH_VERSION)
 project(omath VERSION ${OMATH_VERSION} LANGUAGES CXX)
 
@@ -31,9 +30,10 @@ option(OMATH_SUPRESS_SAFETY_CHECKS
 option(OMATH_ENABLE_COVERAGE "Enable coverage" OFF)
 option(OMATH_ENABLE_FORCE_INLINE
        "Will for compiler to make some functions to be force inlined no matter what" ON)
-
 option(OMATH_ENABLE_LUA
         "omath bindings for lua" OFF)
+option(OMATH_ENABLE_HOOKING "omath will HooksManager that can hook DirectX automatically" OFF)
+
 if(VCPKG_MANIFEST_FEATURES)
     foreach(omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
         if(omath_feature STREQUAL "imgui")
@@ -48,6 +48,8 @@ if(VCPKG_MANIFEST_FEATURES)
             set(OMATH_BUILD_EXAMPLES ON)
         elseif(omath_feature STREQUAL "lua")
             set(OMATH_ENABLE_LUA ON)
+        elseif(omath_feature STREQUAL "hooking")
+            set(OMATH_ENABLE_HOOKING ON)
         endif()
 
     endforeach()
@@ -80,6 +82,10 @@ if(${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: Lua feature status ${OMATH_ENABLE_LUA}")
 endif()
 
+if(OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "" FORCE)
+endif()
+
 file(GLOB_RECURSE OMATH_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
 file(GLOB_RECURSE OMATH_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
 
@@ -98,6 +104,17 @@ if (OMATH_ENABLE_LUA)
 
     find_path(SOL2_INCLUDE_DIRS "sol/abort.hpp")
     target_include_directories(${PROJECT_NAME} PRIVATE ${SOL2_INCLUDE_DIRS})
+endif ()
+
+if (OMATH_ENABLE_HOOKING)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_ENABLE_HOOKING)
+
+    find_package(safetyhook CONFIG REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE safetyhook::safetyhook)
+
+    if (WIN32)
+        target_link_libraries(${PROJECT_NAME} PRIVATE d3d9 d3d11 d3d12 dxgi)
+    endif ()
 endif ()
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -147,10 +164,6 @@ set_target_properties(
                CXX_STANDARD 23
                CXX_STANDARD_REQUIRED ON)
 
-if(OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
-    set_target_properties(${PROJECT_NAME} PROPERTIES MSVC_RUNTIME_LIBRARY
-                                                     "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
 
 if(OMATH_USE_AVX2)
     if(MSVC)
