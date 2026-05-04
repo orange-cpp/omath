@@ -1,3 +1,4 @@
+#include "omath/hooks/hooks_manager.hpp"
 #include <Windows.h>
 #include <d3d11.h>
 #include <dxgi.h>
@@ -5,18 +6,16 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
-#include "omath/hooks/hooks_manager.hpp"
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
 namespace
 {
-    bool g_initialized    = false;
+    bool g_initialized = false;
     bool g_init_attempted = false;
 
-    ID3D11Device*            g_device             = nullptr;
-    ID3D11DeviceContext*     g_context             = nullptr;
-    ID3D11RenderTargetView*  g_render_target_view  = nullptr;
+    ID3D11Device* g_device = nullptr;
+    ID3D11DeviceContext* g_context = nullptr;
+    ID3D11RenderTargetView* g_render_target_view = nullptr;
 
     void create_render_target(IDXGISwapChain* swap_chain)
     {
@@ -51,12 +50,14 @@ namespace
         ImGui_ImplDX11_Init(g_device, g_context);
 
         auto& mgr = omath::hooks::HooksManager::get();
-        mgr.set_on_wnd_proc([](HWND h, UINT msg, WPARAM wp, LPARAM lp) -> std::optional<LRESULT> {
-            if (ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp))
-                return 0;
-            return std::nullopt;
-        });
-        mgr.hook_wnd_proc(desc.OutputWindow);
+        mgr.set_on_wnd_proc(
+                [](HWND h, UINT msg, WPARAM wp, LPARAM lp) -> std::optional<LRESULT>
+                {
+                    if (ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp))
+                        return 0;
+                    return std::nullopt;
+                });
+        std::ignore = mgr.hook_wnd_proc(desc.OutputWindow);
 
         g_initialized = true;
     }
@@ -105,17 +106,20 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
     if (reason == DLL_PROCESS_ATTACH)
     {
         DisableThreadLibraryCalls(h_instance);
-        CreateThread(nullptr, 0, [](LPVOID) -> DWORD
-        {
-            while (!GetModuleHandle("d3d11.dll"))
-                Sleep(100);
+        CreateThread(
+                nullptr, 0,
+                [](LPVOID) -> DWORD
+                {
+                    while (!GetModuleHandle("d3d11.dll"))
+                        Sleep(100);
 
-            auto& mgr = omath::hooks::HooksManager::get();
-            mgr.set_on_present(on_present);
-            mgr.set_on_resize_buffers(on_resize_buffers);
-            mgr.hook_dx11();
-            return 0;
-        }, nullptr, 0, nullptr);
+                    auto& mgr = omath::hooks::HooksManager::get();
+                    mgr.set_on_present(on_present);
+                    mgr.set_on_resize_buffers(on_resize_buffers);
+                    mgr.hook_dx11();
+                    return 0;
+                },
+                nullptr, 0, nullptr);
     }
     else if (reason == DLL_PROCESS_DETACH)
     {
@@ -130,9 +134,21 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
             ImGui::DestroyContext();
         }
 
-        if (g_render_target_view) { g_render_target_view->Release(); g_render_target_view = nullptr; }
-        if (g_context)            { g_context->Release();            g_context            = nullptr; }
-        if (g_device)             { g_device->Release();             g_device             = nullptr; }
+        if (g_render_target_view)
+        {
+            g_render_target_view->Release();
+            g_render_target_view = nullptr;
+        }
+        if (g_context)
+        {
+            g_context->Release();
+            g_context = nullptr;
+        }
+        if (g_device)
+        {
+            g_device->Release();
+            g_device = nullptr;
+        }
     }
     return TRUE;
 }
