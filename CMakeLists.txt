@@ -114,6 +114,9 @@ if (OMATH_ENABLE_HOOKING)
 
     if (WIN32)
         target_link_libraries(${PROJECT_NAME} PRIVATE d3d9 d3d11 d3d12 dxgi opengl32 gdi32)
+    elseif (UNIX AND NOT APPLE)
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL ${CMAKE_DL_LIBS})
     endif ()
 endif ()
 
