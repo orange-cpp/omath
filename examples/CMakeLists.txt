@@ -5,15 +5,16 @@ add_subdirectory(example_signature_scan)
 add_subdirectory(example_hud)
 
 if(OMATH_ENABLE_HOOKING AND WIN32)
-    # Requires imgui with dx9-binding, dx11-binding, dx12-binding, win32-binding.
-    # Install via: vcpkg install imgui[dx9-binding,dx11-binding,dx12-binding,win32-binding]
+    # Requires imgui with dx9-binding, dx11-binding, dx12-binding, opengl3-binding, win32-binding.
+    # Install via: vcpkg install imgui[dx9-binding,dx11-binding,dx12-binding,opengl3-binding,win32-binding]
     find_package(imgui CONFIG QUIET)
     if(imgui_FOUND)
         add_subdirectory(example_dx9_hook)
         add_subdirectory(example_dx11_hook)
         add_subdirectory(example_dx12_hook)
+        add_subdirectory(example_opengl_hook)
     else()
-        message(STATUS "[omath] imgui not found — DX hook examples skipped")
+        message(STATUS "[omath] imgui not found - hook examples skipped")
     endif()
 endif()
 

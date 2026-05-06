@@ -5,6 +5,8 @@
 
 namespace
 {
+    thread_local bool g_is_inside_opengl_swap_buffers = false;
+
     class DummyWindow final
     {
         WNDCLASSEX m_window_class{};
@@ -41,6 +43,15 @@ namespace
     void* vtable_fn(void* com_obj, std::size_t index)
     {
         return (*reinterpret_cast<void***>(com_obj))[index];
+    }
+
+    void* module_proc(const char* module_name, const char* proc_name)
+    {
+        const HMODULE module = GetModuleHandle(module_name);
+        if (!module)
+            return nullptr;
+
+        return reinterpret_cast<void*>(GetProcAddress(module, proc_name));
     }
 
     struct dx12_vtable_fns
@@ -169,6 +180,7 @@ namespace omath::hooks
         unhook_dx9();
         unhook_dx11();
         unhook_dx12();
+        unhook_opengl();
     }
 
     bool HooksManager::hook_dx9()
@@ -381,6 +393,49 @@ namespace omath::hooks
         m_is_dx12_hooked = false;
     }
 
+    bool HooksManager::hook_opengl()
+    {
+        std::unique_lock lock(m_hook_state_mutex);
+        if (m_is_opengl_hooked)
+            return true;
+
+        if (void* wgl_swap_buffers = module_proc("opengl32.dll", "wglSwapBuffers"))
+        {
+            m_opengl_wgl_swap_buffers_hook = safetyhook::create_inline(
+                    wgl_swap_buffers, reinterpret_cast<void*>(&opengl_wgl_swap_buffers_detour));
+        }
+
+        if (void* swap_buffers = module_proc("gdi32.dll", "SwapBuffers"))
+        {
+            m_opengl_swap_buffers_hook =
+                    safetyhook::create_inline(swap_buffers, reinterpret_cast<void*>(&opengl_swap_buffers_detour));
+        }
+
+        if (!m_opengl_wgl_swap_buffers_hook && !m_opengl_swap_buffers_hook)
+        {
+            m_opengl_wgl_swap_buffers_hook = {};
+            m_opengl_swap_buffers_hook = {};
+            return false;
+        }
+
+        m_is_opengl_hooked = true;
+        return true;
+    }
+
+    void HooksManager::unhook_opengl()
+    {
+        std::unique_lock lock(m_hook_state_mutex);
+        m_opengl_wgl_swap_buffers_hook = {};
+        m_opengl_swap_buffers_hook = {};
+        m_is_opengl_hooked = false;
+    }
+
+    void HooksManager::set_on_opengl_swap_buffers(opengl_swap_buffers_callback callback)
+    {
+        std::unique_lock lock(m_opengl_swap_buffers_mutex);
+        m_opengl_swap_buffers_cb = std::move(callback);
+    }
+
     void HooksManager::set_on_present(present_callback callback)
     {
         std::unique_lock lock(m_present_mutex);
@@ -551,6 +606,54 @@ namespace omath::hooks
         if (cb)
             cb(p_command_queue, num_command_lists, pp_command_lists);
         mgr.m_dx12_execute_command_lists_hook.call<void>(p_command_queue, num_command_lists, pp_command_lists);
+    }
+
+    BOOL __stdcall HooksManager::opengl_wgl_swap_buffers_detour(HDC hdc)
+    {
+        auto& mgr = get();
+
+        if (!g_is_inside_opengl_swap_buffers)
+        {
+            g_is_inside_opengl_swap_buffers = true;
+
+            opengl_swap_buffers_callback cb;
+            {
+                std::shared_lock lock(mgr.m_opengl_swap_buffers_mutex);
+                cb = mgr.m_opengl_swap_buffers_cb;
+            }
+            if (cb)
+                cb(hdc);
+
+            const BOOL result = mgr.m_opengl_wgl_swap_buffers_hook.call<BOOL>(hdc);
+            g_is_inside_opengl_swap_buffers = false;
+            return result;
+        }
+
+        return mgr.m_opengl_wgl_swap_buffers_hook.call<BOOL>(hdc);
+    }
+
+    BOOL __stdcall HooksManager::opengl_swap_buffers_detour(HDC hdc)
+    {
+        auto& mgr = get();
+
+        if (!g_is_inside_opengl_swap_buffers)
+        {
+            g_is_inside_opengl_swap_buffers = true;
+
+            opengl_swap_buffers_callback cb;
+            {
+                std::shared_lock lock(mgr.m_opengl_swap_buffers_mutex);
+                cb = mgr.m_opengl_swap_buffers_cb;
+            }
+            if (cb)
+                cb(hdc);
+
+            const BOOL result = mgr.m_opengl_swap_buffers_hook.call<BOOL>(hdc);
+            g_is_inside_opengl_swap_buffers = false;
+            return result;
+        }
+
+        return mgr.m_opengl_swap_buffers_hook.call<BOOL>(hdc);
     }
 
     LRESULT __stdcall HooksManager::wnd_proc_detour(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param)

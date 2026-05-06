@@ -32,7 +32,7 @@ option(OMATH_ENABLE_FORCE_INLINE
        "Will for compiler to make some functions to be force inlined no matter what" ON)
 option(OMATH_ENABLE_LUA
         "omath bindings for lua" OFF)
-option(OMATH_ENABLE_HOOKING "omath will HooksManager that can hook DirectX automatically" OFF)
+option(OMATH_ENABLE_HOOKING "omath will HooksManager that can hook DirectX/OpenGL automatically" OFF)
 
 if(VCPKG_MANIFEST_FEATURES)
     foreach(omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
@@ -113,7 +113,7 @@ if (OMATH_ENABLE_HOOKING)
     target_link_libraries(${PROJECT_NAME} PRIVATE safetyhook::safetyhook)
 
     if (WIN32)
-        target_link_libraries(${PROJECT_NAME} PRIVATE d3d9 d3d11 d3d12 dxgi)
+        target_link_libraries(${PROJECT_NAME} PRIVATE d3d9 d3d11 d3d12 dxgi opengl32 gdi32)
     endif ()
 endif ()
 

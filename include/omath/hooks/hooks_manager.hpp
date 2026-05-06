@@ -37,6 +37,9 @@ namespace omath::hooks
         using dx9_reset_callback = std::function<void(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*)>;
         using dx9_end_scene_callback = std::function<void(IDirect3DDevice9*)>;
 
+        // OpenGL callbacks. Fires before the hooked buffer swap function calls the original.
+        using opengl_swap_buffers_callback = std::function<void(HDC)>;
+
         // Return nullopt to pass the message to the original WndProc; return a value to intercept it.
         using wnd_proc_callback = std::function<std::optional<LRESULT>(HWND, UINT, WPARAM, LPARAM)>;
 
@@ -56,6 +59,10 @@ namespace omath::hooks
 
         [[nodiscard]] bool hook_dx12();
         void unhook_dx12();
+
+        [[nodiscard]] bool hook_opengl();
+        void unhook_opengl();
+        void set_on_opengl_swap_buffers(opengl_swap_buffers_callback callback);
 
         // Present and ResizeBuffers callbacks fire for whichever of DX11/DX12 is hooked.
         void set_on_present(present_callback callback);
@@ -92,6 +99,11 @@ namespace omath::hooks
                                                                 ID3D12CommandList* const* pp_command_lists);
 
         [[nodiscard]]
+        static BOOL __stdcall opengl_wgl_swap_buffers_detour(HDC hdc);
+        [[nodiscard]]
+        static BOOL __stdcall opengl_swap_buffers_detour(HDC hdc);
+
+        [[nodiscard]]
         static LRESULT __stdcall wnd_proc_detour(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
 
         mutable std::shared_mutex m_hook_state_mutex;
@@ -104,11 +116,13 @@ namespace omath::hooks
         mutable std::shared_mutex m_resize_buffers_mutex;
         mutable std::shared_mutex m_execute_command_lists_mutex;
 
+        mutable std::shared_mutex m_opengl_swap_buffers_mutex;
         mutable std::shared_mutex m_wnd_proc_mutex;
 
         bool m_is_dx9_hooked = false;
         bool m_is_dx11_hooked = false;
         bool m_is_dx12_hooked = false;
+        bool m_is_opengl_hooked = false;
         bool m_is_wnd_proc_hooked = false;
 
         HWND m_hooked_hwnd = nullptr;
@@ -125,6 +139,9 @@ namespace omath::hooks
         safetyhook::InlineHook m_dx12_resize_buffers_hook;
         safetyhook::InlineHook m_dx12_execute_command_lists_hook;
 
+        safetyhook::InlineHook m_opengl_wgl_swap_buffers_hook;
+        safetyhook::InlineHook m_opengl_swap_buffers_hook;
+
         dx9_present_callback m_dx9_present_cb;
         dx9_reset_callback m_dx9_reset_cb;
         dx9_end_scene_callback m_dx9_end_scene_cb;
@@ -132,6 +149,7 @@ namespace omath::hooks
         present_callback m_present_cb;
         resize_buffers_callback m_resize_buffers_cb;
         execute_command_lists_callback m_execute_command_lists_cb;
+        opengl_swap_buffers_callback m_opengl_swap_buffers_cb;
         wnd_proc_callback m_wnd_proc_cb;
     };
 } // namespace omath::hooks
