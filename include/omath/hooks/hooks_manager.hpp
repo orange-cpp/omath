@@ -3,6 +3,7 @@
 #ifdef OMATH_ENABLE_HOOKING
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <shared_mutex>
 
@@ -42,6 +43,9 @@ namespace omath::hooks
 
         // Return nullopt to pass the message to the original WndProc; return a value to intercept it.
         using wnd_proc_callback = std::function<std::optional<LRESULT>(HWND, UINT, WPARAM, LPARAM)>;
+
+        template<typename Callback>
+        using callback_ptr = std::shared_ptr<const Callback>;
 
         [[nodiscard]] static HooksManager& get();
         HooksManager(const HooksManager&) = delete;
@@ -142,15 +146,15 @@ namespace omath::hooks
         safetyhook::InlineHook m_opengl_wgl_swap_buffers_hook;
         safetyhook::InlineHook m_opengl_swap_buffers_hook;
 
-        dx9_present_callback m_dx9_present_cb;
-        dx9_reset_callback m_dx9_reset_cb;
-        dx9_end_scene_callback m_dx9_end_scene_cb;
+        callback_ptr<dx9_present_callback> m_dx9_present_cb;
+        callback_ptr<dx9_reset_callback> m_dx9_reset_cb;
+        callback_ptr<dx9_end_scene_callback> m_dx9_end_scene_cb;
 
-        present_callback m_present_cb;
-        resize_buffers_callback m_resize_buffers_cb;
-        execute_command_lists_callback m_execute_command_lists_cb;
-        opengl_swap_buffers_callback m_opengl_swap_buffers_cb;
-        wnd_proc_callback m_wnd_proc_cb;
+        callback_ptr<present_callback> m_present_cb;
+        callback_ptr<resize_buffers_callback> m_resize_buffers_cb;
+        callback_ptr<execute_command_lists_callback> m_execute_command_lists_cb;
+        callback_ptr<opengl_swap_buffers_callback> m_opengl_swap_buffers_cb;
+        callback_ptr<wnd_proc_callback> m_wnd_proc_cb;
     };
 } // namespace omath::hooks
 

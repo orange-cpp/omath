@@ -259,19 +259,19 @@ namespace omath::hooks
     void HooksManager::set_on_dx9_present(dx9_present_callback callback)
     {
         std::unique_lock lock(m_dx9_present_mutex);
-        m_dx9_present_cb = std::move(callback);
+        m_dx9_present_cb = callback ? std::make_shared<dx9_present_callback>(std::move(callback)) : nullptr;
     }
 
     void HooksManager::set_on_dx9_reset(dx9_reset_callback callback)
     {
         std::unique_lock lock(m_dx9_reset_mutex);
-        m_dx9_reset_cb = std::move(callback);
+        m_dx9_reset_cb = callback ? std::make_shared<dx9_reset_callback>(std::move(callback)) : nullptr;
     }
 
     void HooksManager::set_on_dx9_end_scene(dx9_end_scene_callback callback)
     {
         std::unique_lock lock(m_dx9_end_scene_mutex);
-        m_dx9_end_scene_cb = std::move(callback);
+        m_dx9_end_scene_cb = callback ? std::make_shared<dx9_end_scene_callback>(std::move(callback)) : nullptr;
     }
 
     bool HooksManager::hook_dx11()
@@ -433,25 +433,27 @@ namespace omath::hooks
     void HooksManager::set_on_opengl_swap_buffers(opengl_swap_buffers_callback callback)
     {
         std::unique_lock lock(m_opengl_swap_buffers_mutex);
-        m_opengl_swap_buffers_cb = std::move(callback);
+        m_opengl_swap_buffers_cb =
+                callback ? std::make_shared<opengl_swap_buffers_callback>(std::move(callback)) : nullptr;
     }
 
     void HooksManager::set_on_present(present_callback callback)
     {
         std::unique_lock lock(m_present_mutex);
-        m_present_cb = std::move(callback);
+        m_present_cb = callback ? std::make_shared<present_callback>(std::move(callback)) : nullptr;
     }
 
     void HooksManager::set_on_resize_buffers(resize_buffers_callback callback)
     {
         std::unique_lock lock(m_resize_buffers_mutex);
-        m_resize_buffers_cb = std::move(callback);
+        m_resize_buffers_cb = callback ? std::make_shared<resize_buffers_callback>(std::move(callback)) : nullptr;
     }
 
     void HooksManager::set_on_execute_command_lists(execute_command_lists_callback callback)
     {
         std::unique_lock lock(m_execute_command_lists_mutex);
-        m_execute_command_lists_cb = std::move(callback);
+        m_execute_command_lists_cb =
+                callback ? std::make_shared<execute_command_lists_callback>(std::move(callback)) : nullptr;
     }
 
     bool HooksManager::hook_wnd_proc(HWND hwnd)
@@ -486,24 +488,25 @@ namespace omath::hooks
     void HooksManager::set_on_wnd_proc(wnd_proc_callback callback)
     {
         std::unique_lock lock(m_wnd_proc_mutex);
-        m_wnd_proc_cb = std::move(callback);
+        m_wnd_proc_cb = callback ? std::make_shared<wnd_proc_callback>(std::move(callback)) : nullptr;
     }
 
-    // Detour implementations: copy callback under shared lock, call it unlocked,
-    // then call original. This avoids a deadlock if the callback itself calls set_on_*().
+    // Detour implementations: copy a shared_ptr to the callback under shared lock, call it unlocked,
+    // then call original. This avoids copying captured lambda state every frame and still avoids
+    // a deadlock if the callback itself calls set_on_*().
 
     HRESULT __stdcall HooksManager::dx9_present_detour(IDirect3DDevice9* p_device, const RECT* p_source_rect,
                                                        const RECT* p_dest_rect, HWND h_dest_window_override,
                                                        const RGNDATA* p_dirty_region)
     {
         auto& mgr = get();
-        dx9_present_callback cb;
+        callback_ptr<dx9_present_callback> cb;
         {
             std::shared_lock lock(mgr.m_dx9_present_mutex);
             cb = mgr.m_dx9_present_cb;
         }
         if (cb)
-            cb(p_device, p_source_rect, p_dest_rect, h_dest_window_override, p_dirty_region);
+            (*cb)(p_device, p_source_rect, p_dest_rect, h_dest_window_override, p_dirty_region);
         return mgr.m_dx9_present_hook.call<HRESULT>(p_device, p_source_rect, p_dest_rect, h_dest_window_override,
                                                     p_dirty_region);
     }
@@ -512,39 +515,39 @@ namespace omath::hooks
                                                      D3DPRESENT_PARAMETERS* p_presentation_parameters)
     {
         auto& mgr = get();
-        dx9_reset_callback cb;
+        callback_ptr<dx9_reset_callback> cb;
         {
             std::shared_lock lock(mgr.m_dx9_reset_mutex);
             cb = mgr.m_dx9_reset_cb;
         }
         if (cb)
-            cb(p_device, p_presentation_parameters);
+            (*cb)(p_device, p_presentation_parameters);
         return mgr.m_dx9_reset_hook.call<HRESULT>(p_device, p_presentation_parameters);
     }
 
     HRESULT __stdcall HooksManager::dx9_end_scene_detour(IDirect3DDevice9* p_device)
     {
         auto& mgr = get();
-        dx9_end_scene_callback cb;
+        callback_ptr<dx9_end_scene_callback> cb;
         {
             std::shared_lock lock(mgr.m_dx9_end_scene_mutex);
             cb = mgr.m_dx9_end_scene_cb;
         }
         if (cb)
-            cb(p_device);
+            (*cb)(p_device);
         return mgr.m_dx9_end_scene_hook.call<HRESULT>(p_device);
     }
 
     HRESULT __stdcall HooksManager::dx11_present_detour(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags)
     {
         auto& mgr = get();
-        present_callback cb;
+        callback_ptr<present_callback> cb;
         {
             std::shared_lock lock(mgr.m_present_mutex);
             cb = mgr.m_present_cb;
         }
         if (cb)
-            cb(p_swap_chain, sync_interval, flags);
+            (*cb)(p_swap_chain, sync_interval, flags);
         return mgr.m_dx11_present_hook.call<HRESULT>(p_swap_chain, sync_interval, flags);
     }
 
@@ -553,13 +556,13 @@ namespace omath::hooks
                                                                UINT swap_chain_flags)
     {
         auto& mgr = get();
-        resize_buffers_callback cb;
+        callback_ptr<resize_buffers_callback> cb;
         {
             std::shared_lock lock(mgr.m_resize_buffers_mutex);
             cb = mgr.m_resize_buffers_cb;
         }
         if (cb)
-            cb(p_swap_chain, buffer_count, width, height, new_format, swap_chain_flags);
+            (*cb)(p_swap_chain, buffer_count, width, height, new_format, swap_chain_flags);
         return mgr.m_dx11_resize_buffers_hook.call<HRESULT>(p_swap_chain, buffer_count, width, height, new_format,
                                                             swap_chain_flags);
     }
@@ -567,13 +570,13 @@ namespace omath::hooks
     HRESULT __stdcall HooksManager::dx12_present_detour(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags)
     {
         auto& mgr = get();
-        present_callback cb;
+        callback_ptr<present_callback> cb;
         {
             std::shared_lock lock(mgr.m_present_mutex);
             cb = mgr.m_present_cb;
         }
         if (cb)
-            cb(p_swap_chain, sync_interval, flags);
+            (*cb)(p_swap_chain, sync_interval, flags);
         return mgr.m_dx12_present_hook.call<HRESULT>(p_swap_chain, sync_interval, flags);
     }
 
@@ -582,13 +585,13 @@ namespace omath::hooks
                                                                UINT swap_chain_flags)
     {
         auto& mgr = get();
-        resize_buffers_callback cb;
+        callback_ptr<resize_buffers_callback> cb;
         {
             std::shared_lock lock(mgr.m_resize_buffers_mutex);
             cb = mgr.m_resize_buffers_cb;
         }
         if (cb)
-            cb(p_swap_chain, buffer_count, width, height, new_format, swap_chain_flags);
+            (*cb)(p_swap_chain, buffer_count, width, height, new_format, swap_chain_flags);
         return mgr.m_dx12_resize_buffers_hook.call<HRESULT>(p_swap_chain, buffer_count, width, height, new_format,
                                                             swap_chain_flags);
     }
@@ -598,13 +601,13 @@ namespace omath::hooks
                                                                    ID3D12CommandList* const* pp_command_lists)
     {
         auto& mgr = get();
-        execute_command_lists_callback cb;
+        callback_ptr<execute_command_lists_callback> cb;
         {
             std::shared_lock lock(mgr.m_execute_command_lists_mutex);
             cb = mgr.m_execute_command_lists_cb;
         }
         if (cb)
-            cb(p_command_queue, num_command_lists, pp_command_lists);
+            (*cb)(p_command_queue, num_command_lists, pp_command_lists);
         mgr.m_dx12_execute_command_lists_hook.call<void>(p_command_queue, num_command_lists, pp_command_lists);
     }
 
@@ -616,13 +619,13 @@ namespace omath::hooks
         {
             g_is_inside_opengl_swap_buffers = true;
 
-            opengl_swap_buffers_callback cb;
+            callback_ptr<opengl_swap_buffers_callback> cb;
             {
                 std::shared_lock lock(mgr.m_opengl_swap_buffers_mutex);
                 cb = mgr.m_opengl_swap_buffers_cb;
             }
             if (cb)
-                cb(hdc);
+                (*cb)(hdc);
 
             const BOOL result = mgr.m_opengl_wgl_swap_buffers_hook.call<BOOL>(hdc);
             g_is_inside_opengl_swap_buffers = false;
@@ -640,13 +643,13 @@ namespace omath::hooks
         {
             g_is_inside_opengl_swap_buffers = true;
 
-            opengl_swap_buffers_callback cb;
+            callback_ptr<opengl_swap_buffers_callback> cb;
             {
                 std::shared_lock lock(mgr.m_opengl_swap_buffers_mutex);
                 cb = mgr.m_opengl_swap_buffers_cb;
             }
             if (cb)
-                cb(hdc);
+                (*cb)(hdc);
 
             const BOOL result = mgr.m_opengl_swap_buffers_hook.call<BOOL>(hdc);
             g_is_inside_opengl_swap_buffers = false;
@@ -659,7 +662,7 @@ namespace omath::hooks
     LRESULT __stdcall HooksManager::wnd_proc_detour(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param)
     {
         auto& mgr = get();
-        wnd_proc_callback cb;
+        callback_ptr<wnd_proc_callback> cb;
         WNDPROC original;
         {
             std::shared_lock lock(mgr.m_wnd_proc_mutex);
@@ -668,7 +671,7 @@ namespace omath::hooks
         }
         if (cb)
         {
-            if (const auto result = cb(hwnd, msg, w_param, l_param))
+            if (const auto result = (*cb)(hwnd, msg, w_param, l_param))
                 return *result;
         }
         return CallWindowProc(original, hwnd, msg, w_param, l_param);
