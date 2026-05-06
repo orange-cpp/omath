@@ -3,9 +3,11 @@
 #ifdef OMATH_ENABLE_HOOKING
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <shared_mutex>
 
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -16,6 +18,12 @@
 #include <d3d12.h>
 #include <d3d9.h>
 #include <dxgi.h>
+#endif // _WIN32
+
+#ifdef __linux__
+#include <GL/glx.h>
+#endif // __linux__
+
 #include <safetyhook.hpp>
 
 namespace omath::hooks
@@ -25,6 +33,7 @@ namespace omath::hooks
         HooksManager() = default;
 
     public:
+#ifdef _WIN32
         // IDXGISwapChain callbacks — shared between DX11 and DX12 (same interface, same signature).
         using present_callback = std::function<void(IDXGISwapChain*, UINT, UINT)>;
         using resize_buffers_callback = std::function<void(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)>;
@@ -37,14 +46,27 @@ namespace omath::hooks
         using dx9_reset_callback = std::function<void(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*)>;
         using dx9_end_scene_callback = std::function<void(IDirect3DDevice9*)>;
 
+        // OpenGL callback — Windows. Fires before the hooked buffer swap function calls the original.
+        using opengl_swap_buffers_callback = std::function<void(HDC)>;
+
         // Return nullopt to pass the message to the original WndProc; return a value to intercept it.
         using wnd_proc_callback = std::function<std::optional<LRESULT>(HWND, UINT, WPARAM, LPARAM)>;
+#endif // _WIN32
+
+#ifdef __linux__
+        // OpenGL/GLX callback — Linux. Fires before glXSwapBuffers calls the original.
+        using opengl_swap_buffers_callback = std::function<void(Display*, GLXDrawable)>;
+#endif // __linux__
+
+        template<typename Callback>
+        using callback_ptr = std::shared_ptr<const Callback>;
 
         [[nodiscard]] static HooksManager& get();
         HooksManager(const HooksManager&) = delete;
         HooksManager& operator=(const HooksManager&) = delete;
         ~HooksManager();
 
+#ifdef _WIN32
         [[nodiscard]] bool hook_dx9();
         void unhook_dx9();
         void set_on_dx9_present(dx9_present_callback callback);
@@ -56,7 +78,13 @@ namespace omath::hooks
 
         [[nodiscard]] bool hook_dx12();
         void unhook_dx12();
+#endif // _WIN32
 
+        [[nodiscard]] bool hook_opengl();
+        void unhook_opengl();
+        void set_on_opengl_swap_buffers(opengl_swap_buffers_callback callback);
+
+#ifdef _WIN32
         // Present and ResizeBuffers callbacks fire for whichever of DX11/DX12 is hooked.
         void set_on_present(present_callback callback);
         void set_on_resize_buffers(resize_buffers_callback callback);
@@ -65,8 +93,10 @@ namespace omath::hooks
         [[nodiscard]] bool hook_wnd_proc(HWND hwnd);
         void unhook_wnd_proc();
         void set_on_wnd_proc(wnd_proc_callback callback);
+#endif // _WIN32
 
     private:
+#ifdef _WIN32
         [[nodiscard]]
         static HRESULT __stdcall dx9_present_detour(IDirect3DDevice9* p_device, const RECT* p_source_rect,
                                                     const RECT* p_dest_rect, HWND h_dest_window_override,
@@ -92,10 +122,21 @@ namespace omath::hooks
                                                                 ID3D12CommandList* const* pp_command_lists);
 
         [[nodiscard]]
+        static BOOL __stdcall opengl_wgl_swap_buffers_detour(HDC hdc);
+        [[nodiscard]]
+        static BOOL __stdcall opengl_swap_buffers_detour(HDC hdc);
+
+        [[nodiscard]]
         static LRESULT __stdcall wnd_proc_detour(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
+#endif // _WIN32
+
+#ifdef __linux__
+        static void opengl_glx_swap_buffers_detour(Display* display, GLXDrawable drawable);
+#endif // __linux__
 
         mutable std::shared_mutex m_hook_state_mutex;
 
+#ifdef _WIN32
         mutable std::shared_mutex m_dx9_present_mutex;
         mutable std::shared_mutex m_dx9_reset_mutex;
         mutable std::shared_mutex m_dx9_end_scene_mutex;
@@ -105,7 +146,11 @@ namespace omath::hooks
         mutable std::shared_mutex m_execute_command_lists_mutex;
 
         mutable std::shared_mutex m_wnd_proc_mutex;
+#endif // _WIN32
 
+        mutable std::shared_mutex m_opengl_swap_buffers_mutex;
+
+#ifdef _WIN32
         bool m_is_dx9_hooked = false;
         bool m_is_dx11_hooked = false;
         bool m_is_dx12_hooked = false;
@@ -125,14 +170,29 @@ namespace omath::hooks
         safetyhook::InlineHook m_dx12_resize_buffers_hook;
         safetyhook::InlineHook m_dx12_execute_command_lists_hook;
 
-        dx9_present_callback m_dx9_present_cb;
-        dx9_reset_callback m_dx9_reset_cb;
-        dx9_end_scene_callback m_dx9_end_scene_cb;
+        safetyhook::InlineHook m_opengl_wgl_swap_buffers_hook;
+        safetyhook::InlineHook m_opengl_swap_buffers_hook;
+#endif // _WIN32
 
-        present_callback m_present_cb;
-        resize_buffers_callback m_resize_buffers_cb;
-        execute_command_lists_callback m_execute_command_lists_cb;
-        wnd_proc_callback m_wnd_proc_cb;
+#ifdef __linux__
+        safetyhook::InlineHook m_opengl_glx_swap_buffers_hook;
+#endif // __linux__
+
+        bool m_is_opengl_hooked = false;
+
+#ifdef _WIN32
+        callback_ptr<dx9_present_callback> m_dx9_present_cb;
+        callback_ptr<dx9_reset_callback> m_dx9_reset_cb;
+        callback_ptr<dx9_end_scene_callback> m_dx9_end_scene_cb;
+
+        callback_ptr<present_callback> m_present_cb;
+        callback_ptr<resize_buffers_callback> m_resize_buffers_cb;
+        callback_ptr<execute_command_lists_callback> m_execute_command_lists_cb;
+
+        callback_ptr<wnd_proc_callback> m_wnd_proc_cb;
+#endif // _WIN32
+
+        callback_ptr<opengl_swap_buffers_callback> m_opengl_swap_buffers_cb;
     };
 } // namespace omath::hooks
 
