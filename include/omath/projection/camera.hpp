@@ -5,6 +5,7 @@
 #pragma once
 
 #include "omath/3d_primitives/aabb.hpp"
+#include "omath/3d_primitives/obb.hpp"
 #include "omath/linear_algebra/mat.hpp"
 #include "omath/linear_algebra/triangle.hpp"
 #include "omath/linear_algebra/vector3.hpp"
@@ -380,55 +381,35 @@ namespace omath::projection
 
         [[nodiscard]] bool is_aabb_culled_by_frustum(const primitives::Aabb<NumericType>& aabb) const noexcept
         {
-            const auto& m = get_view_projection_matrix();
-
-            // Gribb-Hartmann: extract 6 frustum planes from the view-projection matrix.
-            // Each plane is (a, b, c, d) such that ax + by + cz + d >= 0 means inside.
-            // For a 4x4 matrix with rows r0..r3:
-            //   Left   = r3 + r0
-            //   Right  = r3 - r0
-            //   Bottom = r3 + r1
-            //   Top    = r3 - r1
-            //   Near   = r3 + r2  ([-1,1]) or r2 ([0,1])
-            //   Far    = r3 - r2
-            struct Plane final
-            {
-                NumericType a, b, c, d;
-            };
-
-            const auto extract_plane = [&m](const int sign, const int row) -> Plane
-            {
-                return {
-                        m.at(3, 0) + static_cast<NumericType>(sign) * m.at(row, 0),
-                        m.at(3, 1) + static_cast<NumericType>(sign) * m.at(row, 1),
-                        m.at(3, 2) + static_cast<NumericType>(sign) * m.at(row, 2),
-                        m.at(3, 3) + static_cast<NumericType>(sign) * m.at(row, 3),
-                };
-            };
-
-            std::array<Plane, 6> planes = {
-                    extract_plane(1, 0), // left
-                    extract_plane(-1, 0), // right
-                    extract_plane(1, 1), // bottom
-                    extract_plane(-1, 1), // top
-                    extract_plane(-1, 2), // far
-            };
-
-            // Near plane depends on NDC depth range
-            if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
-                planes[5] = {m.at(2, 0), m.at(2, 1), m.at(2, 2), m.at(2, 3)};
-            else
-                planes[5] = extract_plane(1, 2);
-
             // For each plane, find the AABB corner most in the direction of the plane normal
             // (the "positive vertex"). If it's outside, the entire AABB is outside.
-            for (const auto& [a, b, c, d] : planes)
+            for (const auto& [a, b, c, d] : extract_frustum_planes())
             {
                 const auto px = a >= NumericType{0} ? aabb.max.x : aabb.min.x;
                 const auto py = b >= NumericType{0} ? aabb.max.y : aabb.min.y;
                 const auto pz = c >= NumericType{0} ? aabb.max.z : aabb.min.z;
 
                 if (a * px + b * py + c * pz + d < NumericType{0})
+                    return true;
+            }
+
+            return false;
+        }
+
+        [[nodiscard]] bool is_obb_culled_by_frustum(const primitives::Obb<NumericType>& obb) const noexcept
+        {
+            // For each plane, project the OBB extents onto the plane normal to get the
+            // effective radius, then test the center's signed distance against it.
+            for (const auto& [a, b, c, d] : extract_frustum_planes())
+            {
+                const Vector3<NumericType> normal{a, b, c};
+
+                const auto center_distance = normal.dot(obb.center) + d;
+                const auto radius = obb.half_extents.x * std::abs(normal.dot(obb.axis_x))
+                                    + obb.half_extents.y * std::abs(normal.dot(obb.axis_y))
+                                    + obb.half_extents.z * std::abs(normal.dot(obb.axis_z));
+
+                if (center_distance + radius < NumericType{0})
                     return true;
             }
 
@@ -517,6 +498,51 @@ namespace omath::projection
         Vector3<NumericType> m_origin;
 
     private:
+        struct FrustumPlane final
+        {
+            NumericType a, b, c, d;
+        };
+
+        // Gribb-Hartmann: extract 6 frustum planes from the view-projection matrix.
+        // Each plane is (a, b, c, d) such that ax + by + cz + d >= 0 means inside.
+        // For a 4x4 matrix with rows r0..r3:
+        //   Left   = r3 + r0
+        //   Right  = r3 - r0
+        //   Bottom = r3 + r1
+        //   Top    = r3 - r1
+        //   Near   = r3 + r2  ([-1,1]) or r2 ([0,1])
+        //   Far    = r3 - r2
+        [[nodiscard]] std::array<FrustumPlane, 6> extract_frustum_planes() const noexcept
+        {
+            const auto& m = get_view_projection_matrix();
+
+            const auto extract_plane = [&m](const int sign, const int row) -> FrustumPlane
+            {
+                return {
+                        m.at(3, 0) + static_cast<NumericType>(sign) * m.at(row, 0),
+                        m.at(3, 1) + static_cast<NumericType>(sign) * m.at(row, 1),
+                        m.at(3, 2) + static_cast<NumericType>(sign) * m.at(row, 2),
+                        m.at(3, 3) + static_cast<NumericType>(sign) * m.at(row, 3),
+                };
+            };
+
+            std::array<FrustumPlane, 6> planes = {
+                    extract_plane(1, 0), // left
+                    extract_plane(-1, 0), // right
+                    extract_plane(1, 1), // bottom
+                    extract_plane(-1, 1), // top
+                    extract_plane(-1, 2), // far
+            };
+
+            // Near plane depends on NDC depth range
+            if constexpr (depth_range == NDCDepthRange::ZERO_TO_ONE)
+                planes[5] = {m.at(2, 0), m.at(2, 1), m.at(2, 2), m.at(2, 3)};
+            else
+                planes[5] = extract_plane(1, 2);
+
+            return planes;
+        }
+
         template<class Type>
         [[nodiscard]] constexpr static bool is_ndc_out_of_bounds(const Type& ndc) noexcept
         {
