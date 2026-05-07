@@ -4,6 +4,7 @@
 #pragma once
 
 #include "omath/3d_primitives/aabb.hpp"
+#include "omath/3d_primitives/obb.hpp"
 #include "omath/linear_algebra/triangle.hpp"
 #include "omath/linear_algebra/vector3.hpp"
 
@@ -36,6 +37,7 @@ namespace omath::collision
     {
         using TriangleType = Triangle<typename RayType::VectorType>;
         using AABBType = primitives::Aabb<typename RayType::VectorType::ContainedType>;
+        using OBBType = primitives::Obb<typename RayType::VectorType::ContainedType>;
 
     public:
         LineTracer() = delete;
@@ -126,6 +128,61 @@ namespace omath::collision
                 return ray.end;
 
             // t_hit: use entry point if in front of origin, otherwise 0 (started inside)
+            const T t_hit = std::max(T(0), t_min);
+
+            if (t_max < T(0))
+                return ray.end; // box entirely behind origin
+
+            if (!ray.infinite_length && t_hit > T(1))
+                return ray.end; // box beyond ray endpoint
+
+            return ray.start + dir * t_hit;
+        }
+
+        // Slab method ray-OBB intersection. Project the ray into the OBB's local frame
+        // (axes are orthonormal, so the inverse rotation is just a transpose / dot products),
+        // then run the standard slab test against the local box [-half_extents, +half_extents].
+        // The ray parameter t is invariant under rigid transform, so the hit point is recovered
+        // in world space as ray.start + dir * t_hit.
+        [[nodiscard]]
+        constexpr static auto get_ray_hit_point(const RayType& ray, const OBBType& obb) noexcept
+        {
+            using T = typename RayType::VectorType::ContainedType;
+
+            const auto offset = ray.start - obb.center;
+            const auto dir = ray.direction_vector();
+
+            const T local_start[3] = {offset.dot(obb.axis_x), offset.dot(obb.axis_y), offset.dot(obb.axis_z)};
+            const T local_dir[3] = {dir.dot(obb.axis_x), dir.dot(obb.axis_y), dir.dot(obb.axis_z)};
+            const T half[3] = {obb.half_extents.x, obb.half_extents.y, obb.half_extents.z};
+
+            auto t_min = -std::numeric_limits<T>::infinity();
+            auto t_max = std::numeric_limits<T>::infinity();
+
+            const auto process_axis = [&](const T& d, const T& origin, const T& h) -> bool
+            {
+                constexpr T k_epsilon = std::numeric_limits<T>::epsilon();
+                if (std::abs(d) < k_epsilon)
+                    return origin >= -h && origin <= h;
+
+                const T inv = T(1) / d;
+                T t0 = (-h - origin) * inv;
+                T t1 = (h - origin) * inv;
+                if (t0 > t1)
+                    std::swap(t0, t1);
+
+                t_min = std::max(t_min, t0);
+                t_max = std::min(t_max, t1);
+                return t_min <= t_max;
+            };
+
+            if (!process_axis(local_dir[0], local_start[0], half[0]))
+                return ray.end;
+            if (!process_axis(local_dir[1], local_start[1], half[1]))
+                return ray.end;
+            if (!process_axis(local_dir[2], local_start[2], half[2]))
+                return ray.end;
+
             const T t_hit = std::max(T(0), t_min);
 
             if (t_max < T(0))
