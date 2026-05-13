@@ -730,7 +730,7 @@ namespace omath
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return {{x_axis,  Type{0}, Type{0},                     Type{0}},
                     {Type{0}, y_axis,  Type{0},                     Type{0}},
-                    {Type{0}, Type{0}, (far + near) / (far - near), -(2.f * near * far) / (far - near)},
+                    {Type{0}, Type{0}, (far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
                     {Type{0}, Type{0}, Type{1},                     Type{0}}};
         else
             std::unreachable();
@@ -755,7 +755,7 @@ namespace omath
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return {{x_axis,  Type{0}, Type{0},                      Type{0}},
                     {Type{0}, y_axis,  Type{0},                      Type{0}},
-                    {Type{0}, Type{0}, -(far + near) / (far - near), -(2.f * near * far) / (far - near)},
+                    {Type{0}, Type{0}, -(far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
                     {Type{0}, Type{0}, -Type{1},                     Type{0}}};
         else
             std::unreachable();
