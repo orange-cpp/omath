@@ -1,6 +1,7 @@
 // UnitTestMat.cpp
 #include "omath/linear_algebra/mat.hpp"
 #include "omath/linear_algebra/vector3.hpp"
+#include "omath/trigonometry/angles.hpp"
 #include <gtest/gtest.h>
 
 using namespace omath;
@@ -304,6 +305,165 @@ TEST(UnitTestMatStandalone, MatPerspectiveNegativeOneToOneRange)
     auto far_pt = proj_default * mat_column_from_vector<float>({0, 0, 1000.f});
     far_pt /= far_pt.at(3, 0);
     EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-3f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveRightHandedNegOneToOne)
+{
+    const auto proj = mat_perspective_right_handed_vertical_fov<float, MatStoreType::ROW_MAJOR,
+            NDCDepthRange::NEGATIVE_ONE_TO_ONE>(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    // Near plane (negative z for RH) should map to z ~ -1
+    auto near_pt = proj * mat_column_from_vector<float>({0, 0, -0.1f});
+    near_pt /= near_pt.at(3, 0);
+    EXPECT_NEAR(near_pt.at(2, 0), -1.0f, 1e-3f);
+
+    // Far plane should map to z ~ 1
+    auto far_pt = proj * mat_column_from_vector<float>({0, 0, -1000.f});
+    far_pt /= far_pt.at(3, 0);
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-3f);
+
+    // Mid-range point should be in (-1, 1)
+    auto mid_pt = proj * mat_column_from_vector<float>({0, 0, -500.f});
+    mid_pt /= mid_pt.at(3, 0);
+    EXPECT_GT(mid_pt.at(2, 0), -1.0f);
+    EXPECT_LT(mid_pt.at(2, 0),  1.0f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveLeftHandedHorizontalFovZeroToOne)
+{
+    // hfov=90 deg, aspect=16/9 => tan(hfov/2)=1, so x_axis=1 and y_axis=aspect
+    const auto proj = mat_perspective_left_handed_horizontal_fov<float, MatStoreType::ROW_MAJOR,
+            NDCDepthRange::ZERO_TO_ONE>(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    // Near plane should map to z ~ 0
+    auto near_pt = proj * mat_column_from_vector<float>({0, 0, 0.1f});
+    near_pt /= near_pt.at(3, 0);
+    EXPECT_NEAR(near_pt.at(2, 0), 0.0f, 1e-4f);
+
+    // Far plane should map to z ~ 1
+    auto far_pt = proj * mat_column_from_vector<float>({0, 0, 1000.f});
+    far_pt /= far_pt.at(3, 0);
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-4f);
+
+    // Right edge of horizontal frustum at near plane (view_x = tan(hfov/2)*near = 0.1)
+    auto right_edge = proj * mat_column_from_vector<float>({0.1f, 0, 0.1f});
+    right_edge /= right_edge.at(3, 0);
+    EXPECT_NEAR(right_edge.at(0, 0), 1.0f, 1e-4f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveLeftHandedHorizontalFovNegOneToOne)
+{
+    const auto proj = mat_perspective_left_handed_horizontal_fov<float, MatStoreType::ROW_MAJOR,
+            NDCDepthRange::NEGATIVE_ONE_TO_ONE>(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    auto near_pt = proj * mat_column_from_vector<float>({0, 0, 0.1f});
+    near_pt /= near_pt.at(3, 0);
+    EXPECT_NEAR(near_pt.at(2, 0), -1.0f, 1e-3f);
+
+    auto far_pt = proj * mat_column_from_vector<float>({0, 0, 1000.f});
+    far_pt /= far_pt.at(3, 0);
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-3f);
+
+    auto right_edge = proj * mat_column_from_vector<float>({0.1f, 0, 0.1f});
+    right_edge /= right_edge.at(3, 0);
+    EXPECT_NEAR(right_edge.at(0, 0), 1.0f, 1e-4f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveRightHandedHorizontalFovZeroToOne)
+{
+    const auto proj = mat_perspective_right_handed_horizontal_fov<float, MatStoreType::ROW_MAJOR,
+            NDCDepthRange::ZERO_TO_ONE>(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    auto near_pt = proj * mat_column_from_vector<float>({0, 0, -0.1f});
+    near_pt /= near_pt.at(3, 0);
+    EXPECT_NEAR(near_pt.at(2, 0), 0.0f, 1e-4f);
+
+    auto far_pt = proj * mat_column_from_vector<float>({0, 0, -1000.f});
+    far_pt /= far_pt.at(3, 0);
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-4f);
+
+    auto right_edge = proj * mat_column_from_vector<float>({0.1f, 0, -0.1f});
+    right_edge /= right_edge.at(3, 0);
+    EXPECT_NEAR(right_edge.at(0, 0), 1.0f, 1e-4f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveRightHandedHorizontalFovNegOneToOne)
+{
+    const auto proj = mat_perspective_right_handed_horizontal_fov<float, MatStoreType::ROW_MAJOR,
+            NDCDepthRange::NEGATIVE_ONE_TO_ONE>(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    auto near_pt = proj * mat_column_from_vector<float>({0, 0, -0.1f});
+    near_pt /= near_pt.at(3, 0);
+    EXPECT_NEAR(near_pt.at(2, 0), -1.0f, 1e-3f);
+
+    auto far_pt = proj * mat_column_from_vector<float>({0, 0, -1000.f});
+    far_pt /= far_pt.at(3, 0);
+    EXPECT_NEAR(far_pt.at(2, 0), 1.0f, 1e-3f);
+
+    auto right_edge = proj * mat_column_from_vector<float>({0.1f, 0, -0.1f});
+    right_edge /= right_edge.at(3, 0);
+    EXPECT_NEAR(right_edge.at(0, 0), 1.0f, 1e-4f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveHorizontalVsVerticalFovEquivalence)
+{
+    constexpr float hfov_deg = 90.f;
+    constexpr float aspect   = 16.f / 9.f;
+    const float vfov_deg = angles::horizontal_fov_to_vertical(hfov_deg, aspect);
+
+    const auto proj_h = mat_perspective_left_handed_horizontal_fov(hfov_deg, aspect, 0.1f, 1000.f);
+    const auto proj_v = mat_perspective_left_handed_vertical_fov(vfov_deg, aspect, 0.1f, 1000.f);
+
+    for (size_t i = 0; i < 4; ++i)
+        for (size_t j = 0; j < 4; ++j)
+            EXPECT_NEAR(proj_h.at(i, j), proj_v.at(i, j), 1e-4f);
+}
+
+// Handedness contract: clip_w sign tells front-of-camera vs behind.
+// LH: +z view-space is in front  (clip_w > 0), -z is behind (clip_w < 0).
+// RH: -z view-space is in front  (clip_w > 0), +z is behind (clip_w < 0).
+TEST(UnitTestMatStandalone, MatPerspectiveLeftHandedVerticalFovHandedness)
+{
+    const auto proj = mat_perspective_left_handed_vertical_fov(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    const auto in_front = proj * mat_column_from_vector<float>({0, 0,  1.f});
+    const auto behind   = proj * mat_column_from_vector<float>({0, 0, -1.f});
+
+    EXPECT_GT(in_front.at(3, 0), 0.0f);
+    EXPECT_LT(behind.at(3, 0),   0.0f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveRightHandedVerticalFovHandedness)
+{
+    const auto proj = mat_perspective_right_handed_vertical_fov(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    const auto in_front = proj * mat_column_from_vector<float>({0, 0, -1.f});
+    const auto behind   = proj * mat_column_from_vector<float>({0, 0,  1.f});
+
+    EXPECT_GT(in_front.at(3, 0), 0.0f);
+    EXPECT_LT(behind.at(3, 0),   0.0f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveLeftHandedHorizontalFovHandedness)
+{
+    const auto proj = mat_perspective_left_handed_horizontal_fov(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    const auto in_front = proj * mat_column_from_vector<float>({0, 0,  1.f});
+    const auto behind   = proj * mat_column_from_vector<float>({0, 0, -1.f});
+
+    EXPECT_GT(in_front.at(3, 0), 0.0f);
+    EXPECT_LT(behind.at(3, 0),   0.0f);
+}
+
+TEST(UnitTestMatStandalone, MatPerspectiveRightHandedHorizontalFovHandedness)
+{
+    const auto proj = mat_perspective_right_handed_horizontal_fov(90.f, 16.f / 9.f, 0.1f, 1000.f);
+
+    const auto in_front = proj * mat_column_from_vector<float>({0, 0, -1.f});
+    const auto behind   = proj * mat_column_from_vector<float>({0, 0,  1.f});
+
+    EXPECT_GT(in_front.at(3, 0), 0.0f);
+    EXPECT_LT(behind.at(3, 0),   0.0f);
 }
 
 TEST(UnitTestMatStandalone, MatPerspectiveZeroToOneEquanity)

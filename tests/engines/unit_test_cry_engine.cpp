@@ -29,11 +29,11 @@ TEST(unit_test_cry_engine, look_at_right)
 }
 TEST(unit_test_cry_engine, look_at_up)
 {
-    const auto angles = cry_engine::CameraTrait::calc_look_at_angle({}, cry_engine::k_abs_right);
+    const auto angles = cry_engine::CameraTrait::calc_look_at_angle({}, cry_engine::k_abs_up);
 
     // ReSharper disable once CppTooWideScopeInitStatement
     const auto dir_vector = cry_engine::forward_vector(angles);
-    for (const auto& [result, etalon] : std::views::zip(dir_vector.as_array(), cry_engine::k_abs_right.as_array()))
+    for (const auto& [result, etalon] : std::views::zip(dir_vector.as_array(), cry_engine::k_abs_up.as_array()))
         EXPECT_NEAR(result, etalon, 0.0001f);
 }
 

@@ -24,4 +24,4 @@ namespace omath::cry_engine
         return calc_perspective_projection_matrix(fov.as_degrees(), view_port.aspect_ratio(), near, far,
                                                   ndc_depth_range);
     }
-} // namespace omath::unity_engine
+} // namespace omath::cry_engine
