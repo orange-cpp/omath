@@ -35,6 +35,13 @@ namespace
         const auto s = std::sin(radians);
         return ObbF{center, {c, 0.f, -s}, {0.f, 1.f, 0.f}, {s, 0.f, c}, half_extents};
     }
+
+    void expect_vec_near(const Vec3F& actual, const Vec3F& expected, const float epsilon = 1e-5f)
+    {
+        EXPECT_NEAR(actual.x, expected.x, epsilon);
+        EXPECT_NEAR(actual.y, expected.y, epsilon);
+        EXPECT_NEAR(actual.z, expected.z, epsilon);
+    }
 } // namespace
 
 // --- struct-level tests ---
@@ -80,6 +87,37 @@ TEST(ObbTests, VerticesOfRotatedBox)
     }
 }
 
+TEST(ObbTests, VerticesOfTranslatedNonUniformRotatedBox)
+{
+    const auto box = rotated_around_z({2.f, 3.f, 4.f}, {2.f, 1.f, 0.5f}, std::numbers::pi_v<float> / 2.f);
+    const auto v = box.vertices();
+
+    expect_vec_near(v[0], {3.f, 1.f, 3.5f});
+    expect_vec_near(v[1], {3.f, 5.f, 3.5f});
+    expect_vec_near(v[2], {1.f, 1.f, 3.5f});
+    expect_vec_near(v[3], {1.f, 5.f, 3.5f});
+    expect_vec_near(v[4], {3.f, 1.f, 4.5f});
+    expect_vec_near(v[5], {3.f, 5.f, 4.5f});
+    expect_vec_near(v[6], {1.f, 1.f, 4.5f});
+    expect_vec_near(v[7], {1.f, 5.f, 4.5f});
+}
+
+TEST(ObbTests, VerticesCollapseWhenOneExtentIsZero)
+{
+    constexpr auto box = axis_aligned_obb({1.f, 2.f, 3.f}, {2.f, 0.f, 4.f});
+    const auto v = box.vertices();
+
+    EXPECT_EQ(v[0], v[2]);
+    EXPECT_EQ(v[1], v[3]);
+    EXPECT_EQ(v[4], v[6]);
+    EXPECT_EQ(v[5], v[7]);
+
+    EXPECT_EQ(v[0], (Vec3F{-1.f, 2.f, -1.f}));
+    EXPECT_EQ(v[1], (Vec3F{3.f, 2.f, -1.f}));
+    EXPECT_EQ(v[4], (Vec3F{-1.f, 2.f, 7.f}));
+    EXPECT_EQ(v[5], (Vec3F{3.f, 2.f, 7.f}));
+}
+
 TEST(ObbTests, DoublePrecisionInstantiation)
 {
     constexpr ObbD box{{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {2.0, 3.0, 4.0}};
@@ -122,6 +160,16 @@ TEST(ObbTests, AxisAlignedBeyondFarPlaneCulled)
 
     const auto obb = axis_aligned_obb({1750.f, 0.f, 0.f}, {250.f, 1.f, 1.f});
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(obb));
+}
+
+TEST(ObbTests, AxisAlignedStraddlingFarPlaneNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
+                                                  0.01f, 1000.f);
+
+    const auto obb = axis_aligned_obb({1005.f, 0.f, 0.f}, {10.f, 1.f, 1.f});
+    EXPECT_FALSE(cam.is_obb_culled_by_frustum(obb));
 }
 
 TEST(ObbTests, AxisAlignedFarLeftCulled)
@@ -265,6 +313,16 @@ TEST(ObbTests, OpenGlEngineBehindCulled)
 
     const auto obb = axis_aligned_obb({0.f, 0.f, 100.f}, {5.f, 5.f, 5.f});
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(obb));
+}
+
+TEST(ObbTests, OpenGlEngineStraddlingFarPlaneNotCulled)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 100.f);
+
+    const auto obb = rotated_around_z({0.f, 0.f, -105.f}, {5.f, 5.f, 10.f},
+                                      std::numbers::pi_v<float> / 4.f);
+    EXPECT_FALSE(cam.is_obb_culled_by_frustum(obb));
 }
 
 TEST(ObbTests, UnityEngineBeyondFarCulled)
