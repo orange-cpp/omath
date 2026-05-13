@@ -49,7 +49,7 @@ namespace
 TEST(ObbTests, VerticesOfAxisAlignedUnitBox)
 {
     constexpr auto box = axis_aligned_obb({0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
-    const auto v = box.vertices();
+    constexpr auto v = box.vertices();
 
     EXPECT_EQ(v[0], (Vec3F{-1.f, -1.f, -1.f}));
     EXPECT_EQ(v[1], (Vec3F{1.f, -1.f, -1.f}));
@@ -64,7 +64,7 @@ TEST(ObbTests, VerticesOfAxisAlignedUnitBox)
 TEST(ObbTests, VerticesOfTranslatedBox)
 {
     constexpr auto box = axis_aligned_obb({10.f, 20.f, 30.f}, {1.f, 2.f, 3.f});
-    const auto v = box.vertices();
+    constexpr auto v = box.vertices();
 
     EXPECT_EQ(v[0], (Vec3F{9.f, 18.f, 27.f}));
     EXPECT_EQ(v[7], (Vec3F{11.f, 22.f, 33.f}));
@@ -105,7 +105,7 @@ TEST(ObbTests, VerticesOfTranslatedNonUniformRotatedBox)
 TEST(ObbTests, VerticesCollapseWhenOneExtentIsZero)
 {
     constexpr auto box = axis_aligned_obb({1.f, 2.f, 3.f}, {2.f, 0.f, 4.f});
-    const auto v = box.vertices();
+    constexpr auto v = box.vertices();
 
     EXPECT_EQ(v[0], v[2]);
     EXPECT_EQ(v[1], v[3]);
@@ -121,7 +121,7 @@ TEST(ObbTests, VerticesCollapseWhenOneExtentIsZero)
 TEST(ObbTests, DoublePrecisionInstantiation)
 {
     constexpr ObbD box{{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {2.0, 3.0, 4.0}};
-    const auto v = box.vertices();
+    constexpr auto v = box.vertices();
     EXPECT_DOUBLE_EQ(v[0].x, -2.0);
     EXPECT_DOUBLE_EQ(v[0].y, -3.0);
     EXPECT_DOUBLE_EQ(v[0].z, -4.0);
@@ -138,7 +138,7 @@ TEST(ObbTests, AxisAlignedInFrontNotCulled)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto obb = axis_aligned_obb({100.f, 0.f, 0.f}, {10.f, 1.f, 1.f});
+    constexpr auto obb = axis_aligned_obb({100.f, 0.f, 0.f}, {10.f, 1.f, 1.f});
     EXPECT_FALSE(cam.is_obb_culled_by_frustum(obb));
 }
 
@@ -148,7 +148,7 @@ TEST(ObbTests, AxisAlignedBehindCameraCulled)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto obb = axis_aligned_obb({-150.f, 0.f, 0.f}, {50.f, 1.f, 1.f});
+    constexpr auto obb = axis_aligned_obb({-150.f, 0.f, 0.f}, {50.f, 1.f, 1.f});
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(obb));
 }
 
@@ -158,7 +158,7 @@ TEST(ObbTests, AxisAlignedBeyondFarPlaneCulled)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto obb = axis_aligned_obb({1750.f, 0.f, 0.f}, {250.f, 1.f, 1.f});
+    constexpr auto obb = axis_aligned_obb({1750.f, 0.f, 0.f}, {250.f, 1.f, 1.f});
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(obb));
 }
 
@@ -168,7 +168,7 @@ TEST(ObbTests, AxisAlignedStraddlingFarPlaneNotCulled)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto obb = axis_aligned_obb({1005.f, 0.f, 0.f}, {10.f, 1.f, 1.f});
+    constexpr auto obb = axis_aligned_obb({1005.f, 0.f, 0.f}, {10.f, 1.f, 1.f});
     EXPECT_FALSE(cam.is_obb_culled_by_frustum(obb));
 }
 
@@ -178,7 +178,7 @@ TEST(ObbTests, AxisAlignedFarLeftCulled)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto obb = axis_aligned_obb({100.f, 4500.f, 0.f}, {10.f, 500.f, 1.f});
+    constexpr auto obb = axis_aligned_obb({100.f, 4500.f, 0.f}, {10.f, 500.f, 1.f});
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(obb));
 }
 
@@ -188,7 +188,7 @@ TEST(ObbTests, AxisAlignedFarRightCulled)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto obb = axis_aligned_obb({100.f, -4500.f, 0.f}, {10.f, 500.f, 1.f});
+    constexpr auto obb = axis_aligned_obb({100.f, -4500.f, 0.f}, {10.f, 500.f, 1.f});
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(obb));
 }
 
@@ -198,7 +198,7 @@ TEST(ObbTests, AxisAlignedAboveCulled)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto obb = axis_aligned_obb({100.f, 0.f, 5500.f}, {10.f, 1.f, 500.f});
+    constexpr auto obb = axis_aligned_obb({100.f, 0.f, 5500.f}, {10.f, 1.f, 500.f});
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(obb));
 }
 
@@ -208,7 +208,7 @@ TEST(ObbTests, AxisAlignedBelowCulled)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const auto obb = axis_aligned_obb({100.f, 0.f, -5500.f}, {10.f, 1.f, 500.f});
+    constexpr auto obb = axis_aligned_obb({100.f, 0.f, -5500.f}, {10.f, 1.f, 500.f});
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(obb));
 }
 
@@ -252,10 +252,10 @@ TEST(ObbTests, RotationCanPullBoxIntoFrustum)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const Vec3F center{50.f, 100.f, 0.f};
-    const Vec3F half{1.f, 1.f, 50.f};
+    constexpr Vec3F center{50.f, 100.f, 0.f};
+    constexpr Vec3F half{1.f, 1.f, 50.f};
 
-    const auto axis_aligned = axis_aligned_obb(center, half);
+    constexpr auto axis_aligned = axis_aligned_obb(center, half);
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(axis_aligned));
 
     const auto rotated = rotated_around_y(center, half, std::numbers::pi_v<float> / 2.f);
@@ -273,10 +273,10 @@ TEST(ObbTests, RotationCanPushBoxOutOfFrustum)
     const auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
                                                   0.01f, 1000.f);
 
-    const Vec3F center{50.f, 130.f, 0.f};
-    const Vec3F half{50.f, 1.f, 1.f};
+    constexpr Vec3F center{50.f, 130.f, 0.f};
+    constexpr Vec3F half{50.f, 1.f, 1.f};
 
-    const auto axis_aligned = axis_aligned_obb(center, half);
+    constexpr auto axis_aligned = axis_aligned_obb(center, half);
     EXPECT_FALSE(cam.is_obb_culled_by_frustum(axis_aligned));
 
     const auto rotated = rotated_around_z(center, half, std::numbers::pi_v<float> / 2.f);
@@ -311,7 +311,7 @@ TEST(ObbTests, OpenGlEngineBehindCulled)
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     const auto cam = omath::opengl_engine::Camera({0, 0, 0}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
-    const auto obb = axis_aligned_obb({0.f, 0.f, 100.f}, {5.f, 5.f, 5.f});
+    constexpr auto obb = axis_aligned_obb({0.f, 0.f, 100.f}, {5.f, 5.f, 5.f});
     EXPECT_TRUE(cam.is_obb_culled_by_frustum(obb));
 }
 
@@ -342,7 +342,7 @@ TEST(ObbTests, DegenerateZeroVolumeInsideNotCulled)
                                                   0.01f, 1000.f);
 
     // Zero-extent OBB — collapses to a point, but still must not be culled if the centre is inside.
-    const auto obb = axis_aligned_obb({100.f, 0.f, 0.f}, {0.f, 0.f, 0.f});
+    constexpr auto obb = axis_aligned_obb({100.f, 0.f, 0.f}, {0.f, 0.f, 0.f});
     EXPECT_FALSE(cam.is_obb_culled_by_frustum(obb));
 }
 
