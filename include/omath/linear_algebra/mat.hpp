@@ -667,7 +667,7 @@ namespace omath
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_perspective_left_handed(const Type field_of_view, const Type aspect_ratio,
+    Mat<4, 4, Type, St> mat_perspective_left_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio,
                                                     const Type near, const Type far) noexcept
     {
         const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
@@ -689,7 +689,7 @@ namespace omath
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
     [[nodiscard]]
-    Mat<4, 4, Type, St> mat_perspective_right_handed(const Type field_of_view, const Type aspect_ratio,
+    Mat<4, 4, Type, St> mat_perspective_right_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio,
                                                      const Type near, const Type far) noexcept
     {
         const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});

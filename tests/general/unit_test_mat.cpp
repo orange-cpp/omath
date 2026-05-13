@@ -220,8 +220,8 @@ TEST(UnitTestMatStandalone, Equanity)
     constexpr omath::Vector3<float> left_handed = {0, 2, 10};
     constexpr omath::Vector3<float> right_handed = {0, 2, -10};
 
-    const auto proj_left_handed = omath::mat_perspective_left_handed(90.f, 16.f / 9.f, 0.1f, 1000.f);
-    const auto proj_right_handed = omath::mat_perspective_right_handed(90.f, 16.f / 9.f, 0.1f, 1000.f);
+    const auto proj_left_handed = omath::mat_perspective_left_handed_vertical_fov(90.f, 16.f / 9.f, 0.1f, 1000.f);
+    const auto proj_right_handed = omath::mat_perspective_right_handed_vertical_fov(90.f, 16.f / 9.f, 0.1f, 1000.f);
 
     auto ndc_left_handed = proj_left_handed * omath::mat_column_from_vector(left_handed);
     auto ndc_right_handed = proj_right_handed * omath::mat_column_from_vector(right_handed);
@@ -233,7 +233,7 @@ TEST(UnitTestMatStandalone, Equanity)
 }
 TEST(UnitTestMatStandalone, MatPerspectiveLeftHanded)
 {
-    const auto perspective_proj = mat_perspective_left_handed(90.f, 16.f/9.f, 0.1f, 1000.f);
+    const auto perspective_proj = mat_perspective_left_handed_vertical_fov(90.f, 16.f/9.f, 0.1f, 1000.f);
     auto projected = perspective_proj
                              * mat_column_from_vector<float>({0, 0, 0.1001});
 
@@ -244,7 +244,7 @@ TEST(UnitTestMatStandalone, MatPerspectiveLeftHanded)
 
 TEST(UnitTestMatStandalone, MatPerspectiveLeftHandedZeroToOne)
 {
-    const auto proj = mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+    const auto proj = mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
             90.f, 16.f / 9.f, 0.1f, 1000.f);
 
     // Near plane point should map to z ~ 0
@@ -266,7 +266,7 @@ TEST(UnitTestMatStandalone, MatPerspectiveLeftHandedZeroToOne)
 
 TEST(UnitTestMatStandalone, MatPerspectiveRightHandedZeroToOne)
 {
-    const auto proj = mat_perspective_right_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+    const auto proj = mat_perspective_right_handed_vertical_fov<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
             90.f, 16.f / 9.f, 0.1f, 1000.f);
 
     // Near plane point (negative z for right-handed) should map to z ~ 0
@@ -289,8 +289,8 @@ TEST(UnitTestMatStandalone, MatPerspectiveRightHandedZeroToOne)
 TEST(UnitTestMatStandalone, MatPerspectiveNegativeOneToOneRange)
 {
     // Verify existing [-1, 1] behavior with explicit template arg matches default
-    const auto proj_default = mat_perspective_left_handed(90.f, 16.f / 9.f, 0.1f, 1000.f);
-    const auto proj_explicit = mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR,
+    const auto proj_default = mat_perspective_left_handed_vertical_fov(90.f, 16.f / 9.f, 0.1f, 1000.f);
+    const auto proj_explicit = mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR,
             NDCDepthRange::NEGATIVE_ONE_TO_ONE>(90.f, 16.f / 9.f, 0.1f, 1000.f);
 
     EXPECT_EQ(proj_default, proj_explicit);
@@ -312,9 +312,9 @@ TEST(UnitTestMatStandalone, MatPerspectiveZeroToOneEquanity)
     constexpr omath::Vector3<float> left_handed = {0, 2, 10};
     constexpr omath::Vector3<float> right_handed = {0, 2, -10};
 
-    const auto proj_lh = mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+    const auto proj_lh = mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
             90.f, 16.f / 9.f, 0.1f, 1000.f);
-    const auto proj_rh = mat_perspective_right_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+    const auto proj_rh = mat_perspective_right_handed_vertical_fov<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
             90.f, 16.f / 9.f, 0.1f, 1000.f);
 
     auto ndc_lh = proj_lh * mat_column_from_vector(left_handed);

@@ -47,11 +47,11 @@ namespace omath::source_engine
         const auto vertical_fov = angles::horizontal_fov_to_vertical(field_of_view, k_source_reference_aspect);
 
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
-            return mat_perspective_left_handed<
+            return mat_perspective_left_handed_vertical_fov<
                     float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
                     vertical_fov, aspect_ratio, near, far);
         if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return mat_perspective_left_handed<
+            return mat_perspective_left_handed_vertical_fov<
                     float, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
                     vertical_fov, aspect_ratio, near, far);
         std::unreachable();

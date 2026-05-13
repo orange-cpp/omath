@@ -38,11 +38,11 @@ namespace omath::frostbite_engine
                                               const float far, const NDCDepthRange ndc_depth_range) noexcept
     {
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
-            return mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+            return mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
                     field_of_view, aspect_ratio, near, far);
 
         if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return mat_perspective_left_handed<float, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
+            return mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
                     field_of_view, aspect_ratio, near, far);
 
         std::unreachable();
