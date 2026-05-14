@@ -34,6 +34,13 @@ namespace
         const auto s = std::sin(radians);
         return OBB{center, {c, s, 0.f}, {-s, c, 0.f}, {0.f, 0.f, 1.f}, half_extents};
     }
+
+    OBB rotated_around_y(const Vec3& center, const Vec3& half_extents, const float radians) noexcept
+    {
+        const auto c = std::cos(radians);
+        const auto s = std::sin(radians);
+        return OBB{center, {c, 0.f, -s}, {0.f, 1.f, 0.f}, {s, 0.f, c}, half_extents};
+    }
 } // namespace
 
 // --- axis-aligned OBB behaves like AABB ---
@@ -126,6 +133,18 @@ TEST(LineTracerOBBTests, RotatedBoxHitOnRotatedFace)
     EXPECT_NEAR(hit.z, 0.f, 1e-4f);
 }
 
+TEST(LineTracerOBBTests, RotatedAroundYBoxHitOnRotatedFace)
+{
+    const auto box = rotated_around_y({0.f, 0.f, 0.f}, {1.f, 1.f, 1.f}, std::numbers::pi_v<float> / 4.f);
+    const auto ray = make_ray({0.f, 0.f, 5.f}, {0.f, 0.f, -5.f});
+
+    const auto hit = LineTracer::get_ray_hit_point(ray, box);
+    EXPECT_NE(hit, ray.end);
+    EXPECT_NEAR(hit.x, 0.f, 1e-4f);
+    EXPECT_NEAR(hit.y, 0.f, 1e-4f);
+    EXPECT_NEAR(hit.z, std::numbers::sqrt2_v<float>, 1e-4f);
+}
+
 TEST(LineTracerOBBTests, RotatedBoxMissesWhereAabbWouldHit)
 {
     // A unit cube rotated 45° around Z has an XY footprint that is a diamond reaching
@@ -168,6 +187,43 @@ TEST(LineTracerOBBTests, RotatedAndTranslatedBoxHit)
     EXPECT_NE(hit, ray.end);
     EXPECT_NEAR(hit.x, 10.f + std::numbers::sqrt2_v<float>, 1e-4f);
     EXPECT_NEAR(hit.y, 5.f, 1e-4f);
+}
+
+TEST(LineTracerOBBTests, RayStartsInsideRotatedBox)
+{
+    const auto box = rotated_around_z({2.f, 3.f, 0.f}, {2.f, 1.f, 1.f}, std::numbers::pi_v<float> / 6.f);
+    const auto ray = make_ray({2.f, 3.f, 0.f}, {10.f, 3.f, 0.f});
+
+    const auto hit = LineTracer::get_ray_hit_point(ray, box);
+    EXPECT_NE(hit, ray.end);
+    EXPECT_NEAR(hit.x, 2.f, 1e-4f);
+    EXPECT_NEAR(hit.y, 3.f, 1e-4f);
+    EXPECT_NEAR(hit.z, 0.f, 1e-4f);
+}
+
+TEST(LineTracerOBBTests, TangentRayHitsRotatedBox)
+{
+    const auto box = rotated_around_z({0.f, 0.f, 0.f}, {1.f, 1.f, 1.f}, std::numbers::pi_v<float> / 4.f);
+    const auto ray = make_ray({-5.f, std::numbers::sqrt2_v<float>, 0.f},
+                              {5.f, std::numbers::sqrt2_v<float>, 0.f});
+
+    const auto hit = LineTracer::get_ray_hit_point(ray, box);
+    EXPECT_NE(hit, ray.end);
+    EXPECT_NEAR(hit.x, 0.f, 1e-4f);
+    EXPECT_NEAR(hit.y, std::numbers::sqrt2_v<float>, 1e-4f);
+    EXPECT_NEAR(hit.z, 0.f, 1e-4f);
+}
+
+TEST(LineTracerOBBTests, DegeneratePlaneBoxCanBeHit)
+{
+    const auto box = axis_aligned_obb({0.f, 0.f, 0.f}, {1.f, 1.f, 0.f});
+    const auto ray = make_ray({0.f, 0.f, -5.f}, {0.f, 0.f, 5.f});
+
+    const auto hit = LineTracer::get_ray_hit_point(ray, box);
+    EXPECT_NE(hit, ray.end);
+    EXPECT_NEAR(hit.x, 0.f, 1e-4f);
+    EXPECT_NEAR(hit.y, 0.f, 1e-4f);
+    EXPECT_NEAR(hit.z, 0.f, 1e-4f);
 }
 
 TEST(LineTracerOBBTests, ParallelRayOutsideMisses)

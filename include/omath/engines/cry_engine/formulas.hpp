@@ -23,7 +23,7 @@ namespace omath::cry_engine
 
     [[nodiscard]]
     Mat4X4 calc_perspective_projection_matrix(float field_of_view, float aspect_ratio, float near, float far,
-                                             NDCDepthRange ndc_depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE) noexcept;
+                                             NDCDepthRange ndc_depth_range = NDCDepthRange::ZERO_TO_ONE) noexcept;
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
