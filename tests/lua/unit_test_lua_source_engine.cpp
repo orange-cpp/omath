@@ -74,6 +74,12 @@ TEST_F(LuaSourceEngine, Camera_look_at)                 { check("Source_Camera_l
 TEST_F(LuaSourceEngine, Camera_get_forward)             { check("Source_Camera_get_forward"); }
 TEST_F(LuaSourceEngine, Camera_get_right)               { check("Source_Camera_get_right"); }
 TEST_F(LuaSourceEngine, Camera_get_up)                  { check("Source_Camera_get_up"); }
+TEST_F(LuaSourceEngine, Camera_get_view_matrix)         { check("Source_Camera_get_view_matrix"); }
+TEST_F(LuaSourceEngine, Camera_get_projection_matrix)   { check("Source_Camera_get_projection_matrix"); }
+TEST_F(LuaSourceEngine, Camera_get_view_projection_matrix) { check("Source_Camera_get_view_projection_matrix"); }
+TEST_F(LuaSourceEngine, Camera_extract_projection_params) { check("Source_Camera_extract_projection_params"); }
+TEST_F(LuaSourceEngine, Camera_calc_view_angles_from_view_matrix) { check("Source_Camera_calc_view_angles_from_view_matrix"); }
+TEST_F(LuaSourceEngine, Camera_calc_origin_from_view_matrix) { check("Source_Camera_calc_origin_from_view_matrix"); }
 TEST_F(LuaSourceEngine, Camera_world_to_screen_success) { check("Source_Camera_world_to_screen_success"); }
 TEST_F(LuaSourceEngine, Camera_world_to_screen_error)   { check("Source_Camera_world_to_screen_error"); }
 TEST_F(LuaSourceEngine, Camera_screen_to_world)         { check("Source_Camera_screen_to_world"); }

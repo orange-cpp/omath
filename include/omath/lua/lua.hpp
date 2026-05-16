@@ -15,8 +15,13 @@ namespace omath::lua
         static void register_vec2(sol::table& omath_table);
         static void register_vec3(sol::table& omath_table);
         static void register_vec4(sol::table& omath_table);
+        static void register_matrices(sol::table& omath_table);
+        static void register_quaternion(sol::table& omath_table);
         static void register_color(sol::table& omath_table);
+        static void register_hud(sol::table& omath_table);
         static void register_triangle(sol::table& omath_table);
+        static void register_3d_primitives(sol::table& omath_table);
+        static void register_collision(sol::table& omath_table);
         static void register_shared_types(sol::table& omath_table);
         static void register_engines(sol::table& omath_table);
         static void register_pattern_scan(sol::table& omath_table);

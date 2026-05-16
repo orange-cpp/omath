@@ -14,6 +14,8 @@
 #include <omath/engines/unreal_engine/camera.hpp>
 #include <sol/sol.hpp>
 #include <string_view>
+#include <type_traits>
+#include <utility>
 
 namespace
 {
@@ -85,6 +87,7 @@ namespace
         using PitchAngle = typename EngineTraits::PitchAngle;
         using ViewAngles = typename EngineTraits::ViewAngles;
         using Camera = typename EngineTraits::Camera;
+        using Mat4X4 = std::remove_cvref_t<decltype(std::declval<const Camera&>().get_view_matrix())>;
 
         auto engine_table = omath_table[subtable_name].get_or_create<sol::table>();
         auto types = omath_table["_types"].get<sol::table>();
@@ -103,6 +106,30 @@ namespace
                 &Camera::set_origin, "set_view_angles", &Camera::set_view_angles, "set_view_port",
                 &Camera::set_view_port, "set_field_of_view", &Camera::set_field_of_view, "set_near_plane",
                 &Camera::set_near_plane, "set_far_plane", &Camera::set_far_plane,
+
+                "get_view_matrix",
+                [](const Camera& cam) -> Mat4X4
+                {
+                    return cam.get_view_matrix();
+                },
+                "get_projection_matrix",
+                [](const Camera& cam) -> Mat4X4
+                {
+                    return cam.get_projection_matrix();
+                },
+                "get_view_projection_matrix",
+                [](const Camera& cam) -> Mat4X4
+                {
+                    return cam.get_view_projection_matrix();
+                },
+                "extract_projection_params",
+                [](const Mat4X4& projection_matrix)
+                {
+                    const auto params = Camera::extract_projection_params(projection_matrix);
+                    return std::make_tuple(params.fov, params.aspect_ratio);
+                },
+                "calc_view_angles_from_view_matrix", &Camera::calc_view_angles_from_view_matrix,
+                "calc_origin_from_view_matrix", &Camera::calc_origin_from_view_matrix,
 
                 "world_to_screen",
                 [](const Camera& cam, const omath::Vector3<ArithmeticType>& pos)

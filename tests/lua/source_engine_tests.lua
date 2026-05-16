@@ -175,6 +175,46 @@ function Source_Camera_get_up()
     assert(approx(make_camera():get_up():length(), 1.0))
 end
 
+function Source_Camera_get_view_matrix()
+    local view = make_camera():get_view_matrix()
+    assert(view ~= nil)
+    assert(view:row_count() == 4 and view:columns_count() == 4)
+end
+
+function Source_Camera_get_projection_matrix()
+    local projection = make_camera():get_projection_matrix()
+    assert(projection ~= nil)
+    assert(projection:at(0, 0) > 0 and projection:at(1, 1) > 0)
+end
+
+function Source_Camera_get_view_projection_matrix()
+    local view_projection = make_camera():get_view_projection_matrix()
+    assert(view_projection ~= nil)
+    assert(view_projection:row_count() == 4 and view_projection:columns_count() == 4)
+end
+
+function Source_Camera_extract_projection_params()
+    local projection = make_camera():get_projection_matrix()
+    local fov, aspect_ratio = omath.source.Camera.extract_projection_params(projection)
+    assert(fov ~= nil)
+    assert(approx(aspect_ratio, 1920 / 1080))
+end
+
+function Source_Camera_calc_view_angles_from_view_matrix()
+    local cam = make_camera()
+    local view = cam:get_view_matrix()
+    local angles = omath.source.Camera.calc_view_angles_from_view_matrix(view)
+    assert(approx(angles.pitch:as_degrees(), 0))
+    assert(approx(angles.yaw:as_degrees(), 0))
+end
+
+function Source_Camera_calc_origin_from_view_matrix()
+    local cam = make_camera()
+    cam:set_origin(omath.Vec3.new(1, 2, 3))
+    local origin = omath.source.Camera.calc_origin_from_view_matrix(cam:get_view_matrix())
+    assert(approx(origin.x, 1) and approx(origin.y, 2) and approx(origin.z, 3))
+end
+
 function Source_Camera_world_to_screen_success()
     local cam = make_camera()
     cam:look_at(omath.Vec3.new(1, 0, 0))

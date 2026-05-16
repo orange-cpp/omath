@@ -17,8 +17,13 @@ namespace omath::lua
         register_vec2(omath_table);
         register_vec3(omath_table);
         register_vec4(omath_table);
+        register_matrices(omath_table);
+        register_quaternion(omath_table);
         register_color(omath_table);
+        register_hud(omath_table);
         register_triangle(omath_table);
+        register_3d_primitives(omath_table);
+        register_collision(omath_table);
         register_shared_types(omath_table);
         register_engines(omath_table);
         register_pattern_scan(omath_table);
