@@ -271,7 +271,8 @@ namespace omath
                 }
                 return det;
             }
-            std::unreachable();
+            else // For no reason MSVC triggers on it as unreachable code so we keep else here.
+                std::unreachable();
         }
 
         [[nodiscard]]

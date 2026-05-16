@@ -49,7 +49,7 @@ namespace omath::collision
         struct Params final
         {
             int max_iterations{64};
-            FloatingType tolerance{1e-4}; // absolute tolerance on distance growth
+            FloatingType tolerance{1e-4f}; // absolute tolerance on distance growth
         };
         // Precondition: simplex.size()==4 and contains the origin.
         [[nodiscard]]
