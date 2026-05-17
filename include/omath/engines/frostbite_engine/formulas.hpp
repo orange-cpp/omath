@@ -22,6 +22,15 @@ namespace omath::frostbite_engine
     Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept;
 
     [[nodiscard]]
+    Vector3<float> extract_origin(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
+    Vector3<float> extract_scale(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
+    ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
     Mat4X4 calc_perspective_projection_matrix(float field_of_view, float aspect_ratio, float near, float far,
                                              NDCDepthRange ndc_depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE) noexcept;
 

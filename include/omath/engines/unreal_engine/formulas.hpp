@@ -22,6 +22,15 @@ namespace omath::unreal_engine
     Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept;
 
     [[nodiscard]]
+    Vector3<double> extract_origin(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
+    Vector3<double> extract_scale(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
+    ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
     Mat4X4 calc_perspective_projection_matrix(double field_of_view, double aspect_ratio, double near, double far,
                                              NDCDepthRange ndc_depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE) noexcept;
 

@@ -5,6 +5,7 @@
 #include "vector3.hpp"
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <iomanip>
 #include <numeric>
 #include <sstream>
@@ -609,6 +610,47 @@ namespace omath
                 {0, scale.y, 0, 0},
                 {0, 0, scale.z, 0},
                 {0, 0, 0, 1},
+        };
+    }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    constexpr Vector3<Type> mat_extract_origin(const Mat<4, 4, Type, St>& mat) noexcept
+    {
+        return {mat.at(0, 3), mat.at(1, 3), mat.at(2, 3)};
+    }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard]]
+    Vector3<Type> mat_extract_scale(const Mat<4, 4, Type, St>& mat) noexcept
+    {
+        auto column_length = [](const Type x, const Type y, const Type z) {
+            return static_cast<Type>(std::sqrt(x * x + y * y + z * z));
+        };
+
+        return {
+                column_length(mat.at(0, 0), mat.at(1, 0), mat.at(2, 0)),
+                column_length(mat.at(0, 1), mat.at(1, 1), mat.at(2, 1)),
+                column_length(mat.at(0, 2), mat.at(1, 2), mat.at(2, 2)),
+        };
+    }
+
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    requires std::is_floating_point_v<Type>
+    [[nodiscard]]
+    Vector3<Type> mat_extract_rotation_zyx(const Mat<4, 4, Type, St>& mat) noexcept
+    {
+        const auto scale = mat_extract_scale(mat);
+        const auto m00 = mat.at(0, 0) / scale.x;
+        const auto m10 = mat.at(1, 0) / scale.x;
+        const auto m20 = mat.at(2, 0) / scale.x;
+        const auto m21 = mat.at(2, 1) / scale.y;
+        const auto m22 = mat.at(2, 2) / scale.z;
+
+        return {
+                angles::radians_to_degrees(std::atan2(m21, m22)),
+                angles::radians_to_degrees(std::asin(std::clamp(-m20, Type{-1}, Type{1}))),
+                angles::radians_to_degrees(std::atan2(m10, m00)),
         };
     }
 

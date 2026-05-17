@@ -39,6 +39,26 @@ namespace omath::unreal_engine
     }
 
 
+    Vector3<double> extract_origin(const Mat4X4& mat) noexcept
+    {
+        return mat_extract_origin(mat);
+    }
+
+    Vector3<double> extract_scale(const Mat4X4& mat) noexcept
+    {
+        return mat_extract_scale(mat);
+    }
+
+    ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept
+    {
+        const auto angles = mat_extract_rotation_zyx(mat);
+        return {
+                PitchAngle::from_degrees(-angles.y),
+                YawAngle::from_degrees(angles.z),
+                RollAngle::from_degrees(-angles.x),
+        };
+    }
+
     Mat4X4 calc_perspective_projection_matrix(const double field_of_view, const double aspect_ratio, const double near,
                                               const double far, const NDCDepthRange ndc_depth_range) noexcept
     {
