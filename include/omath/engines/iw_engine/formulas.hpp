@@ -19,6 +19,15 @@ namespace omath::iw_engine
     [[nodiscard]]
     Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept;
 
+    [[nodiscard]]
+    Vector3<float> extract_origin(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
+    Vector3<float> extract_scale(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
+    ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept;
+
     [[nodiscard]] Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept;
 
     [[nodiscard]]

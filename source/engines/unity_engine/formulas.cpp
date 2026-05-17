@@ -34,6 +34,27 @@ namespace omath::unity_engine
                * mat_rotation_axis_y<float, MatStoreType::ROW_MAJOR>(angles.yaw)
                * mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(angles.pitch);
     }
+
+    Vector3<float> extract_origin(const Mat4X4& mat) noexcept
+    {
+        return mat_extract_origin(mat);
+    }
+
+    Vector3<float> extract_scale(const Mat4X4& mat) noexcept
+    {
+        return mat_extract_scale(mat);
+    }
+
+    ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept
+    {
+        const auto angles = mat_extract_rotation_zyx(mat);
+        return {
+                PitchAngle::from_degrees(angles.x),
+                YawAngle::from_degrees(angles.y),
+                RollAngle::from_degrees(angles.z),
+        };
+    }
+
     Mat4X4 calc_perspective_projection_matrix(const float field_of_view, const float aspect_ratio, const float near,
                                               const float far, const NDCDepthRange ndc_depth_range) noexcept
     {

@@ -13,6 +13,15 @@ namespace omath::source_engine
     Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept;
 
     [[nodiscard]]
+    Vector3<float> extract_origin(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
+    Vector3<float> extract_scale(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
+    ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept;
+
+    [[nodiscard]]
     Vector3<float> right_vector(const ViewAngles& angles) noexcept;
 
     [[nodiscard]]

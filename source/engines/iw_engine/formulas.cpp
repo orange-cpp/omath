@@ -30,6 +30,26 @@ namespace omath::iw_engine
         return mat_rotation_axis_z(angles.yaw) * mat_rotation_axis_y(angles.pitch) * mat_rotation_axis_x(angles.roll);
     }
 
+    Vector3<float> extract_origin(const Mat4X4& mat) noexcept
+    {
+        return mat_extract_origin(mat);
+    }
+
+    Vector3<float> extract_scale(const Mat4X4& mat) noexcept
+    {
+        return mat_extract_scale(mat);
+    }
+
+    ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept
+    {
+        const auto angles = mat_extract_rotation_zyx(mat);
+        return {
+                PitchAngle::from_degrees(angles.y),
+                YawAngle::from_degrees(angles.z),
+                RollAngle::from_degrees(angles.x),
+        };
+    }
+
     Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
     {
         return mat_camera_view(forward_vector(angles), right_vector(angles), up_vector(angles), cam_origin);
