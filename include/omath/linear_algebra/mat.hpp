@@ -628,10 +628,16 @@ namespace omath
             return static_cast<Type>(std::sqrt(x * x + y * y + z * z));
         };
 
+        const auto scale_x = column_length(mat.at(0, 0), mat.at(1, 0), mat.at(2, 0));
+        const auto scale_y = column_length(mat.at(0, 1), mat.at(1, 1), mat.at(2, 1));
+        const auto scale_z = column_length(mat.at(0, 2), mat.at(1, 2), mat.at(2, 2));
+
+        constexpr auto epsilon = std::numeric_limits<Type>::epsilon();
+
         return {
-                column_length(mat.at(0, 0), mat.at(1, 0), mat.at(2, 0)),
-                column_length(mat.at(0, 1), mat.at(1, 1), mat.at(2, 1)),
-                column_length(mat.at(0, 2), mat.at(1, 2), mat.at(2, 2)),
+                std::abs(scale_x) < epsilon ? Type{1} : scale_x,
+                std::abs(scale_y) < epsilon ? Type{1} : scale_y,
+                std::abs(scale_z) < epsilon ? Type{1} : scale_z,
         };
     }
 
