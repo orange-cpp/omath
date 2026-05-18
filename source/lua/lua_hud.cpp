@@ -14,6 +14,13 @@
 
 namespace
 {
+    [[noreturn]]
+    void throw_lua_error(sol::protected_function_result& result)
+    {
+        sol::error err = result;
+        throw err;
+    }
+
     class LuaHudRenderer final : public omath::hud::HudRendererInterface
     {
     public:
@@ -82,7 +89,7 @@ namespace
 
             auto result = (*callback)(texture, min, max, tint);
             if (!result.valid())
-                throw sol::error(result);
+                throw_lua_error(result);
         }
 
         void add_text(const omath::Vector2<float>& position, const omath::Color& color,
@@ -100,7 +107,7 @@ namespace
 
             auto result = (*callback)(std::string{text});
             if (!result.valid())
-                throw sol::error(result);
+                throw_lua_error(result);
 
             return result.get<omath::Vector2<float>>();
         }
@@ -126,7 +133,7 @@ namespace
 
             auto result = (*callback)(std::forward<Args>(args)...);
             if (!result.valid())
-                throw sol::error(result);
+                throw_lua_error(result);
         }
 
         [[nodiscard]]
