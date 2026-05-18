@@ -25,6 +25,20 @@ namespace
     using Aabbf = omath::primitives::Aabb<float>;
     using Obbf = omath::primitives::Obb<float>;
 
+    template<class Object, class Value>
+    auto lua_field(Value Object::* member)
+    {
+        return sol::property(
+                [member](const Object& object) -> const Value&
+                {
+                    return object.*member;
+                },
+                [member](Object& object, const Value& value)
+                {
+                    object.*member = value;
+                });
+    }
+
     class LuaConvexCollider final : public omath::collision::ColliderInterface<Vec3f>
     {
     public:
@@ -158,7 +172,8 @@ namespace omath::lua
                 sol::factories([]() { return Aabbf{}; },
                                [](const Vec3f& min, const Vec3f& max) { return Aabbf{min, max}; }),
 
-                "min", &Aabbf::min, "max", &Aabbf::max, "center", &Aabbf::center, "extents", &Aabbf::extents,
+                "min", lua_field(&Aabbf::min), "max", lua_field(&Aabbf::max), "center", &Aabbf::center, "extents",
+                &Aabbf::extents,
                 "top",
                 [](const Aabbf& aabb, sol::optional<omath::primitives::UpAxis> axis)
                 {
@@ -193,8 +208,9 @@ namespace omath::lua
                             return Obbf{center, axis_x, axis_y, axis_z, half_extents};
                         }),
 
-                "center", &Obbf::center, "axis_x", &Obbf::axis_x, "axis_y", &Obbf::axis_y, "axis_z", &Obbf::axis_z,
-                "half_extents", &Obbf::half_extents,
+                "center", lua_field(&Obbf::center), "axis_x", lua_field(&Obbf::axis_x), "axis_y",
+                lua_field(&Obbf::axis_y), "axis_z", lua_field(&Obbf::axis_z), "half_extents",
+                lua_field(&Obbf::half_extents),
                 "vertices",
                 [](const Obbf& obb, sol::this_state state)
                 {
@@ -213,7 +229,8 @@ namespace omath::lua
                                [](const Vec3f& start, const Vec3f& end, const bool infinite_length)
                                { return Ray3f{start, end, infinite_length}; }),
 
-                "start", &Ray3f::start, "end", &Ray3f::end, "infinite_length", &Ray3f::infinite_length,
+                "start", lua_field(&Ray3f::start), "end", lua_field(&Ray3f::end), "infinite_length",
+                lua_field(&Ray3f::infinite_length),
                 "direction_vector", &Ray3f::direction_vector, "direction_vector_normalized",
                 &Ray3f::direction_vector_normalized);
 

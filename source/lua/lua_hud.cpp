@@ -179,6 +179,20 @@ namespace
         }
         return result;
     }
+
+    template<class Object, class Value>
+    auto lua_field(Value Object::* member)
+    {
+        return sol::property(
+                [member](const Object& object) -> const Value&
+                {
+                    return object.*member;
+                },
+                [member](Object& object, const Value& value)
+                {
+                    object.*member = value;
+                });
+    }
 } // namespace
 
 namespace omath::lua
@@ -194,10 +208,10 @@ namespace omath::lua
                                [](const omath::Vector2<float>& top, const omath::Vector2<float>& bottom,
                                   const float ratio) { return omath::hud::CanvasBox(top, bottom, ratio); }),
 
-                "top_left_corner", &omath::hud::CanvasBox::top_left_corner, "top_right_corner",
-                &omath::hud::CanvasBox::top_right_corner, "bottom_left_corner",
-                &omath::hud::CanvasBox::bottom_left_corner, "bottom_right_corner",
-                &omath::hud::CanvasBox::bottom_right_corner,
+                "top_left_corner", lua_field(&omath::hud::CanvasBox::top_left_corner), "top_right_corner",
+                lua_field(&omath::hud::CanvasBox::top_right_corner), "bottom_left_corner",
+                lua_field(&omath::hud::CanvasBox::bottom_left_corner), "bottom_right_corner",
+                lua_field(&omath::hud::CanvasBox::bottom_right_corner),
 
                 "as_table",
                 [](const omath::hud::CanvasBox& box, sol::this_state s) -> sol::table
