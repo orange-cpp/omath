@@ -124,7 +124,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        static consteval MatSize size() noexcept
+        static constexpr MatSize size() noexcept
         {
             return {Rows, Columns};
         }

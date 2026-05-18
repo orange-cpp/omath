@@ -14,6 +14,8 @@
 #include <omath/engines/unreal_engine/camera.hpp>
 #include <sol/sol.hpp>
 #include <string_view>
+#include <type_traits>
+#include <utility>
 
 namespace
 {
@@ -85,44 +87,72 @@ namespace
         using PitchAngle = typename EngineTraits::PitchAngle;
         using ViewAngles = typename EngineTraits::ViewAngles;
         using Camera = typename EngineTraits::Camera;
+        using Mat4X4 = std::remove_cvref_t<decltype(std::declval<const Camera&>().get_view_matrix())>;
 
         auto engine_table = omath_table[subtable_name].get_or_create<sol::table>();
         auto types = omath_table["_types"].get<sol::table>();
 
         set_engine_aliases<PitchAngle, ViewAngles>(engine_table, types);
 
-        engine_table.new_usertype<Camera>(
+        auto camera_type = engine_table.new_usertype<Camera>(
                 "Camera",
                 sol::constructors<Camera(const omath::Vector3<ArithmeticType>&, const ViewAngles&,
                                          const omath::projection::ViewPort&, const omath::projection::FieldOfView&,
-                                         ArithmeticType, ArithmeticType)>(),
-                "look_at", &Camera::look_at, "get_forward", &Camera::get_forward, "get_right", &Camera::get_right,
-                "get_up", &Camera::get_up, "get_origin", &Camera::get_origin, "get_view_angles",
-                &Camera::get_view_angles, "get_near_plane", &Camera::get_near_plane, "get_far_plane",
-                &Camera::get_far_plane, "get_field_of_view", &Camera::get_field_of_view, "set_origin",
-                &Camera::set_origin, "set_view_angles", &Camera::set_view_angles, "set_view_port",
-                &Camera::set_view_port, "set_field_of_view", &Camera::set_field_of_view, "set_near_plane",
-                &Camera::set_near_plane, "set_far_plane", &Camera::set_far_plane,
+                                         ArithmeticType, ArithmeticType)>());
 
-                "world_to_screen",
-                [](const Camera& cam, const omath::Vector3<ArithmeticType>& pos)
-                        -> std::tuple<sol::optional<omath::Vector3<ArithmeticType>>, sol::optional<std::string>>
-                {
-                    auto result = cam.world_to_screen(pos);
-                    if (result)
-                        return {*result, sol::nullopt};
-                    return {sol::nullopt, projection_error_to_string(result.error())};
-                },
+        camera_type["look_at"] = &Camera::look_at;
+        camera_type["get_forward"] = &Camera::get_forward;
+        camera_type["get_right"] = &Camera::get_right;
+        camera_type["get_up"] = &Camera::get_up;
+        camera_type["get_origin"] = &Camera::get_origin;
+        camera_type["get_view_angles"] = &Camera::get_view_angles;
+        camera_type["get_near_plane"] = &Camera::get_near_plane;
+        camera_type["get_far_plane"] = &Camera::get_far_plane;
+        camera_type["get_field_of_view"] = &Camera::get_field_of_view;
+        camera_type["set_origin"] = &Camera::set_origin;
+        camera_type["set_view_angles"] = &Camera::set_view_angles;
+        camera_type["set_view_port"] = &Camera::set_view_port;
+        camera_type["set_field_of_view"] = &Camera::set_field_of_view;
+        camera_type["set_near_plane"] = &Camera::set_near_plane;
+        camera_type["set_far_plane"] = &Camera::set_far_plane;
 
-                "screen_to_world",
-                [](const Camera& cam, const omath::Vector3<ArithmeticType>& pos)
-                        -> std::tuple<sol::optional<omath::Vector3<ArithmeticType>>, sol::optional<std::string>>
-                {
-                    auto result = cam.screen_to_world(pos);
-                    if (result)
-                        return {*result, sol::nullopt};
-                    return {sol::nullopt, projection_error_to_string(result.error())};
-                });
+        camera_type["get_view_matrix"] = [](const Camera& cam) -> Mat4X4
+        {
+            return cam.get_view_matrix();
+        };
+        camera_type["get_projection_matrix"] = [](const Camera& cam) -> Mat4X4
+        {
+            return cam.get_projection_matrix();
+        };
+        camera_type["get_view_projection_matrix"] = [](const Camera& cam) -> Mat4X4
+        {
+            return cam.get_view_projection_matrix();
+        };
+        camera_type["extract_projection_params"] = [](const Mat4X4& projection_matrix)
+        {
+            const auto params = Camera::extract_projection_params(projection_matrix);
+            return std::make_tuple(params.fov, params.aspect_ratio);
+        };
+        camera_type["calc_view_angles_from_view_matrix"] = &Camera::calc_view_angles_from_view_matrix;
+        camera_type["calc_origin_from_view_matrix"] = &Camera::calc_origin_from_view_matrix;
+
+        camera_type["world_to_screen"] = [](const Camera& cam, const omath::Vector3<ArithmeticType>& pos)
+                -> std::tuple<sol::optional<omath::Vector3<ArithmeticType>>, sol::optional<std::string>>
+        {
+            auto result = cam.world_to_screen(pos);
+            if (result)
+                return {*result, sol::nullopt};
+            return {sol::nullopt, projection_error_to_string(result.error())};
+        };
+
+        camera_type["screen_to_world"] = [](const Camera& cam, const omath::Vector3<ArithmeticType>& pos)
+                -> std::tuple<sol::optional<omath::Vector3<ArithmeticType>>, sol::optional<std::string>>
+        {
+            auto result = cam.screen_to_world(pos);
+            if (result)
+                return {*result, sol::nullopt};
+            return {sol::nullopt, projection_error_to_string(result.error())};
+        };
     }
 
     // ---- Engine trait structs -----------------------------------------------

@@ -107,7 +107,8 @@ namespace omath::projection
             // m[1,1] == 1 / tan(fov/2)  =>  fov = 2 * atan(1 / m[1,1])
             const auto f = proj_matrix.at(1, 1);
             // m[0,0] == m[1,1] / aspect_ratio  =>  aspect = m[1,1] / m[0,0]
-            return {FieldOfView::from_radians(NumericType{2} * std::atan(NumericType{1} / f)),
+            const auto fov_radians = NumericType{2} * std::atan(NumericType{1} / f);
+            return {FieldOfView::from_radians(static_cast<typename FieldOfView::ArithmeticType>(fov_radians)),
                     f / proj_matrix.at(0, 0)};
         }
 
