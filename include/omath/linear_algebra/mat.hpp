@@ -59,7 +59,7 @@ namespace omath
             clear();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use store ordering")]]
         consteval static MatStoreType get_store_ordering() noexcept
         {
             return StoreType;
@@ -94,13 +94,13 @@ namespace omath
             m_data = other.m_data;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use element reference")]]
         constexpr Type& operator[](const size_t row, const size_t col)
         {
             return at(row, col);
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use element reference")]]
         constexpr const Type& operator[](const size_t row, const size_t col) const
         {
             return at(row, col);
@@ -111,25 +111,25 @@ namespace omath
             m_data = std::move(other.m_data);
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use row count")]]
         static constexpr size_t row_count() noexcept
         {
             return Rows;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use column count")]]
         static constexpr size_t columns_count() noexcept
         {
             return Columns;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use matrix size")]]
         static constexpr MatSize size() noexcept
         {
             return {Rows, Columns};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use element reference")]]
         constexpr const Type& at(const size_t row_index, const size_t column_index) const
         {
 #if !defined(NDEBUG) && defined(OMATH_SUPRESS_SAFETY_CHECKS)
@@ -149,12 +149,12 @@ namespace omath
             }
         }
 
-        [[nodiscard]] constexpr Type& at(const size_t row_index, const size_t column_index)
+        [[nodiscard("You must use element reference")]] constexpr Type& at(const size_t row_index, const size_t column_index)
         {
             return const_cast<Type&>(std::as_const(*this).at(row_index, column_index));
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use sum of elements")]]
         constexpr Type sum() const noexcept
         {
             return std::accumulate(m_data.begin(), m_data.end(), static_cast<Type>(0));
@@ -171,7 +171,7 @@ namespace omath
         }
 
         // Operator overloading for multiplication with another Mat
-        template<size_t OtherColumns> [[nodiscard]]
+        template<size_t OtherColumns> [[nodiscard("You must use result matrix")]]
         constexpr Mat<Rows, OtherColumns, Type, StoreType>
         operator*(const Mat<Columns, OtherColumns, Type, StoreType>& other) const
         {
@@ -202,7 +202,7 @@ namespace omath
             return *this = *this * other;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use result matrix")]]
         constexpr Mat operator*(const Type& value) const noexcept
         {
             Mat result(*this);
@@ -216,7 +216,7 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use result matrix")]]
         constexpr Mat operator/(const Type& value) const noexcept
         {
             Mat result(*this);
@@ -240,7 +240,7 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use transposed matrix")]]
         constexpr Mat<Columns, Rows, Type, StoreType> transposed() const noexcept
         {
             Mat<Columns, Rows, Type, StoreType> transposed;
@@ -251,7 +251,7 @@ namespace omath
             return transposed;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use determinant")]]
         constexpr Type determinant() const
         {
             static_assert(Rows == Columns, "Determinant is only defined for square matrices.");
@@ -276,7 +276,7 @@ namespace omath
                 std::unreachable();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use stripped matrix")]]
         constexpr Mat<Rows - 1, Columns - 1, Type, StoreType> strip(const size_t row, const size_t column) const
         {
             static_assert(Rows - 1 > 0 && Columns - 1 > 0);
@@ -297,32 +297,32 @@ namespace omath
             return result;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use minor")]]
         constexpr Type minor(const size_t row, const size_t column) const
         {
             return strip(row, column).determinant();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use algebraic complement")]]
         constexpr Type alg_complement(const size_t row, const size_t column) const
         {
             const auto minor_value = minor(row, column);
             return (row + column + 2) % 2 == 0 ? minor_value : -minor_value;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use raw array")]]
         constexpr const std::array<Type, Rows * Columns>& raw_array() const
         {
             return m_data;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use raw array")]]
         constexpr std::array<Type, Rows * Columns>& raw_array()
         {
             return m_data;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use string representation")]]
         std::string to_string() const noexcept
         {
             std::ostringstream oss;
@@ -344,14 +344,14 @@ namespace omath
             return oss.str();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use wide string representation")]]
         std::wstring to_wstring() const noexcept
         {
             const auto ascii_string = to_string();
             return {ascii_string.cbegin(), ascii_string.cend()};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use UTF-8 string representation")]]
         // ReSharper disable once CppInconsistentNaming
         std::u8string to_u8string() const noexcept
         {
@@ -359,20 +359,20 @@ namespace omath
             return {ascii_string.cbegin(), ascii_string.cend()};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator==(const Mat& mat) const
         {
             return m_data == mat.m_data;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator!=(const Mat& mat) const
         {
             return !operator==(mat);
         }
 
         // Static methods that return fixed-size matrices
-        [[nodiscard]]
+        [[nodiscard("You must use screen matrix")]]
         constexpr static Mat<4, 4> to_screen_mat(const Type& screen_width, const Type& screen_height) noexcept
         {
             return {
@@ -383,7 +383,7 @@ namespace omath
             };
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use inverted matrix")]]
         constexpr std::optional<Mat> inverted() const
         {
             const auto det = determinant();
@@ -406,7 +406,7 @@ namespace omath
     private:
         std::array<Type, Rows * Columns> m_data;
 
-        template<size_t OtherColumns> [[nodiscard]]
+        template<size_t OtherColumns> [[nodiscard("You must use result matrix")]]
         constexpr Mat<Rows, OtherColumns, Type, MatStoreType::ROW_MAJOR>
         cache_friendly_multiply_row_major(const Mat<Columns, OtherColumns, Type, MatStoreType::ROW_MAJOR>& other) const
         {
@@ -421,7 +421,7 @@ namespace omath
             return result;
         }
 
-        template<size_t OtherColumns> [[nodiscard]]
+        template<size_t OtherColumns> [[nodiscard("You must use result matrix")]]
         constexpr Mat<Rows, OtherColumns, Type, MatStoreType::COLUMN_MAJOR> cache_friendly_multiply_col_major(
                 const Mat<Columns, OtherColumns, Type, MatStoreType::COLUMN_MAJOR>& other) const
         {
@@ -436,7 +436,7 @@ namespace omath
             return result;
         }
 #ifdef OMATH_USE_AVX2
-        template<size_t OtherColumns> [[nodiscard]]
+        template<size_t OtherColumns> [[nodiscard("You must use result matrix")]]
         constexpr Mat<Rows, OtherColumns, Type, MatStoreType::COLUMN_MAJOR>
         avx_multiply_col_major(const Mat<Columns, OtherColumns, Type, MatStoreType::COLUMN_MAJOR>& other) const
         {
@@ -506,7 +506,7 @@ namespace omath
             return result;
         }
 
-        template<size_t OtherColumns> [[nodiscard]]
+        template<size_t OtherColumns> [[nodiscard("You must use result matrix")]]
         constexpr Mat<Rows, OtherColumns, Type, MatStoreType::ROW_MAJOR>
         avx_multiply_row_major(const Mat<Columns, OtherColumns, Type, MatStoreType::ROW_MAJOR>& other) const
         {
@@ -577,20 +577,20 @@ namespace omath
 #endif
     };
 
-    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR> [[nodiscard]]
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR> [[nodiscard("You must use row matrix")]]
     constexpr static Mat<1, 4, Type, St> mat_row_from_vector(const Vector3<Type>& vector) noexcept
     {
         return {{vector.x, vector.y, vector.z, 1}};
     }
 
-    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR> [[nodiscard]]
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR> [[nodiscard("You must use column matrix")]]
     constexpr static Mat<4, 1, Type, St> mat_column_from_vector(const Vector3<Type>& vector) noexcept
     {
         return {{vector.x}, {vector.y}, {vector.z}, {1}};
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
-    [[nodiscard]]
+    [[nodiscard("You must use translation matrix")]]
     constexpr Mat<4, 4, Type, St> mat_translation(const Vector3<Type>& diff) noexcept
     {
         return
@@ -602,7 +602,7 @@ namespace omath
         };
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
-    [[nodiscard]]
+    [[nodiscard("You must use scale matrix")]]
     constexpr Mat<4, 4, Type, St> mat_scale(const Vector3<Type>& scale) noexcept
     {
         return {
@@ -614,14 +614,14 @@ namespace omath
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
-    [[nodiscard]]
+    [[nodiscard("You must use extracted origin")]]
     constexpr Vector3<Type> mat_extract_origin(const Mat<4, 4, Type, St>& mat) noexcept
     {
         return {mat.at(0, 3), mat.at(1, 3), mat.at(2, 3)};
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
-    [[nodiscard]]
+    [[nodiscard("You must use extracted scale")]]
     Vector3<Type> mat_extract_scale(const Mat<4, 4, Type, St>& mat) noexcept
     {
         auto column_length = [](const Type x, const Type y, const Type z) {
@@ -643,7 +643,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]]
+    [[nodiscard("You must use extracted rotation")]]
     Vector3<Type> mat_extract_rotation_zyx(const Mat<4, 4, Type, St>& mat) noexcept
     {
         const auto scale = mat_extract_scale(mat);
@@ -661,7 +661,7 @@ namespace omath
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
-    [[nodiscard]]
+    [[nodiscard("You must use rotation matrix")]]
     Mat<4, 4, Type, St> mat_rotation_axis_x(const Angle& angle) noexcept
     {
         return
@@ -674,7 +674,7 @@ namespace omath
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
-    [[nodiscard]]
+    [[nodiscard("You must use rotation matrix")]]
     Mat<4, 4, Type, St> mat_rotation_axis_y(const Angle& angle) noexcept
     {
         return
@@ -687,7 +687,7 @@ namespace omath
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
-    [[nodiscard]]
+    [[nodiscard("You must use rotation matrix")]]
     Mat<4, 4, Type, St> mat_rotation_axis_z(const Angle& angle) noexcept
     {
         return
@@ -700,7 +700,7 @@ namespace omath
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
-    [[nodiscard]]
+    [[nodiscard("You must use camera view matrix")]]
     static Mat<4, 4, Type, St> mat_camera_view(const Vector3<Type>& forward, const Vector3<Type>& right,
                                                const Vector3<Type>& up, const Vector3<Type>& camera_origin) noexcept
     {
@@ -715,7 +715,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard]]
+    [[nodiscard("You must use perspective matrix")]]
     Mat<4, 4, Type, St> mat_perspective_left_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio,
                                                     const Type near, const Type far) noexcept
     {
@@ -737,7 +737,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard]]
+    [[nodiscard("You must use perspective matrix")]]
     Mat<4, 4, Type, St> mat_perspective_right_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio,
                                                      const Type near, const Type far) noexcept
     {
@@ -762,7 +762,7 @@ namespace omath
     // X and Y scales derived as: X = 1 / tan(hfov/2), Y = aspect / tan(hfov/2).
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard]]
+    [[nodiscard("You must use perspective matrix")]]
     Mat<4, 4, Type, St> mat_perspective_left_handed_horizontal_fov(const Type horizontal_fov,
                                                                    const Type aspect_ratio, const Type near,
                                                                    const Type far) noexcept
@@ -787,7 +787,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard]]
+    [[nodiscard("You must use perspective matrix")]]
     Mat<4, 4, Type, St> mat_perspective_right_handed_horizontal_fov(const Type horizontal_fov,
                                                                     const Type aspect_ratio, const Type near,
                                                                     const Type far) noexcept
@@ -811,7 +811,7 @@ namespace omath
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard]]
+    [[nodiscard("You must use ortho matrix")]]
     Mat<4, 4, Type, St> mat_ortho_left_handed(const Type left, const Type right, const Type bottom, const Type top,
                                               const Type near, const Type far) noexcept
     {
@@ -836,7 +836,7 @@ namespace omath
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard]]
+    [[nodiscard("You must use ortho matrix")]]
     Mat<4, 4, Type, St> mat_ortho_right_handed(const Type left, const Type right, const Type bottom, const Type top,
                                                const Type near, const Type far) noexcept
     {
@@ -883,14 +883,14 @@ template<size_t Rows, size_t Columns, class Type, omath::MatStoreType StoreType>
 struct std::formatter<omath::Mat<Rows, Columns, Type, StoreType>> // NOLINT(*-dcl58-cpp)
 {
     using MatType = omath::Mat<Rows, Columns, Type, StoreType>;
-    [[nodiscard]]
+    [[nodiscard("You must use parse iterator")]]
     static constexpr auto parse(std::format_parse_context& ctx)
     {
         return ctx.begin();
     }
 
     template<class FormatContext>
-    [[nodiscard]]
+    [[nodiscard("You must use format iterator")]]
     static auto format(const MatType& mat, FormatContext& ctx)
     {
         if constexpr (std::is_same_v<typename FormatContext::char_type, char>)

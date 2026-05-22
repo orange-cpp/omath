@@ -190,7 +190,8 @@ namespace omath::projection
             return get_up();
         }
 
-        [[nodiscard("You must use view-projection matrix")]] const Mat4X4Type& get_view_projection_matrix() const noexcept
+        [[nodiscard("You must use view-projection matrix")]]
+        const Mat4X4Type& get_view_projection_matrix() const noexcept
         {
             if (!m_view_projection_matrix.has_value())
                 m_view_projection_matrix = get_projection_matrix() * get_view_matrix();
@@ -313,7 +314,8 @@ namespace omath::projection
                 std::unreachable();
         }
 
-        [[nodiscard("You must use frustum culling result")]] bool is_culled_by_frustum(const Triangle<Vector3<NumericType>>& triangle) const noexcept
+        [[nodiscard("You must use frustum culling result")]] bool
+        is_culled_by_frustum(const Triangle<Vector3<NumericType>>& triangle) const noexcept
         {
             // Transform to clip space (before perspective divide)
             auto to_clip = [this](const Vector3<NumericType>& point)
@@ -380,7 +382,8 @@ namespace omath::projection
             return false;
         }
 
-        [[nodiscard("You must use AABB frustum culling result")]] bool is_aabb_culled_by_frustum(const primitives::Aabb<NumericType>& aabb) const noexcept
+        [[nodiscard("You must use AABB frustum culling result")]] bool
+        is_aabb_culled_by_frustum(const primitives::Aabb<NumericType>& aabb) const noexcept
         {
             // For each plane, find the AABB corner most in the direction of the plane normal
             // (the "positive vertex"). If it's outside, the entire AABB is outside.
@@ -397,7 +400,8 @@ namespace omath::projection
             return false;
         }
 
-        [[nodiscard("You must use OBB frustum culling result")]] bool is_obb_culled_by_frustum(const primitives::Obb<NumericType>& obb) const noexcept
+        [[nodiscard("You must use OBB frustum culling result")]] bool
+        is_obb_culled_by_frustum(const primitives::Obb<NumericType>& obb) const noexcept
         {
             // For each plane, project the OBB extents onto the plane normal to get the
             // effective radius, then test the center's signed distance against it.
@@ -545,7 +549,8 @@ namespace omath::projection
         }
 
         template<class Type>
-        [[nodiscard("You must use NDC bounds check result")]] constexpr static bool is_ndc_out_of_bounds(const Type& ndc) noexcept
+        [[nodiscard("You must use NDC bounds check result")]] constexpr static bool
+        is_ndc_out_of_bounds(const Type& ndc) noexcept
         {
             constexpr auto eps = std::numeric_limits<NumericType>::epsilon();
 
@@ -621,7 +626,8 @@ namespace omath::projection
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
-        [[nodiscard("You must use NDC position")]] Vector3<NumericType> screen_to_ndc(const Vector3<NumericType>& screen_pos) const noexcept
+        [[nodiscard("You must use NDC position")]] Vector3<NumericType>
+        screen_to_ndc(const Vector3<NumericType>& screen_pos) const noexcept
         {
             if constexpr (screen_start == ScreenStart::TOP_LEFT_CORNER)
                 return {screen_pos.x / m_view_port.m_width * NumericType{2} - NumericType{1},
