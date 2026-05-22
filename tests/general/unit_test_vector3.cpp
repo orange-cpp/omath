@@ -244,6 +244,42 @@ TEST_F(UnitTestVector3, Abs)
     EXPECT_FLOAT_EQ(v3.z, 3.0f);
 }
 
+TEST_F(UnitTestVector3, Abs_Const_ReturnsAbsoluteCopy)
+{
+    const Vector3 v3(-1.0f, -2.0f, -3.0f);
+    const Vector3 result = v3.abs();
+    EXPECT_FLOAT_EQ(result.x, 1.0f);
+    EXPECT_FLOAT_EQ(result.y, 2.0f);
+    EXPECT_FLOAT_EQ(result.z, 3.0f);
+}
+
+TEST_F(UnitTestVector3, Abs_Const_DoesNotMutateSource)
+{
+    const Vector3 v3(-1.0f, -2.0f, -3.0f);
+    (void)v3.abs();
+    EXPECT_FLOAT_EQ(v3.x, -1.0f);
+    EXPECT_FLOAT_EQ(v3.y, -2.0f);
+    EXPECT_FLOAT_EQ(v3.z, -3.0f);
+}
+
+TEST_F(UnitTestVector3, Abs_Const_PositiveValues)
+{
+    const Vector3 v3(1.0f, 2.0f, 3.0f);
+    const Vector3 result = v3.abs();
+    EXPECT_FLOAT_EQ(result.x, 1.0f);
+    EXPECT_FLOAT_EQ(result.y, 2.0f);
+    EXPECT_FLOAT_EQ(result.z, 3.0f);
+}
+
+TEST_F(UnitTestVector3, Abs_Const_MixedSigns)
+{
+    const Vector3 v3(-1.5f, 2.5f, -3.5f);
+    const Vector3 result = v3.abs();
+    EXPECT_FLOAT_EQ(result.x, 1.5f);
+    EXPECT_FLOAT_EQ(result.y, 2.5f);
+    EXPECT_FLOAT_EQ(result.z, 3.5f);
+}
+
 TEST_F(UnitTestVector3, Sum)
 {
     constexpr auto sum = Vector3(1.0f, 2.0f, 3.0f).sum();

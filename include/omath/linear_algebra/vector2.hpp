@@ -171,6 +171,11 @@ namespace omath
             y = y < static_cast<Type>(0) ? -y : y;
             return *this;
         }
+        [[nodiscard("You must use absed vector")]]
+        constexpr Vector2 abs() const noexcept
+        {
+            return Vector2{*this}.abs();
+        }
 
         [[nodiscard("You must use negated vector")]]
         constexpr Vector2 operator-() const noexcept

@@ -113,6 +113,11 @@ namespace omath
 
             return *this;
         }
+        [[nodiscard("You must use absed vector")]]
+        constexpr Vector4 abs() const noexcept
+        {
+            return Vector4{*this}.abs();
+        }
         constexpr Vector4& clamp(const Type& min, const Type& max) noexcept
         {
             this->x = std::clamp(this->x, min, max);

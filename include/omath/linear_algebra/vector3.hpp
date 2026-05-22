@@ -121,6 +121,11 @@ namespace omath
 
             return *this;
         }
+        [[nodiscard("You must use absed vector")]]
+        constexpr Vector3 abs() const noexcept
+        {
+            return Vector3{*this}.abs();
+        }
 
         [[nodiscard("You must use squared distance")]]
         constexpr Type distance_to_sqr(const Vector3& other) const noexcept

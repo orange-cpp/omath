@@ -226,6 +226,46 @@ TEST_F(UnitTestVector4, Abs)
     EXPECT_FLOAT_EQ(v3.w, 4.0f);
 }
 
+TEST_F(UnitTestVector4, Abs_Const_ReturnsAbsoluteCopy)
+{
+    const Vector4 v3(-1.0f, -2.0f, -3.0f, -4.0f);
+    const Vector4 result = v3.abs();
+    EXPECT_FLOAT_EQ(result.x, 1.0f);
+    EXPECT_FLOAT_EQ(result.y, 2.0f);
+    EXPECT_FLOAT_EQ(result.z, 3.0f);
+    EXPECT_FLOAT_EQ(result.w, 4.0f);
+}
+
+TEST_F(UnitTestVector4, Abs_Const_DoesNotMutateSource)
+{
+    const Vector4 v3(-1.0f, -2.0f, -3.0f, -4.0f);
+    (void)v3.abs();
+    EXPECT_FLOAT_EQ(v3.x, -1.0f);
+    EXPECT_FLOAT_EQ(v3.y, -2.0f);
+    EXPECT_FLOAT_EQ(v3.z, -3.0f);
+    EXPECT_FLOAT_EQ(v3.w, -4.0f);
+}
+
+TEST_F(UnitTestVector4, Abs_Const_PositiveValues)
+{
+    const Vector4 v3(1.0f, 2.0f, 3.0f, 4.0f);
+    const Vector4 result = v3.abs();
+    EXPECT_FLOAT_EQ(result.x, 1.0f);
+    EXPECT_FLOAT_EQ(result.y, 2.0f);
+    EXPECT_FLOAT_EQ(result.z, 3.0f);
+    EXPECT_FLOAT_EQ(result.w, 4.0f);
+}
+
+TEST_F(UnitTestVector4, Abs_Const_MixedSigns)
+{
+    const Vector4 v3(-1.5f, 2.5f, -3.5f, 4.5f);
+    const Vector4 result = v3.abs();
+    EXPECT_FLOAT_EQ(result.x, 1.5f);
+    EXPECT_FLOAT_EQ(result.y, 2.5f);
+    EXPECT_FLOAT_EQ(result.z, 3.5f);
+    EXPECT_FLOAT_EQ(result.w, 4.5f);
+}
+
 TEST_F(UnitTestVector4, Sum)
 {
     constexpr float sum = Vector4(1.0f, 2.0f, 3.0f, 4.0f).sum();
