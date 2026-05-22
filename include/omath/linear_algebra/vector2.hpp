@@ -28,7 +28,7 @@ namespace omath
 
         template<class CastedType>
         requires std::is_arithmetic_v<CastedType>
-        [[nodiscard]] constexpr explicit operator Vector2<CastedType>() const noexcept
+        [[nodiscard("You must use casted vector")]] constexpr explicit operator Vector2<CastedType>() const noexcept
         {
             return {static_cast<CastedType>(x), static_cast<CastedType>(y)};
         }
@@ -37,13 +37,13 @@ namespace omath
         }
 
         // Equality operators
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         constexpr bool operator==(const Vector2& other) const noexcept
         {
             return x == other.x && y == other.y;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         constexpr bool operator!=(const Vector2& other) const noexcept
         {
             return !(*this == other);
@@ -115,45 +115,51 @@ namespace omath
         }
 
         // Basic vector operations
-        [[nodiscard]] Type distance_to(const Vector2& other) const noexcept
+        [[nodiscard("You must use distance")]]
+        Type distance_to(const Vector2& other) const noexcept
         {
             return std::sqrt(distance_to_sqr(other));
         }
 
-        [[nodiscard]] constexpr Type distance_to_sqr(const Vector2& other) const noexcept
+        [[nodiscard("You must use squared distance")]]
+        constexpr Type distance_to_sqr(const Vector2& other) const noexcept
         {
             return (x - other.x) * (x - other.x) + (y - other.y) * (y - other.y);
         }
 
-        [[nodiscard]] constexpr Type dot(const Vector2& other) const noexcept
+        [[nodiscard("You must use dot product")]]
+        constexpr Type dot(const Vector2& other) const noexcept
         {
             return x * other.x + y * other.y;
         }
 
 #ifndef _MSC_VER
-        [[nodiscard]] constexpr Type length() const noexcept
+        [[nodiscard("You must use length")]] constexpr Type length() const noexcept
         {
             return std::hypot(this->x, this->y);
         }
 
-        [[nodiscard]] constexpr Vector2 normalized() const noexcept
+        [[nodiscard("You must use normalized vector")]] constexpr Vector2 normalized() const noexcept
         {
             const Type len = length();
             return len > 0.f ? *this / len : *this;
         }
 #else
-        [[nodiscard]] Type length() const noexcept
+        [[nodiscard("You must use length")]]
+        Type length() const noexcept
         {
             return std::hypot(x, y);
         }
 
-        [[nodiscard]] Vector2 normalized() const noexcept
+        [[nodiscard("You must use normalized vector")]]
+        Vector2 normalized() const noexcept
         {
             const Type len = length();
             return len > static_cast<Type>(0) ? *this / len : *this;
         }
 #endif
-        [[nodiscard]] constexpr Type length_sqr() const noexcept
+        [[nodiscard("You must use squared length")]]
+        constexpr Type length_sqr() const noexcept
         {
             return x * x + y * y;
         }
@@ -166,79 +172,85 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]] constexpr Vector2 operator-() const noexcept
+        [[nodiscard("You must use negated vector")]]
+        constexpr Vector2 operator-() const noexcept
         {
             return {-x, -y};
         }
 
         // Binary arithmetic operators
-        [[nodiscard]] constexpr Vector2 operator+(const Vector2& other) const noexcept
+        [[nodiscard("You must use result vector")]]
+        constexpr Vector2 operator+(const Vector2& other) const noexcept
         {
             return {x + other.x, y + other.y};
         }
 
-        [[nodiscard]] constexpr Vector2 operator-(const Vector2& other) const noexcept
+        [[nodiscard("You must use result vector")]]
+        constexpr Vector2 operator-(const Vector2& other) const noexcept
         {
             return {x - other.x, y - other.y};
         }
 
-        [[nodiscard]] constexpr Vector2 operator*(const Type& value) const noexcept
+        [[nodiscard("You must use result vector")]]
+        constexpr Vector2 operator*(const Type& value) const noexcept
         {
             return {x * value, y * value};
         }
 
-        [[nodiscard]] constexpr Vector2 operator/(const Type& value) const noexcept
+        [[nodiscard("You must use result vector")]]
+        constexpr Vector2 operator/(const Type& value) const noexcept
         {
             return {x / value, y / value};
         }
 
         // Sum of elements
-        [[nodiscard]] constexpr Type sum() const noexcept
+        [[nodiscard("You must use sum of elements")]]
+        constexpr Type sum() const noexcept
         {
             return x + y;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator<(const Vector2& other) const noexcept
         {
             return length() < other.length();
         }
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator>(const Vector2& other) const noexcept
         {
             return length() > other.length();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator<=(const Vector2& other) const noexcept
         {
             return length() <= other.length();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator>=(const Vector2& other) const noexcept
         {
             return length() >= other.length();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use tuple")]]
         constexpr std::tuple<Type, Type> as_tuple() const noexcept
         {
             return std::make_tuple(x, y);
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use array")]]
         constexpr std::array<Type, 2> as_array() const noexcept
         {
             return {x, y};
         }
 #ifdef OMATH_IMGUI_INTEGRATION
-        [[nodiscard]]
+        [[nodiscard("You must use ImVec2")]]
         constexpr ImVec2 to_im_vec2() const noexcept
         {
             return {static_cast<float>(this->x), static_cast<float>(this->y)};
         }
-        [[nodiscard]]
+        [[nodiscard("You must use vector from ImVec2")]]
         static Vector2 from_im_vec2(const ImVec2& other) noexcept
         {
             return {static_cast<Type>(other.x), static_cast<Type>(other.y)};
@@ -249,7 +261,7 @@ namespace omath
 
 template<> struct std::hash<omath::Vector2<float>>
 {
-    [[nodiscard]]
+    [[nodiscard("You must use hash value")]]
     std::size_t operator()(const omath::Vector2<float>& vec) const noexcept
     {
         std::size_t hash = 0;
@@ -265,14 +277,14 @@ template<> struct std::hash<omath::Vector2<float>>
 template<class Type>
 struct std::formatter<omath::Vector2<Type>> // NOLINT(*-dcl58-cpp)
 {
-    [[nodiscard]]
+    [[nodiscard("You must use parse iterator")]]
     static constexpr auto parse(std::format_parse_context& ctx)
     {
         return ctx.begin();
     }
 
     template<class FormatContext>
-    [[nodiscard]]
+    [[nodiscard("You must use format iterator")]]
     static auto format(const omath::Vector2<Type>& vec, FormatContext& ctx)
     {
         if constexpr (std::is_same_v<typename FormatContext::char_type, char>)

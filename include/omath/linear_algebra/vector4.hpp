@@ -24,19 +24,19 @@ namespace omath
 
         template<class CastedType>
         requires std::is_arithmetic_v<CastedType>
-        [[nodiscard]] constexpr explicit operator Vector4<CastedType>() const noexcept
+        [[nodiscard("You must use casted vector")]] constexpr explicit operator Vector4<CastedType>() const noexcept
         {
             return {static_cast<CastedType>(this->x), static_cast<CastedType>(this->y),
                     static_cast<CastedType>(this->z), static_cast<CastedType>(this->w)};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         constexpr bool operator==(const Vector4& other) const noexcept
         {
             return Vector3<Type>::operator==(other) && w == other.w;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         constexpr bool operator!=(const Vector4& other) const noexcept
         {
             return !(*this == other);
@@ -89,17 +89,19 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]] constexpr Type length_sqr() const noexcept
+        [[nodiscard("You must use squared length")]]
+        constexpr Type length_sqr() const noexcept
         {
             return Vector3<Type>::length_sqr() + w * w;
         }
 
-        [[nodiscard]] constexpr Type dot(const Vector4& other) const noexcept
+        [[nodiscard("You must use dot product")]]
+        constexpr Type dot(const Vector4& other) const noexcept
         {
             return Vector3<Type>::dot(other) + w * other.w;
         }
 
-        [[nodiscard]] Type length() const noexcept
+        [[nodiscard("You must use length")]] Type length() const noexcept
         {
             return std::sqrt(length_sqr());
         }
@@ -120,86 +122,86 @@ namespace omath
             return *this;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use negated vector")]]
         constexpr Vector4 operator-() const noexcept
         {
             return {-this->x, -this->y, -this->z, -w};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use result vector")]]
         constexpr Vector4 operator+(const Vector4& other) const noexcept
         {
             return {this->x + other.x, this->y + other.y, this->z + other.z, w + other.w};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use result vector")]]
         constexpr Vector4 operator-(const Vector4& other) const noexcept
         {
             return {this->x - other.x, this->y - other.y, this->z - other.z, w - other.w};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use result vector")]]
         constexpr Vector4 operator*(const Type& value) const noexcept
         {
             return {this->x * value, this->y * value, this->z * value, w * value};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use result vector")]]
         constexpr Vector4 operator*(const Vector4& other) const noexcept
         {
             return {this->x * other.x, this->y * other.y, this->z * other.z, w * other.w};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use result vector")]]
         constexpr Vector4 operator/(const Type& value) const noexcept
         {
             return {this->x / value, this->y / value, this->z / value, w / value};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use result vector")]]
         constexpr Vector4 operator/(const Vector4& other) const noexcept
         {
             return {this->x / other.x, this->y / other.y, this->z / other.z, w / other.w};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use sum of elements")]]
         constexpr Type sum() const noexcept
         {
             return Vector3<Type>::sum() + w;
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator<(const Vector4& other) const noexcept
         {
             return length() < other.length();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator>(const Vector4& other) const noexcept
         {
             return length() > other.length();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator<=(const Vector4& other) const noexcept
         {
             return length() <= other.length();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use comparison result")]]
         bool operator>=(const Vector4& other) const noexcept
         {
             return length() >= other.length();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use array")]]
         constexpr std::array<Type, 4> as_array() const noexcept
         {
             return {this->x, this->y, this->z, w};
         }
 
 #ifdef OMATH_IMGUI_INTEGRATION
-        [[nodiscard]]
+        [[nodiscard("You must use ImVec4")]]
         constexpr ImVec4 to_im_vec4() const noexcept
         {
             return {
@@ -209,7 +211,7 @@ namespace omath
                     static_cast<float>(w),
             };
         }
-        [[nodiscard]]
+        [[nodiscard("You must use vector from ImVec4")]]
         static Vector4<float> from_im_vec4(const ImVec4& other) noexcept
         {
             return {static_cast<Type>(other.x), static_cast<Type>(other.y), static_cast<Type>(other.z)};
@@ -220,7 +222,7 @@ namespace omath
 
 template<> struct std::hash<omath::Vector4<float>>
 {
-    [[nodiscard]]
+    [[nodiscard("You must use hash value")]]
     std::size_t operator()(const omath::Vector4<float>& vec) const noexcept
     {
         std::size_t hash = 0;
@@ -237,13 +239,13 @@ template<> struct std::hash<omath::Vector4<float>>
 template<class Type>
 struct std::formatter<omath::Vector4<Type>> // NOLINT(*-dcl58-cpp)
 {
-    [[nodiscard]]
+    [[nodiscard("You must use parse iterator")]]
     static constexpr auto parse(std::format_parse_context& ctx)
     {
         return ctx.begin();
     }
     template<class FormatContext>
-    [[nodiscard]]
+    [[nodiscard("You must use format iterator")]]
     static auto format(const omath::Vector4<Type>& vec, FormatContext& ctx)
     {
         if constexpr (std::is_same_v<typename FormatContext::char_type, char>)
