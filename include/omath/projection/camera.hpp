@@ -32,7 +32,7 @@ namespace omath::projection
         float m_width;
         float m_height;
 
-        [[nodiscard]] constexpr float aspect_ratio() const
+        [[nodiscard("You must use aspect ratio")]] constexpr float aspect_ratio() const
         {
             return m_width / m_height;
         }
@@ -101,7 +101,7 @@ namespace omath::projection
         // built by any of the engine traits.  Both variants (ZERO_TO_ONE and
         // NEGATIVE_ONE_TO_ONE) share the same m[0,0]/m[1,1] layout, so this works
         // regardless of the NDC depth range.
-        [[nodiscard]]
+        [[nodiscard("You must use extracted projection params")]]
         static ProjectionParams extract_projection_params(const Mat4X4Type& proj_matrix) noexcept
         {
             // m[1,1] == 1 / tan(fov/2)  =>  fov = 2 * atan(1 / m[1,1])
@@ -112,7 +112,7 @@ namespace omath::projection
                     f / proj_matrix.at(0, 0)};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use calculated view angles")]]
         static ViewAnglesType calc_view_angles_from_view_matrix(const Mat4X4Type& view_matrix) noexcept
         {
             Vector3<NumericType> forward_vector = {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
@@ -121,7 +121,7 @@ namespace omath::projection
             return TraitClass::calc_look_at_angle({}, forward_vector);
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use calculated origin")]]
         static Vector3<NumericType> calc_origin_from_view_matrix(const Mat4X4Type& view_matrix) noexcept
         {
             // The view matrix is R * T(-origin), so the last column stores t = -R * origin.
@@ -142,33 +142,33 @@ namespace omath::projection
             m_view_projection_matrix = std::nullopt;
             m_view_matrix = std::nullopt;
         }
-        [[nodiscard]]
+        [[nodiscard("You must use calculated look-at angles")]]
         ViewAnglesType calc_look_at_angles(const Vector3<NumericType>& look_to) const
         {
             return TraitClass::calc_look_at_angle(m_origin, look_to);
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use forward vector")]]
         Vector3<NumericType> get_forward() const noexcept
         {
             const auto& view_matrix = get_view_matrix();
             return {view_matrix[2, 0], view_matrix[2, 1], view_matrix[2, 2]};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use right vector")]]
         Vector3<NumericType> get_right() const noexcept
         {
             const auto& view_matrix = get_view_matrix();
             return {view_matrix[0, 0], view_matrix[0, 1], view_matrix[0, 2]};
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use up vector")]]
         Vector3<NumericType> get_up() const noexcept
         {
             const auto& view_matrix = get_view_matrix();
             return {view_matrix[1, 0], view_matrix[1, 1], view_matrix[1, 2]};
         }
-        [[nodiscard]]
+        [[nodiscard("You must use absolute forward vector")]]
         Vector3<NumericType> get_abs_forward() const noexcept
         {
             if constexpr (axes.inverted_forward)
@@ -176,7 +176,7 @@ namespace omath::projection
             return get_forward();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use absolute right vector")]]
         Vector3<NumericType> get_abs_right() const noexcept
         {
             if constexpr (axes.inverted_right)
@@ -184,13 +184,13 @@ namespace omath::projection
             return get_right();
         }
 
-        [[nodiscard]]
+        [[nodiscard("You must use absolute up vector")]]
         Vector3<NumericType> get_abs_up() const noexcept
         {
             return get_up();
         }
 
-        [[nodiscard]] const Mat4X4Type& get_view_projection_matrix() const noexcept
+        [[nodiscard("You must use view-projection matrix")]] const Mat4X4Type& get_view_projection_matrix() const noexcept
         {
             if (!m_view_projection_matrix.has_value())
                 m_view_projection_matrix = get_projection_matrix() * get_view_matrix();
@@ -198,14 +198,14 @@ namespace omath::projection
             return m_view_projection_matrix.value();
         }
 
-        [[nodiscard]] const Mat4X4Type& get_view_matrix() const noexcept
+        [[nodiscard("You must use view matrix")]] const Mat4X4Type& get_view_matrix() const noexcept
         {
             if (!m_view_matrix.has_value())
                 m_view_matrix = TraitClass::calc_view_matrix(m_view_angles, m_origin);
 
             return m_view_matrix.value();
         }
-        [[nodiscard]] const Mat4X4Type& get_projection_matrix() const noexcept
+        [[nodiscard("You must use projection matrix")]] const Mat4X4Type& get_projection_matrix() const noexcept
         {
             if (!m_projection_matrix.has_value())
                 m_projection_matrix = TraitClass::calc_projection_matrix(
@@ -255,33 +255,33 @@ namespace omath::projection
             m_projection_matrix = std::nullopt;
         }
 
-        [[nodiscard]] const FieldOfView& get_field_of_view() const noexcept
+        [[nodiscard("You must use field of view")]] const FieldOfView& get_field_of_view() const noexcept
         {
             return m_field_of_view;
         }
 
-        [[nodiscard]] const NumericType& get_near_plane() const noexcept
+        [[nodiscard("You must use near plane")]] const NumericType& get_near_plane() const noexcept
         {
             return m_near_plane_distance;
         }
 
-        [[nodiscard]] const NumericType& get_far_plane() const noexcept
+        [[nodiscard("You must use far plane")]] const NumericType& get_far_plane() const noexcept
         {
             return m_far_plane_distance;
         }
 
-        [[nodiscard]] const ViewAnglesType& get_view_angles() const noexcept
+        [[nodiscard("You must use view angles")]] const ViewAnglesType& get_view_angles() const noexcept
         {
             return m_view_angles;
         }
 
-        [[nodiscard]] const Vector3<NumericType>& get_origin() const noexcept
+        [[nodiscard("You must use origin")]] const Vector3<NumericType>& get_origin() const noexcept
         {
             return m_origin;
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
-        [[nodiscard]] std::expected<Vector3<NumericType>, Error>
+        [[nodiscard("You must use screen position")]] std::expected<Vector3<NumericType>, Error>
         world_to_screen(const Vector3<NumericType>& world_position) const noexcept
         {
             const auto normalized_cords = world_to_view_port(world_position);
@@ -297,7 +297,7 @@ namespace omath::projection
                 std::unreachable();
         }
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
-        [[nodiscard]] std::expected<Vector3<NumericType>, Error>
+        [[nodiscard("You must use unclipped screen position")]] std::expected<Vector3<NumericType>, Error>
         world_to_screen_unclipped(const Vector3<NumericType>& world_position) const noexcept
         {
             const auto normalized_cords = world_to_view_port(world_position, ViewPortClipping::MANUAL);
@@ -313,7 +313,7 @@ namespace omath::projection
                 std::unreachable();
         }
 
-        [[nodiscard]] bool is_culled_by_frustum(const Triangle<Vector3<NumericType>>& triangle) const noexcept
+        [[nodiscard("You must use frustum culling result")]] bool is_culled_by_frustum(const Triangle<Vector3<NumericType>>& triangle) const noexcept
         {
             // Transform to clip space (before perspective divide)
             auto to_clip = [this](const Vector3<NumericType>& point)
@@ -380,7 +380,7 @@ namespace omath::projection
             return false;
         }
 
-        [[nodiscard]] bool is_aabb_culled_by_frustum(const primitives::Aabb<NumericType>& aabb) const noexcept
+        [[nodiscard("You must use AABB frustum culling result")]] bool is_aabb_culled_by_frustum(const primitives::Aabb<NumericType>& aabb) const noexcept
         {
             // For each plane, find the AABB corner most in the direction of the plane normal
             // (the "positive vertex"). If it's outside, the entire AABB is outside.
@@ -397,7 +397,7 @@ namespace omath::projection
             return false;
         }
 
-        [[nodiscard]] bool is_obb_culled_by_frustum(const primitives::Obb<NumericType>& obb) const noexcept
+        [[nodiscard("You must use OBB frustum culling result")]] bool is_obb_culled_by_frustum(const primitives::Obb<NumericType>& obb) const noexcept
         {
             // For each plane, project the OBB extents onto the plane normal to get the
             // effective radius, then test the center's signed distance against it.
@@ -417,7 +417,7 @@ namespace omath::projection
             return false;
         }
 
-        [[nodiscard]] std::expected<Vector3<NumericType>, Error>
+        [[nodiscard("You must use view port position")]] std::expected<Vector3<NumericType>, Error>
         world_to_view_port(const Vector3<NumericType>& world_position,
                            const ViewPortClipping& clipping = ViewPortClipping::AUTO) const noexcept
         {
@@ -446,7 +446,7 @@ namespace omath::projection
 
             return Vector3<NumericType>{projected.at(0, 0), projected.at(1, 0), projected.at(2, 0)};
         }
-        [[nodiscard]]
+        [[nodiscard("You must use world position")]]
         std::expected<Vector3<NumericType>, Error> view_port_to_world(const Vector3<NumericType>& ndc) const noexcept
         {
             const auto inv_view_proj = get_view_projection_matrix().inverted();
@@ -469,7 +469,7 @@ namespace omath::projection
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
-        [[nodiscard]]
+        [[nodiscard("You must use world position")]]
         std::expected<Vector3<NumericType>, Error>
         screen_to_world(const Vector3<NumericType>& screen_pos) const noexcept
         {
@@ -477,7 +477,7 @@ namespace omath::projection
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
-        [[nodiscard]]
+        [[nodiscard("You must use world position")]]
         std::expected<Vector3<NumericType>, Error>
         screen_to_world(const Vector2<NumericType>& screen_pos) const noexcept
         {
@@ -513,7 +513,7 @@ namespace omath::projection
         //   Top    = r3 - r1
         //   Near   = r3 + r2  ([-1,1]) or r2 ([0,1])
         //   Far    = r3 - r2
-        [[nodiscard]] std::array<FrustumPlane, 6> extract_frustum_planes() const noexcept
+        [[nodiscard("You must use frustum planes")]] std::array<FrustumPlane, 6> extract_frustum_planes() const noexcept
         {
             const auto& m = get_view_projection_matrix();
 
@@ -545,7 +545,7 @@ namespace omath::projection
         }
 
         template<class Type>
-        [[nodiscard]] constexpr static bool is_ndc_out_of_bounds(const Type& ndc) noexcept
+        [[nodiscard("You must use NDC bounds check result")]] constexpr static bool is_ndc_out_of_bounds(const Type& ndc) noexcept
         {
             constexpr auto eps = std::numeric_limits<NumericType>::epsilon();
 
@@ -558,7 +558,7 @@ namespace omath::projection
             return is_ndc_z_value_out_of_bounds(data[2]);
         }
         template<class ZType>
-        [[nodiscard]]
+        [[nodiscard("You must use NDC z bounds check result")]]
         constexpr static bool is_ndc_z_value_out_of_bounds(const ZType& z_ndc) noexcept
         {
             constexpr auto eps = std::numeric_limits<NumericType>::epsilon();
@@ -584,7 +584,7 @@ namespace omath::projection
                                 v
             */
 
-        [[nodiscard]] Vector3<NumericType>
+        [[nodiscard("You must use screen position")]] Vector3<NumericType>
         ndc_to_screen_position_from_top_left_corner(const Vector3<NumericType>& ndc) const noexcept
         {
             /*
@@ -602,7 +602,7 @@ namespace omath::projection
                     (ndc.y / -NumericType{2} + NumericType{0.5}) * m_view_port.m_height, ndc.z};
         }
 
-        [[nodiscard]] Vector3<NumericType>
+        [[nodiscard("You must use screen position")]] Vector3<NumericType>
         ndc_to_screen_position_from_bottom_left_corner(const Vector3<NumericType>& ndc) const noexcept
         {
             /*
@@ -621,7 +621,7 @@ namespace omath::projection
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
-        [[nodiscard]] Vector3<NumericType> screen_to_ndc(const Vector3<NumericType>& screen_pos) const noexcept
+        [[nodiscard("You must use NDC position")]] Vector3<NumericType> screen_to_ndc(const Vector3<NumericType>& screen_pos) const noexcept
         {
             if constexpr (screen_start == ScreenStart::TOP_LEFT_CORNER)
                 return {screen_pos.x / m_view_port.m_width * NumericType{2} - NumericType{1},
