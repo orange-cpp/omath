@@ -285,17 +285,20 @@ namespace omath::lua
 
                 "add_2d_box",
                 [](omath::hud::EntityOverlay& overlay, const omath::Color& box_color,
-                   sol::optional<omath::Color> fill_color, sol::optional<float> thickness) -> omath::hud::EntityOverlay&
+                   sol::optional<omath::Color> fill_color, sol::optional<omath::Color> outline_color,
+                   sol::optional<float> thickness) -> omath::hud::EntityOverlay&
                 {
                     return overlay.add_2d_box(box_color, fill_color.value_or(transparent_black()),
-                                              thickness.value_or(1.f));
+                                              outline_color.value_or(transparent_black()), thickness.value_or(1.f));
                 },
                 "add_cornered_2d_box",
                 [](omath::hud::EntityOverlay& overlay, const omath::Color& box_color,
-                   sol::optional<omath::Color> fill_color, sol::optional<float> corner_ratio_len,
+                   sol::optional<omath::Color> fill_color, sol::optional<omath::Color> outline_color,
+                   sol::optional<float> corner_ratio_len,
                    sol::optional<float> thickness) -> omath::hud::EntityOverlay&
                 {
                     return overlay.add_cornered_2d_box(box_color, fill_color.value_or(transparent_black()),
+                                                       outline_color.value_or(transparent_black()),
                                                        corner_ratio_len.value_or(0.2f), thickness.value_or(1.f));
                 },
                 "add_dashed_box",

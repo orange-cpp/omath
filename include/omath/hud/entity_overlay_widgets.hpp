@@ -26,6 +26,7 @@ namespace omath::hud::widget
     {
         Color color;
         Color fill{0.f, 0.f, 0.f, 0.f};
+        Color outline{0.f, 0.f, 0.f, 0.f};
         float thickness = 1.f;
     };
 
@@ -33,6 +34,7 @@ namespace omath::hud::widget
     {
         Color color;
         Color fill{0.f, 0.f, 0.f, 0.f};
+        Color outline{0.f, 0.f, 0.f, 0.f};
         float corner_ratio = 0.2f;
         float thickness = 1.f;
     };

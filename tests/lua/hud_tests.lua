@@ -110,17 +110,21 @@ end
 
 function Hud_EntityOverlay_add_2d_box()
     local commands = {}
-    overlay(commands):add_2d_box(color(), fill(), 2)
-    assert(#commands == 2)
-    assert(commands[1].kind == "polyline" and #commands[1].points == 4)
-    assert(commands[2].kind == "filled_polyline")
+    overlay(commands):add_2d_box(color(), fill(), outline(), 2)
+    assert(#commands == 3)
+    assert(commands[1].kind == "polyline" and approx(commands[1].thickness, 4))
+    assert(commands[2].kind == "polyline" and approx(commands[2].thickness, 2) and #commands[2].points == 4)
+    assert(commands[3].kind == "filled_polyline")
 end
 
 function Hud_EntityOverlay_add_cornered_2d_box()
     local commands = {}
-    overlay(commands):add_cornered_2d_box(color(), fill(), 0.25, 2)
-    assert(#commands == 10)
-    assert(commands[1].kind == "polyline" and commands[10].kind == "line")
+    overlay(commands):add_cornered_2d_box(color(), fill(), outline(), 0.25, 2)
+    assert(#commands == 18)
+    assert(commands[1].kind == "polyline" and commands[2].kind == "filled_polyline")
+    assert(commands[3].kind == "line" and approx(commands[3].thickness, 4))
+    assert(commands[4].kind == "line" and approx(commands[4].thickness, 2))
+    assert(commands[18].kind == "line")
 end
 
 function Hud_EntityOverlay_add_dashed_box()

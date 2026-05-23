@@ -82,6 +82,7 @@ namespace imgui_desktop::gui
             ImGui::Checkbox("Dashed", &m_show_dashed_box);
             ImGui::ColorEdit4("Color##box", reinterpret_cast<float*>(&m_box_color), ImGuiColorEditFlags_NoInputs);
             ImGui::ColorEdit4("Fill##box", reinterpret_cast<float*>(&m_box_fill), ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("Outline##box", reinterpret_cast<float*>(&m_box_outline), ImGuiColorEditFlags_NoInputs);
             ImGui::SliderFloat("Thickness", &m_box_thickness, 0.5f, 5.f);
             ImGui::SliderFloat("Corner ratio", &m_corner_ratio, 0.05f, 0.5f);
             ImGui::Separator();
@@ -199,9 +200,9 @@ namespace imgui_desktop::gui
                                   std::make_shared<omath::hud::ImguiHudRenderer>())
                 .contents(
                         // ── Boxes ────────────────────────────────────────────────────
-                        when(m_show_box, Box{m_box_color, m_box_fill, m_box_thickness}),
+                        when(m_show_box, Box{m_box_color, m_box_fill, m_box_outline, m_box_thickness}),
                         when(m_show_cornered_box, CorneredBox{omath::Color::from_rgba(255, 0, 255, 255), m_box_fill,
-                                                              m_corner_ratio, m_box_thickness}),
+                                                              m_box_outline, m_corner_ratio, m_box_thickness}),
                         when(m_show_dashed_box, DashedBox{m_dash_color, m_dash_len, m_dash_gap, m_dash_thickness}),
                         RightSide{
                                 when(m_show_right_bar, bar),

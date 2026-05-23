@@ -20,9 +20,10 @@ namespace omath::hud
 
         // ── Boxes ────────────────────────────────────────────────────────
         EntityOverlay& add_2d_box(const Color& box_color, const Color& fill_color = Color{0.f, 0.f, 0.f, 0.f},
-                                  float thickness = 1.f);
+                                  const Color& outline_color = Color{0.f, 0.f, 0.f, 0.f}, float thickness = 1.f);
 
         EntityOverlay& add_cornered_2d_box(const Color& box_color, const Color& fill_color = Color{0.f, 0.f, 0.f, 0.f},
+                                           const Color& outline_color = Color{0.f, 0.f, 0.f, 0.f},
                                            float corner_ratio_len = 0.2f, float thickness = 1.f);
 
         EntityOverlay& add_dashed_box(const Color& color, float dash_len = 8.f, float gap_len = 5.f,

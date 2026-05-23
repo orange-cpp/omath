@@ -31,6 +31,7 @@ namespace imgui_desktop::gui
         // Box
         omath::Color m_box_color{1.f, 1.f, 1.f, 1.f};
         omath::Color m_box_fill{0.f, 0.f, 0.f, 0.f};
+        omath::Color m_box_outline{0.f, 0.f, 0.f, 0.f};
         float m_box_thickness = 1.f, m_corner_ratio = 0.2f;
         bool m_show_box = true, m_show_cornered_box = true, m_show_dashed_box = false;
 

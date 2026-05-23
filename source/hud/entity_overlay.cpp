@@ -5,9 +5,13 @@
 
 namespace omath::hud
 {
-    EntityOverlay& EntityOverlay::add_2d_box(const Color& box_color, const Color& fill_color, const float thickness)
+    EntityOverlay& EntityOverlay::add_2d_box(const Color& box_color, const Color& fill_color,
+                                             const Color& outline_color, const float thickness)
     {
         const auto points = m_canvas.as_array();
+
+        if (outline_color.value().w > 0.f)
+            m_renderer->add_polyline({points.data(), points.size()}, outline_color, thickness + 2.f);
 
         m_renderer->add_polyline({points.data(), points.size()}, box_color, thickness);
 
@@ -17,41 +21,46 @@ namespace omath::hud
         return *this;
     }
     EntityOverlay& EntityOverlay::add_cornered_2d_box(const Color& box_color, const Color& fill_color,
-                                                      const float corner_ratio_len, const float thickness)
+                                                      const Color& outline_color, const float corner_ratio_len,
+                                                      const float thickness)
     {
         const auto corner_line_length =
                 std::abs((m_canvas.top_left_corner - m_canvas.top_right_corner).x * corner_ratio_len);
 
         if (fill_color.value().w > 0.f)
             add_2d_box(fill_color, fill_color);
+
+        const auto draw_corner_line = [&](const Vector2<float>& a, const Vector2<float>& b)
+        {
+            if (outline_color.value().w > 0.f)
+                m_renderer->add_line(a, b, outline_color, thickness + 2.f);
+            m_renderer->add_line(a, b, box_color, thickness);
+        };
+
         // Left Side
-        m_renderer->add_line(m_canvas.top_left_corner,
-                             m_canvas.top_left_corner + Vector2<float>{corner_line_length, 0.f}, box_color, thickness);
+        draw_corner_line(m_canvas.top_left_corner,
+                         m_canvas.top_left_corner + Vector2<float>{corner_line_length, 0.f});
 
-        m_renderer->add_line(m_canvas.top_left_corner,
-                             m_canvas.top_left_corner + Vector2<float>{0.f, corner_line_length}, box_color, thickness);
+        draw_corner_line(m_canvas.top_left_corner,
+                         m_canvas.top_left_corner + Vector2<float>{0.f, corner_line_length});
 
-        m_renderer->add_line(m_canvas.bottom_left_corner,
-                             m_canvas.bottom_left_corner - Vector2<float>{0.f, corner_line_length}, box_color,
-                             thickness);
+        draw_corner_line(m_canvas.bottom_left_corner,
+                         m_canvas.bottom_left_corner - Vector2<float>{0.f, corner_line_length});
 
-        m_renderer->add_line(m_canvas.bottom_left_corner,
-                             m_canvas.bottom_left_corner + Vector2<float>{corner_line_length, 0.f}, box_color,
-                             thickness);
+        draw_corner_line(m_canvas.bottom_left_corner,
+                         m_canvas.bottom_left_corner + Vector2<float>{corner_line_length, 0.f});
         // Right Side
-        m_renderer->add_line(m_canvas.top_right_corner,
-                             m_canvas.top_right_corner - Vector2<float>{corner_line_length, 0.f}, box_color, thickness);
+        draw_corner_line(m_canvas.top_right_corner,
+                         m_canvas.top_right_corner - Vector2<float>{corner_line_length, 0.f});
 
-        m_renderer->add_line(m_canvas.top_right_corner,
-                             m_canvas.top_right_corner + Vector2<float>{0.f, corner_line_length}, box_color, thickness);
+        draw_corner_line(m_canvas.top_right_corner,
+                         m_canvas.top_right_corner + Vector2<float>{0.f, corner_line_length});
 
-        m_renderer->add_line(m_canvas.bottom_right_corner,
-                             m_canvas.bottom_right_corner - Vector2<float>{0.f, corner_line_length}, box_color,
-                             thickness);
+        draw_corner_line(m_canvas.bottom_right_corner,
+                         m_canvas.bottom_right_corner - Vector2<float>{0.f, corner_line_length});
 
-        m_renderer->add_line(m_canvas.bottom_right_corner,
-                             m_canvas.bottom_right_corner - Vector2<float>{corner_line_length, 0.f}, box_color,
-                             thickness);
+        draw_corner_line(m_canvas.bottom_right_corner,
+                         m_canvas.bottom_right_corner - Vector2<float>{corner_line_length, 0.f});
 
         return *this;
     }
@@ -591,12 +600,13 @@ namespace omath::hud
     // ── widget dispatch ───────────────────────────────────────────────────────
     void EntityOverlay::dispatch(const widget::Box& box)
     {
-        add_2d_box(box.color, box.fill, box.thickness);
+        add_2d_box(box.color, box.fill, box.outline, box.thickness);
     }
 
     void EntityOverlay::dispatch(const widget::CorneredBox& cornered_box)
     {
-        add_cornered_2d_box(cornered_box.color, cornered_box.fill, cornered_box.corner_ratio, cornered_box.thickness);
+        add_cornered_2d_box(cornered_box.color, cornered_box.fill, cornered_box.outline, cornered_box.corner_ratio,
+                            cornered_box.thickness);
     }
 
     void EntityOverlay::dispatch(const widget::DashedBox& dashed_box)
