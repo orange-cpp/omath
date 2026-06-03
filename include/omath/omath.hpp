@@ -87,6 +87,12 @@
 #include "omath/engines/frostbite_engine/traits/camera_trait.hpp"
 #include "omath/engines/frostbite_engine/traits/pred_engine_trait.hpp"
 
+// RAGE Engine
+#include "omath/engines/rage_engine/constants.hpp"
+#include "omath/engines/rage_engine/formulas.hpp"
+#include "omath/engines/rage_engine/camera.hpp"
+#include "omath/engines/rage_engine/traits/camera_trait.hpp"
+#include "omath/engines/rage_engine/traits/pred_engine_trait.hpp"
 
 // Unreal Engine
 #include "omath/engines/unreal_engine/constants.hpp"

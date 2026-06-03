@@ -27,7 +27,7 @@ namespace omath::hud
                        const Color& tint = Color{1.f, 1.f, 1.f, 1.f}) override;
         void add_text(const Vector2<float>& position, const Color& color, const std::string_view& text) override;
         [[nodiscard]]
-        virtual Vector2<float> calc_text_size(const std::string_view& text) override;
+        Vector2<float> calc_text_size(const std::string_view& text) override;
     };
 } // namespace omath::hud
 #endif // OMATH_IMGUI_INTEGRATION

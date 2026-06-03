@@ -81,7 +81,7 @@ if (auto screen = camera.world_to_screen(world_position)) {
 - **Collision Detection**: Production ready code to handle collision detection by using simple interfaces.
 - **No Additional Dependencies**: No additional dependencies need to use OMath except unit test execution
 - **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
-- **Engine support**: Supports coordinate systems of **Source, Unity, Unreal, Frostbite, IWEngine, CryEngine and canonical OpenGL**.
+- **Engine support**: Supports coordinate systems of **Source, Rage, Unity, Unreal, Frostbite, IWEngine, CryEngine and canonical OpenGL**.
 - **Cross platform**: Supports Windows, MacOS and Linux.
 - **Algorithms**: Has ability to scan for byte pattern with wildcards in ELF/Mach-O/PE files/modules, binary slices, works even with Wine apps. 
 - **Scripting**: Supports to make scripts in Lua out of box.
@@ -110,6 +110,10 @@ if (auto screen = camera.world_to_screen(world_position)) {
 <br>
 
 ![TF2 Preview]
+
+<br>
+
+![GTA5 Preview]
 
 <br>
 
@@ -144,6 +148,7 @@ if (auto screen = camera.world_to_screen(world_position)) {
 [BO2 Preview]: docs/images/showcase/cod_bo2.png
 [CS2 Preview]: docs/images/showcase/cs2.jpeg
 [TF2 Preview]: docs/images/showcase/tf2.jpg
+[GTA5 Preview]: https://i.imgur.com/W7T8RhZ.png
 [OpenGL Preview]: docs/images/showcase/opengl.png
 <!----------------------------------{ Buttons }--------------------------------->
 [QUICKSTART]: docs/getting_started.md
