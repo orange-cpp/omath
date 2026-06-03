@@ -9,6 +9,7 @@
 #include <omath/engines/frostbite_engine/camera.hpp>
 #include <omath/engines/iw_engine/camera.hpp>
 #include <omath/engines/opengl_engine/camera.hpp>
+#include <omath/engines/rage_engine/camera.hpp>
 #include <omath/engines/source_engine/camera.hpp>
 #include <omath/engines/unity_engine/camera.hpp>
 #include <omath/engines/unreal_engine/camera.hpp>
@@ -181,6 +182,12 @@ namespace
         using ViewAngles = omath::source_engine::ViewAngles;
         using Camera = omath::source_engine::Camera;
     };
+    struct RageEngineTraits
+    {
+        using PitchAngle = omath::rage_engine::PitchAngle;
+        using ViewAngles = omath::rage_engine::ViewAngles;
+        using Camera = omath::rage_engine::Camera;
+    };
     struct UnityEngineTraits
     {
         using PitchAngle = omath::unity_engine::PitchAngle;
@@ -254,6 +261,7 @@ namespace omath::lua
         register_engine<FrostbiteEngineTraits>(omath_table, "frostbite");
         register_engine<IWEngineTraits>(omath_table, "iw");
         register_engine<SourceEngineTraits>(omath_table, "source");
+        register_engine<RageEngineTraits>(omath_table, "rage");
         register_engine<UnityEngineTraits>(omath_table, "unity");
         register_engine<UnrealEngineTraits, double>(omath_table, "unreal");
         register_engine<CryEngineTraits>(omath_table, "cry");
