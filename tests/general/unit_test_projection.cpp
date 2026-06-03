@@ -9,12 +9,56 @@
 #include <omath/engines/frostbite_engine/camera.hpp>
 #include <omath/engines/iw_engine/camera.hpp>
 #include <omath/engines/opengl_engine/camera.hpp>
+#include <omath/engines/rage_engine/camera.hpp>
 #include <omath/engines/source_engine/camera.hpp>
 #include <omath/engines/unreal_engine/camera.hpp>
 #include <omath/linear_algebra/triangle.hpp>
 #include <omath/projection/camera.hpp>
 #include <print>
 #include <random>
+
+template<class NumericType>
+static NumericType random_visible_component(std::mt19937& gen, std::uniform_real_distribution<NumericType>& dist)
+{
+    auto value = dist(gen);
+    if (std::abs(value) < static_cast<NumericType>(50))
+        value += value < NumericType{} ? -static_cast<NumericType>(50) : static_cast<NumericType>(50);
+
+    return value;
+}
+
+template<class CameraType, class ViewAnglesType, class NumericType>
+static void verify_random_look_at_targets_project_to_screen_center(const omath::Vector3<NumericType>& origin,
+                                                                   const ViewAnglesType& view_angles,
+                                                                   const omath::projection::ViewPort& view_port,
+                                                                   const NumericType near_plane,
+                                                                   const NumericType far_plane, const unsigned int seed)
+{
+    std::mt19937 gen(seed);
+    std::uniform_real_distribution<NumericType> dist(static_cast<NumericType>(-500), static_cast<NumericType>(500));
+
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(75.f);
+    auto cam = CameraType(origin, view_angles, view_port, fov, near_plane, far_plane);
+    const auto screen_center_x = static_cast<NumericType>(view_port.m_width / 2.f);
+    const auto screen_center_y = static_cast<NumericType>(view_port.m_height / 2.f);
+
+    for (int i = 0; i < 100; i++)
+    {
+        const auto target = origin
+                            + omath::Vector3<NumericType>{
+                                    random_visible_component(gen, dist),
+                                    random_visible_component(gen, dist),
+                                    random_visible_component(gen, dist),
+                            };
+
+        cam.look_at(target);
+
+        const auto projected = cam.world_to_screen(target);
+        ASSERT_TRUE(projected.has_value()) << "iteration: " << i;
+        EXPECT_NEAR(projected->x, screen_center_x, static_cast<NumericType>(0.1));
+        EXPECT_NEAR(projected->y, screen_center_y, static_cast<NumericType>(0.1));
+    }
+}
 
 TEST(UnitTestProjection, Projection)
 {
@@ -1113,6 +1157,54 @@ TEST(UnitTestProjection, LookAt_ForwardVectorPointsAtTarget)
     EXPECT_NEAR(fwd.x, 1.f, 1e-4f);
     EXPECT_NEAR(fwd.y, 0.f, 1e-4f);
     EXPECT_NEAR(fwd.z, 0.f, 1e-4f);
+}
+
+TEST(UnitTestProjection, SourceEngine_LookAtRandomWorldPointsProjectToScreenCenter)
+{
+    verify_random_look_at_targets_project_to_screen_center<omath::source_engine::Camera>(
+            {10.f, -20.f, 30.f}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, 0.01f, 5000.f, 101);
+}
+
+TEST(UnitTestProjection, UnityEngine_LookAtRandomWorldPointsProjectToScreenCenter)
+{
+    verify_random_look_at_targets_project_to_screen_center<omath::unity_engine::Camera>(
+            {-15.f, 25.f, -35.f}, omath::unity_engine::ViewAngles{}, {1280.f, 720.f}, 0.03f, 5000.f, 102);
+}
+
+TEST(UnitTestProjection, UnrealEngine_LookAtRandomWorldPointsProjectToScreenCenter)
+{
+    verify_random_look_at_targets_project_to_screen_center<omath::unreal_engine::Camera>(
+            {100.0, -50.0, 25.0}, omath::unreal_engine::ViewAngles{}, {1920.f, 1080.f}, 0.01, 5000.0, 103);
+}
+
+TEST(UnitTestProjection, FrostbiteEngine_LookAtRandomWorldPointsProjectToScreenCenter)
+{
+    verify_random_look_at_targets_project_to_screen_center<omath::frostbite_engine::Camera>(
+            {-4.f, 2.f, 8.f}, omath::frostbite_engine::ViewAngles{}, {1600.f, 900.f}, 0.01f, 5000.f, 104);
+}
+
+TEST(UnitTestProjection, IWEngine_LookAtRandomWorldPointsProjectToScreenCenter)
+{
+    verify_random_look_at_targets_project_to_screen_center<omath::iw_engine::Camera>(
+            {40.f, -60.f, 20.f}, omath::iw_engine::ViewAngles{}, {1920.f, 1080.f}, 0.01f, 5000.f, 105);
+}
+
+TEST(UnitTestProjection, OpenGLEngine_LookAtRandomWorldPointsProjectToScreenCenter)
+{
+    verify_random_look_at_targets_project_to_screen_center<omath::opengl_engine::Camera>(
+            {-30.f, 70.f, 15.f}, omath::opengl_engine::ViewAngles{}, {1920.f, 1080.f}, 0.01f, 5000.f, 106);
+}
+
+TEST(UnitTestProjection, CryEngine_LookAtRandomWorldPointsProjectToScreenCenter)
+{
+    verify_random_look_at_targets_project_to_screen_center<omath::cry_engine::Camera>(
+            {5.f, 15.f, -25.f}, omath::cry_engine::ViewAngles{}, {1280.f, 720.f}, 0.01f, 5000.f, 107);
+}
+
+TEST(UnitTestProjection, RageEngine_LookAtRandomWorldPointsProjectToScreenCenter)
+{
+    verify_random_look_at_targets_project_to_screen_center<omath::rage_engine::Camera>(
+            {-5.f, 45.f, 10.f}, omath::rage_engine::ViewAngles{}, {1280.f, 720.f}, 0.01f, 5000.f, 108);
 }
 
 // ---- is_culled_by_frustum (triangle) ----
