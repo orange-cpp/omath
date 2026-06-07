@@ -57,22 +57,22 @@ namespace omath::hud
                                              float offset = 5.f);
 
         // ── Labels ───────────────────────────────────────────────────────
-        EntityOverlay& add_right_label(const Color& color, float offset, bool outlined, const std::string_view& text);
+        EntityOverlay& add_right_label(const Color& color, float offset, widget::Outlined outlined, const std::string_view& text);
 
-        EntityOverlay& add_left_label(const Color& color, float offset, bool outlined, const std::string_view& text);
+        EntityOverlay& add_left_label(const Color& color, float offset, widget::Outlined outlined, const std::string_view& text);
 
-        EntityOverlay& add_top_label(const Color& color, float offset, bool outlined, std::string_view text);
+        EntityOverlay& add_top_label(const Color& color, float offset, widget::Outlined outlined, std::string_view text);
 
-        EntityOverlay& add_bottom_label(const Color& color, float offset, bool outlined, std::string_view text);
+        EntityOverlay& add_bottom_label(const Color& color, float offset, widget::Outlined outlined, std::string_view text);
 
-        EntityOverlay& add_centered_top_label(const Color& color, float offset, bool outlined,
+        EntityOverlay& add_centered_top_label(const Color& color, float offset, widget::Outlined outlined,
                                               const std::string_view& text);
 
-        EntityOverlay& add_centered_bottom_label(const Color& color, float offset, bool outlined,
+        EntityOverlay& add_centered_bottom_label(const Color& color, float offset, widget::Outlined outlined,
                                                  const std::string_view& text);
 
         template<typename... Args>
-        EntityOverlay& add_right_label(const Color& color, const float offset, const bool outlined, std::format_string<Args...> fmt,
+        EntityOverlay& add_right_label(const Color& color, const float offset, const widget::Outlined outlined, std::format_string<Args...> fmt,
                                        Args&&... args)
         {
             return add_right_label(color, offset, outlined,
@@ -80,7 +80,7 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_left_label(const Color& color, const float offset, const bool outlined, std::format_string<Args...> fmt,
+        EntityOverlay& add_left_label(const Color& color, const float offset, const widget::Outlined outlined, std::format_string<Args...> fmt,
                                       Args&&... args)
         {
             return add_left_label(color, offset, outlined,
@@ -88,7 +88,7 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_top_label(const Color& color, const float offset, const bool outlined, std::format_string<Args...> fmt,
+        EntityOverlay& add_top_label(const Color& color, const float offset, const widget::Outlined outlined, std::format_string<Args...> fmt,
                                      Args&&... args)
         {
             return add_top_label(color, offset, outlined,
@@ -96,7 +96,7 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_bottom_label(const Color& color, const float offset, const bool outlined,
+        EntityOverlay& add_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
                                         std::format_string<Args...> fmt, Args&&... args)
         {
             return add_bottom_label(color, offset, outlined,
@@ -104,7 +104,7 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_centered_top_label(const Color& color, const float offset, const bool outlined,
+        EntityOverlay& add_centered_top_label(const Color& color, const float offset, const widget::Outlined outlined,
                                               std::format_string<Args...> fmt, Args&&... args)
         {
             return add_centered_top_label(color, offset, outlined,
@@ -112,7 +112,7 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_centered_bottom_label(const Color& color, const float offset, const bool outlined,
+        EntityOverlay& add_centered_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
                                                  std::format_string<Args...> fmt, Args&&... args)
         {
             return add_centered_bottom_label(color, offset, outlined,

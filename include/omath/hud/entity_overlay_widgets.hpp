@@ -30,6 +30,11 @@ namespace omath::hud::widget
         float thickness = 1.f;
     };
 
+    enum class Outlined
+    {
+        Off,
+        On,
+    };
     struct CorneredBox
     {
         Color color;
@@ -118,7 +123,7 @@ namespace omath::hud::widget
     {
         Color color;
         float offset;
-        bool outlined;
+        Outlined outlined;
         std::string_view text;
     };
 

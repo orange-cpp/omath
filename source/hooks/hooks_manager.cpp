@@ -660,7 +660,7 @@ namespace omath::hooks
 
     LRESULT __stdcall HooksManager::wnd_proc_detour(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param)
     {
-        auto& mgr = get();
+        const auto& mgr = get();
         callback_ptr<wnd_proc_callback> cb;
         WNDPROC original;
         {
