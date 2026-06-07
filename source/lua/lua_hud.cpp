@@ -160,6 +160,12 @@ namespace
     }
 
     [[nodiscard]]
+    omath::hud::widget::Outlined outlined_from_bool(const bool outlined)
+    {
+        return outlined ? omath::hud::widget::Outlined::On : omath::hud::widget::Outlined::Off;
+    }
+
+    [[nodiscard]]
     omath::hud::EntityOverlay make_overlay(const omath::Vector2<float>& top, const omath::Vector2<float>& bottom,
                                            const std::shared_ptr<LuaHudRenderer>& renderer)
     {
@@ -374,37 +380,37 @@ namespace omath::lua
                 [](omath::hud::EntityOverlay& overlay, const omath::Color& color, const float offset,
                    const bool outlined, const std::string& text) -> omath::hud::EntityOverlay&
                 {
-                    return overlay.add_right_label(color, offset, outlined, text);
+                    return overlay.add_right_label(color, offset, outlined_from_bool(outlined), text);
                 },
                 "add_left_label",
                 [](omath::hud::EntityOverlay& overlay, const omath::Color& color, const float offset,
                    const bool outlined, const std::string& text) -> omath::hud::EntityOverlay&
                 {
-                    return overlay.add_left_label(color, offset, outlined, text);
+                    return overlay.add_left_label(color, offset, outlined_from_bool(outlined), text);
                 },
                 "add_top_label",
                 [](omath::hud::EntityOverlay& overlay, const omath::Color& color, const float offset,
                    const bool outlined, const std::string& text) -> omath::hud::EntityOverlay&
                 {
-                    return overlay.add_top_label(color, offset, outlined, text);
+                    return overlay.add_top_label(color, offset, outlined_from_bool(outlined), text);
                 },
                 "add_bottom_label",
                 [](omath::hud::EntityOverlay& overlay, const omath::Color& color, const float offset,
                    const bool outlined, const std::string& text) -> omath::hud::EntityOverlay&
                 {
-                    return overlay.add_bottom_label(color, offset, outlined, text);
+                    return overlay.add_bottom_label(color, offset, outlined_from_bool(outlined), text);
                 },
                 "add_centered_top_label",
                 [](omath::hud::EntityOverlay& overlay, const omath::Color& color, const float offset,
                    const bool outlined, const std::string& text) -> omath::hud::EntityOverlay&
                 {
-                    return overlay.add_centered_top_label(color, offset, outlined, text);
+                    return overlay.add_centered_top_label(color, offset, outlined_from_bool(outlined), text);
                 },
                 "add_centered_bottom_label",
                 [](omath::hud::EntityOverlay& overlay, const omath::Color& color, const float offset,
                    const bool outlined, const std::string& text) -> omath::hud::EntityOverlay&
                 {
-                    return overlay.add_centered_bottom_label(color, offset, outlined, text);
+                    return overlay.add_centered_bottom_label(color, offset, outlined_from_bool(outlined), text);
                 },
 
                 "add_right_space_vertical", &omath::hud::EntityOverlay::add_right_space_vertical,
