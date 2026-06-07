@@ -98,10 +98,11 @@ namespace omath::hud
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_right_label(const Color& color, const float offset, const bool outlined,
+    EntityOverlay& EntityOverlay::add_right_label(const Color& color, const float offset,
+                                                  const widget::Outlined outlined,
                                                   const std::string_view& text)
     {
-        if (outlined)
+        if (outlined == widget::Outlined::On)
             draw_outlined_text(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, text);
         else
             m_renderer->add_text(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, text.data());
@@ -110,12 +111,12 @@ namespace omath::hud
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_top_label(const Color& color, const float offset, const bool outlined,
+    EntityOverlay& EntityOverlay::add_top_label(const Color& color, const float offset, const widget::Outlined outlined,
                                                 const std::string_view text)
     {
         m_text_cursor_top.y -= m_renderer->calc_text_size(text.data()).y;
 
-        if (outlined)
+        if (outlined == widget::Outlined::On)
             draw_outlined_text(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, text);
         else
             m_renderer->add_text(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, text.data());
@@ -392,12 +393,12 @@ namespace omath::hud
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_bottom_label(const Color& color, const float offset, const bool outlined,
+    EntityOverlay& EntityOverlay::add_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
                                                    const std::string_view text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
 
-        if (outlined)
+        if (outlined == widget::Outlined::On)
             draw_outlined_text(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, text);
         else
             m_renderer->add_text(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, text);
@@ -407,13 +408,13 @@ namespace omath::hud
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_left_label(const Color& color, const float offset, const bool outlined,
+    EntityOverlay& EntityOverlay::add_left_label(const Color& color, const float offset, const widget::Outlined outlined,
                                                  const std::string_view& text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto pos = m_text_cursor_left + Vector2<float>{-(offset + text_size.x), 0.f};
 
-        if (outlined)
+        if (outlined == widget::Outlined::On)
             draw_outlined_text(pos, color, text);
         else
             m_renderer->add_text(pos, color, text);
@@ -423,7 +424,7 @@ namespace omath::hud
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_centered_bottom_label(const Color& color, const float offset, const bool outlined,
+    EntityOverlay& EntityOverlay::add_centered_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
                                                             const std::string_view& text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
@@ -431,7 +432,7 @@ namespace omath::hud
                 m_canvas.bottom_left_corner.x + (m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x) / 2.f;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_bottom.y + offset};
 
-        if (outlined)
+        if (outlined == widget::Outlined::On)
             draw_outlined_text(pos, color, text);
         else
             m_renderer->add_text(pos, color, text);
@@ -441,7 +442,7 @@ namespace omath::hud
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_centered_top_label(const Color& color, const float offset, const bool outlined,
+    EntityOverlay& EntityOverlay::add_centered_top_label(const Color& color, const float offset, const widget::Outlined outlined,
                                                          const std::string_view& text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
@@ -451,7 +452,7 @@ namespace omath::hud
         m_text_cursor_top.y -= text_size.y;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_top.y - offset};
 
-        if (outlined)
+        if (outlined == widget::Outlined::On)
             draw_outlined_text(pos, color, text);
         else
             m_renderer->add_text(pos, color, text);

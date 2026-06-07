@@ -196,6 +196,10 @@ namespace imgui_desktop::gui
         const DashedBar dbar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
                              m_bar_value, m_bar_dash_len,      m_bar_dash_gap, m_bar_offset};
 
+        auto outline_helper = [](const bool is_outline) -> Outlined
+        {
+            return is_outline ? Outlined::On : Outlined::Off;
+        };
         omath::hud::EntityOverlay({m_entity_x, m_entity_top_y}, {m_entity_x, m_entity_bottom_y},
                                   std::make_shared<omath::hud::ImguiHudRenderer>())
                 .contents(
@@ -207,47 +211,61 @@ namespace imgui_desktop::gui
                         RightSide{
                                 when(m_show_right_bar, bar),
                                 when(m_show_right_dashed_bar, dbar),
-                                when(m_show_right_labels,
-                                     Label{{0.f, 1.f, 0.f, 1.f}, m_label_offset, m_outlined, "Health: 100/100"}),
-                                when(m_show_right_labels,
-                                     Label{{1.f, 0.f, 0.f, 1.f}, m_label_offset, m_outlined, "Shield: 125/125"}),
-                                when(m_show_right_labels,
-                                     Label{{1.f, 0.f, 1.f, 1.f}, m_label_offset, m_outlined, "*LOCKED*"}),
+                                when(m_show_right_labels, Label{{0.f, 1.f, 0.f, 1.f},
+                                                                m_label_offset,
+                                                                outline_helper(m_outlined),
+                                                                "Health: 100/100"}),
+                                when(m_show_right_labels, Label{{1.f, 0.f, 0.f, 1.f},
+                                                                m_label_offset,
+                                                                outline_helper(m_outlined),
+                                                                "Shield: 125/125"}),
+                                when(m_show_right_labels, Label{{1.f, 0.f, 1.f, 1.f},
+                                                                m_label_offset,
+                                                                outline_helper(m_outlined),
+                                                                "*LOCKED*"}),
 
-                            SpaceVertical{10},
+                                SpaceVertical{10},
                                 when(m_show_ring, ProgressRing{m_ring_color, m_ring_bg, m_ring_radius, m_ring_ratio,
                                                                m_ring_thickness, m_ring_offset}),
                         },
                         LeftSide{
                                 when(m_show_left_bar, bar),
                                 when(m_show_left_dashed_bar, dbar),
-                                when(m_show_left_labels, Label{omath::Color::from_rgba(255, 128, 0, 255),
-                                                               m_label_offset, m_outlined, "Armor: 75"}),
-                                when(m_show_left_labels, Label{omath::Color::from_rgba(0, 200, 255, 255),
-                                                               m_label_offset, m_outlined, "Level: 42"}),
+                                when(m_show_left_labels,
+                                     Label{omath::Color::from_rgba(255, 128, 0, 255), m_label_offset,
+                                           outline_helper(m_outlined), "Armor: 75"}),
+                                when(m_show_left_labels,
+                                     Label{omath::Color::from_rgba(0, 200, 255, 255), m_label_offset,
+                                           outline_helper(m_outlined), "Level: 42"}),
                         },
                         TopSide{
                                 when(m_show_top_bar, bar),
                                 when(m_show_top_dashed_bar, dbar),
-                                when(m_show_centered_top, Centered{Label{omath::Color::from_rgba(0, 255, 255, 255),
-                                                                         m_label_offset, m_outlined, "*VISIBLE*"}}),
+                                when(m_show_centered_top,
+                                     Centered{Label{omath::Color::from_rgba(0, 255, 255, 255), m_label_offset,
+                                                    outline_helper(m_outlined), "*VISIBLE*"}}),
                                 when(m_show_top_labels, Label{omath::Color::from_rgba(255, 255, 0, 255), m_label_offset,
-                                                              m_outlined, "*SCOPED*"}),
+                                                              outline_helper(m_outlined), "*SCOPED*"}),
                                 when(m_show_top_labels, Label{omath::Color::from_rgba(255, 0, 0, 255), m_label_offset,
-                                                              m_outlined, "*BLEEDING*"}),
+                                                              outline_helper(m_outlined), "*BLEEDING*"}),
                         },
                         BottomSide{
                                 when(m_show_bottom_bar, bar),
                                 when(m_show_bottom_dashed_bar, dbar),
-                                when(m_show_centered_bottom, Centered{Label{omath::Color::from_rgba(255, 255, 255, 255),
-                                                                            m_label_offset, m_outlined, "PlayerName"}}),
+                                when(m_show_centered_bottom,
+                                     Centered{Label{omath::Color::from_rgba(255, 255, 255, 255), m_label_offset,
+                                                    outline_helper(m_outlined), "PlayerName"}}),
                                 when(m_show_bottom_labels, Label{omath::Color::from_rgba(200, 200, 0, 255),
-                                                                 m_label_offset, m_outlined, "42m"}),
+                                                                 m_label_offset, outline_helper(m_outlined), "42m"}),
                         },
-                        when(m_show_aim, AimDot{{m_entity_x, m_entity_top_y+40.f}, m_aim_color, m_aim_radius}),
+                        when(m_show_aim, AimDot{{m_entity_x, m_entity_top_y + 40.f}, m_aim_color, m_aim_radius}),
                         when(m_show_scan, ScanMarker{m_scan_color, m_scan_outline, m_scan_outline_thickness}),
                         when(m_show_skeleton, Skeleton{m_skel_color, m_skel_thickness}),
-                        when(m_show_proj, ProjectileAim{{m_proj_pos_x, m_proj_pos_y}, m_proj_color, m_proj_size, m_proj_line_width, static_cast<ProjectileAim::Figure>(m_proj_figure)}),
+                        when(m_show_proj, ProjectileAim{{m_proj_pos_x, m_proj_pos_y},
+                                                        m_proj_color,
+                                                        m_proj_size,
+                                                        m_proj_line_width,
+                                                        static_cast<ProjectileAim::Figure>(m_proj_figure)}),
                         when(m_show_snap, SnapLine{{vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width}));
     }
 
