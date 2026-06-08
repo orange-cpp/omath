@@ -28,7 +28,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install mkdocs and dependencies
-        run: pip install mkdocs mkdocs-bootswatch
+        run: pip install mkdocs mkdocs-material
 
       - name: Build documentation
         run: mkdocs build --strict

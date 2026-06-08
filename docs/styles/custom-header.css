@@ -1,11 +1,18 @@
-/* Widen the navbar container */
-.navbar .container {
-    max-width: 100%;   /* adjust to your target width */
-    width: 95%;
+/* Material header tweaks */
+.md-header,
+.md-tabs {
+    background-color: #101014;
 }
 
-/* Tighter spacing between navbar items */
-.navbar-nav > li > a {
-    padding-left: 8px;
-    padding-right: 8px;
+.md-header {
+    border-bottom: 1px solid rgba(255, 152, 0, 0.28);
+}
+
+.md-tabs {
+    border-bottom: 1px solid rgba(255, 152, 0, 0.16);
+}
+
+.md-tabs__link--active,
+.md-tabs__link:hover {
+    color: #ffb74d;
 }

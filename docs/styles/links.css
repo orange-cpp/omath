@@ -1,65 +1,44 @@
-/* Normal links */
-a {
-    color: orange;
+/* Material dark palette overrides */
+[data-md-color-scheme="slate"] {
+    --md-default-bg-color: #0f1117;
+    --md-default-fg-color: #e8eaed;
+    --md-primary-fg-color: #101014;
+    --md-primary-fg-color--light: #1a1a21;
+    --md-primary-fg-color--dark: #09090d;
+    --md-accent-fg-color: #ff9800;
+    --md-accent-fg-color--transparent: rgba(255, 152, 0, 0.14);
+    --md-typeset-a-color: #ffb74d;
+    --md-code-bg-color: #171a22;
+    --md-code-fg-color: #f5f7fa;
 }
 
-
-/* On hover/focus */
-a:hover,
-a:focus {
-    color: #ff9900; /* a slightly different orange, optional */
-}
-/* Navbar background */
-.navbar,
-.navbar-default,
-.navbar-inverse {
-    background-color: #a26228   !important;  /* your orange */
-    border-color: #ff6600 !important;
+.md-typeset a {
+    color: var(--md-typeset-a-color);
 }
 
-/* Navbar brand + links */
-.navbar .navbar-brand,
-.navbar .navbar-nav > li > a {
-    color: #ffffff !important;
+.md-typeset a:hover,
+.md-typeset a:focus {
+    color: #ffd180;
 }
 
-/* Active and hover states */
-.navbar .navbar-nav > .active > a,
-.navbar .navbar-nav > .active > a:focus,
-.navbar .navbar-nav > .active > a:hover,
-.navbar .navbar-nav > li > a:hover,
-.navbar .navbar-nav > li > a:focus {
-    color: #ffffff !important;
-}
-/* === DROPDOWN MENU BACKGROUND === */
-.navbar .dropdown-menu {
-    border-color: #ff6600 !important;
+.md-tabs__item--active > .md-tabs__link,
+.md-tabs__link:hover,
+.md-nav__link:hover,
+.md-nav__link:focus,
+.md-nav__link--active,
+.md-nav__item .md-nav__link--active {
+    color: #ffb74d;
 }
 
-/* Caret icon (the little triangle) */
-.navbar .dropdown-toggle .caret {
-    border-top-color: #ffffff !important;
-    border-bottom-color: #ffffff !important;
+.md-typeset .md-button {
+    border-color: #ff9800;
+    color: #ffb74d;
 }
 
-/* === BOOTSTRAP 3 STYLE ITEMS (mkdocs + bootswatch darkly often use this) === */
-.navbar .dropdown-menu > li > a {
-    color: #ffffff !important;
-}
-
-.navbar .dropdown-menu > li > a:hover,
-.navbar .dropdown-menu > li > a:focus {
-    background-color: #e65c00 !important; /* darker orange on hover */
-    color: #ffffff !important;
-}
-
-/* === BOOTSTRAP 4+ STYLE ITEMS (if your theme uses .dropdown-item) === */
-.navbar .dropdown-item {
-    color: #ffffff !important;
-}
-
-.navbar .dropdown-item:hover,
-.navbar .dropdown-item:focus {
-    background-color: #e65c00 !important;
-    color: #ffffff !important;
+.md-typeset .md-button:hover,
+.md-typeset .md-button:focus,
+.md-typeset .md-button--primary {
+    background-color: #ff9800;
+    border-color: #ff9800;
+    color: #111111;
 }
