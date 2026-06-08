@@ -171,7 +171,7 @@ namespace
     {
         if (!renderer)
             throw std::invalid_argument("hud renderer must not be nil");
-        return {top, bottom, renderer};
+        return {top, bottom, 4.f, renderer};
     }
 
     [[nodiscard]]
