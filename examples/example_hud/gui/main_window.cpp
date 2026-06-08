@@ -71,6 +71,7 @@ namespace imgui_desktop::gui
             ImGui::SliderFloat("X##ent", &m_entity_x, 100.f, vp->Size.x - 100.f);
             ImGui::SliderFloat("Top Y", &m_entity_top_y, 20.f, m_entity_bottom_y - 20.f);
             ImGui::SliderFloat("Bottom Y", &m_entity_bottom_y, m_entity_top_y + 20.f, vp->Size.y - 20.f);
+            ImGui::SliderFloat("Aspect", &m_entity_aspect, 1.f, 10.f);
         }
 
         if (ImGui::CollapsingHeader("Box", ImGuiTreeNodeFlags_DefaultOpen))
@@ -200,7 +201,7 @@ namespace imgui_desktop::gui
         {
             return is_outline ? Outlined::On : Outlined::Off;
         };
-        omath::hud::EntityOverlay({m_entity_x, m_entity_top_y}, {m_entity_x, m_entity_bottom_y},
+        omath::hud::EntityOverlay({m_entity_x, m_entity_top_y}, {m_entity_x, m_entity_bottom_y}, m_entity_aspect,
                                   std::make_shared<omath::hud::ImguiHudRenderer>())
                 .contents(
                         // ── Boxes ────────────────────────────────────────────────────

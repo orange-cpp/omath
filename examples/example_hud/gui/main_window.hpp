@@ -26,8 +26,7 @@ namespace imgui_desktop::gui
         bool m_opened = true;
 
         // Entity
-        float m_entity_x = 550.f, m_entity_top_y = 150.f, m_entity_bottom_y = 450.f;
-
+        float m_entity_x = 550.f, m_entity_top_y = 150.f, m_entity_bottom_y = 450.f, m_entity_aspect = 4.f;
         // Box
         omath::Color m_box_color{1.f, 1.f, 1.f, 1.f};
         omath::Color m_box_fill{0.f, 0.f, 0.f, 0.f};

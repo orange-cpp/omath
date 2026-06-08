@@ -460,9 +460,9 @@ namespace omath::hud
         return *this;
     }
 
-    EntityOverlay::EntityOverlay(const Vector2<float>& top, const Vector2<float>& bottom,
+    EntityOverlay::EntityOverlay(const Vector2<float>& top, const Vector2<float>& bottom, const float aspect,
                                  const std::shared_ptr<HudRendererInterface>& renderer)
-        : m_canvas(top, bottom), m_text_cursor_right(m_canvas.top_right_corner),
+        : m_canvas(top, bottom, aspect), m_text_cursor_right(m_canvas.top_right_corner),
           m_text_cursor_top(m_canvas.top_left_corner), m_text_cursor_bottom(m_canvas.bottom_left_corner),
           m_text_cursor_left(m_canvas.top_left_corner), m_renderer(renderer)
     {

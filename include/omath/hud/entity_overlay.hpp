@@ -15,7 +15,7 @@ namespace omath::hud
     class EntityOverlay final
     {
     public:
-        EntityOverlay(const Vector2<float>& top, const Vector2<float>& bottom,
+        EntityOverlay(const Vector2<float>& top, const Vector2<float>& bottom, float aspect,
                       const std::shared_ptr<HudRendererInterface>& renderer);
 
         // ── Boxes ────────────────────────────────────────────────────────
