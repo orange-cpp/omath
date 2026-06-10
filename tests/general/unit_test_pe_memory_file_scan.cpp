@@ -1,5 +1,7 @@
 // Tests for PePatternScanner::scan_for_pattern_in_memory_file
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <omath/utility/pe_pattern_scan.hpp>
 #include <span>
@@ -10,8 +12,7 @@ using namespace omath;
 // Reuse the fake-module builder from unit_test_pe_pattern_scan_loaded.cpp but
 // lay out the buffer as a raw PE *file* (ptr_raw_data != virtual_address).
 static std::vector<std::byte> make_fake_pe_file(std::uint32_t virtual_address, std::uint32_t ptr_raw_data,
-                                                std::uint32_t section_size,
-                                                const std::vector<std::uint8_t>& code_bytes)
+                                                std::uint32_t section_size, const std::vector<std::uint8_t>& code_bytes)
 {
     constexpr std::uint32_t e_lfanew = 0x80;
     constexpr std::uint32_t nt_sig = 0x4550;
@@ -24,9 +25,18 @@ static std::vector<std::byte> make_fake_pe_file(std::uint32_t virtual_address, s
     const std::uint32_t total_size = ptr_raw_data + section_size + 0x100;
     std::vector<std::byte> buf(total_size, std::byte{0});
 
-    auto w16 = [&](std::size_t off, std::uint16_t v) { std::memcpy(buf.data() + off, &v, 2); };
-    auto w32 = [&](std::size_t off, std::uint32_t v) { std::memcpy(buf.data() + off, &v, 4); };
-    auto w64 = [&](std::size_t off, std::uint64_t v) { std::memcpy(buf.data() + off, &v, 8); };
+    auto w16 = [&](std::size_t off, std::uint16_t v)
+    {
+        std::memcpy(buf.data() + off, &v, 2);
+    };
+    auto w32 = [&](std::size_t off, std::uint32_t v)
+    {
+        std::memcpy(buf.data() + off, &v, 4);
+    };
+    auto w64 = [&](std::size_t off, std::uint64_t v)
+    {
+        std::memcpy(buf.data() + off, &v, 8);
+    };
 
     // DOS header
     w16(0x00, 0x5A4D);
@@ -48,10 +58,10 @@ static std::vector<std::byte> make_fake_pe_file(std::uint32_t virtual_address, s
     // Section header (.text)
     const std::size_t sh_off = section_table_off;
     std::memcpy(buf.data() + sh_off, ".text", 5);
-    w32(sh_off + 8, section_size);        // VirtualSize
-    w32(sh_off + 12, virtual_address);    // VirtualAddress
-    w32(sh_off + 16, section_size);       // SizeOfRawData
-    w32(sh_off + 20, ptr_raw_data);       // PointerToRawData
+    w32(sh_off + 8, section_size); // VirtualSize
+    w32(sh_off + 12, virtual_address); // VirtualAddress
+    w32(sh_off + 16, section_size); // SizeOfRawData
+    w32(sh_off + 20, ptr_raw_data); // PointerToRawData
 
     // Place code at raw file offset
     const std::size_t copy_len = std::min(code_bytes.size(), static_cast<std::size_t>(section_size));
@@ -87,13 +97,24 @@ TEST(unit_test_pe_memory_file_scan, finds_pattern_with_wildcard)
     EXPECT_EQ(result->target_offset, 0);
 }
 
+TEST(unit_test_pe_memory_file_scan, consteval_finds_pattern_with_wildcard)
+{
+    const std::vector<std::uint8_t> code = {0x00, 0xDE, 0xAD, 0xBE, 0xEF};
+    const auto buf = make_fake_pe_file(0x2000, 0x600, static_cast<std::uint32_t>(code.size()), code);
+
+    const auto result =
+            PePatternScanner::scan_for_pattern_in_memory_file<"DE ?? BE EF">(std::span<const std::byte>{buf});
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->target_offset, 1);
+}
+
 TEST(unit_test_pe_memory_file_scan, pattern_not_found_returns_nullopt)
 {
     const std::vector<std::uint8_t> code = {0x01, 0x02, 0x03};
     const auto buf = make_fake_pe_file(0x1000, 0x400, static_cast<std::uint32_t>(code.size()), code);
 
-    const auto result =
-            PePatternScanner::scan_for_pattern_in_memory_file(std::span<const std::byte>{buf}, "AA BB CC");
+    const auto result = PePatternScanner::scan_for_pattern_in_memory_file(std::span<const std::byte>{buf}, "AA BB CC");
 
     EXPECT_FALSE(result.has_value());
 }
@@ -125,4 +146,28 @@ TEST(unit_test_pe_memory_file_scan, raw_addr_differs_from_virtual_address)
     EXPECT_EQ(result->raw_base_addr, 0x600u);
     // virtual_base_addr = virtual_address + image_base (image_base = 0)
     EXPECT_EQ(result->virtual_base_addr, 0x3000u);
+}
+
+TEST(unit_test_pe_memory_file_scan, consteval_file_scan_finds_pattern)
+{
+    const std::vector<std::uint8_t> code = {0x48, 0x89, 0xE5, 0xDE, 0xAD};
+    const auto buf = make_fake_pe_file(0x2000, 0x600, static_cast<std::uint32_t>(code.size()), code);
+    const auto tmp_path = std::filesystem::temp_directory_path() / "omath_pe_consteval_test.exe";
+    {
+        std::ofstream out(tmp_path, std::ios::binary);
+        out.write(reinterpret_cast<const char*>(buf.data()), static_cast<std::streamsize>(buf.size()));
+    }
+
+    const auto result = PePatternScanner::scan_for_pattern_in_file<"48 ?? E5">(tmp_path);
+
+    std::filesystem::remove(tmp_path);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->target_offset, 0);
+}
+
+TEST(unit_test_pe_memory_file_scan, consteval_loaded_module_null_returns_nullopt)
+{
+    const auto result = PePatternScanner::scan_for_pattern_in_loaded_module<"DE AD">(nullptr);
+    EXPECT_FALSE(result.has_value());
 }

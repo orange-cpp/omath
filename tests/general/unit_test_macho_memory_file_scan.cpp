@@ -1,5 +1,7 @@
 // Tests for MachOPatternScanner::scan_for_pattern_in_memory_file
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <omath/utility/macho_pattern_scan.hpp>
 #include <span>
@@ -37,38 +39,43 @@ static std::vector<std::byte> make_macho64_with_text_section(const std::vector<s
     constexpr std::size_t total_size = text_raw_off + text_raw_size;
     constexpr std::uint64_t text_vmaddr = 0x1000ULL;
 
-    constexpr std::uint32_t cmd_size =
-            static_cast<std::uint32_t>(seg_size + sect_hdr_size); // segment + 1 section
+    constexpr std::uint32_t cmd_size = static_cast<std::uint32_t>(seg_size + sect_hdr_size); // segment + 1 section
 
     std::vector<std::byte> buf(total_size, std::byte{0});
 
-    auto w32 = [&](std::size_t off, std::uint32_t v) { std::memcpy(buf.data() + off, &v, 4); };
-    auto w64 = [&](std::size_t off, std::uint64_t v) { std::memcpy(buf.data() + off, &v, 8); };
+    auto w32 = [&](std::size_t off, std::uint32_t v)
+    {
+        std::memcpy(buf.data() + off, &v, 4);
+    };
+    auto w64 = [&](std::size_t off, std::uint64_t v)
+    {
+        std::memcpy(buf.data() + off, &v, 8);
+    };
 
     // MachHeader64
     w32(0, mh_magic_64);
-    w32(4, 0x0100000C);  // cputype = CPU_TYPE_ARM64 (doesn't matter for scan)
-    w32(12, 2);           // filetype = MH_EXECUTE
-    w32(16, 1);           // ncmds = 1
-    w32(20, cmd_size);    // sizeofcmds
+    w32(4, 0x0100000C); // cputype = CPU_TYPE_ARM64 (doesn't matter for scan)
+    w32(12, 2); // filetype = MH_EXECUTE
+    w32(16, 1); // ncmds = 1
+    w32(20, cmd_size); // sizeofcmds
 
     // SegmentCommand64 at 0x20
     constexpr std::size_t seg_off = hdr_size;
     w32(seg_off + 0, lc_segment_64);
     w32(seg_off + 4, cmd_size);
     std::memcpy(buf.data() + seg_off + 8, "__TEXT", 6); // segname
-    w64(seg_off + 24, text_vmaddr);                      // vmaddr
-    w64(seg_off + 32, text_raw_size);                    // vmsize
-    w64(seg_off + 40, text_raw_off);                     // fileoff
-    w64(seg_off + 48, text_raw_size);                    // filesize
-    w32(seg_off + 64, 1);                                // nsects
+    w64(seg_off + 24, text_vmaddr); // vmaddr
+    w64(seg_off + 32, text_raw_size); // vmsize
+    w64(seg_off + 40, text_raw_off); // fileoff
+    w64(seg_off + 48, text_raw_size); // filesize
+    w32(seg_off + 64, 1); // nsects
 
     // Section64 at 0x68
     constexpr std::size_t sect_off = seg_off + seg_size;
-    std::memcpy(buf.data() + sect_off + 0, "__text", 6);  // sectname
+    std::memcpy(buf.data() + sect_off + 0, "__text", 6); // sectname
     std::memcpy(buf.data() + sect_off + 16, "__TEXT", 6); // segname
-    w64(sect_off + 32, text_vmaddr);                       // addr
-    w64(sect_off + 40, text_raw_size);                     // size
+    w64(sect_off + 32, text_vmaddr); // addr
+    w64(sect_off + 40, text_raw_size); // size
     w32(sect_off + 48, static_cast<std::uint32_t>(text_raw_off)); // offset (file offset)
 
     // Section data
@@ -103,6 +110,18 @@ TEST(unit_test_macho_memory_file_scan, finds_pattern_with_wildcard)
 
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->target_offset, 0);
+}
+
+TEST(unit_test_macho_memory_file_scan, consteval_finds_pattern_with_wildcard)
+{
+    const std::vector<std::uint8_t> code = {0x00, 0xDE, 0xAD, 0xBE, 0xEF};
+    const auto buf = make_macho64_with_text_section(code);
+
+    const auto result =
+            MachOPatternScanner::scan_for_pattern_in_memory_file<"DE ?? BE EF">(std::span<const std::byte>{buf});
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->target_offset, 1);
 }
 
 TEST(unit_test_macho_memory_file_scan, pattern_not_found_returns_nullopt)
@@ -142,4 +161,28 @@ TEST(unit_test_macho_memory_file_scan, raw_addr_and_virtual_addr_correct)
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->raw_base_addr, expected_raw_off);
     EXPECT_EQ(result->virtual_base_addr, 0x1000u);
+}
+
+TEST(unit_test_macho_memory_file_scan, consteval_file_scan_finds_pattern)
+{
+    const std::vector<std::uint8_t> code = {0x48, 0x89, 0xE5, 0xDE, 0xAD};
+    const auto buf = make_macho64_with_text_section(code);
+    const auto tmp_path = std::filesystem::temp_directory_path() / "omath_macho_consteval_test.bin";
+    {
+        std::ofstream out(tmp_path, std::ios::binary);
+        out.write(reinterpret_cast<const char*>(buf.data()), static_cast<std::streamsize>(buf.size()));
+    }
+
+    const auto result = MachOPatternScanner::scan_for_pattern_in_file<"48 ?? E5">(tmp_path);
+
+    std::filesystem::remove(tmp_path);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->target_offset, 0);
+}
+
+TEST(unit_test_macho_memory_file_scan, consteval_loaded_module_null_returns_nullopt)
+{
+    const auto result = MachOPatternScanner::scan_for_pattern_in_loaded_module<"DE AD">(nullptr);
+    EXPECT_FALSE(result.has_value());
 }

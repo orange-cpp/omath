@@ -35,13 +35,22 @@ static std::vector<std::byte> make_elf64_with_text_section(const std::vector<std
 
     std::vector<std::byte> buf(total_size, std::byte{0});
 
-    auto w8 = [&](std::size_t off, std::uint8_t v) { buf[off] = std::byte{v}; };
+    auto w8 = [&](std::size_t off, std::uint8_t v)
+    {
+        buf[off] = std::byte{v};
+    };
     auto w16 = [&](std::size_t off, std::uint16_t v)
-    { std::memcpy(buf.data() + off, &v, 2); };
+    {
+        std::memcpy(buf.data() + off, &v, 2);
+    };
     auto w32 = [&](std::size_t off, std::uint32_t v)
-    { std::memcpy(buf.data() + off, &v, 4); };
+    {
+        std::memcpy(buf.data() + off, &v, 4);
+    };
     auto w64 = [&](std::size_t off, std::uint64_t v)
-    { std::memcpy(buf.data() + off, &v, 8); };
+    {
+        std::memcpy(buf.data() + off, &v, 8);
+    };
 
     // --- ELF64 file header ---
     // e_ident
@@ -53,19 +62,19 @@ static std::vector<std::byte> make_elf64_with_text_section(const std::vector<std
     w8(5, 1); // ELFDATA2LSB
     w8(6, 1); // EV_CURRENT
     // rest of e_ident is 0
-    w16(16, 2);  // e_type = ET_EXEC
+    w16(16, 2); // e_type = ET_EXEC
     w16(18, 62); // e_machine = EM_X86_64
-    w32(20, 1);  // e_version
-    w64(24, 0);  // e_entry
-    w64(32, 0);  // e_phoff
+    w32(20, 1); // e_version
+    w64(24, 0); // e_entry
+    w64(32, 0); // e_phoff
     w64(40, static_cast<std::uint64_t>(shdr_table_off)); // e_shoff
-    w32(48, 0);  // e_flags
+    w32(48, 0); // e_flags
     w16(52, 64); // e_ehsize
     w16(54, 56); // e_phentsize
-    w16(56, 0);  // e_phnum
+    w16(56, 0); // e_phnum
     w16(58, static_cast<std::uint16_t>(shdr_size)); // e_shentsize
     w16(60, static_cast<std::uint16_t>(num_sections)); // e_shnum
-    w16(62, 2);  // e_shstrndx = 2 (.shstrtab is section index 2)
+    w16(62, 2); // e_shstrndx = 2 (.shstrtab is section index 2)
 
     // --- section data (.text) ---
     const std::size_t copy_len = std::min(code_bytes.size(), text_size);
@@ -104,9 +113,9 @@ static std::vector<std::byte> make_elf64_with_text_section(const std::vector<std
     // Section 1: .text
     {
         const std::size_t base = shdr_table_off + 1 * shdr_size;
-        w32(base + 0, 1);  // sh_name → index 1 in shstrtab → ".text"
-        w32(base + 4, 1);  // sh_type = SHT_PROGBITS
-        w64(base + 8, 6);  // sh_flags = SHF_ALLOC|SHF_EXECINSTR
+        w32(base + 0, 1); // sh_name → index 1 in shstrtab → ".text"
+        w32(base + 4, 1); // sh_type = SHT_PROGBITS
+        w64(base + 8, 6); // sh_flags = SHF_ALLOC|SHF_EXECINSTR
         w64(base + 16, static_cast<std::uint64_t>(text_off)); // sh_addr (same as offset in test)
         w64(base + 24, static_cast<std::uint64_t>(text_off)); // sh_offset
         w64(base + 32, static_cast<std::uint64_t>(text_size)); // sh_size
@@ -116,8 +125,8 @@ static std::vector<std::byte> make_elf64_with_text_section(const std::vector<std
     // Section 2: .shstrtab
     {
         const std::size_t base = shdr_table_off + 2 * shdr_size;
-        w32(base + 0, 0);  // sh_name → index 0 → "" (good enough for scanner)
-        w32(base + 4, 3);  // sh_type = SHT_STRTAB
+        w32(base + 0, 0); // sh_name → index 0 → "" (good enough for scanner)
+        w32(base + 4, 3); // sh_type = SHT_STRTAB
         w64(base + 24, static_cast<std::uint64_t>(shstrtab_off)); // sh_offset
         w64(base + 32, static_cast<std::uint64_t>(shstrtab_size)); // sh_size
     }
@@ -151,6 +160,18 @@ TEST(unit_test_elf_pattern_scan_memory, finds_pattern_with_wildcard)
     EXPECT_EQ(result->target_offset, 0);
 }
 
+TEST(unit_test_elf_pattern_scan_memory, consteval_finds_pattern_with_wildcard)
+{
+    const std::vector<std::uint8_t> code = {0x00, 0xDE, 0xAD, 0xBE, 0xEF};
+    const auto buf = make_elf64_with_text_section(code);
+
+    const auto result =
+            ElfPatternScanner::scan_for_pattern_in_memory_file<"DE ?? BE EF">(std::span<const std::byte>{buf}, ".text");
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->target_offset, 1);
+}
+
 TEST(unit_test_elf_pattern_scan_memory, pattern_not_found_returns_nullopt)
 {
     const std::vector<std::uint8_t> code = {0x01, 0x02, 0x03, 0x04};
@@ -182,8 +203,8 @@ TEST(unit_test_elf_pattern_scan_memory, missing_section_returns_nullopt)
     const std::vector<std::uint8_t> code = {0x90, 0x90};
     const auto buf = make_elf64_with_text_section(code);
 
-    const auto result = ElfPatternScanner::scan_for_pattern_in_memory_file(std::span<const std::byte>{buf},
-                                                                            "90 90", ".nonexistent");
+    const auto result = ElfPatternScanner::scan_for_pattern_in_memory_file(std::span<const std::byte>{buf}, "90 90",
+                                                                           ".nonexistent");
 
     EXPECT_FALSE(result.has_value());
 }
@@ -201,8 +222,8 @@ TEST(unit_test_elf_pattern_scan_memory, matches_file_scan)
     }
 
     const auto file_result = ElfPatternScanner::scan_for_pattern_in_file(tmp_path, "48 89 E5 DE AD", ".text");
-    const auto mem_result =
-            ElfPatternScanner::scan_for_pattern_in_memory_file(std::span<const std::byte>{buf}, "48 89 E5 DE AD", ".text");
+    const auto mem_result = ElfPatternScanner::scan_for_pattern_in_memory_file(std::span<const std::byte>{buf},
+                                                                               "48 89 E5 DE AD", ".text");
 
     std::filesystem::remove(tmp_path);
 
@@ -211,4 +232,28 @@ TEST(unit_test_elf_pattern_scan_memory, matches_file_scan)
     EXPECT_EQ(file_result->virtual_base_addr, mem_result->virtual_base_addr);
     EXPECT_EQ(file_result->raw_base_addr, mem_result->raw_base_addr);
     EXPECT_EQ(file_result->target_offset, mem_result->target_offset);
+}
+
+TEST(unit_test_elf_pattern_scan_memory, consteval_file_scan_finds_pattern)
+{
+    const std::vector<std::uint8_t> code = {0x48, 0x89, 0xE5, 0xDE, 0xAD};
+    const auto buf = make_elf64_with_text_section(code);
+    const auto tmp_path = std::filesystem::temp_directory_path() / "omath_elf_consteval_test.elf";
+    {
+        std::ofstream out(tmp_path, std::ios::binary);
+        out.write(reinterpret_cast<const char*>(buf.data()), static_cast<std::streamsize>(buf.size()));
+    }
+
+    const auto result = ElfPatternScanner::scan_for_pattern_in_file<"48 ?? E5">(tmp_path, ".text");
+
+    std::filesystem::remove(tmp_path);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->target_offset, 0);
+}
+
+TEST(unit_test_elf_pattern_scan_memory, consteval_loaded_module_null_returns_nullopt)
+{
+    const auto result = ElfPatternScanner::scan_for_pattern_in_loaded_module<"DE AD">(nullptr);
+    EXPECT_FALSE(result.has_value());
 }

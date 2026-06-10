@@ -234,8 +234,12 @@ namespace
     constexpr bool invalid_nt_header_file(const NtHeaderVariant& variant)
     {
         constexpr std::uint32_t nt_hdr_magic = 0x4550;
-        return std::visit([&nt_hdr_magic](const auto& header) -> bool { return header.signature != nt_hdr_magic; },
-                          variant);
+        return std::visit(
+                [&nt_hdr_magic](const auto& header) -> bool
+                {
+                    return header.signature != nt_hdr_magic;
+                },
+                variant);
     }
 
     struct ExtractedSection final
@@ -262,8 +266,7 @@ namespace
         if (nt_off + sizeof(ImageNtHeaders<NtArchitecture::x32_bit>) > data.size())
             return std::nullopt;
 
-        const auto* x86_hdrs =
-                reinterpret_cast<const ImageNtHeaders<NtArchitecture::x32_bit>*>(data.data() + nt_off);
+        const auto* x86_hdrs = reinterpret_cast<const ImageNtHeaders<NtArchitecture::x32_bit>*>(data.data() + nt_off);
 
         NtHeaderVariant nt_headers;
         if (x86_hdrs->optional_header.magic == opt_hdr32_magic)
@@ -284,8 +287,8 @@ namespace
                 [&data, &section_name, nt_off](const auto& concrete_headers) -> std::optional<ExtractedSection>
                 {
                     constexpr std::size_t sig_size = sizeof(concrete_headers.signature);
-                    const auto section_table_off = nt_off + sig_size + sizeof(FileHeader)
-                                                   + concrete_headers.file_header.size_optional_header;
+                    const auto section_table_off =
+                            nt_off + sig_size + sizeof(FileHeader) + concrete_headers.file_header.size_optional_header;
 
                     for (std::size_t i = 0; i < concrete_headers.file_header.num_sections; ++i)
                     {
@@ -435,6 +438,65 @@ namespace omath
                 },
                 nt_header_variant.value());
     }
+
+    std::optional<std::uintptr_t>
+    PePatternScanner::scan_for_pattern_in_loaded_module(const void* module_base_address,
+                                                        const std::string_view& target_section_name,
+                                                        const SectionScanFunction scan_pattern)
+    {
+        const auto base_address = reinterpret_cast<std::uintptr_t>(module_base_address);
+        const auto* base_bytes = static_cast<const std::byte*>(module_base_address);
+
+        if (!base_address)
+            return std::nullopt;
+
+        const auto* dos_header = static_cast<const DosHeader*>(module_base_address);
+
+        if (invalid_dos_header_file(*dos_header)) [[unlikely]]
+            return std::nullopt;
+
+        const auto nt_header_variant = get_nt_header_from_loaded_module(module_base_address);
+
+        if (!nt_header_variant) [[unlikely]]
+            return std::nullopt;
+
+        return std::visit(
+                [base_bytes, base_address, lfanew = dos_header->e_lfanew, &target_section_name,
+                 scan_pattern](const auto& nt_header) -> std::optional<std::uintptr_t>
+                {
+                    constexpr std::size_t signature_size = sizeof(nt_header.signature);
+                    const auto section_table_off = static_cast<std::size_t>(lfanew) + signature_size
+                                                   + sizeof(FileHeader) + nt_header.file_header.size_optional_header;
+
+                    const auto* section_table = reinterpret_cast<const SectionHeader*>(base_bytes + section_table_off);
+
+                    for (std::size_t i = 0; i < nt_header.file_header.num_sections; ++i)
+                    {
+                        const auto* section = section_table + i;
+
+                        if (std::string_view{section->name, sizeof(section->name)} != target_section_name
+                            || section->size_raw_data == 0)
+                            continue;
+
+                        const auto section_size = section->virtual_size != 0
+                                                          ? static_cast<std::size_t>(section->virtual_size)
+                                                          : static_cast<std::size_t>(section->size_raw_data);
+
+                        const auto* section_begin =
+                                reinterpret_cast<const std::byte*>(base_address + section->virtual_address);
+                        const auto scan_range = std::span<const std::byte>{section_begin, section_size};
+
+                        const auto target_offset = scan_pattern(scan_range);
+
+                        if (target_offset.has_value())
+                            return reinterpret_cast<std::uintptr_t>(section_begin + target_offset.value());
+                    }
+
+                    return std::nullopt;
+                },
+                nt_header_variant.value());
+    }
+
     std::optional<SectionScanResult>
     PePatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
                                                const std::string_view& pattern,
@@ -458,6 +520,27 @@ namespace omath
     }
 
     std::optional<SectionScanResult>
+    PePatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
+                                               const std::string_view& target_section_name,
+                                               const SectionScanFunction scan_pattern)
+    {
+        const auto pe_section = extract_section_from_pe_file(path_to_file, target_section_name);
+
+        if (!pe_section.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        const auto target_offset =
+                scan_pattern(std::span<const std::byte>{pe_section->data.data(), pe_section->data.size()});
+
+        if (!target_offset.has_value())
+            return std::nullopt;
+
+        return SectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
+                                 .raw_base_addr = pe_section->raw_base_addr,
+                                 .target_offset = target_offset.value()};
+    }
+
+    std::optional<SectionScanResult>
     PePatternScanner::scan_for_pattern_in_memory_file(const std::span<const std::byte> file_data,
                                                       const std::string_view& pattern,
                                                       const std::string_view& target_section_name)
@@ -478,5 +561,26 @@ namespace omath
         return SectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
                                  .raw_base_addr = pe_section->raw_base_addr,
                                  .target_offset = offset};
+    }
+
+    std::optional<SectionScanResult>
+    PePatternScanner::scan_for_pattern_in_memory_file(const std::span<const std::byte> file_data,
+                                                      const std::string_view& target_section_name,
+                                                      const SectionScanFunction scan_pattern)
+    {
+        const auto pe_section = extract_section_from_pe_memory(file_data, target_section_name);
+
+        if (!pe_section.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        const auto target_offset =
+                scan_pattern(std::span<const std::byte>{pe_section->data.data(), pe_section->data.size()});
+
+        if (!target_offset.has_value())
+            return std::nullopt;
+
+        return SectionScanResult{.virtual_base_addr = pe_section->virtual_base_addr,
+                                 .raw_base_addr = pe_section->raw_base_addr,
+                                 .target_offset = target_offset.value()};
     }
 } // namespace omath
