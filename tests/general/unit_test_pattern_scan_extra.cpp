@@ -14,6 +14,16 @@ TEST(unit_test_pattern_scan_extra, IteratorScanFound)
     EXPECT_EQ(std::distance(buf.begin(), it), 0);
 }
 
+TEST(unit_test_pattern_scan_extra, ConstevalIteratorScan)
+{
+    std::vector<std::byte> buf = {static_cast<std::byte>(0x00), static_cast<std::byte>(0xDE),
+                                  static_cast<std::byte>(0xAD), static_cast<std::byte>(0xBE),
+                                  static_cast<std::byte>(0xEF), static_cast<std::byte>(0x11)};
+    const auto it = PatternScanner::scan_for_pattern<"DE ?? BE EF">(buf.begin(), buf.end());
+    EXPECT_NE(it, buf.end());
+    EXPECT_EQ(std::distance(buf.begin(), it), 1);
+}
+
 TEST(unit_test_pattern_scan_extra, IteratorScanNotFound)
 {
     std::vector<std::byte> buf = {static_cast<std::byte>(0x00), static_cast<std::byte>(0x11),
