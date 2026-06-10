@@ -39,11 +39,12 @@ namespace omath
 
     public:
         template<std::size_t N>
-        struct fixed_string final
+        struct ConstevalPattern final
         {
             char value[N]{};
 
-            constexpr fixed_string(const char (&text)[N])
+            // ReSharper disable once CppNonExplicitConvertingConstructor
+            constexpr ConstevalPattern(const char (&text)[N]) // NOLINT(*-explicit-constructor)
             {
                 std::ranges::copy(text, value);
             }
@@ -69,7 +70,7 @@ namespace omath
 
             return scan_for_parsed_pattern(begin, end, parsed_pattern.value());
         }
-        template<fixed_string Pattern, class IteratorType>
+        template<ConstevalPattern Pattern, class IteratorType>
         requires std::input_or_output_iterator<std::remove_cvref_t<IteratorType>>
         static IteratorType scan_for_pattern(const IteratorType& begin, const IteratorType& end)
         {
@@ -129,7 +130,7 @@ namespace omath
                 return c - 'a' + 10;
             return -1;
         }
-        template<fixed_string Pattern>
+        template<ConstevalPattern Pattern>
         [[nodiscard]]
         static consteval std::size_t signature_size()
         {
@@ -152,7 +153,7 @@ namespace omath
             return count;
         }
 
-        template<fixed_string Pattern>
+        template<ConstevalPattern Pattern>
         static consteval std::array<std::optional<std::byte>, signature_size<Pattern>()> parse_pattern()
         {
             std::array<std::optional<std::byte>, signature_size<Pattern>()> result{};
