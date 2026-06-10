@@ -316,8 +316,8 @@ namespace
                     data, section_name);
 
         if (magic == mh_magic_32 || magic == mh_cigam_32)
-            return extract_section_from_memory_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(data,
-                                                                                                           section_name);
+            return extract_section_from_memory_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(
+                    data, section_name);
 
         return std::nullopt;
     }
@@ -344,8 +344,9 @@ namespace
         return extract_section_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(file, section_name);
     }
 
-    template<typename HeaderType, typename SegmentType, typename SectionType, std::uint32_t segment_cmd>
-    std::optional<std::uintptr_t> scan_in_module_impl(const std::byte* base, const std::string_view pattern,
+    template<typename HeaderType, typename SegmentType, typename SectionType, std::uint32_t segment_cmd,
+             class ScanPattern>
+    std::optional<std::uintptr_t> scan_in_module_impl(const std::byte* base, const ScanPattern scan_pattern,
                                                       const std::string_view target_section_name)
     {
         const auto* header = reinterpret_cast<const HeaderType*>(base);
@@ -374,12 +375,13 @@ namespace
                     continue;
                 }
                 const auto* section_begin = base + static_cast<std::size_t>(section->addr);
-                const auto* section_end = section_begin + static_cast<std::size_t>(section->size);
+                const auto scan_range =
+                        std::span<const std::byte>{section_begin, static_cast<std::size_t>(section->size)};
 
-                const auto scan_result = omath::PatternScanner::scan_for_pattern(section_begin, section_end, pattern);
+                const auto target_offset = scan_pattern(scan_range);
 
-                if (scan_result != section_end)
-                    return reinterpret_cast<std::uintptr_t>(scan_result);
+                if (target_offset.has_value())
+                    return reinterpret_cast<std::uintptr_t>(section_begin + target_offset.value());
             }
         }
 
@@ -404,12 +406,48 @@ namespace omath
         std::uint32_t magic{};
         std::memcpy(&magic, base, sizeof(magic));
 
+        const auto scan_pattern =
+                [&pattern](const std::span<const std::byte> section_data) -> std::optional<std::ptrdiff_t>
+        {
+            const auto scan_result =
+                    PatternScanner::scan_for_pattern(section_data.begin(), section_data.end(), pattern);
+
+            if (scan_result == section_data.end())
+                return std::nullopt;
+
+            return scan_result - section_data.begin();
+        };
+
         if (magic == mh_magic_64 || magic == mh_cigam_64)
-            return scan_in_module_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(base, pattern,
+            return scan_in_module_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(base, scan_pattern,
                                                                                                  target_section_name);
 
         if (magic == mh_magic_32 || magic == mh_cigam_32)
-            return scan_in_module_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(base, pattern,
+            return scan_in_module_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(base, scan_pattern,
+                                                                                              target_section_name);
+
+        return std::nullopt;
+    }
+
+    std::optional<std::uintptr_t>
+    MachOPatternScanner::scan_for_pattern_in_loaded_module(const void* module_base_address,
+                                                           const std::string_view& target_section_name,
+                                                           const SectionScanFunction scan_pattern)
+    {
+        if (module_base_address == nullptr) [[unlikely]]
+            return std::nullopt;
+
+        const auto* base = static_cast<const std::byte*>(module_base_address);
+
+        std::uint32_t magic{};
+        std::memcpy(&magic, base, sizeof(magic));
+
+        if (magic == mh_magic_64 || magic == mh_cigam_64)
+            return scan_in_module_impl<MachHeader64, SegmentCommand64, Section64, lc_segment_64>(base, scan_pattern,
+                                                                                                 target_section_name);
+
+        if (magic == mh_magic_32 || magic == mh_cigam_32)
+            return scan_in_module_impl<MachHeader32, SegmentCommand32, Section32, lc_segment>(base, scan_pattern,
                                                                                               target_section_name);
 
         return std::nullopt;
@@ -439,6 +477,27 @@ namespace omath
     }
 
     std::optional<SectionScanResult>
+    MachOPatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
+                                                  const std::string_view& target_section_name,
+                                                  const SectionScanFunction scan_pattern)
+    {
+        const auto macho_section = get_macho_section_by_name(path_to_file, target_section_name);
+
+        if (!macho_section.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        const auto target_offset =
+                scan_pattern(std::span<const std::byte>{macho_section->data.data(), macho_section->data.size()});
+
+        if (!target_offset.has_value())
+            return std::nullopt;
+
+        return SectionScanResult{.virtual_base_addr = macho_section->virtual_base_addr,
+                                 .raw_base_addr = macho_section->raw_base_addr,
+                                 .target_offset = target_offset.value()};
+    }
+
+    std::optional<SectionScanResult>
     MachOPatternScanner::scan_for_pattern_in_memory_file(const std::span<const std::byte> file_data,
                                                          const std::string_view& pattern,
                                                          const std::string_view& target_section_name)
@@ -459,5 +518,25 @@ namespace omath
         return SectionScanResult{.virtual_base_addr = section->virtual_base_addr,
                                  .raw_base_addr = section->raw_base_addr,
                                  .target_offset = offset};
+    }
+
+    std::optional<SectionScanResult>
+    MachOPatternScanner::scan_for_pattern_in_memory_file(const std::span<const std::byte> file_data,
+                                                         const std::string_view& target_section_name,
+                                                         const SectionScanFunction scan_pattern)
+    {
+        const auto section = get_macho_section_by_name_from_memory(file_data, target_section_name);
+
+        if (!section.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        const auto target_offset = scan_pattern(std::span<const std::byte>{section->data.data(), section->data.size()});
+
+        if (!target_offset.has_value())
+            return std::nullopt;
+
+        return SectionScanResult{.virtual_base_addr = section->virtual_base_addr,
+                                 .raw_base_addr = section->raw_base_addr,
+                                 .target_offset = target_offset.value()};
     }
 } // namespace omath

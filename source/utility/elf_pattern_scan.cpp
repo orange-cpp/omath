@@ -304,8 +304,8 @@ namespace
                 elf_headers);
     }
 
-    template<class FileHeader, class SectionHeader>
-    std::optional<std::uintptr_t> scan_in_module_impl(const std::byte* base, const std::string_view pattern,
+    template<class FileHeader, class SectionHeader, class ScanPattern>
+    std::optional<std::uintptr_t> scan_in_module_impl(const std::byte* base, const ScanPattern scan_pattern,
                                                       const std::string_view target_section_name)
     {
         const auto* file_header = reinterpret_cast<const FileHeader*>(base);
@@ -336,13 +336,14 @@ namespace
                 continue;
 
             const auto* section_begin = base + static_cast<std::size_t>(section->sh_addr);
-            const auto* section_end = section_begin + static_cast<std::size_t>(section->sh_size);
+            const auto scan_range =
+                    std::span<const std::byte>{section_begin, static_cast<std::size_t>(section->sh_size)};
 
-            const auto scan_result = omath::PatternScanner::scan_for_pattern(section_begin, section_end, pattern);
-            if (scan_result == section_end)
+            const auto target_offset = scan_pattern(scan_range);
+            if (!target_offset.has_value())
                 return std::nullopt;
 
-            return reinterpret_cast<std::uintptr_t>(scan_result);
+            return reinterpret_cast<std::uintptr_t>(section_begin + target_offset.value());
         }
 
         return std::nullopt;
@@ -374,15 +375,58 @@ namespace omath
         if (!arch.has_value()) [[unlikely]]
             return std::nullopt;
 
+        const auto scan_pattern =
+                [&pattern](const std::span<const std::byte> section_data) -> std::optional<std::ptrdiff_t>
+        {
+            const auto scan_result =
+                    PatternScanner::scan_for_pattern(section_data.begin(), section_data.end(), pattern);
+
+            if (scan_result == section_data.end())
+                return std::nullopt;
+
+            return scan_result - section_data.begin();
+        };
+
         if (arch == FileArch::x64)
             return scan_in_module_impl<Elf64Ehdr, Elf64Shdr>(static_cast<const std::byte*>(module_base_address),
-                                                             pattern, target_section_name);
+                                                             scan_pattern, target_section_name);
         if (arch == FileArch::x32)
             return scan_in_module_impl<Elf32Ehdr, Elf32Shdr>(static_cast<const std::byte*>(module_base_address),
-                                                             pattern, target_section_name);
+                                                             scan_pattern, target_section_name);
 
         std::unreachable();
     }
+
+    std::optional<std::uintptr_t>
+    ElfPatternScanner::scan_for_pattern_in_loaded_module(const void* module_base_address,
+                                                         const std::string_view& target_section_name,
+                                                         const SectionScanFunction scan_pattern)
+    {
+        if (module_base_address == nullptr) [[unlikely]]
+            return std::nullopt;
+
+        const auto* base = static_cast<const std::byte*>(module_base_address);
+
+        constexpr std::string_view valid_elf_signature = "\x7F"
+                                                         "ELF";
+        if (std::string_view{reinterpret_cast<const char*>(base), valid_elf_signature.size()} != valid_elf_signature)
+            return std::nullopt;
+
+        const auto ei_class_value = static_cast<uint8_t>(base[ei_class]);
+        const auto arch = ei_class_value == elfclass64   ? FileArch::x64
+                          : ei_class_value == elfclass32 ? FileArch::x32
+                                                         : std::optional<FileArch>{};
+        if (!arch.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        if (arch == FileArch::x64)
+            return scan_in_module_impl<Elf64Ehdr, Elf64Shdr>(base, scan_pattern, target_section_name);
+        if (arch == FileArch::x32)
+            return scan_in_module_impl<Elf32Ehdr, Elf32Shdr>(base, scan_pattern, target_section_name);
+
+        std::unreachable();
+    }
+
     std::optional<SectionScanResult>
     ElfPatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
                                                 const std::string_view& pattern,
@@ -406,6 +450,26 @@ namespace omath
     }
 
     std::optional<SectionScanResult>
+    ElfPatternScanner::scan_for_pattern_in_file(const std::filesystem::path& path_to_file,
+                                                const std::string_view& target_section_name,
+                                                const SectionScanFunction scan_pattern)
+    {
+        const auto section = get_elf_section_by_name(path_to_file, target_section_name);
+
+        if (!section.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        const auto target_offset = scan_pattern(std::span<const std::byte>{section->data.data(), section->data.size()});
+
+        if (!target_offset.has_value())
+            return std::nullopt;
+
+        return SectionScanResult{.virtual_base_addr = section->virtual_base_addr,
+                                 .raw_base_addr = section->raw_base_addr,
+                                 .target_offset = target_offset.value()};
+    }
+
+    std::optional<SectionScanResult>
     ElfPatternScanner::scan_for_pattern_in_memory_file(const std::span<const std::byte> file_data,
                                                        const std::string_view& pattern,
                                                        const std::string_view& target_section_name)
@@ -426,5 +490,25 @@ namespace omath
         return SectionScanResult{.virtual_base_addr = section->virtual_base_addr,
                                  .raw_base_addr = section->raw_base_addr,
                                  .target_offset = offset};
+    }
+
+    std::optional<SectionScanResult>
+    ElfPatternScanner::scan_for_pattern_in_memory_file(const std::span<const std::byte> file_data,
+                                                       const std::string_view& target_section_name,
+                                                       const SectionScanFunction scan_pattern)
+    {
+        const auto section = get_elf_section_by_name_from_memory(file_data, target_section_name);
+
+        if (!section.has_value()) [[unlikely]]
+            return std::nullopt;
+
+        const auto target_offset = scan_pattern(std::span<const std::byte>{section->data.data(), section->data.size()});
+
+        if (!target_offset.has_value())
+            return std::nullopt;
+
+        return SectionScanResult{.virtual_base_addr = section->virtual_base_addr,
+                                 .raw_base_addr = section->raw_base_addr,
+                                 .target_offset = target_offset.value()};
     }
 } // namespace omath
