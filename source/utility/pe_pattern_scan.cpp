@@ -474,7 +474,8 @@ namespace omath
                     {
                         const auto* section = section_table + i;
 
-                        if (std::string_view{section->name} != target_section_name || section->size_raw_data == 0)
+                        if (std::string_view{section->name, sizeof(section->name)} != target_section_name
+                            || section->size_raw_data == 0)
                             continue;
 
                         const auto section_size = section->virtual_size != 0
