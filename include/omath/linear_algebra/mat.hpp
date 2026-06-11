@@ -10,6 +10,7 @@
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #ifdef OMATH_USE_AVX2
@@ -149,7 +150,8 @@ namespace omath
             }
         }
 
-        [[nodiscard("You must use element reference")]] constexpr Type& at(const size_t row_index, const size_t column_index)
+        [[nodiscard("You must use element reference")]] constexpr Type& at(const size_t row_index,
+                                                                           const size_t column_index)
         {
             return const_cast<Type&>(std::as_const(*this).at(row_index, column_index));
         }
@@ -176,6 +178,13 @@ namespace omath
         operator*(const Mat<Columns, OtherColumns, Type, StoreType>& other) const
         {
 #ifdef OMATH_USE_AVX2
+            if (std::is_constant_evaluated())
+            {
+                if constexpr (StoreType == MatStoreType::ROW_MAJOR)
+                    return cache_friendly_multiply_row_major(other);
+                else if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
+                    return cache_friendly_multiply_col_major(other);
+            }
             if constexpr (StoreType == MatStoreType::ROW_MAJOR)
                 return avx_multiply_row_major(other);
             else if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
