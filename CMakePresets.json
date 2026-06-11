@@ -57,7 +57,7 @@
       "inherits": ["windows-base", "vcpkg-base"],
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-windows-static",
-        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples;hooking",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples;hooking;gcem",
         "OMATH_STATIC_MSVC_RUNTIME_LIBRARY": "ON"
       }
     },

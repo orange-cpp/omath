@@ -33,6 +33,7 @@ option(OMATH_ENABLE_FORCE_INLINE
 option(OMATH_ENABLE_LUA
         "omath bindings for lua" OFF)
 option(OMATH_ENABLE_HOOKING "omath will HooksManager that can hook DirectX/OpenGL automatically" OFF)
+option(OMATH_USE_GCEM "omath will use gcem library to make more functions/methods constexpr" OFF)
 
 if(VCPKG_MANIFEST_FEATURES)
     foreach(omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
@@ -50,6 +51,8 @@ if(VCPKG_MANIFEST_FEATURES)
             set(OMATH_ENABLE_LUA ON)
         elseif(omath_feature STREQUAL "hooking")
             set(OMATH_ENABLE_HOOKING ON)
+        elseif (omath_feature STREQUAL "gcem")
+            set(OMATH_USE_GCEM ON)
         endif()
 
     endforeach()
@@ -80,6 +83,7 @@ if(${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: Coverage feature status ${OMATH_ENABLE_COVERAGE}")
     message(STATUS "[${PROJECT_NAME}]: Valgrind feature status ${OMATH_ENABLE_VALGRIND}")
     message(STATUS "[${PROJECT_NAME}]: Lua feature status ${OMATH_ENABLE_LUA}")
+    message(STATUS "[${PROJECT_NAME}]: Gcem feature status ${OMATH_USE_GCEM}")
 endif()
 
 if(OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
@@ -120,6 +124,12 @@ if (OMATH_ENABLE_HOOKING)
     endif ()
 endif ()
 
+
+if (OMATH_USE_GCEM)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_USE_GCEM)
+    find_package(gcem CONFIG REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC gcem)
+endif ()
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC OMATH_VERSION="${PROJECT_VERSION}")

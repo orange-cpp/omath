@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <format>
 #include <utility>
+#include "omath/internal/optional_constexpr_math.hpp"
 
 namespace omath
 {
@@ -70,21 +71,36 @@ namespace omath
         }
 
         [[nodiscard]]
-        Type sin() const noexcept
+        OMATH_CONSTEXPR Type sin() const noexcept
         {
+#ifdef OMATH_USE_GCEM
+            return gcem::sin(as_radians());
+#else
             return std::sin(as_radians());
+
+#endif
         }
 
         [[nodiscard]]
-        Type cos() const noexcept
+        OMATH_CONSTEXPR Type cos() const noexcept
         {
+#ifdef OMATH_USE_GCEM
+            return gcem::cos(as_radians());
+#else
             return std::cos(as_radians());
+
+#endif
         }
 
         [[nodiscard]]
-        Type tan() const noexcept
+        OMATH_CONSTEXPR Type tan() const noexcept
         {
+#ifdef OMATH_USE_GCEM
+            return gcem::tan(as_radians());
+#else
             return std::tan(as_radians());
+
+#endif
         }
 
         [[nodiscard]]

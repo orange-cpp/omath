@@ -82,6 +82,13 @@
         "lua",
         "sol2"
       ]
+    },
+    "gcem":
+    {
+      "description": "Improve constexpr compatibility using gcem",
+      "dependencies": [
+        "gcem"
+      ]
     }
   }
 }
