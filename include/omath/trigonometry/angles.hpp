@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "omath/internal/optional_constexpr_math.hpp"
 #include <cmath>
 #include <numbers>
 
@@ -47,14 +48,18 @@ namespace omath::angles
 
     template<class Type>
     requires std::is_arithmetic_v<Type>
-    [[nodiscard]] Type wrap_angle(const Type& angle, const Type& min, const Type& max) noexcept
+    [[nodiscard]] OMATH_CONSTEXPR Type wrap_angle(const Type& angle, const Type& min, const Type& max) noexcept
     {
         if (angle <= max && angle >= min)
             return angle;
 
         const Type range = max - min;
 
+#ifdef OMATH_USE_GCEM
+        Type wrapped_angle = gcem::fmod(angle - min, range);
+#else
         Type wrapped_angle = std::fmod(angle - min, range);
+#endif
 
         if (wrapped_angle < 0)
             wrapped_angle += range;

@@ -4,21 +4,41 @@
 
 #pragma once
 #include "omath/engines/cry_engine/formulas.hpp"
+#include "omath/internal/optional_constexpr_math.hpp"
 #include "omath/projection/camera.hpp"
-
 namespace omath::cry_engine
 {
     class CameraTrait final
     {
     public:
         [[nodiscard]]
-        static ViewAngles calc_look_at_angle(const Vector3<float>& cam_origin, const Vector3<float>& look_at) noexcept;
+        OMATH_CONSTEXPR static ViewAngles calc_look_at_angle(const Vector3<float>& cam_origin,
+                                                             const Vector3<float>& look_at) noexcept
+        {
+            const auto direction = (look_at - cam_origin).normalized();
+#ifdef OMATH_USE_GCEM
+            return {PitchAngle::from_radians(gcem::asin(direction.z)),
+                    YawAngle::from_radians(-gcem::atan2(direction.x, direction.y)), RollAngle::from_radians(0.f)};
+#else
+            return {PitchAngle::from_radians(std::asin(direction.z)),
+                    YawAngle::from_radians(-std::atan2(direction.x, direction.y)), RollAngle::from_radians(0.f)};
+#endif
+        }
 
         [[nodiscard]]
-        static Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept;
+        OMATH_CONSTEXPR static Mat4X4 calc_view_matrix(const ViewAngles& angles,
+                                                       const Vector3<float>& cam_origin) noexcept
+        {
+            return cry_engine::calc_view_matrix(angles, cam_origin);
+        }
         [[nodiscard]]
-        static Mat4X4 calc_projection_matrix(const projection::FieldOfView& fov, const projection::ViewPort& view_port,
-                                             float near, float far, NDCDepthRange ndc_depth_range) noexcept;
+        OMATH_CONSTEXPR static Mat4X4
+        calc_projection_matrix(const projection::FieldOfView& fov, const projection::ViewPort& view_port,
+                               const float near, const float far, const NDCDepthRange ndc_depth_range) noexcept
+        {
+            return calc_perspective_projection_matrix(fov.as_degrees(), view_port.aspect_ratio(), near, far,
+                                                      ndc_depth_range);
+        }
     };
 
 } // namespace omath::cry_engine

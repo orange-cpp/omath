@@ -9,6 +9,98 @@
 #include <ranges>
 
 using namespace omath;
+
+#ifdef OMATH_USE_GCEM
+namespace
+{
+    constexpr bool close_to(const float actual, const float expected, const float epsilon)
+    {
+        const float diff = actual - expected;
+        return (diff < 0.0f ? -diff : diff) <= epsilon;
+    }
+
+    constexpr bool vec_close_to(const Vector3<float>& actual, const Vector3<float>& expected, const float epsilon)
+    {
+        return close_to(actual.x, expected.x, epsilon) && close_to(actual.y, expected.y, epsilon)
+               && close_to(actual.z, expected.z, epsilon);
+    }
+} // namespace
+
+static_assert(
+        []
+        {
+            constexpr omath::cry_engine::ViewAngles angles{};
+            constexpr auto forward = omath::cry_engine::forward_vector(angles);
+            constexpr auto right = omath::cry_engine::right_vector(angles);
+            constexpr auto up = omath::cry_engine::up_vector(angles);
+            constexpr auto rotation = omath::cry_engine::rotation_matrix(angles);
+
+            return vec_close_to(forward, omath::cry_engine::k_abs_forward, 1e-5f)
+                   && vec_close_to(right, omath::cry_engine::k_abs_right, 1e-5f)
+                   && vec_close_to(up, omath::cry_engine::k_abs_up, 1e-5f) && close_to(rotation.at(0, 0), 1.0f, 1e-5f)
+                   && close_to(rotation.at(1, 1), 1.0f, 1e-5f) && close_to(rotation.at(2, 2), 1.0f, 1e-5f)
+                   && close_to(rotation.at(3, 3), 1.0f, 1e-5f);
+        }(),
+        "CryEngine basis vectors should be constexpr with gcem");
+
+static_assert(
+        []
+        {
+            constexpr auto view = omath::cry_engine::calc_view_matrix({}, {});
+            return close_to(view.at(0, 0), 1.0f, 1e-5f) && close_to(view.at(1, 2), 1.0f, 1e-5f)
+                   && close_to(view.at(2, 1), 1.0f, 1e-5f) && close_to(view.at(3, 3), 1.0f, 1e-5f);
+        }(),
+        "CryEngine view matrix should be constexpr with gcem");
+
+static_assert(
+        []
+        {
+            constexpr auto transform = mat_translation<float, MatStoreType::ROW_MAJOR>({1.0f, 2.0f, 3.0f})
+                                       * mat_scale<float, MatStoreType::ROW_MAJOR>({2.0f, 3.0f, 4.0f});
+            constexpr auto origin = omath::cry_engine::extract_origin(transform);
+            constexpr auto scale = omath::cry_engine::extract_scale(transform);
+
+            return vec_close_to(origin, {1.0f, 2.0f, 3.0f}, 1e-5f) && vec_close_to(scale, {2.0f, 3.0f, 4.0f}, 1e-5f);
+        }(),
+        "CryEngine transform extraction should be constexpr with gcem");
+
+static_assert(
+        []
+        {
+            constexpr auto projection = omath::cry_engine::calc_perspective_projection_matrix(
+                    90.0f, 1.0f, 1.0f, 11.0f, NDCDepthRange::ZERO_TO_ONE);
+            return close_to(projection.at(0, 0), 1.0f, 1e-5f) && close_to(projection.at(1, 1), 1.0f, 1e-5f)
+                   && close_to(projection.at(2, 2), 1.1f, 1e-5f) && close_to(projection.at(2, 3), -1.1f, 1e-5f)
+                   && close_to(projection.at(3, 2), 1.0f, 1e-5f);
+        }(),
+        "CryEngine projection matrix should be constexpr with gcem");
+
+static_assert(
+        []
+        {
+            constexpr auto angles =
+                    omath::cry_engine::CameraTrait::calc_look_at_angle({}, omath::cry_engine::k_abs_forward);
+            constexpr auto view = omath::cry_engine::CameraTrait::calc_view_matrix(angles, {});
+            constexpr auto projection = omath::cry_engine::CameraTrait::calc_projection_matrix(
+                    projection::FieldOfView::from_degrees(90.0f), {1.0f, 1.0f}, 1.0f, 11.0f,
+                    NDCDepthRange::ZERO_TO_ONE);
+
+            return close_to(angles.pitch.as_degrees(), 0.0f, 1e-5f) && close_to(angles.yaw.as_degrees(), 0.0f, 1e-5f)
+                   && close_to(angles.roll.as_degrees(), 0.0f, 1e-5f) && close_to(view.at(0, 0), 1.0f, 1e-5f)
+                   && close_to(view.at(2, 1), 1.0f, 1e-5f) && close_to(projection.at(0, 0), 1.0f, 1e-5f)
+                   && close_to(projection.at(1, 1), 1.0f, 1e-5f) && close_to(projection.at(2, 2), 1.1f, 1e-5f)
+                   && close_to(projection.at(2, 3), -1.1f, 1e-5f) && close_to(projection.at(3, 2), 1.0f, 1e-5f);
+        }(),
+        "CryEngine CameraTrait should be constexpr with gcem");
+
+static_assert(omath::cry_engine::units_to_centimeters(100.0f) == 1.0f);
+static_assert(omath::cry_engine::units_to_meters(2.0f) == 2.0f);
+static_assert(omath::cry_engine::units_to_kilometers(2000.0f) == 2.0f);
+static_assert(omath::cry_engine::centimeters_to_units(1.0f) == 100.0f);
+static_assert(omath::cry_engine::meters_to_units(2.0f) == 2.0f);
+static_assert(omath::cry_engine::kilometers_to_units(2.0f) == 2000.0f);
+#endif
+
 TEST(unit_test_cry_engine, look_at_forward)
 {
     const auto angles = cry_engine::CameraTrait::calc_look_at_angle({}, cry_engine::k_abs_forward);
@@ -251,11 +343,9 @@ TEST(unit_test_cry_engine, ViewAnglesAsVector3Zero)
 
 TEST(unit_test_cry_engine, ViewAnglesAsVector3Values)
 {
-    const omath::cry_engine::ViewAngles angles{
-        omath::cry_engine::PitchAngle::from_degrees(45.f),
-        omath::cry_engine::YawAngle::from_degrees(-90.f),
-        omath::cry_engine::RollAngle::from_degrees(30.f)
-    };
+    const omath::cry_engine::ViewAngles angles{omath::cry_engine::PitchAngle::from_degrees(45.f),
+                                               omath::cry_engine::YawAngle::from_degrees(-90.f),
+                                               omath::cry_engine::RollAngle::from_degrees(30.f)};
     const auto vec = angles.as_vector3();
 
     EXPECT_FLOAT_EQ(vec.x, 45.f);
@@ -266,11 +356,9 @@ TEST(unit_test_cry_engine, ViewAnglesAsVector3Values)
 TEST(unit_test_cry_engine, ViewAnglesAsVector3ClampedPitch)
 {
     // Pitch is clamped to [-90, 90]
-    const omath::cry_engine::ViewAngles angles{
-        omath::cry_engine::PitchAngle::from_degrees(120.f),
-        omath::cry_engine::YawAngle::from_degrees(0.f),
-        omath::cry_engine::RollAngle::from_degrees(0.f)
-    };
+    const omath::cry_engine::ViewAngles angles{omath::cry_engine::PitchAngle::from_degrees(120.f),
+                                               omath::cry_engine::YawAngle::from_degrees(0.f),
+                                               omath::cry_engine::RollAngle::from_degrees(0.f)};
     const auto vec = angles.as_vector3();
 
     EXPECT_FLOAT_EQ(vec.x, 90.f);
@@ -279,11 +367,9 @@ TEST(unit_test_cry_engine, ViewAnglesAsVector3ClampedPitch)
 TEST(unit_test_cry_engine, ViewAnglesAsVector3NormalizedYaw)
 {
     // Yaw is normalized to [-180, 180], 270 wraps to -90
-    const omath::cry_engine::ViewAngles angles{
-        omath::cry_engine::PitchAngle::from_degrees(0.f),
-        omath::cry_engine::YawAngle::from_degrees(270.f),
-        omath::cry_engine::RollAngle::from_degrees(0.f)
-    };
+    const omath::cry_engine::ViewAngles angles{omath::cry_engine::PitchAngle::from_degrees(0.f),
+                                               omath::cry_engine::YawAngle::from_degrees(270.f),
+                                               omath::cry_engine::RollAngle::from_degrees(0.f)};
     const auto vec = angles.as_vector3();
 
     EXPECT_NEAR(vec.y, -90.f, 0.01f);
