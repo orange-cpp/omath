@@ -2,10 +2,10 @@
 // Created by Vlad on 02.09.2024.
 //
 
-#include <omath/linear_algebra/vector2.hpp>
 #include <cfloat> // For FLT_MAX and FLT_MIN
 #include <cmath> // For std::isinf and std::isnan
 #include <gtest/gtest.h>
+#include <omath/linear_algebra/vector2.hpp>
 
 using namespace omath;
 
@@ -399,7 +399,6 @@ TEST_F(UnitTestVector2, GreaterEqualOperator)
     EXPECT_TRUE(omath::Vector2(1.f, 1.f) >= omath::Vector2<float>{});
 }
 
-
 // ── Cast operator tests ──────────────────────────────────────────────────────
 
 TEST(Vector2Cast, FloatToDouble)
@@ -463,3 +462,9 @@ static_assert(Vector2(1.0f, 2.0f).length_sqr() == 5.0f, "LengthSqr should be 5")
 static_assert(Vector2(1.0f, 2.0f).dot(Vector2(4.0f, 5.0f)) == 14.0f, "Dot product should be 14");
 static_assert(Vector2(4.0f, 5.0f).distance_to_sqr(Vector2(1.0f, 2.0f)) == 18.0f, "DistToSqr should be 18");
 static_assert(Vector2(-1.0f, -2.0f).abs() == Vector2(1.0f, 2.0f), "Abs should convert negative values to positive");
+
+#ifdef OMATH_USE_GCEM
+static_assert(Vector2(3.0f, 4.0f).length() == 5.0f, "Length should be constexpr with gcem");
+static_assert(Vector2(0.0f, 0.0f).distance_to(Vector2(3.0f, 4.0f)) == 5.0f, "Distance should be constexpr with gcem");
+static_assert(Vector2(1.0f, 1.0f) < Vector2(3.0f, 4.0f), "Comparison should be constexpr with gcem");
+#endif

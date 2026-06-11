@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "omath/internal/optional_constexpr_math.hpp"
 #include <cmath>
 #include <format>
 #include <tuple>
@@ -116,9 +117,13 @@ namespace omath
 
         // Basic vector operations
         [[nodiscard("You must use distance")]]
-        Type distance_to(const Vector2& other) const noexcept
+        OMATH_CONSTEXPR Type distance_to(const Vector2& other) const noexcept
         {
+#ifdef OMATH_USE_GCEM
+            return gcem::sqrt(distance_to_sqr(other));
+#else
             return std::sqrt(distance_to_sqr(other));
+#endif
         }
 
         [[nodiscard("You must use squared distance")]]
@@ -136,7 +141,11 @@ namespace omath
 #ifndef _MSC_VER
         [[nodiscard("You must use length")]] constexpr Type length() const noexcept
         {
+#ifdef OMATH_USE_GCEM
+            return gcem::hypot(this->x, this->y);
+#else
             return std::hypot(this->x, this->y);
+#endif
         }
 
         [[nodiscard("You must use normalized vector")]] constexpr Vector2 normalized() const noexcept
@@ -146,13 +155,17 @@ namespace omath
         }
 #else
         [[nodiscard("You must use length")]]
-        Type length() const noexcept
+        OMATH_CONSTEXPR Type length() const noexcept
         {
+#ifdef OMATH_USE_GCEM
+            return gcem::hypot(x, y);
+#else
             return std::hypot(x, y);
+#endif
         }
 
         [[nodiscard("You must use normalized vector")]]
-        Vector2 normalized() const noexcept
+        OMATH_CONSTEXPR Vector2 normalized() const noexcept
         {
             const Type len = length();
             return len > static_cast<Type>(0) ? *this / len : *this;
@@ -216,24 +229,24 @@ namespace omath
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator<(const Vector2& other) const noexcept
+        OMATH_CONSTEXPR bool operator<(const Vector2& other) const noexcept
         {
             return length() < other.length();
         }
         [[nodiscard("You must use comparison result")]]
-        bool operator>(const Vector2& other) const noexcept
+        OMATH_CONSTEXPR bool operator>(const Vector2& other) const noexcept
         {
             return length() > other.length();
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator<=(const Vector2& other) const noexcept
+        OMATH_CONSTEXPR bool operator<=(const Vector2& other) const noexcept
         {
             return length() <= other.length();
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator>=(const Vector2& other) const noexcept
+        OMATH_CONSTEXPR bool operator>=(const Vector2& other) const noexcept
         {
             return length() >= other.length();
         }

@@ -3,11 +3,11 @@
 //
 
 #pragma once
+#include "omath/internal/optional_constexpr_math.hpp"
 #include "omath/trigonometry/angles.hpp"
 #include <algorithm>
 #include <format>
 #include <utility>
-#include "omath/internal/optional_constexpr_math.hpp"
 
 namespace omath
 {
@@ -104,13 +104,18 @@ namespace omath
         }
 
         [[nodiscard]]
-        Type atan() const noexcept
+        OMATH_CONSTEXPR Type atan() const noexcept
         {
+#ifdef OMATH_USE_GCEM
+            return gcem::atan(as_radians());
+#else
             return std::atan(as_radians());
+
+#endif
         }
 
         [[nodiscard]]
-        Type cot() const noexcept
+        OMATH_CONSTEXPR Type cot() const noexcept
         {
             return cos() / sin();
         }

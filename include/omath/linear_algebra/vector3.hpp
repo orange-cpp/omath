@@ -140,20 +140,24 @@ namespace omath
         }
 
 #ifndef _MSC_VER
-        [[nodiscard("You must use length")]] constexpr Type length() const
+        [[nodiscard("You must use length")]] constexpr Type length() const noexcept
         {
+#ifdef OMATH_USE_GCEM
+            return gcem::sqrt(this->x * this->x + this->y * this->y + z * z);
+#else
             return std::hypot(this->x, this->y, z);
+#endif
         }
 
-        [[nodiscard("You must use 2D length")]] constexpr Type length_2d() const
+        [[nodiscard("You must use 2D length")]] constexpr Type length_2d() const noexcept
         {
             return Vector2<Type>::length();
         }
-        [[nodiscard("You must use distance")]] Type distance_to(const Vector3& other) const
+        [[nodiscard("You must use distance")]] OMATH_CONSTEXPR Type distance_to(const Vector3& other) const noexcept
         {
             return (*this - other).length();
         }
-        [[nodiscard("You must use normalized vector")]] constexpr Vector3 normalized() const
+        [[nodiscard("You must use normalized vector")]] constexpr Vector3 normalized() const noexcept
         {
             const Type length_value = this->length();
 
@@ -161,13 +165,17 @@ namespace omath
         }
 #else
         [[nodiscard("You must use length")]]
-        Type length() const noexcept
+        OMATH_CONSTEXPR Type length() const noexcept
         {
+#ifdef OMATH_USE_GCEM
+            return gcem::sqrt(this->x * this->x + this->y * this->y + this->z * this->z);
+#else
             return std::hypot(this->x, this->y, z);
+#endif
         }
 
         [[nodiscard("You must use normalized vector")]]
-        Vector3 normalized() const noexcept
+        OMATH_CONSTEXPR Vector3 normalized() const noexcept
         {
             const Type len = this->length();
 
@@ -175,13 +183,13 @@ namespace omath
         }
 
         [[nodiscard("You must use 2D length")]]
-        Type length_2d() const noexcept
+        OMATH_CONSTEXPR Type length_2d() const noexcept
         {
             return Vector2<Type>::length();
         }
 
         [[nodiscard("You must use distance")]]
-        Type distance_to(const Vector3& v_other) const noexcept
+        OMATH_CONSTEXPR Type distance_to(const Vector3& v_other) const noexcept
         {
             return (*this - v_other).length();
         }
@@ -249,24 +257,28 @@ namespace omath
         }
 
         [[nodiscard("You must use direction check result")]]
-        bool point_to_same_direction(const Vector3& other) const
+        OMATH_CONSTEXPR bool point_to_same_direction(const Vector3& other) const
         {
             return dot(other) > static_cast<Type>(0);
         }
         [[nodiscard("You must use angle between vectors")]]
-        std::expected<Angle<float, 0.f, 180.f, AngleFlags::Clamped>, Vector3Error>
+        OMATH_CONSTEXPR std::expected<Angle<float, 0.f, 180.f, AngleFlags::Clamped>, Vector3Error>
         angle_between(const Vector3& other) const noexcept
         {
             const auto bottom = length() * other.length();
 
             if (bottom == static_cast<Type>(0))
                 return std::unexpected(Vector3Error::IMPOSSIBLE_BETWEEN_ANGLE);
-
+#ifdef OMATH_USE_GCEM
+            return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(gcem::acos(dot(other) / bottom));
+#else
             return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(std::acos(dot(other) / bottom));
+#endif
         }
 
         [[nodiscard("You must use perpendicularity check result")]]
-        bool is_perpendicular(const Vector3& other, Type epsilon = static_cast<Type>(0.0001)) const noexcept
+        OMATH_CONSTEXPR bool is_perpendicular(const Vector3& other,
+                                              Type epsilon = static_cast<Type>(0.0001)) const noexcept
         {
             if (const auto angle = angle_between(other))
                 return std::abs(angle->as_degrees() - static_cast<Type>(90)) <= epsilon;
@@ -287,25 +299,25 @@ namespace omath
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator<(const Vector3& other) const noexcept
+        OMATH_CONSTEXPR bool operator<(const Vector3& other) const noexcept
         {
             return length() < other.length();
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator>(const Vector3& other) const noexcept
+        OMATH_CONSTEXPR bool operator>(const Vector3& other) const noexcept
         {
             return length() > other.length();
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator<=(const Vector3& other) const noexcept
+        OMATH_CONSTEXPR bool operator<=(const Vector3& other) const noexcept
         {
             return length() <= other.length();
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator>=(const Vector3& other) const noexcept
+        OMATH_CONSTEXPR bool operator>=(const Vector3& other) const noexcept
         {
             return length() >= other.length();
         }
@@ -321,7 +333,7 @@ namespace omath
 template<> struct std::hash<omath::Vector3<float>>
 {
     [[nodiscard("You must use hash value")]]
-    std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
+    constexpr std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
     {
         std::size_t hash = 0;
         constexpr std::hash<float> hasher;
