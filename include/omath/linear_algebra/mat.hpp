@@ -648,7 +648,6 @@ namespace omath
                 std::abs(scale_y) < epsilon ? Type{1} : scale_y,
                 std::abs(scale_z) < epsilon ? Type{1} : scale_z,
 #endif
-
         };
     }
 

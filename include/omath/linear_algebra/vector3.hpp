@@ -332,8 +332,9 @@ namespace omath
 
 template<> struct std::hash<omath::Vector3<float>>
 {
+    // NOTE: Cannot be constexpr because of MSVC
     [[nodiscard("You must use hash value")]]
-    constexpr std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
+    std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
     {
         std::size_t hash = 0;
         constexpr std::hash<float> hasher;
