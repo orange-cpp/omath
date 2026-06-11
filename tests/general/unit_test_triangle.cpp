@@ -8,6 +8,17 @@
 
 using namespace omath;
 
+#ifdef OMATH_USE_GCEM
+namespace
+{
+    constexpr bool close_to(const float actual, const float expected, const float epsilon)
+    {
+        const float diff = actual - expected;
+        return (diff < 0.0f ? -diff : diff) <= epsilon;
+    }
+} // namespace
+#endif
+
 class UnitTestTriangle : public ::testing::Test
 {
 protected:
@@ -129,3 +140,20 @@ TEST_F(UnitTestTriangle, MidPoint)
     EXPECT_FLOAT_EQ(mid2.y, (2.0f + 5.0f + 8.0f) / 3.0f);
     EXPECT_FLOAT_EQ(mid2.z, (3.0f + 6.0f + 9.0f) / 3.0f);
 }
+
+#ifdef OMATH_USE_GCEM
+static_assert(
+        []
+        {
+            constexpr Triangle<Vector3<float>> triangle{{3.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, 0.0f}};
+            constexpr auto normal = triangle.calculate_normal();
+            constexpr auto mid_point = triangle.mid_point();
+
+            return close_to(triangle.side_a_length(), 3.0f, 1e-5f) && close_to(triangle.side_b_length(), 4.0f, 1e-5f)
+                   && close_to(triangle.hypot(), 5.0f, 1e-5f) && triangle.is_rectangular()
+                   && close_to(normal.length(), 1.0f, 1e-5f) && close_to(normal.z, -1.0f, 1e-5f)
+                   && close_to(mid_point.x, 1.0f, 1e-5f) && close_to(mid_point.y, 4.0f / 3.0f, 1e-5f)
+                   && close_to(mid_point.z, 0.0f, 1e-5f);
+        }(),
+        "Triangle helpers should be constexpr with gcem");
+#endif

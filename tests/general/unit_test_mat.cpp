@@ -1,10 +1,24 @@
 // UnitTestMat.cpp
 #include "omath/linear_algebra/mat.hpp"
 #include "omath/linear_algebra/vector3.hpp"
+#include "omath/trigonometry/angle.hpp"
 #include "omath/trigonometry/angles.hpp"
 #include <gtest/gtest.h>
 
 using namespace omath;
+
+#ifdef OMATH_USE_GCEM
+namespace
+{
+    using Pitch = Angle<float, static_cast<float>(-90), static_cast<float>(90), AngleFlags::Clamped>;
+
+    constexpr bool close_to(const float actual, const float expected, const float epsilon)
+    {
+        const float diff = actual - expected;
+        return (diff < 0.0f ? -diff : diff) <= epsilon;
+    }
+} // namespace
+#endif
 
 class UnitTestMat : public ::testing::Test
 {
@@ -523,3 +537,47 @@ TEST(UnitTestMatStandalone, MatOrthoNegativeOneToOneDefault)
 
     EXPECT_EQ(ortho_default, ortho_explicit);
 }
+
+#ifdef OMATH_USE_GCEM
+static_assert(
+        []
+        {
+            constexpr auto scale = mat_extract_scale(mat_scale(Vector3{2.0f, 3.0f, 4.0f}));
+            return close_to(scale.x, 2.0f, 1e-5f) && close_to(scale.y, 3.0f, 1e-5f) && close_to(scale.z, 4.0f, 1e-5f);
+        }(),
+        "Mat scale extraction should be constexpr with gcem");
+
+static_assert(
+        []
+        {
+            constexpr auto rotation = mat_rotation_axis_z<float>(Pitch::from_degrees(90.0f));
+            return close_to(rotation.at(0, 0), 0.0f, 1e-5f) && close_to(rotation.at(0, 1), -1.0f, 1e-5f)
+                   && close_to(rotation.at(1, 0), 1.0f, 1e-5f) && close_to(rotation.at(1, 1), 0.0f, 1e-5f)
+                   && close_to(rotation.at(2, 2), 1.0f, 1e-5f) && close_to(rotation.at(3, 3), 1.0f, 1e-5f);
+        }(),
+        "Mat rotation should be constexpr with gcem");
+
+static_assert(
+        []
+        {
+            constexpr auto projection =
+                    mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR,
+                                                             NDCDepthRange::ZERO_TO_ONE>(90.0f, 1.0f, 1.0f, 11.0f);
+            return close_to(projection.at(0, 0), 1.0f, 1e-5f) && close_to(projection.at(1, 1), 1.0f, 1e-5f)
+                   && close_to(projection.at(2, 2), 1.1f, 1e-5f) && close_to(projection.at(2, 3), -1.1f, 1e-5f)
+                   && close_to(projection.at(3, 2), 1.0f, 1e-5f);
+        }(),
+        "Mat vertical-FOV perspective should be constexpr with gcem");
+
+static_assert(
+        []
+        {
+            constexpr auto projection =
+                    mat_perspective_right_handed_horizontal_fov<float, MatStoreType::ROW_MAJOR,
+                                                                NDCDepthRange::ZERO_TO_ONE>(90.0f, 2.0f, 1.0f, 11.0f);
+            return close_to(projection.at(0, 0), 1.0f, 1e-5f) && close_to(projection.at(1, 1), 2.0f, 1e-5f)
+                   && close_to(projection.at(2, 2), -1.1f, 1e-5f) && close_to(projection.at(2, 3), -1.1f, 1e-5f)
+                   && close_to(projection.at(3, 2), -1.0f, 1e-5f);
+        }(),
+        "Mat horizontal-FOV perspective should be constexpr with gcem");
+#endif

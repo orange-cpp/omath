@@ -679,7 +679,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard("You must use rotation matrix")]]
-    Mat<4, 4, Type, St> mat_rotation_axis_x(const Angle& angle) noexcept
+    OMATH_CONSTEXPR Mat<4, 4, Type, St> mat_rotation_axis_x(const Angle& angle) noexcept
     {
         return
         {
@@ -692,7 +692,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard("You must use rotation matrix")]]
-    Mat<4, 4, Type, St> mat_rotation_axis_y(const Angle& angle) noexcept
+    OMATH_CONSTEXPR Mat<4, 4, Type, St> mat_rotation_axis_y(const Angle& angle) noexcept
     {
         return
         {
@@ -705,7 +705,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard("You must use rotation matrix")]]
-    Mat<4, 4, Type, St> mat_rotation_axis_z(const Angle& angle) noexcept
+    OMATH_CONSTEXPR Mat<4, 4, Type, St> mat_rotation_axis_z(const Angle& angle) noexcept
     {
         return
         {
@@ -718,7 +718,7 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard("You must use camera view matrix")]]
-    static Mat<4, 4, Type, St> mat_camera_view(const Vector3<Type>& forward, const Vector3<Type>& right,
+    OMATH_CONSTEXPR static Mat<4, 4, Type, St> mat_camera_view(const Vector3<Type>& forward, const Vector3<Type>& right,
                                                const Vector3<Type>& up, const Vector3<Type>& camera_origin) noexcept
     {
         return  Mat<4, 4, Type, St>
@@ -732,12 +732,15 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use perspective matrix")]]
+    [[nodiscard("You must use perspective matrix")]] OMATH_CONSTEXPR
     Mat<4, 4, Type, St> mat_perspective_left_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio,
                                                     const Type near, const Type far) noexcept
     {
-        const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
-
+#ifdef OMATH_USE_GCEM
+        const auto fov_half_tan = gcem::tan(angles::degrees_to_radians(field_of_view) / Type{2});
+#else
+        const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2})
+#endif
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
             return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},             Type{0}},
                     {Type{0},                                 Type{1} / fov_half_tan, Type{0},             Type{0}},
@@ -754,11 +757,15 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use perspective matrix")]]
+    [[nodiscard("You must use perspective matrix")]] OMATH_CONSTEXPR
     Mat<4, 4, Type, St> mat_perspective_right_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio,
                                                      const Type near, const Type far) noexcept
     {
+#ifdef OMATH_USE_GCEM
+        const auto fov_half_tan = gcem::tan(angles::degrees_to_radians(field_of_view) / Type{2});
+#else
         const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
+#endif
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
             return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},             Type{0}},
@@ -779,12 +786,16 @@ namespace omath
     // X and Y scales derived as: X = 1 / tan(hfov/2), Y = aspect / tan(hfov/2).
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use perspective matrix")]]
+    [[nodiscard("You must use perspective matrix")]] OMATH_CONSTEXPR
     Mat<4, 4, Type, St> mat_perspective_left_handed_horizontal_fov(const Type horizontal_fov,
                                                                    const Type aspect_ratio, const Type near,
                                                                    const Type far) noexcept
     {
+#ifdef OMATH_USE_GCEM
+        const auto inv_tan_half_hfov = Type{1} / gcem::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
+#else
         const auto inv_tan_half_hfov = Type{1} / std::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
+#endif
         const auto x_axis = inv_tan_half_hfov;
         const auto y_axis = inv_tan_half_hfov * aspect_ratio;
 
@@ -804,12 +815,17 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use perspective matrix")]]
+    [[nodiscard("You must use perspective matrix")]] OMATH_CONSTEXPR
     Mat<4, 4, Type, St> mat_perspective_right_handed_horizontal_fov(const Type horizontal_fov,
                                                                     const Type aspect_ratio, const Type near,
                                                                     const Type far) noexcept
     {
+#ifdef OMATH_USE_GCEM
+        const auto inv_tan_half_hfov = Type{1} / gcem::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
+#else
         const auto inv_tan_half_hfov = Type{1} / std::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
+#endif
+
         const auto x_axis = inv_tan_half_hfov;
         const auto y_axis = inv_tan_half_hfov * aspect_ratio;
 
@@ -828,7 +844,7 @@ namespace omath
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use ortho matrix")]]
+    [[nodiscard("You must use ortho matrix")]] OMATH_CONSTEXPR
     Mat<4, 4, Type, St> mat_ortho_left_handed(const Type left, const Type right, const Type bottom, const Type top,
                                               const Type near, const Type far) noexcept
     {
@@ -853,7 +869,7 @@ namespace omath
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use ortho matrix")]]
+    [[nodiscard("You must use ortho matrix")]] OMATH_CONSTEXPR
     Mat<4, 4, Type, St> mat_ortho_right_handed(const Type left, const Type right, const Type bottom, const Type top,
                                                const Type near, const Type far) noexcept
     {
@@ -877,7 +893,7 @@ namespace omath
             std::unreachable();
     }
     template<class T = float, MatStoreType St = MatStoreType::COLUMN_MAJOR>
-   Mat<4, 4, T, St> mat_look_at_left_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)
+    OMATH_CONSTEXPR Mat<4, 4, T, St> mat_look_at_left_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)
     {
         const Vector3<T> f = (center - eye).normalized();
         const Vector3<T> s = f.cross(up).normalized();
@@ -886,7 +902,7 @@ namespace omath
     }
 
     template<class T = float, MatStoreType St = MatStoreType::COLUMN_MAJOR>
-    Mat<4, 4, T, St>mat_look_at_right_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)
+    OMATH_CONSTEXPR Mat<4, 4, T, St> mat_look_at_right_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)
     {
         const Vector3<T> f = (center - eye).normalized();
         const Vector3<T> s = f.cross(up).normalized();

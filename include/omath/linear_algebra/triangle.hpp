@@ -2,8 +2,8 @@
 // Created by Orange on 11/13/2024.
 //
 #pragma once
-#include "vector3.hpp"
 #include "omath/internal/optional_constexpr_math.hpp"
+#include "vector3.hpp"
 namespace omath
 {
     /*
@@ -69,7 +69,11 @@ namespace omath
             const auto side_b = side_b_length();
             const auto hypot_value = hypot();
 
+#ifdef OMATH_USE_GCEM
+            return gcem::abs(side_a * side_a + side_b * side_b - hypot_value * hypot_value) <= 0.0001f;
+#else
             return std::abs(side_a * side_a + side_b * side_b - hypot_value * hypot_value) <= 0.0001f;
+#endif
         }
         [[nodiscard]]
         constexpr Vector side_b_vector() const
