@@ -625,7 +625,7 @@ namespace omath
     OMATH_CONSTEXPR Vector3<Type> mat_extract_scale(const Mat<4, 4, Type, St>& mat) noexcept
     {
         auto column_length = [](const Type x, const Type y, const Type z) {
-#ifdef OMATH_CONSTEXPR
+#ifdef OMATH_USE_GCEM
             return static_cast<Type>(gcem::sqrt(x * x + y * y + z * z));
 #else
             return static_cast<Type>(std::sqrt(x * x + y * y + z * z));
@@ -639,7 +639,7 @@ namespace omath
         constexpr auto epsilon = std::numeric_limits<Type>::epsilon();
 
         return {
-#ifdef OMATH_CONSTEXPR
+#ifdef OMATH_USE_GCEM
                 gcem::abs(scale_x) < epsilon ? Type{1} : scale_x,
                 gcem::abs(scale_y) < epsilon ? Type{1} : scale_y,
                 gcem::abs(scale_z) < epsilon ? Type{1} : scale_z,
@@ -665,12 +665,12 @@ namespace omath
         const auto m22 = mat.at(2, 2) / scale.z;
 
         return {
-#ifdef OMATH_CONSTEXPR
+#ifdef OMATH_USE_GCEM
                 angles::radians_to_degrees(gcem::atan2(m21, m22)),
                 angles::radians_to_degrees(gcem::asin(std::clamp(-m20, Type{-1}, Type{1}))),
                 angles::radians_to_degrees(gcem::atan2(m10, m00)),
 #else
-                angles::radians_to_degrees(gc::atan2(m21, m22)),
+                angles::radians_to_degrees(std::atan2(m21, m22)),
                 angles::radians_to_degrees(std::asin(std::clamp(-m20, Type{-1}, Type{1}))),
                 angles::radians_to_degrees(std::atan2(m10, m00)),
 #endif
@@ -739,7 +739,7 @@ namespace omath
 #ifdef OMATH_USE_GCEM
         const auto fov_half_tan = gcem::tan(angles::degrees_to_radians(field_of_view) / Type{2});
 #else
-        const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2})
+        const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
 #endif
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
             return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},             Type{0}},
