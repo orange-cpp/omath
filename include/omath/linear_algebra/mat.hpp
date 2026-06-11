@@ -622,10 +622,14 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard("You must use extracted scale")]]
-    Vector3<Type> mat_extract_scale(const Mat<4, 4, Type, St>& mat) noexcept
+    OMATH_CONSTEXPR Vector3<Type> mat_extract_scale(const Mat<4, 4, Type, St>& mat) noexcept
     {
         auto column_length = [](const Type x, const Type y, const Type z) {
+#ifdef OMATH_CONSTEXPR
+            return static_cast<Type>(gcem::sqrt(x * x + y * y + z * z));
+#else
             return static_cast<Type>(std::sqrt(x * x + y * y + z * z));
+#endif
         };
 
         const auto scale_x = column_length(mat.at(0, 0), mat.at(1, 0), mat.at(2, 0));
@@ -635,9 +639,16 @@ namespace omath
         constexpr auto epsilon = std::numeric_limits<Type>::epsilon();
 
         return {
+#ifdef OMATH_CONSTEXPR
+                gcem::abs(scale_x) < epsilon ? Type{1} : scale_x,
+                gcem::abs(scale_y) < epsilon ? Type{1} : scale_y,
+                gcem::abs(scale_z) < epsilon ? Type{1} : scale_z,
+#else
                 std::abs(scale_x) < epsilon ? Type{1} : scale_x,
                 std::abs(scale_y) < epsilon ? Type{1} : scale_y,
                 std::abs(scale_z) < epsilon ? Type{1} : scale_z,
+#endif
+
         };
     }
 
@@ -654,9 +665,15 @@ namespace omath
         const auto m22 = mat.at(2, 2) / scale.z;
 
         return {
-                angles::radians_to_degrees(std::atan2(m21, m22)),
+#ifdef OMATH_CONSTEXPR
+                angles::radians_to_degrees(gcem::atan2(m21, m22)),
+                angles::radians_to_degrees(gcem::asin(std::clamp(-m20, Type{-1}, Type{1}))),
+                angles::radians_to_degrees(gcem::atan2(m10, m00)),
+#else
+                angles::radians_to_degrees(gc::atan2(m21, m22)),
                 angles::radians_to_degrees(std::asin(std::clamp(-m20, Type{-1}, Type{1}))),
                 angles::radians_to_degrees(std::atan2(m10, m00)),
+#endif
         };
     }
 

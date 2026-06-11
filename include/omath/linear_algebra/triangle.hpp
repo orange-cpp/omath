@@ -3,7 +3,7 @@
 //
 #pragma once
 #include "vector3.hpp"
-
+#include "omath/internal/optional_constexpr_math.hpp"
 namespace omath
 {
     /*
@@ -40,13 +40,13 @@ namespace omath
         }
 
         [[nodiscard]]
-        Vector::ContainedType side_a_length() const
+        OMATH_CONSTEXPR Vector::ContainedType side_a_length() const
         {
             return m_vertex1.distance_to(m_vertex2);
         }
 
         [[nodiscard]]
-        Vector::ContainedType side_b_length() const
+        OMATH_CONSTEXPR Vector::ContainedType side_b_length() const
         {
             return m_vertex3.distance_to(m_vertex2);
         }
