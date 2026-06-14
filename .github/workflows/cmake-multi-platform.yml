@@ -107,7 +107,7 @@ jobs:
             -DOMATH_BUILD_TESTS=ON \
             -DOMATH_BUILD_BENCHMARK=OFF \
             -DOMATH_ENABLE_COVERAGE=${{ matrix.coverage == true && 'ON' || 'OFF' }} \
-            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;lua;gcem"
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2;tests;lua"
 
       - name: Build
         shell: bash
