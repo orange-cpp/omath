@@ -7,6 +7,11 @@ include(GoogleTest)
 file(GLOB_RECURSE UNIT_TESTS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/general/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/engines/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 add_executable(${PROJECT_NAME} ${UNIT_TESTS_SOURCES} main.cpp)
 
+if(OMATH_ENABLE_MODULES)
+    set_target_properties(${PROJECT_NAME} PROPERTIES CXX_SCAN_FOR_MODULES ON)
+    target_sources(${PROJECT_NAME} PRIVATE modules/unit_test_module.cpp)
+endif()
+
 set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/${CMAKE_BUILD_TYPE}"

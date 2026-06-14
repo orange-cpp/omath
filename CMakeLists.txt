@@ -34,6 +34,7 @@ option(OMATH_ENABLE_LUA
         "omath bindings for lua" OFF)
 option(OMATH_ENABLE_HOOKING "omath will HooksManager that can hook DirectX/OpenGL automatically" OFF)
 option(OMATH_USE_GCEM "omath will use gcem library to make more functions/methods constexpr" OFF)
+option(OMATH_ENABLE_MODULES "Build omath C++ module interface" OFF)
 
 if(VCPKG_MANIFEST_FEATURES)
     foreach(omath_feature IN LISTS VCPKG_MANIFEST_FEATURES)
@@ -84,6 +85,7 @@ if(${PROJECT_IS_TOP_LEVEL})
     message(STATUS "[${PROJECT_NAME}]: Valgrind feature status ${OMATH_ENABLE_VALGRIND}")
     message(STATUS "[${PROJECT_NAME}]: Lua feature status ${OMATH_ENABLE_LUA}")
     message(STATUS "[${PROJECT_NAME}]: Gcem feature status ${OMATH_USE_GCEM}")
+    message(STATUS "[${PROJECT_NAME}]: Modules feature status ${OMATH_ENABLE_MODULES}")
 endif()
 
 if(OMATH_STATIC_MSVC_RUNTIME_LIBRARY)
@@ -97,6 +99,20 @@ if(OMATH_BUILD_AS_SHARED_LIBRARY)
     add_library(${PROJECT_NAME} SHARED ${OMATH_SOURCES} ${OMATH_HEADERS})
 else()
     add_library(${PROJECT_NAME} STATIC ${OMATH_SOURCES} ${OMATH_HEADERS})
+endif()
+
+if(OMATH_ENABLE_MODULES)
+    if(CMAKE_VERSION VERSION_LESS 3.28)
+        message(FATAL_ERROR "OMATH_ENABLE_MODULES requires CMake 3.28 or newer")
+    endif()
+    set_target_properties(${PROJECT_NAME} PROPERTIES CXX_SCAN_FOR_MODULES ON)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(${PROJECT_NAME} PRIVATE /wd5244)
+    endif()
+    target_sources(
+        ${PROJECT_NAME}
+        PUBLIC FILE_SET omath_modules TYPE CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/modules"
+               FILES "${CMAKE_CURRENT_SOURCE_DIR}/modules/omath.cppm")
 endif()
 
 if (OMATH_ENABLE_LUA)
@@ -239,6 +255,10 @@ target_include_directories(
 
 # Installation rules
 
+if(OMATH_ENABLE_MODULES)
+    set(OMATH_MODULE_FILE_SET FILE_SET omath_modules DESTINATION modules)
+endif()
+
 # Install the library
 install(
     TARGETS ${PROJECT_NAME}
@@ -247,6 +267,7 @@ install(
     LIBRARY DESTINATION lib COMPONENT ${PROJECT_NAME} # For shared libraries
     RUNTIME DESTINATION bin COMPONENT ${PROJECT_NAME} # For executables (on
                                                       # Windows)
+    ${OMATH_MODULE_FILE_SET}
     )
 
 # Install headers as part of omath_component
