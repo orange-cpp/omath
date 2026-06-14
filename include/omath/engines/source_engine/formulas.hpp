@@ -7,10 +7,10 @@
 namespace omath::source_engine
 {
     [[nodiscard]]
-    inline OMATH_CONSTEXPR Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept;
+    inline constexpr Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept;
 
     [[nodiscard]]
-    inline OMATH_CONSTEXPR Vector3<float> forward_vector(const ViewAngles& angles) noexcept
+    inline constexpr Vector3<float> forward_vector(const ViewAngles& angles) noexcept
     {
         const auto vec = rotation_matrix(angles) * mat_column_from_vector(k_abs_forward);
 
@@ -18,25 +18,25 @@ namespace omath::source_engine
     }
 
     [[nodiscard]]
-    inline OMATH_CONSTEXPR Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
+    inline constexpr Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
         return mat_rotation_axis_z(angles.yaw) * mat_rotation_axis_y(angles.pitch) * mat_rotation_axis_x(angles.roll);
     }
 
     [[nodiscard]]
-    inline OMATH_CONSTEXPR Vector3<float> extract_origin(const Mat4X4& mat) noexcept
+    inline constexpr Vector3<float> extract_origin(const Mat4X4& mat) noexcept
     {
         return mat_extract_origin(mat);
     }
 
     [[nodiscard]]
-    inline OMATH_CONSTEXPR Vector3<float> extract_scale(const Mat4X4& mat) noexcept
+    inline constexpr Vector3<float> extract_scale(const Mat4X4& mat) noexcept
     {
         return mat_extract_scale(mat);
     }
 
     [[nodiscard]]
-    inline OMATH_CONSTEXPR ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept
+    inline constexpr ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept
     {
         const auto angles = mat_extract_rotation_zyx(mat);
         return {
@@ -47,7 +47,7 @@ namespace omath::source_engine
     }
 
     [[nodiscard]]
-    inline OMATH_CONSTEXPR Vector3<float> right_vector(const ViewAngles& angles) noexcept
+    inline constexpr Vector3<float> right_vector(const ViewAngles& angles) noexcept
     {
         const auto vec = rotation_matrix(angles) * mat_column_from_vector(k_abs_right);
 
@@ -55,7 +55,7 @@ namespace omath::source_engine
     }
 
     [[nodiscard]]
-    inline OMATH_CONSTEXPR Vector3<float> up_vector(const ViewAngles& angles) noexcept
+    inline constexpr Vector3<float> up_vector(const ViewAngles& angles) noexcept
     {
         const auto vec = rotation_matrix(angles) * mat_column_from_vector(k_abs_up);
 
@@ -63,14 +63,13 @@ namespace omath::source_engine
     }
 
     [[nodiscard]]
-    inline OMATH_CONSTEXPR Mat4X4 calc_view_matrix(const ViewAngles& angles,
-                                                   const Vector3<float>& cam_origin) noexcept
+    inline constexpr Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
     {
         return mat_camera_view(forward_vector(angles), right_vector(angles), up_vector(angles), cam_origin);
     }
 
     [[nodiscard]]
-    inline OMATH_CONSTEXPR Mat4X4 calc_perspective_projection_matrix(
+    inline constexpr Mat4X4 calc_perspective_projection_matrix(
             const float field_of_view, const float aspect_ratio, const float near_plane, const float far_plane,
             const NDCDepthRange ndc_depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE) noexcept
     {

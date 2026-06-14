@@ -2,7 +2,7 @@
 // Created by Orange on 11/13/2024.
 //
 #pragma once
-#include "omath/internal/optional_constexpr_math.hpp"
+#include "omath/internal/constexpr_math.hpp"
 #include "vector3.hpp"
 namespace omath
 {
@@ -40,13 +40,13 @@ namespace omath
         }
 
         [[nodiscard]]
-        OMATH_CONSTEXPR Vector::ContainedType side_a_length() const
+        constexpr Vector::ContainedType side_a_length() const
         {
             return m_vertex1.distance_to(m_vertex2);
         }
 
         [[nodiscard]]
-        OMATH_CONSTEXPR Vector::ContainedType side_b_length() const
+        constexpr Vector::ContainedType side_b_length() const
         {
             return m_vertex3.distance_to(m_vertex2);
         }

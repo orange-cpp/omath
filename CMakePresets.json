@@ -57,7 +57,7 @@
       "inherits": ["windows-base", "vcpkg-base"],
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-windows-static",
-        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples;hooking;gcem",
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples;hooking",
         "OMATH_STATIC_MSVC_RUNTIME_LIBRARY": "ON"
       }
     },
@@ -239,7 +239,7 @@
       "hidden": true,
       "inherits": ["darwin-base", "vcpkg-base"],
       "cacheVariables": {
-        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples;lua;gcem"
+        "VCPKG_MANIFEST_FEATURES": "tests;imgui;avx2;examples;lua"
       }
     },
     {

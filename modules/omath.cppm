@@ -10,8 +10,8 @@ module;
 #include <filesystem>
 #include <format>
 #include <functional>
-#include <iomanip>
 #include <initializer_list>
+#include <iomanip>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -37,10 +37,6 @@ module;
 #include <immintrin.h>
 #endif
 
-#if defined(OMATH_USE_GCEM)
-#include <gcem.hpp>
-#endif
-
 #if defined(OMATH_IMGUI_INTEGRATION)
 #include <imgui.h>
 #endif
@@ -58,7 +54,6 @@ module;
 
 export module omath;
 
-export
-{
+export {
 #include "omath/omath.hpp"
 }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "omath/internal/optional_constexpr_math.hpp"
+#include "omath/internal/constexpr_math.hpp"
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/trigonometry/angle.hpp"
 #include <cstdint>
@@ -150,7 +150,7 @@ namespace omath
         {
             return Vector2<Type>::length();
         }
-        [[nodiscard("You must use distance")]] OMATH_CONSTEXPR Type distance_to(const Vector3& other) const noexcept
+        [[nodiscard("You must use distance")]] constexpr Type distance_to(const Vector3& other) const noexcept
         {
             return (*this - other).length();
         }
@@ -162,13 +162,13 @@ namespace omath
         }
 #else
         [[nodiscard("You must use length")]]
-        OMATH_CONSTEXPR Type length() const noexcept
+        constexpr Type length() const noexcept
         {
             return internal::hypot(this->x, this->y, this->z);
         }
 
         [[nodiscard("You must use normalized vector")]]
-        OMATH_CONSTEXPR Vector3 normalized() const noexcept
+        constexpr Vector3 normalized() const noexcept
         {
             const Type len = this->length();
 
@@ -176,13 +176,13 @@ namespace omath
         }
 
         [[nodiscard("You must use 2D length")]]
-        OMATH_CONSTEXPR Type length_2d() const noexcept
+        constexpr Type length_2d() const noexcept
         {
             return Vector2<Type>::length();
         }
 
         [[nodiscard("You must use distance")]]
-        OMATH_CONSTEXPR Type distance_to(const Vector3& v_other) const noexcept
+        constexpr Type distance_to(const Vector3& v_other) const noexcept
         {
             return (*this - v_other).length();
         }
@@ -250,12 +250,12 @@ namespace omath
         }
 
         [[nodiscard("You must use direction check result")]]
-        OMATH_CONSTEXPR bool point_to_same_direction(const Vector3& other) const
+        constexpr bool point_to_same_direction(const Vector3& other) const
         {
             return dot(other) > static_cast<Type>(0);
         }
         [[nodiscard("You must use angle between vectors")]]
-        OMATH_CONSTEXPR std::expected<Angle<float, 0.f, 180.f, AngleFlags::Clamped>, Vector3Error>
+        constexpr std::expected<Angle<float, 0.f, 180.f, AngleFlags::Clamped>, Vector3Error>
         angle_between(const Vector3& other) const noexcept
         {
             const auto bottom = length() * other.length();
@@ -266,8 +266,7 @@ namespace omath
         }
 
         [[nodiscard("You must use perpendicularity check result")]]
-        OMATH_CONSTEXPR bool is_perpendicular(const Vector3& other,
-                                              Type epsilon = static_cast<Type>(0.0001)) const noexcept
+        constexpr bool is_perpendicular(const Vector3& other, Type epsilon = static_cast<Type>(0.0001)) const noexcept
         {
             if (const auto angle = angle_between(other))
                 return std::abs(angle->as_degrees() - static_cast<Type>(90)) <= epsilon;
@@ -288,25 +287,25 @@ namespace omath
         }
 
         [[nodiscard("You must use comparison result")]]
-        OMATH_CONSTEXPR bool operator<(const Vector3& other) const noexcept
+        constexpr bool operator<(const Vector3& other) const noexcept
         {
             return length() < other.length();
         }
 
         [[nodiscard("You must use comparison result")]]
-        OMATH_CONSTEXPR bool operator>(const Vector3& other) const noexcept
+        constexpr bool operator>(const Vector3& other) const noexcept
         {
             return length() > other.length();
         }
 
         [[nodiscard("You must use comparison result")]]
-        OMATH_CONSTEXPR bool operator<=(const Vector3& other) const noexcept
+        constexpr bool operator<=(const Vector3& other) const noexcept
         {
             return length() <= other.length();
         }
 
         [[nodiscard("You must use comparison result")]]
-        OMATH_CONSTEXPR bool operator>=(const Vector3& other) const noexcept
+        constexpr bool operator>=(const Vector3& other) const noexcept
         {
             return length() >= other.length();
         }

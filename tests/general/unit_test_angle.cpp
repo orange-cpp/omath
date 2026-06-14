@@ -19,13 +19,11 @@ namespace
 
     constexpr float k_eps = 1e-5f;
 
-#ifdef OMATH_USE_GCEM
     constexpr bool close_to(const float actual, const float expected, const float epsilon)
     {
         const float diff = actual - expected;
         return (diff < 0.0f ? -diff : diff) <= epsilon;
     }
-#endif
 
 } // namespace
 
@@ -199,10 +197,13 @@ TEST(UnitTestAngle, BinaryMinus_ReturnsWrappedDiff)
     EXPECT_FLOAT_EQ(c.as_degrees(), 340.0f);
 }
 
-#ifdef OMATH_USE_GCEM
-static_assert(close_to(Pitch::from_degrees(0.0f).sin(), 0.0f, k_eps), "Sin should be constexpr with gcem");
-static_assert(close_to(Pitch::from_degrees(0.0f).cos(), 1.0f, k_eps), "Cos should be constexpr with gcem");
-static_assert(close_to(Pitch::from_degrees(45.0f).tan(), 1.0f, 1e-4f), "Tan should be constexpr with gcem");
-static_assert(close_to(Pitch::from_degrees(45.0f).cot(), 1.0f, 1e-4f), "Cot should be constexpr with gcem");
-static_assert(close_to(Pitch::from_degrees(45.0f).atan(), 0.66577375f, 1e-6f), "Atan should be constexpr with gcem");
-#endif
+static_assert(close_to(Pitch::from_degrees(0.0f).sin(), 0.0f, k_eps),
+              "Sin should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_degrees(0.0f).cos(), 1.0f, k_eps),
+              "Cos should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_degrees(45.0f).tan(), 1.0f, 1e-4f),
+              "Tan should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_degrees(45.0f).cot(), 1.0f, 1e-4f),
+              "Cot should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_degrees(45.0f).atan(), 0.66577375f, 1e-6f),
+              "Atan should be constexpr with embedded constexpr math");

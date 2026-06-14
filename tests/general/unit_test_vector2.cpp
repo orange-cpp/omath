@@ -463,8 +463,7 @@ static_assert(Vector2(1.0f, 2.0f).dot(Vector2(4.0f, 5.0f)) == 14.0f, "Dot produc
 static_assert(Vector2(4.0f, 5.0f).distance_to_sqr(Vector2(1.0f, 2.0f)) == 18.0f, "DistToSqr should be 18");
 static_assert(Vector2(-1.0f, -2.0f).abs() == Vector2(1.0f, 2.0f), "Abs should convert negative values to positive");
 
-#ifdef OMATH_USE_GCEM
-static_assert(Vector2(3.0f, 4.0f).length() == 5.0f, "Length should be constexpr with gcem");
-static_assert(Vector2(0.0f, 0.0f).distance_to(Vector2(3.0f, 4.0f)) == 5.0f, "Distance should be constexpr with gcem");
-static_assert(Vector2(1.0f, 1.0f) < Vector2(3.0f, 4.0f), "Comparison should be constexpr with gcem");
-#endif
+static_assert(Vector2(3.0f, 4.0f).length() == 5.0f, "Length should be constexpr with embedded constexpr math");
+static_assert(Vector2(0.0f, 0.0f).distance_to(Vector2(3.0f, 4.0f)) == 5.0f,
+              "Distance should be constexpr with embedded constexpr math");
+static_assert(Vector2(1.0f, 1.0f) < Vector2(3.0f, 4.0f), "Comparison should be constexpr with embedded constexpr math");

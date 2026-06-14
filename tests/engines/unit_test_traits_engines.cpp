@@ -1,40 +1,32 @@
 // Tests for engine trait headers to improve header coverage
 #include <gtest/gtest.h>
-#include <omath/engines/frostbite_engine/camera.hpp>
-#include <omath/engines/frostbite_engine/traits/pred_engine_trait.hpp>
-#include <omath/engines/frostbite_engine/traits/mesh_trait.hpp>
-#include <omath/engines/frostbite_engine/traits/camera_trait.hpp>
-
-#include <omath/engines/iw_engine/camera.hpp>
-#include <omath/engines/iw_engine/traits/pred_engine_trait.hpp>
-#include <omath/engines/iw_engine/traits/mesh_trait.hpp>
-#include <omath/engines/iw_engine/traits/camera_trait.hpp>
-
-#include <omath/engines/opengl_engine/camera.hpp>
-#include <omath/engines/opengl_engine/traits/pred_engine_trait.hpp>
-#include <omath/engines/opengl_engine/traits/mesh_trait.hpp>
-#include <omath/engines/opengl_engine/traits/camera_trait.hpp>
-
-#include <omath/engines/unity_engine/camera.hpp>
-#include <omath/engines/unity_engine/traits/pred_engine_trait.hpp>
-#include <omath/engines/unity_engine/traits/mesh_trait.hpp>
-#include <omath/engines/unity_engine/traits/camera_trait.hpp>
-
-#include <omath/engines/unreal_engine/camera.hpp>
-#include <omath/engines/unreal_engine/traits/pred_engine_trait.hpp>
-#include <omath/engines/unreal_engine/traits/mesh_trait.hpp>
-#include <omath/engines/unreal_engine/traits/camera_trait.hpp>
-
-#include <omath/engines/source_engine/camera.hpp>
-#include <omath/engines/source_engine/traits/pred_engine_trait.hpp>
-#include <omath/engines/source_engine/traits/camera_trait.hpp>
-
 #include <omath/engines/cry_engine/camera.hpp>
 #include <omath/engines/cry_engine/traits/camera_trait.hpp>
-
+#include <omath/engines/frostbite_engine/camera.hpp>
+#include <omath/engines/frostbite_engine/traits/camera_trait.hpp>
+#include <omath/engines/frostbite_engine/traits/mesh_trait.hpp>
+#include <omath/engines/frostbite_engine/traits/pred_engine_trait.hpp>
+#include <omath/engines/iw_engine/camera.hpp>
+#include <omath/engines/iw_engine/traits/camera_trait.hpp>
+#include <omath/engines/iw_engine/traits/mesh_trait.hpp>
+#include <omath/engines/iw_engine/traits/pred_engine_trait.hpp>
+#include <omath/engines/opengl_engine/camera.hpp>
+#include <omath/engines/opengl_engine/traits/camera_trait.hpp>
+#include <omath/engines/opengl_engine/traits/mesh_trait.hpp>
+#include <omath/engines/opengl_engine/traits/pred_engine_trait.hpp>
 #include <omath/engines/rage_engine/camera.hpp>
 #include <omath/engines/rage_engine/traits/camera_trait.hpp>
-
+#include <omath/engines/source_engine/camera.hpp>
+#include <omath/engines/source_engine/traits/camera_trait.hpp>
+#include <omath/engines/source_engine/traits/pred_engine_trait.hpp>
+#include <omath/engines/unity_engine/camera.hpp>
+#include <omath/engines/unity_engine/traits/camera_trait.hpp>
+#include <omath/engines/unity_engine/traits/mesh_trait.hpp>
+#include <omath/engines/unity_engine/traits/pred_engine_trait.hpp>
+#include <omath/engines/unreal_engine/camera.hpp>
+#include <omath/engines/unreal_engine/traits/camera_trait.hpp>
+#include <omath/engines/unreal_engine/traits/mesh_trait.hpp>
+#include <omath/engines/unreal_engine/traits/pred_engine_trait.hpp>
 #include <omath/projectile_prediction/projectile.hpp>
 #include <omath/projectile_prediction/target.hpp>
 #include <optional>
@@ -51,7 +43,6 @@ static void expect_matrix_near(const MatT& a, const MatT& b, float eps = 1e-5f)
 }
 
 // ── Launch offset tests for all engines ──────────────────────────────────────
-#ifdef OMATH_USE_GCEM
 template<class MatType, class NumericType>
 constexpr bool matrix_has_non_zero_element(const MatType& mat)
 {
@@ -86,7 +77,6 @@ static_assert(camera_can_calculate_matrices_at_compile_time<unity_engine::Camera
 static_assert(camera_can_calculate_matrices_at_compile_time<cry_engine::Camera, float>());
 static_assert(camera_can_calculate_matrices_at_compile_time<rage_engine::Camera, float>());
 static_assert(camera_can_calculate_matrices_at_compile_time<unreal_engine::Camera, double>());
-#endif
 
 #include <omath/engines/cry_engine/traits/pred_engine_trait.hpp>
 
@@ -121,8 +111,10 @@ static void verify_zero_offset_matches_default()
     p2.m_launch_speed = static_cast<AT>(50);
     p2.m_gravity_scale = static_cast<AT>(1);
 
-    const auto pos1 = Trait::predict_projectile_position(p, static_cast<AT>(15), static_cast<AT>(30), static_cast<AT>(1), static_cast<AT>(9.81));
-    const auto pos2 = Trait::predict_projectile_position(p2, static_cast<AT>(15), static_cast<AT>(30), static_cast<AT>(1), static_cast<AT>(9.81));
+    const auto pos1 = Trait::predict_projectile_position(p, static_cast<AT>(15), static_cast<AT>(30),
+                                                         static_cast<AT>(1), static_cast<AT>(9.81));
+    const auto pos2 = Trait::predict_projectile_position(p2, static_cast<AT>(15), static_cast<AT>(30),
+                                                         static_cast<AT>(1), static_cast<AT>(9.81));
 #if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || defined(_M_ARM64)
     constexpr double tol = 1e-6;
 #else
@@ -205,7 +197,8 @@ TEST(LaunchOffsetTests, OffsetShiftsTrajectory)
     p_with_offset.m_gravity_scale = 1.f;
 
     const auto pos1 = source_engine::PredEngineTrait::predict_projectile_position(p_no_offset, 20.f, 45.f, 2.f, 9.81f);
-    const auto pos2 = source_engine::PredEngineTrait::predict_projectile_position(p_with_offset, 20.f, 45.f, 2.f, 9.81f);
+    const auto pos2 =
+            source_engine::PredEngineTrait::predict_projectile_position(p_with_offset, 20.f, 45.f, 2.f, 9.81f);
 
     // The difference should be exactly the launch offset
     EXPECT_NEAR(pos2.x - pos1.x, 10.f, 1e-4f);
@@ -268,12 +261,16 @@ TEST(TraitTests, Frostbite_Pred_And_Mesh_And_Camera)
     // CameraTrait look at should be callable
     const auto angles = e::CameraTrait::calc_look_at_angle({0, 0, 0}, {0, 1, 1});
     (void)angles;
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f,
+                                                   1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
     const auto expected = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 
-    const auto proj_zo = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
-    const auto expected_zo = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto proj_zo = e::CameraTrait::calc_projection_matrix(
+            projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto expected_zo =
+            e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
     expect_matrix_near(proj_zo, expected_zo);
     EXPECT_NE(proj, proj_zo);
 }
@@ -319,12 +316,16 @@ TEST(TraitTests, IW_Pred_And_Mesh_And_Camera)
     e::ViewAngles va;
     expect_matrix_near(e::MeshTrait::rotation_matrix(va), e::rotation_matrix(va));
 
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(45.f), {1920.f, 1080.f}, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(45.f), {1920.f, 1080.f}, 0.1f,
+                                                   1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
     const auto expected = e::calc_perspective_projection_matrix(45.f, 1920.f / 1080.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 
-    const auto proj_zo = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(45.f), {1920.f, 1080.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
-    const auto expected_zo = e::calc_perspective_projection_matrix(45.f, 1920.f / 1080.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto proj_zo = e::CameraTrait::calc_projection_matrix(
+            projection::FieldOfView::from_degrees(45.f), {1920.f, 1080.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto expected_zo =
+            e::calc_perspective_projection_matrix(45.f, 1920.f / 1080.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
     expect_matrix_near(proj_zo, expected_zo);
     EXPECT_NE(proj, proj_zo);
 
@@ -374,12 +375,16 @@ TEST(TraitTests, OpenGL_Pred_And_Mesh_And_Camera)
     e::ViewAngles va;
     expect_matrix_near(e::MeshTrait::rotation_matrix(va), e::rotation_matrix(va));
 
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f,
+                                                   1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
     const auto expected = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 
-    const auto proj_zo = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
-    const auto expected_zo = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto proj_zo = e::CameraTrait::calc_projection_matrix(
+            projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto expected_zo =
+            e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
     expect_matrix_near(proj_zo, expected_zo);
     EXPECT_NE(proj, proj_zo);
 
@@ -429,12 +434,16 @@ TEST(TraitTests, Unity_Pred_And_Mesh_And_Camera)
     e::ViewAngles va;
     expect_matrix_near(e::MeshTrait::rotation_matrix(va), e::rotation_matrix(va));
 
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f,
+                                                   1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
     const auto expected = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 
-    const auto proj_zo = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
-    const auto expected_zo = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto proj_zo = e::CameraTrait::calc_projection_matrix(
+            projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto expected_zo =
+            e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
     expect_matrix_near(proj_zo, expected_zo);
     EXPECT_NE(proj, proj_zo);
 
@@ -484,12 +493,16 @@ TEST(TraitTests, Unreal_Pred_And_Mesh_And_Camera)
     e::ViewAngles va;
     expect_matrix_near(e::MeshTrait::rotation_matrix(va), e::rotation_matrix(va));
 
-    const auto proj = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f,
+                                                   1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
     const auto expected = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f);
     expect_matrix_near(proj, expected);
 
-    const auto proj_zo = e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
-    const auto expected_zo = e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto proj_zo = e::CameraTrait::calc_projection_matrix(
+            projection::FieldOfView::from_degrees(60.f), {1280.f, 720.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto expected_zo =
+            e::calc_perspective_projection_matrix(60.f, 1280.f / 720.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
     expect_matrix_near(proj_zo, expected_zo);
     EXPECT_NE(proj, proj_zo);
 
@@ -505,18 +518,17 @@ TEST(NDCDepthRangeTests, Source_BothDepthRanges)
 {
     namespace e = omath::source_engine;
 
-    const auto proj_no = e::CameraTrait::calc_projection_matrix(
-            projection::FieldOfView::from_degrees(90.f), {1920.f, 1080.f}, 0.1f, 1000.f,
-            NDCDepthRange::NEGATIVE_ONE_TO_ONE);
-    const auto expected_no = e::calc_perspective_projection_matrix(
-            90.f, 1920.f / 1080.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj_no =
+            e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(90.f), {1920.f, 1080.f}, 0.1f,
+                                                   1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto expected_no = e::calc_perspective_projection_matrix(90.f, 1920.f / 1080.f, 0.1f, 1000.f,
+                                                                   NDCDepthRange::NEGATIVE_ONE_TO_ONE);
     expect_matrix_near(proj_no, expected_no);
 
     const auto proj_zo = e::CameraTrait::calc_projection_matrix(
-            projection::FieldOfView::from_degrees(90.f), {1920.f, 1080.f}, 0.1f, 1000.f,
-            NDCDepthRange::ZERO_TO_ONE);
-    const auto expected_zo = e::calc_perspective_projection_matrix(
-            90.f, 1920.f / 1080.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+            projection::FieldOfView::from_degrees(90.f), {1920.f, 1080.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto expected_zo =
+            e::calc_perspective_projection_matrix(90.f, 1920.f / 1080.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
     expect_matrix_near(proj_zo, expected_zo);
 
     EXPECT_NE(proj_no, proj_zo);
@@ -526,18 +538,17 @@ TEST(NDCDepthRangeTests, CryEngine_BothDepthRanges)
 {
     namespace e = omath::cry_engine;
 
-    const auto proj_no = e::CameraTrait::calc_projection_matrix(
-            projection::FieldOfView::from_degrees(90.f), {1920.f, 1080.f}, 0.1f, 1000.f,
-            NDCDepthRange::NEGATIVE_ONE_TO_ONE);
-    const auto expected_no = e::calc_perspective_projection_matrix(
-            90.f, 1920.f / 1080.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj_no =
+            e::CameraTrait::calc_projection_matrix(projection::FieldOfView::from_degrees(90.f), {1920.f, 1080.f}, 0.1f,
+                                                   1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto expected_no = e::calc_perspective_projection_matrix(90.f, 1920.f / 1080.f, 0.1f, 1000.f,
+                                                                   NDCDepthRange::NEGATIVE_ONE_TO_ONE);
     expect_matrix_near(proj_no, expected_no);
 
     const auto proj_zo = e::CameraTrait::calc_projection_matrix(
-            projection::FieldOfView::from_degrees(90.f), {1920.f, 1080.f}, 0.1f, 1000.f,
-            NDCDepthRange::ZERO_TO_ONE);
-    const auto expected_zo = e::calc_perspective_projection_matrix(
-            90.f, 1920.f / 1080.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+            projection::FieldOfView::from_degrees(90.f), {1920.f, 1080.f}, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
+    const auto expected_zo =
+            e::calc_perspective_projection_matrix(90.f, 1920.f / 1080.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
     expect_matrix_near(proj_zo, expected_zo);
 
     EXPECT_NE(proj_no, proj_zo);
@@ -584,7 +595,8 @@ TEST(NDCDepthRangeTests, OpenGL_ZeroToOne_ZRange)
     const auto proj = e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
 
     // OpenGL engine uses column-major matrices, project manually
-    auto proj_z = [&](float z) {
+    auto proj_z = [&](float z)
+    {
         auto clip = proj * mat_column_from_vector<float, MatStoreType::COLUMN_MAJOR>({0, 0, z});
         return clip.at(2, 0) / clip.at(3, 0);
     };
@@ -612,7 +624,8 @@ TEST(NDCDepthRangeTests, Unity_ZeroToOne_ZRange)
     // Unity is right-handed, row-major
     const auto proj = e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::ZERO_TO_ONE);
 
-    auto proj_z = [&](float z) {
+    auto proj_z = [&](float z)
+    {
         auto clip = proj * mat_column_from_vector<float>({0, 0, z});
         return clip.at(2, 0) / clip.at(3, 0);
     };
@@ -650,7 +663,8 @@ TEST(NDCDepthRangeTests, CryEngine_ZeroToOne_ZRange)
 TEST(NDCDepthRangeTests, Source_NegativeOneToOne_ZRange)
 {
     namespace e = omath::source_engine;
-    const auto proj = e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
 
     EXPECT_NEAR(project_z_lh(proj, 0.1f), -1.0f, 1e-3f);
     EXPECT_NEAR(project_z_lh(proj, 1000.f), 1.0f, 1e-3f);
@@ -659,7 +673,8 @@ TEST(NDCDepthRangeTests, Source_NegativeOneToOne_ZRange)
 TEST(NDCDepthRangeTests, IW_NegativeOneToOne_ZRange)
 {
     namespace e = omath::iw_engine;
-    const auto proj = e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
 
     EXPECT_NEAR(project_z_lh(proj, 0.1f), -1.0f, 1e-3f);
     EXPECT_NEAR(project_z_lh(proj, 1000.f), 1.0f, 1e-3f);
@@ -668,7 +683,8 @@ TEST(NDCDepthRangeTests, IW_NegativeOneToOne_ZRange)
 TEST(NDCDepthRangeTests, Frostbite_NegativeOneToOne_ZRange)
 {
     namespace e = omath::frostbite_engine;
-    const auto proj = e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
 
     EXPECT_NEAR(project_z_lh(proj, 0.1f), -1.0f, 1e-3f);
     EXPECT_NEAR(project_z_lh(proj, 1000.f), 1.0f, 1e-3f);
@@ -677,7 +693,8 @@ TEST(NDCDepthRangeTests, Frostbite_NegativeOneToOne_ZRange)
 TEST(NDCDepthRangeTests, Unreal_NegativeOneToOne_ZRange)
 {
     namespace e = omath::unreal_engine;
-    const auto proj = e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
 
     EXPECT_NEAR(project_z_lh(proj, 0.1f), -1.0f, 1e-3f);
     EXPECT_NEAR(project_z_lh(proj, 1000.f), 1.0f, 1e-3f);
@@ -686,7 +703,8 @@ TEST(NDCDepthRangeTests, Unreal_NegativeOneToOne_ZRange)
 TEST(NDCDepthRangeTests, CryEngine_NegativeOneToOne_ZRange)
 {
     namespace e = omath::cry_engine;
-    const auto proj = e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
 
     EXPECT_NEAR(project_z_lh(proj, 0.1f), -1.0f, 1e-3f);
     EXPECT_NEAR(project_z_lh(proj, 1000.f), 1.0f, 1e-3f);
@@ -695,9 +713,11 @@ TEST(NDCDepthRangeTests, CryEngine_NegativeOneToOne_ZRange)
 TEST(NDCDepthRangeTests, OpenGL_NegativeOneToOne_ZRange)
 {
     namespace e = omath::opengl_engine;
-    const auto proj = e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
 
-    auto proj_z = [&](float z) {
+    auto proj_z = [&](float z)
+    {
         auto clip = proj * mat_column_from_vector<float, MatStoreType::COLUMN_MAJOR>({0, 0, z});
         return clip.at(2, 0) / clip.at(3, 0);
     };
@@ -709,9 +729,11 @@ TEST(NDCDepthRangeTests, OpenGL_NegativeOneToOne_ZRange)
 TEST(NDCDepthRangeTests, Unity_NegativeOneToOne_ZRange)
 {
     namespace e = omath::unity_engine;
-    const auto proj = e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
+    const auto proj =
+            e::calc_perspective_projection_matrix(90.f, 16.f / 9.f, 0.1f, 1000.f, NDCDepthRange::NEGATIVE_ONE_TO_ONE);
 
-    auto proj_z = [&](float z) {
+    auto proj_z = [&](float z)
+    {
         auto clip = proj * mat_column_from_vector<float>({0, 0, z});
         return clip.at(2, 0) / clip.at(3, 0);
     };

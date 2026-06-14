@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "omath/internal/optional_constexpr_math.hpp"
+#include "omath/internal/constexpr_math.hpp"
 #include "omath/trigonometry/angles.hpp"
 #include <algorithm>
 #include <format>
@@ -71,31 +71,31 @@ namespace omath
         }
 
         [[nodiscard]]
-        OMATH_CONSTEXPR Type sin() const noexcept
+        constexpr Type sin() const noexcept
         {
             return internal::sin(as_radians());
         }
 
         [[nodiscard]]
-        OMATH_CONSTEXPR Type cos() const noexcept
+        constexpr Type cos() const noexcept
         {
             return internal::cos(as_radians());
         }
 
         [[nodiscard]]
-        OMATH_CONSTEXPR Type tan() const noexcept
+        constexpr Type tan() const noexcept
         {
             return internal::tan(as_radians());
         }
 
         [[nodiscard]]
-        OMATH_CONSTEXPR Type atan() const noexcept
+        constexpr Type atan() const noexcept
         {
             return internal::atan(as_radians());
         }
 
         [[nodiscard]]
-        OMATH_CONSTEXPR Type cot() const noexcept
+        constexpr Type cot() const noexcept
         {
             return cos() / sin();
         }

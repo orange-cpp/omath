@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "omath/internal/optional_constexpr_math.hpp"
+#include "omath/internal/constexpr_math.hpp"
 #include <cmath>
 #include <numbers>
 
@@ -25,20 +25,19 @@ namespace omath::angles
 
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] OMATH_CONSTEXPR Type horizontal_fov_to_vertical(const Type& horizontal_fov,
-                                                                  const Type& aspect) noexcept
+    [[nodiscard]] constexpr Type horizontal_fov_to_vertical(const Type& horizontal_fov, const Type& aspect) noexcept
     {
         const auto fov_rad = degrees_to_radians(horizontal_fov);
 
-        const auto vert_fov = static_cast<Type>(2) * internal::atan(internal::tan(fov_rad / static_cast<Type>(2)) / aspect);
+        const auto vert_fov =
+                static_cast<Type>(2) * internal::atan(internal::tan(fov_rad / static_cast<Type>(2)) / aspect);
 
         return radians_to_degrees(vert_fov);
     }
 
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] OMATH_CONSTEXPR Type vertical_fov_to_horizontal(const Type& vertical_fov,
-                                                                  const Type& aspect) noexcept
+    [[nodiscard]] constexpr Type vertical_fov_to_horizontal(const Type& vertical_fov, const Type& aspect) noexcept
     {
         const auto fov_as_radians = degrees_to_radians(vertical_fov);
 
@@ -50,7 +49,7 @@ namespace omath::angles
 
     template<class Type>
     requires std::is_arithmetic_v<Type>
-    [[nodiscard]] OMATH_CONSTEXPR Type wrap_angle(const Type& angle, const Type& min, const Type& max) noexcept
+    [[nodiscard]] constexpr Type wrap_angle(const Type& angle, const Type& min, const Type& max) noexcept
     {
         if (angle <= max && angle >= min)
             return angle;

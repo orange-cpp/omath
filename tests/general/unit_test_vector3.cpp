@@ -584,16 +584,15 @@ static_assert(Vector3(4.0f, 5.0f, 6.0f).distance_to_sqr(Vector3(1.0f, 2.0f, 3.0f
 static_assert(Vector3(-1.0f, -2.0f, -3.0f).abs() == Vector3(1.0f, 2.0f, 3.0f),
               "Abs should convert negative values to positive");
 
-#ifdef OMATH_USE_GCEM
-static_assert(Vector3(1.0f, 2.0f, 2.0f).length() == 3.0f, "Length should be constexpr with gcem");
+static_assert(Vector3(1.0f, 2.0f, 2.0f).length() == 3.0f, "Length should be constexpr with embedded constexpr math");
 static_assert(Vector3(0.0f, 0.0f, 0.0f).distance_to(Vector3(1.0f, 2.0f, 2.0f)) == 3.0f,
-              "Distance should be constexpr with gcem");
-static_assert(Vector3(1.0f, 1.0f, 1.0f) < Vector3(3.0f, 4.0f, 5.0f), "Comparison should be constexpr with gcem");
+              "Distance should be constexpr with embedded constexpr math");
+static_assert(Vector3(1.0f, 1.0f, 1.0f) < Vector3(3.0f, 4.0f, 5.0f),
+              "Comparison should be constexpr with embedded constexpr math");
 static_assert(
         []
         {
             constexpr auto angle = Vector3(1.0f, 0.0f, 0.0f).angle_between(Vector3(0.0f, 1.0f, 0.0f));
             return angle.has_value() && angle->as_degrees() > 89.999f && angle->as_degrees() < 90.001f;
         }(),
-        "Angle between should be constexpr with gcem");
-#endif
+        "Angle between should be constexpr with embedded constexpr math");

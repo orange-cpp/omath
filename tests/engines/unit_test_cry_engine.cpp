@@ -10,7 +10,6 @@
 
 using namespace omath;
 
-#ifdef OMATH_USE_GCEM
 namespace
 {
     constexpr bool close_to(const float actual, const float expected, const float epsilon)
@@ -41,7 +40,7 @@ static_assert(
                    && close_to(rotation.at(1, 1), 1.0f, 1e-5f) && close_to(rotation.at(2, 2), 1.0f, 1e-5f)
                    && close_to(rotation.at(3, 3), 1.0f, 1e-5f);
         }(),
-        "CryEngine basis vectors should be constexpr with gcem");
+        "CryEngine basis vectors should be constexpr with embedded constexpr math");
 
 static_assert(
         []
@@ -50,7 +49,7 @@ static_assert(
             return close_to(view.at(0, 0), 1.0f, 1e-5f) && close_to(view.at(1, 2), 1.0f, 1e-5f)
                    && close_to(view.at(2, 1), 1.0f, 1e-5f) && close_to(view.at(3, 3), 1.0f, 1e-5f);
         }(),
-        "CryEngine view matrix should be constexpr with gcem");
+        "CryEngine view matrix should be constexpr with embedded constexpr math");
 
 static_assert(
         []
@@ -62,7 +61,7 @@ static_assert(
 
             return vec_close_to(origin, {1.0f, 2.0f, 3.0f}, 1e-5f) && vec_close_to(scale, {2.0f, 3.0f, 4.0f}, 1e-5f);
         }(),
-        "CryEngine transform extraction should be constexpr with gcem");
+        "CryEngine transform extraction should be constexpr with embedded constexpr math");
 
 static_assert(
         []
@@ -73,7 +72,7 @@ static_assert(
                    && close_to(projection.at(2, 2), 1.1f, 1e-5f) && close_to(projection.at(2, 3), -1.1f, 1e-5f)
                    && close_to(projection.at(3, 2), 1.0f, 1e-5f);
         }(),
-        "CryEngine projection matrix should be constexpr with gcem");
+        "CryEngine projection matrix should be constexpr with embedded constexpr math");
 
 static_assert(
         []
@@ -91,7 +90,7 @@ static_assert(
                    && close_to(projection.at(1, 1), 1.0f, 1e-5f) && close_to(projection.at(2, 2), 1.1f, 1e-5f)
                    && close_to(projection.at(2, 3), -1.1f, 1e-5f) && close_to(projection.at(3, 2), 1.0f, 1e-5f);
         }(),
-        "CryEngine CameraTrait should be constexpr with gcem");
+        "CryEngine CameraTrait should be constexpr with embedded constexpr math");
 
 static_assert(omath::cry_engine::units_to_centimeters(100.0f) == 1.0f);
 static_assert(omath::cry_engine::units_to_meters(2.0f) == 2.0f);
@@ -99,7 +98,6 @@ static_assert(omath::cry_engine::units_to_kilometers(2000.0f) == 2.0f);
 static_assert(omath::cry_engine::centimeters_to_units(1.0f) == 100.0f);
 static_assert(omath::cry_engine::meters_to_units(2.0f) == 2.0f);
 static_assert(omath::cry_engine::kilometers_to_units(2.0f) == 2000.0f);
-#endif
 
 TEST(unit_test_cry_engine, look_at_forward)
 {
