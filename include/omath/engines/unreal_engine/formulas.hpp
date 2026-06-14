@@ -75,17 +75,17 @@ namespace omath::unreal_engine
 
     [[nodiscard]]
     inline OMATH_CONSTEXPR Mat4X4 calc_perspective_projection_matrix(
-            const double field_of_view, const double aspect_ratio, const double near, const double far,
+            const double field_of_view, const double aspect_ratio, const double near_plane, const double far_plane,
             const NDCDepthRange ndc_depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE) noexcept
     {
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
             return mat_perspective_left_handed_horizontal_fov<
                     double, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
-                    field_of_view, aspect_ratio, near, far);
+                    field_of_view, aspect_ratio, near_plane, far_plane);
         if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return mat_perspective_left_handed_horizontal_fov<
                     double, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
-                    field_of_view, aspect_ratio, near, far);
+                    field_of_view, aspect_ratio, near_plane, far_plane);
         std::unreachable();
     }
 

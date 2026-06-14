@@ -71,7 +71,7 @@ namespace omath::source_engine
 
     [[nodiscard]]
     inline OMATH_CONSTEXPR Mat4X4 calc_perspective_projection_matrix(
-            const float field_of_view, const float aspect_ratio, const float near, const float far,
+            const float field_of_view, const float aspect_ratio, const float near_plane, const float far_plane,
             const NDCDepthRange ndc_depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE) noexcept
     {
         constexpr float k_source_reference_aspect = 4.f / 3.f;
@@ -79,11 +79,11 @@ namespace omath::source_engine
 
         if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
             return mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
-                    vertical_fov, aspect_ratio, near, far);
+                    vertical_fov, aspect_ratio, near_plane, far_plane);
         if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
             return mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR,
                                                             NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
-                    vertical_fov, aspect_ratio, near, far);
+                    vertical_fov, aspect_ratio, near_plane, far_plane);
         std::unreachable();
     }
 

@@ -84,13 +84,13 @@ static_assert(source_camera_constexpr_projection_round_trip());
 
 TEST(UnitTestProjection, Projection)
 {
-    constexpr auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
-    constexpr auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov,
-                                                  0.01f, 1000.f);
+    OMATH_CONSTEXPR auto fov = omath::Angle<float, 0.f, 180.f, omath::AngleFlags::Clamped>::from_degrees(90.f);
+    OMATH_CONSTEXPR auto cam = omath::source_engine::Camera(
+            {0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
-    constexpr auto projected = cam.world_to_screen({1000.f, 0, 50.f});
-    constexpr auto result = cam.screen_to_world(projected.value());
-    constexpr auto result2 = cam.world_to_screen(result.value());
+    OMATH_CONSTEXPR auto projected = cam.world_to_screen({1000.f, 0, 50.f});
+    OMATH_CONSTEXPR auto result = cam.screen_to_world(projected.value());
+    OMATH_CONSTEXPR auto result2 = cam.world_to_screen(result.value());
 
     EXPECT_EQ(static_cast<omath::Vector2<float>>(projected.value()),
               static_cast<omath::Vector2<float>>(result2.value()));

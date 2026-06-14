@@ -31,9 +31,10 @@ namespace omath::source_engine
         [[nodiscard]]
         OMATH_CONSTEXPR static Mat4X4
         calc_projection_matrix(const projection::FieldOfView& fov, const projection::ViewPort& view_port,
-                               const float near, const float far, const NDCDepthRange ndc_depth_range) noexcept
+                               const float near_plane, const float far_plane,
+                               const NDCDepthRange ndc_depth_range) noexcept
         {
-            return calc_perspective_projection_matrix(fov.as_degrees(), view_port.aspect_ratio(), near, far,
+            return calc_perspective_projection_matrix(fov.as_degrees(), view_port.aspect_ratio(), near_plane, far_plane,
                                                       ndc_depth_range);
         }
     };
