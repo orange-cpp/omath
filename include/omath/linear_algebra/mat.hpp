@@ -662,7 +662,7 @@ namespace omath
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     requires std::is_floating_point_v<Type>
     [[nodiscard("You must use extracted rotation")]]
-    Vector3<Type> mat_extract_rotation_zyx(const Mat<4, 4, Type, St>& mat) noexcept
+    constexpr Vector3<Type> mat_extract_rotation_zyx(const Mat<4, 4, Type, St>& mat) noexcept
     {
         const auto scale = mat_extract_scale(mat);
         const auto m00 = mat.at(0, 0) / scale.x;
