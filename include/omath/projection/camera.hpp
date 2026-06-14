@@ -463,7 +463,7 @@ namespace omath::projection
         world_to_view_port(const Vector3<NumericType>& world_position,
                            const ViewPortClipping& clipping = ViewPortClipping::AUTO) const noexcept
         {
-            auto project_to_view_port = [this, &clipping](auto projected) -> std::expected<Vector3<NumericType>, Error>
+            auto project_to_view_port = [&clipping](auto projected) -> std::expected<Vector3<NumericType>, Error>
             {
                 const auto& w = projected.at(3, 0);
                 constexpr auto eps = std::numeric_limits<NumericType>::epsilon();
