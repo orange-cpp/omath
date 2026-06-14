@@ -398,7 +398,7 @@ namespace omath
         {
             const auto det = determinant();
 
-            if (std::abs(det) < std::numeric_limits<Type>::epsilon())
+            if (internal::abs(det) < std::numeric_limits<Type>::epsilon())
                 return std::nullopt;
 
             const auto transposed_mat = transposed();
