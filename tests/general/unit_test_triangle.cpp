@@ -8,6 +8,15 @@
 
 using namespace omath;
 
+namespace
+{
+    constexpr bool close_to(const float actual, const float expected, const float epsilon)
+    {
+        const float diff = actual - expected;
+        return (diff < 0.0f ? -diff : diff) <= epsilon;
+    }
+} // namespace
+
 class UnitTestTriangle : public ::testing::Test
 {
 protected:
@@ -19,36 +28,21 @@ protected:
     constexpr void SetUp() override
     {
         // Triangle with vertices (0, 0, 0), (1, 0, 0), (0, 1, 0)
-        t1 = Triangle<Vector3<float>>(
-            Vector3(0.0f, 0.0f, 0.0f),
-            Vector3(1.0f, 0.0f, 0.0f),
-            Vector3(0.0f, 1.0f, 0.0f)
-        );
+        t1 = Triangle<Vector3<float>>(Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
 
         // Triangle with vertices (1, 2, 3), (4, 5, 6), (7, 8, 9)
-        t2 = Triangle<Vector3<float>>(
-            Vector3(1.0f, 2.0f, 3.0f),
-            Vector3(4.0f, 5.0f, 6.0f),
-            Vector3(7.0f, 8.0f, 9.0f)
-        );
+        t2 = Triangle<Vector3<float>>(Vector3(1.0f, 2.0f, 3.0f), Vector3(4.0f, 5.0f, 6.0f), Vector3(7.0f, 8.0f, 9.0f));
 
         // An isosceles right triangle
-        t3 = Triangle<Vector3<float>>(
-            Vector3(0.0f, 0.0f, 0.0f),
-            Vector3(2.0f, 0.0f, 0.0f),
-            Vector3(0.0f, 2.0f, 0.0f)
-        );
+        t3 = Triangle<Vector3<float>>(Vector3(0.0f, 0.0f, 0.0f), Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 2.0f, 0.0f));
     }
 };
 
 // Test constructor and vertices
 TEST_F(UnitTestTriangle, Constructor)
 {
-    constexpr Triangle<Vector3<float>> t(
-        Vector3(1.0f, 2.0f, 3.0f),
-        Vector3(4.0f, 5.0f, 6.0f),
-        Vector3(7.0f, 8.0f, 9.0f)
-    );
+    constexpr Triangle<Vector3<float>> t(Vector3(1.0f, 2.0f, 3.0f), Vector3(4.0f, 5.0f, 6.0f),
+                                         Vector3(7.0f, 8.0f, 9.0f));
 
     EXPECT_FLOAT_EQ(t.m_vertex1.x, 1.0f);
     EXPECT_FLOAT_EQ(t.m_vertex1.y, 2.0f);
@@ -72,7 +66,6 @@ TEST_F(UnitTestTriangle, CalculateNormal)
     EXPECT_NEAR(std::fabs(normal_t1.z), 1.0f, 1e-5f);
     EXPECT_NEAR(normal_t1.length(), 1.0f, 1e-5f);
 
-
     // For t3, we expect the normal to be along +Z as well
     const Vector3 normal_t3 = t3.calculate_normal();
     EXPECT_NEAR(std::fabs(normal_t3.z), 1.0f, 1e-5f);
@@ -83,7 +76,10 @@ TEST_F(UnitTestTriangle, SideLengths)
 {
     // For t1 side lengths
     EXPECT_FLOAT_EQ(t1.side_a_length(), std::sqrt(1.0f)); // distance between (0,0,0) and (1,0,0)
-    EXPECT_FLOAT_EQ(t1.side_b_length(), std::sqrt(1.0f + 1.0f)); // distance between (4,5,6) & (7,8,9)... but we are testing t1, so let's be accurate:
+    EXPECT_FLOAT_EQ(
+            t1.side_b_length(),
+            std::sqrt(1.0f
+                      + 1.0f)); // distance between (4,5,6) & (7,8,9)... but we are testing t1, so let's be accurate:
     // Actually, for t1: vertex2=(1,0,0), vertex3=(0,1,0)
     // Dist between (0,1,0) and (1,0,0) = sqrt((1-0)^2 + (0-1)^2) = sqrt(1 + 1) = sqrt(2)
     EXPECT_FLOAT_EQ(t1.side_b_length(), std::sqrt(2.0f));
@@ -112,7 +108,7 @@ TEST_F(UnitTestTriangle, SideVectors)
 
 TEST_F(UnitTestTriangle, IsRectangular)
 {
-    EXPECT_TRUE(Triangle<Vector3<float>>({2,0,0}, {}, {0,2,0}).is_rectangular());
+    EXPECT_TRUE(Triangle<Vector3<float>>({2, 0, 0}, {}, {0, 2, 0}).is_rectangular());
 }
 // Test midpoint
 TEST_F(UnitTestTriangle, MidPoint)
@@ -129,3 +125,18 @@ TEST_F(UnitTestTriangle, MidPoint)
     EXPECT_FLOAT_EQ(mid2.y, (2.0f + 5.0f + 8.0f) / 3.0f);
     EXPECT_FLOAT_EQ(mid2.z, (3.0f + 6.0f + 9.0f) / 3.0f);
 }
+
+static_assert(
+        []
+        {
+            constexpr Triangle<Vector3<float>> triangle{{3.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 4.0f, 0.0f}};
+            constexpr auto normal = triangle.calculate_normal();
+            constexpr auto mid_point = triangle.mid_point();
+
+            return close_to(triangle.side_a_length(), 3.0f, 1e-5f) && close_to(triangle.side_b_length(), 4.0f, 1e-5f)
+                   && close_to(triangle.hypot(), 5.0f, 1e-5f) && triangle.is_rectangular()
+                   && close_to(normal.length(), 1.0f, 1e-5f) && close_to(normal.z, -1.0f, 1e-5f)
+                   && close_to(mid_point.x, 1.0f, 1e-5f) && close_to(mid_point.y, 4.0f / 3.0f, 1e-5f)
+                   && close_to(mid_point.z, 0.0f, 1e-5f);
+        }(),
+        "Triangle helpers should be constexpr with embedded constexpr math");

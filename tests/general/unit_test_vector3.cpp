@@ -2,11 +2,11 @@
 // Created by Vlad on 01.09.2024.
 //
 
-#include <omath/linear_algebra/vector3.hpp>
 #include <cfloat> // For FLT_MAX, FLT_MIN
 #include <cmath>
 #include <gtest/gtest.h>
 #include <limits> // For std::numeric_limits
+#include <omath/linear_algebra/vector3.hpp>
 
 using namespace omath;
 
@@ -31,35 +31,33 @@ TEST(Vector3More, ArithmeticAndDotCross)
     constexpr Vector3<float> a{1.f, 0.f, 0.f};
     constexpr Vector3<float> b{0.f, 1.f, 0.f};
     const auto c = a + b;
-    constexpr Vector3<float> expect_c{1.f,1.f,0.f};
+    constexpr Vector3<float> expect_c{1.f, 1.f, 0.f};
     EXPECT_EQ(c, expect_c);
 
     const auto d = a - b;
-    constexpr Vector3<float> expect_d{1.f,-1.f,0.f};
+    constexpr Vector3<float> expect_d{1.f, -1.f, 0.f};
     EXPECT_EQ(d, expect_d);
 
     const auto e = a * 2.f;
-    constexpr Vector3<float> expect_e{2.f,0.f,0.f};
+    constexpr Vector3<float> expect_e{2.f, 0.f, 0.f};
     EXPECT_EQ(e, expect_e);
 
     EXPECT_FLOAT_EQ(a.dot(b), 0.f);
     // manual cross product check
-    const auto cr = Vector3<float>{ a.y * b.z - a.z * b.y,
-                              a.z * b.x - a.x * b.z,
-                              a.x * b.y - a.y * b.x };
-    constexpr Vector3<float> expect_cr{0.f,0.f,1.f};
+    const auto cr = Vector3<float>{a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
+    constexpr Vector3<float> expect_cr{0.f, 0.f, 1.f};
     EXPECT_EQ(cr, expect_cr);
 }
 
 TEST(Vector3More, NormalizationEdgeCases)
 {
-    constexpr Vector3<double> z{0.0,0.0,0.0};
+    constexpr Vector3<double> z{0.0, 0.0, 0.0};
     const auto zn = z.normalized();
     EXPECT_DOUBLE_EQ(zn.x, 0.0);
     EXPECT_DOUBLE_EQ(zn.y, 0.0);
     EXPECT_DOUBLE_EQ(zn.z, 0.0);
 
-    constexpr Vector3<double> v{3.0,4.0,0.0};
+    constexpr Vector3<double> v{3.0, 4.0, 0.0};
     const auto vn = v.normalized();
     EXPECT_NEAR(vn.x, 0.6, 1e-12);
     EXPECT_NEAR(vn.y, 0.8, 1e-12);
@@ -481,16 +479,14 @@ TEST_F(UnitTestVector3, AsTuple)
 // Test AsTuple method
 TEST_F(UnitTestVector3, AngleBeatween)
 {
-    EXPECT_NEAR(Vector3(0.0f, 0.0f, 1.0f).angle_between({1, 0, 0}).value().as_degrees(),
-                90.0f, 0.001f);
-    EXPECT_NEAR(Vector3(0.0f, 0.0f, 1.0f).angle_between({0.0f, 0.0f, 1.0f}).value().as_degrees(),
-                0.0f, 0.001f);
+    EXPECT_NEAR(Vector3(0.0f, 0.0f, 1.0f).angle_between({1, 0, 0}).value().as_degrees(), 90.0f, 0.001f);
+    EXPECT_NEAR(Vector3(0.0f, 0.0f, 1.0f).angle_between({0.0f, 0.0f, 1.0f}).value().as_degrees(), 0.0f, 0.001f);
     EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).angle_between({0.0f, 0.0f, 1.0f}).has_value());
 }
 
 TEST_F(UnitTestVector3, IsPerpendicular)
 {
-    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).is_perpendicular({1, 0 ,0}), true);
+    EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).is_perpendicular({1, 0, 0}), true);
     EXPECT_EQ(Vector3(0.0f, 0.0f, 1.0f).is_perpendicular({0.0f, 0.0f, 1.0f}), false);
     EXPECT_FALSE(Vector3(0.0f, 0.0f, 0.0f).is_perpendicular({0.0f, 0.0f, 1.0f}));
 }
@@ -585,4 +581,18 @@ TEST(Vector3Cast, SameTypeRoundtrip)
 static_assert(Vector3(1.0f, 2.0f, 3.0f).length_sqr() == 14.0f, "LengthSqr should be 14");
 static_assert(Vector3(1.0f, 2.0f, 3.0f).dot(Vector3(4.0f, 5.0f, 6.0f)) == 32.0f, "Dot product should be 32");
 static_assert(Vector3(4.0f, 5.0f, 6.0f).distance_to_sqr(Vector3(1.0f, 2.0f, 3.0f)) == 27.0f, "DistToSqr should be 27");
-static_assert(Vector3(-1.0f, -2.0f, -3.0f).abs() == Vector3(1.0f, 2.0f, 3.0f), "Abs should convert negative values to positive");
+static_assert(Vector3(-1.0f, -2.0f, -3.0f).abs() == Vector3(1.0f, 2.0f, 3.0f),
+              "Abs should convert negative values to positive");
+
+static_assert(Vector3(1.0f, 2.0f, 2.0f).length() == 3.0f, "Length should be constexpr with embedded constexpr math");
+static_assert(Vector3(0.0f, 0.0f, 0.0f).distance_to(Vector3(1.0f, 2.0f, 2.0f)) == 3.0f,
+              "Distance should be constexpr with embedded constexpr math");
+static_assert(Vector3(1.0f, 1.0f, 1.0f) < Vector3(3.0f, 4.0f, 5.0f),
+              "Comparison should be constexpr with embedded constexpr math");
+static_assert(
+        []
+        {
+            constexpr auto angle = Vector3(1.0f, 0.0f, 0.0f).angle_between(Vector3(0.0f, 1.0f, 0.0f));
+            return angle.has_value() && angle->as_degrees() > 89.999f && angle->as_degrees() < 90.001f;
+        }(),
+        "Angle between should be constexpr with embedded constexpr math");

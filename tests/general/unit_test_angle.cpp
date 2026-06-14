@@ -2,10 +2,10 @@
 // Created by Orange on 11/30/2024.
 //
 
-#include <omath/trigonometry/angle.hpp>
 #include <cmath>
 #include <gtest/gtest.h>
 #include <numbers>
+#include <omath/trigonometry/angle.hpp>
 
 using namespace omath;
 
@@ -18,6 +18,12 @@ namespace
     using Turn = Angle<float, static_cast<float>(-180), static_cast<float>(180), AngleFlags::Normalized>;
 
     constexpr float k_eps = 1e-5f;
+
+    constexpr bool close_to(const float actual, const float expected, const float epsilon)
+    {
+        const float diff = actual - expected;
+        return (diff < 0.0f ? -diff : diff) <= epsilon;
+    }
 
 } // namespace
 
@@ -190,3 +196,14 @@ TEST(UnitTestAngle, BinaryMinus_ReturnsWrappedDiff)
     const Deg c = a - b; // expect 340°
     EXPECT_FLOAT_EQ(c.as_degrees(), 340.0f);
 }
+
+static_assert(close_to(Pitch::from_degrees(0.0f).sin(), 0.0f, k_eps),
+              "Sin should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_degrees(0.0f).cos(), 1.0f, k_eps),
+              "Cos should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_degrees(45.0f).tan(), 1.0f, 1e-4f),
+              "Tan should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_degrees(45.0f).cot(), 1.0f, 1e-4f),
+              "Cot should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_degrees(45.0f).atan(), 0.66577375f, 1e-6f),
+              "Atan should be constexpr with embedded constexpr math");

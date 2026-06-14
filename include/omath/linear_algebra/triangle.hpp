@@ -2,8 +2,8 @@
 // Created by Orange on 11/13/2024.
 //
 #pragma once
+#include "omath/internal/constexpr_math.hpp"
 #include "vector3.hpp"
-
 namespace omath
 {
     /*
@@ -40,13 +40,13 @@ namespace omath
         }
 
         [[nodiscard]]
-        Vector::ContainedType side_a_length() const
+        constexpr Vector::ContainedType side_a_length() const
         {
             return m_vertex1.distance_to(m_vertex2);
         }
 
         [[nodiscard]]
-        Vector::ContainedType side_b_length() const
+        constexpr Vector::ContainedType side_b_length() const
         {
             return m_vertex3.distance_to(m_vertex2);
         }
@@ -69,7 +69,7 @@ namespace omath
             const auto side_b = side_b_length();
             const auto hypot_value = hypot();
 
-            return std::abs(side_a * side_a + side_b * side_b - hypot_value * hypot_value) <= 0.0001f;
+            return internal::abs(side_a * side_a + side_b * side_b - hypot_value * hypot_value) <= 0.0001f;
         }
         [[nodiscard]]
         constexpr Vector side_b_vector() const

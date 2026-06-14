@@ -2,6 +2,7 @@
 // Created by vlad on 9/29/2024.
 //
 #pragma once
+#include "omath/internal/constexpr_math.hpp"
 #include "vector3.hpp"
 #include <algorithm>
 #include <array>
@@ -10,6 +11,7 @@
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #ifdef OMATH_USE_AVX2
@@ -41,12 +43,12 @@ namespace omath
     enum class NDCDepthRange : uint8_t
     {
         NEGATIVE_ONE_TO_ONE = 0, // OpenGL: [-1.0, 1.0]
-        ZERO_TO_ONE              // DirectX / Vulkan: [0.0, 1.0]
+        ZERO_TO_ONE // DirectX / Vulkan: [0.0, 1.0]
     };
 
-    template<typename M1, typename M2> concept MatTemplateEqual
-            = (M1::rows == M2::rows) && (M1::columns == M2::columns)
-              && std::is_same_v<typename M1::value_type, typename M2::value_type> && (M1::store_type == M2::store_type);
+    template<typename M1, typename M2> concept MatTemplateEqual =
+            (M1::rows == M2::rows) && (M1::columns == M2::columns)
+            && std::is_same_v<typename M1::value_type, typename M2::value_type> && (M1::store_type == M2::store_type);
 
     template<size_t Rows = 0, size_t Columns = 0, class Type = float, MatStoreType StoreType = MatStoreType::ROW_MAJOR>
     requires std::is_arithmetic_v<Type>
@@ -149,7 +151,8 @@ namespace omath
             }
         }
 
-        [[nodiscard("You must use element reference")]] constexpr Type& at(const size_t row_index, const size_t column_index)
+        [[nodiscard("You must use element reference")]] constexpr Type& at(const size_t row_index,
+                                                                           const size_t column_index)
         {
             return const_cast<Type&>(std::as_const(*this).at(row_index, column_index));
         }
@@ -176,6 +179,13 @@ namespace omath
         operator*(const Mat<Columns, OtherColumns, Type, StoreType>& other) const
         {
 #ifdef OMATH_USE_AVX2
+            if (std::is_constant_evaluated())
+            {
+                if constexpr (StoreType == MatStoreType::ROW_MAJOR)
+                    return cache_friendly_multiply_row_major(other);
+                else if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
+                    return cache_friendly_multiply_col_major(other);
+            }
             if constexpr (StoreType == MatStoreType::ROW_MAJOR)
                 return avx_multiply_row_major(other);
             else if constexpr (StoreType == MatStoreType::COLUMN_MAJOR)
@@ -192,7 +202,11 @@ namespace omath
 
         constexpr Mat& operator*=(const Type& f) noexcept
         {
-            std::ranges::for_each(m_data, [&f](auto& val) { val *= f; });
+            std::ranges::for_each(m_data,
+                                  [&f](auto& val)
+                                  {
+                                      val *= f;
+                                  });
             return *this;
         }
 
@@ -212,7 +226,11 @@ namespace omath
 
         constexpr Mat& operator/=(const Type& value) noexcept
         {
-            std::ranges::for_each(m_data, [&value](auto& val) { val /= value; });
+            std::ranges::for_each(m_data,
+                                  [&value](auto& val)
+                                  {
+                                      val /= value;
+                                  });
             return *this;
         }
 
@@ -388,7 +406,7 @@ namespace omath
         {
             const auto det = determinant();
 
-            if (std::abs(det) < std::numeric_limits<Type>::epsilon())
+            if (internal::abs(det) < std::numeric_limits<Type>::epsilon())
                 return std::nullopt;
 
             const auto transposed_mat = transposed();
@@ -578,13 +596,13 @@ namespace omath
     };
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR> [[nodiscard("You must use row matrix")]]
-    constexpr static Mat<1, 4, Type, St> mat_row_from_vector(const Vector3<Type>& vector) noexcept
+    constexpr Mat<1, 4, Type, St> mat_row_from_vector(const Vector3<Type>& vector) noexcept
     {
         return {{vector.x, vector.y, vector.z, 1}};
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR> [[nodiscard("You must use column matrix")]]
-    constexpr static Mat<4, 1, Type, St> mat_column_from_vector(const Vector3<Type>& vector) noexcept
+    constexpr Mat<4, 1, Type, St> mat_column_from_vector(const Vector3<Type>& vector) noexcept
     {
         return {{vector.x}, {vector.y}, {vector.z}, {1}};
     }
@@ -593,8 +611,7 @@ namespace omath
     [[nodiscard("You must use translation matrix")]]
     constexpr Mat<4, 4, Type, St> mat_translation(const Vector3<Type>& diff) noexcept
     {
-        return
-        {
+        return {
                 {1, 0, 0, diff.x},
                 {0, 1, 0, diff.y},
                 {0, 0, 1, diff.z},
@@ -622,10 +639,11 @@ namespace omath
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard("You must use extracted scale")]]
-    Vector3<Type> mat_extract_scale(const Mat<4, 4, Type, St>& mat) noexcept
+    constexpr Vector3<Type> mat_extract_scale(const Mat<4, 4, Type, St>& mat) noexcept
     {
-        auto column_length = [](const Type x, const Type y, const Type z) {
-            return static_cast<Type>(std::sqrt(x * x + y * y + z * z));
+        auto column_length = [](const Type x, const Type y, const Type z)
+        {
+            return static_cast<Type>(internal::sqrt(x * x + y * y + z * z));
         };
 
         const auto scale_x = column_length(mat.at(0, 0), mat.at(1, 0), mat.at(2, 0));
@@ -635,16 +653,16 @@ namespace omath
         constexpr auto epsilon = std::numeric_limits<Type>::epsilon();
 
         return {
-                std::abs(scale_x) < epsilon ? Type{1} : scale_x,
-                std::abs(scale_y) < epsilon ? Type{1} : scale_y,
-                std::abs(scale_z) < epsilon ? Type{1} : scale_z,
+                internal::abs(scale_x) < epsilon ? Type{1} : scale_x,
+                internal::abs(scale_y) < epsilon ? Type{1} : scale_y,
+                internal::abs(scale_z) < epsilon ? Type{1} : scale_z,
         };
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     requires std::is_floating_point_v<Type>
     [[nodiscard("You must use extracted rotation")]]
-    Vector3<Type> mat_extract_rotation_zyx(const Mat<4, 4, Type, St>& mat) noexcept
+    constexpr Vector3<Type> mat_extract_rotation_zyx(const Mat<4, 4, Type, St>& mat) noexcept
     {
         const auto scale = mat_extract_scale(mat);
         const auto m00 = mat.at(0, 0) / scale.x;
@@ -654,105 +672,91 @@ namespace omath
         const auto m22 = mat.at(2, 2) / scale.z;
 
         return {
-                angles::radians_to_degrees(std::atan2(m21, m22)),
-                angles::radians_to_degrees(std::asin(std::clamp(-m20, Type{-1}, Type{1}))),
-                angles::radians_to_degrees(std::atan2(m10, m00)),
+                angles::radians_to_degrees(internal::atan2(m21, m22)),
+                angles::radians_to_degrees(internal::asin(std::clamp(-m20, Type{-1}, Type{1}))),
+                angles::radians_to_degrees(internal::atan2(m10, m00)),
         };
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard("You must use rotation matrix")]]
-    Mat<4, 4, Type, St> mat_rotation_axis_x(const Angle& angle) noexcept
+    constexpr Mat<4, 4, Type, St> mat_rotation_axis_x(const Angle& angle) noexcept
     {
-        return
-        {
-            {1, 0,           0,            0},
-            {0, angle.cos(), -angle.sin(), 0},
-            {0, angle.sin(), angle.cos(),  0},
-            {0, 0,           0,            1}
-        };
+        return {{1, 0, 0, 0}, {0, angle.cos(), -angle.sin(), 0}, {0, angle.sin(), angle.cos(), 0}, {0, 0, 0, 1}};
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard("You must use rotation matrix")]]
-    Mat<4, 4, Type, St> mat_rotation_axis_y(const Angle& angle) noexcept
+    constexpr Mat<4, 4, Type, St> mat_rotation_axis_y(const Angle& angle) noexcept
     {
-        return
-        {
-            {angle.cos(),  0, angle.sin(), 0},
-            {0           , 1,           0, 0},
-            {-angle.sin(), 0, angle.cos(), 0},
-            {0           , 0,           0, 1}
-        };
+        return {{angle.cos(), 0, angle.sin(), 0}, {0, 1, 0, 0}, {-angle.sin(), 0, angle.cos(), 0}, {0, 0, 0, 1}};
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class Angle>
     [[nodiscard("You must use rotation matrix")]]
-    Mat<4, 4, Type, St> mat_rotation_axis_z(const Angle& angle) noexcept
+    constexpr Mat<4, 4, Type, St> mat_rotation_axis_z(const Angle& angle) noexcept
     {
-        return
-        {
-            {angle.cos(), -angle.sin(), 0, 0},
-            {angle.sin(),  angle.cos(), 0, 0},
-            {          0,        0,     1, 0},
-            {          0,        0,     0, 1},
+        return {
+                {angle.cos(), -angle.sin(), 0, 0},
+                {angle.sin(), angle.cos(), 0, 0},
+                {0, 0, 1, 0},
+                {0, 0, 0, 1},
         };
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard("You must use camera view matrix")]]
-    static Mat<4, 4, Type, St> mat_camera_view(const Vector3<Type>& forward, const Vector3<Type>& right,
-                                               const Vector3<Type>& up, const Vector3<Type>& camera_origin) noexcept
+    constexpr Mat<4, 4, Type, St> mat_camera_view(const Vector3<Type>& forward, const Vector3<Type>& right,
+                                                  const Vector3<Type>& up, const Vector3<Type>& camera_origin) noexcept
     {
-        return  Mat<4, 4, Type, St>
-        {
-            {right.x,   right.y,   right.z,   0},
-            {up.x,      up.y,      up.z,      0},
-            {forward.x, forward.y, forward.z, 0},
-            {0,         0,         0,         1},
-        } * mat_translation<Type, St>(-camera_origin);
+        return Mat<4, 4, Type, St>{
+                       {right.x, right.y, right.z, 0},
+                       {up.x, up.y, up.z, 0},
+                       {forward.x, forward.y, forward.z, 0},
+                       {0, 0, 0, 1},
+               }
+               * mat_translation<Type, St>(-camera_origin);
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use perspective matrix")]]
-    Mat<4, 4, Type, St> mat_perspective_left_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio,
-                                                    const Type near, const Type far) noexcept
+    [[nodiscard("You must use perspective matrix")]] constexpr Mat<4, 4, Type, St>
+    mat_perspective_left_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio, const Type near,
+                                             const Type far) noexcept
     {
-        const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
-
+        const auto fov_half_tan = internal::tan(angles::degrees_to_radians(field_of_view) / Type{2});
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},             Type{0}},
-                    {Type{0},                                 Type{1} / fov_half_tan, Type{0},             Type{0}},
-                    {Type{0},                                 Type{0},                far / (far - near), -(near * far) / (far - near)},
-                    {Type{0},                                 Type{0},                Type{1},            Type{0}}};
+            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0}, Type{0}, Type{0}},
+                    {Type{0}, Type{1} / fov_half_tan, Type{0}, Type{0}},
+                    {Type{0}, Type{0}, far / (far - near), -(near * far) / (far - near)},
+                    {Type{0}, Type{0}, Type{1}, Type{0}}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},                      Type{0}},
-                    {Type{0},                                 Type{1} / fov_half_tan, Type{0},                      Type{0}},
-                    {Type{0},                                 Type{0},                (far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
-                    {Type{0},                                 Type{0},                Type{1},                     Type{0}}};
+            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0}, Type{0}, Type{0}},
+                    {Type{0}, Type{1} / fov_half_tan, Type{0}, Type{0}},
+                    {Type{0}, Type{0}, (far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
+                    {Type{0}, Type{0}, Type{1}, Type{0}}};
         else
             std::unreachable();
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use perspective matrix")]]
-    Mat<4, 4, Type, St> mat_perspective_right_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio,
-                                                     const Type near, const Type far) noexcept
+    [[nodiscard("You must use perspective matrix")]] constexpr Mat<4, 4, Type, St>
+    mat_perspective_right_handed_vertical_fov(const Type field_of_view, const Type aspect_ratio, const Type near,
+                                              const Type far) noexcept
     {
-        const auto fov_half_tan = std::tan(angles::degrees_to_radians(field_of_view) / Type{2});
+        const auto fov_half_tan = internal::tan(angles::degrees_to_radians(field_of_view) / Type{2});
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},             Type{0}},
-                    {Type{0},                                 Type{1} / fov_half_tan, Type{0},             Type{0}},
-                    {Type{0},                                 Type{0},                -far / (far - near), -(near * far) / (far - near)},
-                    {Type{0},                                 Type{0},                -Type{1},            Type{0}}};
+            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0}, Type{0}, Type{0}},
+                    {Type{0}, Type{1} / fov_half_tan, Type{0}, Type{0}},
+                    {Type{0}, Type{0}, -far / (far - near), -(near * far) / (far - near)},
+                    {Type{0}, Type{0}, -Type{1}, Type{0}}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0},                Type{0},                      Type{0}},
-                    {Type{0},                                 Type{1} / fov_half_tan, Type{0},                      Type{0}},
-                    {Type{0},                                 Type{0},                -(far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
-                    {Type{0},                                 Type{0},                -Type{1},                     Type{0}}};
+            return {{Type{1} / (aspect_ratio * fov_half_tan), Type{0}, Type{0}, Type{0}},
+                    {Type{0}, Type{1} / fov_half_tan, Type{0}, Type{0}},
+                    {Type{0}, Type{0}, -(far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
+                    {Type{0}, Type{0}, -Type{1}, Type{0}}};
         else
             std::unreachable();
     }
@@ -762,105 +766,93 @@ namespace omath
     // X and Y scales derived as: X = 1 / tan(hfov/2), Y = aspect / tan(hfov/2).
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use perspective matrix")]]
-    Mat<4, 4, Type, St> mat_perspective_left_handed_horizontal_fov(const Type horizontal_fov,
-                                                                   const Type aspect_ratio, const Type near,
-                                                                   const Type far) noexcept
+    [[nodiscard("You must use perspective matrix")]] constexpr Mat<4, 4, Type, St>
+    mat_perspective_left_handed_horizontal_fov(const Type horizontal_fov, const Type aspect_ratio, const Type near,
+                                               const Type far) noexcept
     {
-        const auto inv_tan_half_hfov = Type{1} / std::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
+        const auto inv_tan_half_hfov = Type{1} / internal::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
         const auto x_axis = inv_tan_half_hfov;
         const auto y_axis = inv_tan_half_hfov * aspect_ratio;
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return {{x_axis,     Type{0},    Type{0},             Type{0}},
-                    {Type{0},    y_axis,     Type{0},             Type{0}},
-                    {Type{0},    Type{0},    far / (far - near),  -(near * far) / (far - near)},
-                    {Type{0},    Type{0},    Type{1},             Type{0}}};
+            return {{x_axis, Type{0}, Type{0}, Type{0}},
+                    {Type{0}, y_axis, Type{0}, Type{0}},
+                    {Type{0}, Type{0}, far / (far - near), -(near * far) / (far - near)},
+                    {Type{0}, Type{0}, Type{1}, Type{0}}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {{x_axis,  Type{0}, Type{0},                     Type{0}},
-                    {Type{0}, y_axis,  Type{0},                     Type{0}},
+            return {{x_axis, Type{0}, Type{0}, Type{0}},
+                    {Type{0}, y_axis, Type{0}, Type{0}},
                     {Type{0}, Type{0}, (far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
-                    {Type{0}, Type{0}, Type{1},                     Type{0}}};
+                    {Type{0}, Type{0}, Type{1}, Type{0}}};
         else
             std::unreachable();
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use perspective matrix")]]
-    Mat<4, 4, Type, St> mat_perspective_right_handed_horizontal_fov(const Type horizontal_fov,
-                                                                    const Type aspect_ratio, const Type near,
-                                                                    const Type far) noexcept
+    [[nodiscard("You must use perspective matrix")]] constexpr Mat<4, 4, Type, St>
+    mat_perspective_right_handed_horizontal_fov(const Type horizontal_fov, const Type aspect_ratio, const Type near,
+                                                const Type far) noexcept
     {
-        const auto inv_tan_half_hfov = Type{1} / std::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
+        const auto inv_tan_half_hfov = Type{1} / internal::tan(angles::degrees_to_radians(horizontal_fov) / Type{2});
+
         const auto x_axis = inv_tan_half_hfov;
         const auto y_axis = inv_tan_half_hfov * aspect_ratio;
 
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return {{x_axis,  Type{0}, Type{0},             Type{0}},
-                    {Type{0}, y_axis,  Type{0},             Type{0}},
+            return {{x_axis, Type{0}, Type{0}, Type{0}},
+                    {Type{0}, y_axis, Type{0}, Type{0}},
                     {Type{0}, Type{0}, -far / (far - near), -(near * far) / (far - near)},
-                    {Type{0}, Type{0}, -Type{1},            Type{0}}};
+                    {Type{0}, Type{0}, -Type{1}, Type{0}}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return {{x_axis,  Type{0}, Type{0},                      Type{0}},
-                    {Type{0}, y_axis,  Type{0},                      Type{0}},
+            return {{x_axis, Type{0}, Type{0}, Type{0}},
+                    {Type{0}, y_axis, Type{0}, Type{0}},
                     {Type{0}, Type{0}, -(far + near) / (far - near), -(Type{2} * near * far) / (far - near)},
-                    {Type{0}, Type{0}, -Type{1},                     Type{0}}};
+                    {Type{0}, Type{0}, -Type{1}, Type{0}}};
         else
             std::unreachable();
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use ortho matrix")]]
-    Mat<4, 4, Type, St> mat_ortho_left_handed(const Type left, const Type right, const Type bottom, const Type top,
-                                              const Type near, const Type far) noexcept
+    [[nodiscard("You must use ortho matrix")]] constexpr Mat<4, 4, Type, St>
+    mat_ortho_left_handed(const Type left, const Type right, const Type bottom, const Type top, const Type near,
+                          const Type far) noexcept
     {
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return
-            {
-                { static_cast<Type>(2) / (right - left), 0.f,       0.f,    -(right + left) / (right - left)},
-                { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,    -(top + bottom) / (top - bottom)},
-                { 0.f,      0.f,       static_cast<Type>(1) / (far - near), -near / (far - near)            },
-                { 0.f,      0.f,       0.f,                                 1.f                             }
-            };
+            return {{static_cast<Type>(2) / (right - left), 0.f, 0.f, -(right + left) / (right - left)},
+                    {0.f, static_cast<Type>(2) / (top - bottom), 0.f, -(top + bottom) / (top - bottom)},
+                    {0.f, 0.f, static_cast<Type>(1) / (far - near), -near / (far - near)},
+                    {0.f, 0.f, 0.f, 1.f}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return
-            {
-                { static_cast<Type>(2) / (right - left), 0.f,       0.f,    -(right + left) / (right - left)},
-                { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,    -(top + bottom) / (top - bottom)},
-                { 0.f,      0.f,       static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
-                { 0.f,      0.f,       0.f,                                 1.f                             }
-            };
+            return {{static_cast<Type>(2) / (right - left), 0.f, 0.f, -(right + left) / (right - left)},
+                    {0.f, static_cast<Type>(2) / (top - bottom), 0.f, -(top + bottom) / (top - bottom)},
+                    {0.f, 0.f, static_cast<Type>(2) / (far - near), -(far + near) / (far - near)},
+                    {0.f, 0.f, 0.f, 1.f}};
         else
             std::unreachable();
     }
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,
              NDCDepthRange DepthRange = NDCDepthRange::NEGATIVE_ONE_TO_ONE>
-    [[nodiscard("You must use ortho matrix")]]
-    Mat<4, 4, Type, St> mat_ortho_right_handed(const Type left, const Type right, const Type bottom, const Type top,
-                                               const Type near, const Type far) noexcept
+    [[nodiscard("You must use ortho matrix")]] constexpr Mat<4, 4, Type, St>
+    mat_ortho_right_handed(const Type left, const Type right, const Type bottom, const Type top, const Type near,
+                           const Type far) noexcept
     {
         if constexpr (DepthRange == NDCDepthRange::ZERO_TO_ONE)
-            return
-            {
-                    { static_cast<Type>(2) / (right - left), 0.f,       0.f,     -(right + left) / (right - left)},
-                    { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,     -(top + bottom) / (top - bottom)},
-                    { 0.f,      0.f,       -static_cast<Type>(1) / (far - near), -near / (far - near)            },
-                    { 0.f,      0.f,       0.f,                                  1.f                             }
-            };
+            return {{static_cast<Type>(2) / (right - left), 0.f, 0.f, -(right + left) / (right - left)},
+                    {0.f, static_cast<Type>(2) / (top - bottom), 0.f, -(top + bottom) / (top - bottom)},
+                    {0.f, 0.f, -static_cast<Type>(1) / (far - near), -near / (far - near)},
+                    {0.f, 0.f, 0.f, 1.f}};
         else if constexpr (DepthRange == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
-            return
-            {
-                    { static_cast<Type>(2) / (right - left), 0.f,       0.f,     -(right + left) / (right - left)},
-                    { 0.f,      static_cast<Type>(2) / (top - bottom),  0.f,     -(top + bottom) / (top - bottom)},
-                    { 0.f,      0.f,       -static_cast<Type>(2) / (far - near), -(far + near) / (far - near)    },
-                    { 0.f,      0.f,       0.f,                                  1.f                             }
-            };
+            return {{static_cast<Type>(2) / (right - left), 0.f, 0.f, -(right + left) / (right - left)},
+                    {0.f, static_cast<Type>(2) / (top - bottom), 0.f, -(top + bottom) / (top - bottom)},
+                    {0.f, 0.f, -static_cast<Type>(2) / (far - near), -(far + near) / (far - near)},
+                    {0.f, 0.f, 0.f, 1.f}};
         else
             std::unreachable();
     }
     template<class T = float, MatStoreType St = MatStoreType::COLUMN_MAJOR>
-   Mat<4, 4, T, St> mat_look_at_left_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)
+    constexpr Mat<4, 4, T, St> mat_look_at_left_handed(const Vector3<T>& eye, const Vector3<T>& center,
+                                                       const Vector3<T>& up)
     {
         const Vector3<T> f = (center - eye).normalized();
         const Vector3<T> s = f.cross(up).normalized();
@@ -869,7 +861,8 @@ namespace omath
     }
 
     template<class T = float, MatStoreType St = MatStoreType::COLUMN_MAJOR>
-    Mat<4, 4, T, St>mat_look_at_right_handed(const Vector3<T>& eye, const Vector3<T>& center, const Vector3<T>& up)
+    constexpr Mat<4, 4, T, St> mat_look_at_right_handed(const Vector3<T>& eye, const Vector3<T>& center,
+                                                        const Vector3<T>& up)
     {
         const Vector3<T> f = (center - eye).normalized();
         const Vector3<T> s = f.cross(up).normalized();
