@@ -69,11 +69,7 @@ namespace omath
             const auto side_b = side_b_length();
             const auto hypot_value = hypot();
 
-#ifdef OMATH_USE_GCEM
-            return gcem::abs(side_a * side_a + side_b * side_b - hypot_value * hypot_value) <= 0.0001f;
-#else
-            return std::abs(side_a * side_a + side_b * side_b - hypot_value * hypot_value) <= 0.0001f;
-#endif
+            return internal::abs(side_a * side_a + side_b * side_b - hypot_value * hypot_value) <= 0.0001f;
         }
         [[nodiscard]]
         constexpr Vector side_b_vector() const

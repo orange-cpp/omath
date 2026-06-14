@@ -18,7 +18,7 @@ namespace omath
         RollType roll;
 
         [[nodiscard]]
-        Vector3<ArithmeticType> as_vector3() const
+        constexpr Vector3<ArithmeticType> as_vector3() const
         {
             return {pitch.as_degrees(), yaw.as_degrees(), roll.as_degrees()};
         }

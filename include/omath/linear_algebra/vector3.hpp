@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "omath/internal/optional_constexpr_math.hpp"
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/trigonometry/angle.hpp"
 #include <cstdint>
@@ -142,11 +143,7 @@ namespace omath
 #ifndef _MSC_VER
         [[nodiscard("You must use length")]] constexpr Type length() const noexcept
         {
-#ifdef OMATH_USE_GCEM
-            return gcem::sqrt(this->x * this->x + this->y * this->y + z * z);
-#else
-            return std::hypot(this->x, this->y, z);
-#endif
+            return internal::hypot(this->x, this->y, z);
         }
 
         [[nodiscard("You must use 2D length")]] constexpr Type length_2d() const noexcept
@@ -167,11 +164,7 @@ namespace omath
         [[nodiscard("You must use length")]]
         OMATH_CONSTEXPR Type length() const noexcept
         {
-#ifdef OMATH_USE_GCEM
-            return gcem::sqrt(this->x * this->x + this->y * this->y + this->z * this->z);
-#else
-            return std::hypot(this->x, this->y, z);
-#endif
+            return internal::hypot(this->x, this->y, this->z);
         }
 
         [[nodiscard("You must use normalized vector")]]
@@ -269,11 +262,7 @@ namespace omath
 
             if (bottom == static_cast<Type>(0))
                 return std::unexpected(Vector3Error::IMPOSSIBLE_BETWEEN_ANGLE);
-#ifdef OMATH_USE_GCEM
-            return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(gcem::acos(dot(other) / bottom));
-#else
-            return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(std::acos(dot(other) / bottom));
-#endif
+            return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(internal::acos(dot(other) / bottom));
         }
 
         [[nodiscard("You must use perpendicularity check result")]]

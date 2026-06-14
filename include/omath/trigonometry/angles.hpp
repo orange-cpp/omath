@@ -25,23 +25,25 @@ namespace omath::angles
 
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] Type horizontal_fov_to_vertical(const Type& horizontal_fov, const Type& aspect) noexcept
+    [[nodiscard]] OMATH_CONSTEXPR Type horizontal_fov_to_vertical(const Type& horizontal_fov,
+                                                                  const Type& aspect) noexcept
     {
         const auto fov_rad = degrees_to_radians(horizontal_fov);
 
-        const auto vert_fov = static_cast<Type>(2) * std::atan(std::tan(fov_rad / static_cast<Type>(2)) / aspect);
+        const auto vert_fov = static_cast<Type>(2) * internal::atan(internal::tan(fov_rad / static_cast<Type>(2)) / aspect);
 
         return radians_to_degrees(vert_fov);
     }
 
     template<class Type>
     requires std::is_floating_point_v<Type>
-    [[nodiscard]] Type vertical_fov_to_horizontal(const Type& vertical_fov, const Type& aspect) noexcept
+    [[nodiscard]] OMATH_CONSTEXPR Type vertical_fov_to_horizontal(const Type& vertical_fov,
+                                                                  const Type& aspect) noexcept
     {
         const auto fov_as_radians = degrees_to_radians(vertical_fov);
 
         const auto horizontal_fov =
-                static_cast<Type>(2) * std::atan(std::tan(fov_as_radians / static_cast<Type>(2)) * aspect);
+                static_cast<Type>(2) * internal::atan(internal::tan(fov_as_radians / static_cast<Type>(2)) * aspect);
 
         return radians_to_degrees(horizontal_fov);
     }
@@ -55,11 +57,7 @@ namespace omath::angles
 
         const Type range = max - min;
 
-#ifdef OMATH_USE_GCEM
-        Type wrapped_angle = gcem::fmod(angle - min, range);
-#else
-        Type wrapped_angle = std::fmod(angle - min, range);
-#endif
+        Type wrapped_angle = internal::fmod(angle - min, range);
 
         if (wrapped_angle < 0)
             wrapped_angle += range;

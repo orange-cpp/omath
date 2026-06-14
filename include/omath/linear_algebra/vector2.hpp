@@ -119,11 +119,7 @@ namespace omath
         [[nodiscard("You must use distance")]]
         OMATH_CONSTEXPR Type distance_to(const Vector2& other) const noexcept
         {
-#ifdef OMATH_USE_GCEM
-            return gcem::sqrt(distance_to_sqr(other));
-#else
-            return std::sqrt(distance_to_sqr(other));
-#endif
+            return internal::sqrt(distance_to_sqr(other));
         }
 
         [[nodiscard("You must use squared distance")]]
@@ -141,11 +137,7 @@ namespace omath
 #ifndef _MSC_VER
         [[nodiscard("You must use length")]] constexpr Type length() const noexcept
         {
-#ifdef OMATH_USE_GCEM
-            return gcem::hypot(this->x, this->y);
-#else
-            return std::hypot(this->x, this->y);
-#endif
+            return internal::hypot(this->x, this->y);
         }
 
         [[nodiscard("You must use normalized vector")]] constexpr Vector2 normalized() const noexcept
@@ -157,11 +149,7 @@ namespace omath
         [[nodiscard("You must use length")]]
         OMATH_CONSTEXPR Type length() const noexcept
         {
-#ifdef OMATH_USE_GCEM
-            return gcem::hypot(x, y);
-#else
-            return std::hypot(x, y);
-#endif
+            return internal::hypot(x, y);
         }
 
         [[nodiscard("You must use normalized vector")]]

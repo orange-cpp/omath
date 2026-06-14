@@ -73,45 +73,25 @@ namespace omath
         [[nodiscard]]
         OMATH_CONSTEXPR Type sin() const noexcept
         {
-#ifdef OMATH_USE_GCEM
-            return gcem::sin(as_radians());
-#else
-            return std::sin(as_radians());
-
-#endif
+            return internal::sin(as_radians());
         }
 
         [[nodiscard]]
         OMATH_CONSTEXPR Type cos() const noexcept
         {
-#ifdef OMATH_USE_GCEM
-            return gcem::cos(as_radians());
-#else
-            return std::cos(as_radians());
-
-#endif
+            return internal::cos(as_radians());
         }
 
         [[nodiscard]]
         OMATH_CONSTEXPR Type tan() const noexcept
         {
-#ifdef OMATH_USE_GCEM
-            return gcem::tan(as_radians());
-#else
-            return std::tan(as_radians());
-
-#endif
+            return internal::tan(as_radians());
         }
 
         [[nodiscard]]
         OMATH_CONSTEXPR Type atan() const noexcept
         {
-#ifdef OMATH_USE_GCEM
-            return gcem::atan(as_radians());
-#else
-            return std::atan(as_radians());
-
-#endif
+            return internal::atan(as_radians());
         }
 
         [[nodiscard]]

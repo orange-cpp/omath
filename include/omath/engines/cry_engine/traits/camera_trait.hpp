@@ -16,13 +16,8 @@ namespace omath::cry_engine
                                                              const Vector3<float>& look_at) noexcept
         {
             const auto direction = (look_at - cam_origin).normalized();
-#ifdef OMATH_USE_GCEM
-            return {PitchAngle::from_radians(gcem::asin(direction.z)),
-                    YawAngle::from_radians(-gcem::atan2(direction.x, direction.y)), RollAngle::from_radians(0.f)};
-#else
-            return {PitchAngle::from_radians(std::asin(direction.z)),
-                    YawAngle::from_radians(-std::atan2(direction.x, direction.y)), RollAngle::from_radians(0.f)};
-#endif
+            return {PitchAngle::from_radians(internal::asin(direction.z)),
+                    YawAngle::from_radians(-internal::atan2(direction.x, direction.y)), RollAngle::from_radians(0.f)};
         }
 
         [[nodiscard]]
