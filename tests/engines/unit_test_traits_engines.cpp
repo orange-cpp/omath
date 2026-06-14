@@ -1,29 +1,39 @@
 // Tests for engine trait headers to improve header coverage
 #include <gtest/gtest.h>
+#include <omath/engines/frostbite_engine/camera.hpp>
 #include <omath/engines/frostbite_engine/traits/pred_engine_trait.hpp>
 #include <omath/engines/frostbite_engine/traits/mesh_trait.hpp>
 #include <omath/engines/frostbite_engine/traits/camera_trait.hpp>
 
+#include <omath/engines/iw_engine/camera.hpp>
 #include <omath/engines/iw_engine/traits/pred_engine_trait.hpp>
 #include <omath/engines/iw_engine/traits/mesh_trait.hpp>
 #include <omath/engines/iw_engine/traits/camera_trait.hpp>
 
+#include <omath/engines/opengl_engine/camera.hpp>
 #include <omath/engines/opengl_engine/traits/pred_engine_trait.hpp>
 #include <omath/engines/opengl_engine/traits/mesh_trait.hpp>
 #include <omath/engines/opengl_engine/traits/camera_trait.hpp>
 
+#include <omath/engines/unity_engine/camera.hpp>
 #include <omath/engines/unity_engine/traits/pred_engine_trait.hpp>
 #include <omath/engines/unity_engine/traits/mesh_trait.hpp>
 #include <omath/engines/unity_engine/traits/camera_trait.hpp>
 
+#include <omath/engines/unreal_engine/camera.hpp>
 #include <omath/engines/unreal_engine/traits/pred_engine_trait.hpp>
 #include <omath/engines/unreal_engine/traits/mesh_trait.hpp>
 #include <omath/engines/unreal_engine/traits/camera_trait.hpp>
 
+#include <omath/engines/source_engine/camera.hpp>
 #include <omath/engines/source_engine/traits/pred_engine_trait.hpp>
 #include <omath/engines/source_engine/traits/camera_trait.hpp>
 
+#include <omath/engines/cry_engine/camera.hpp>
 #include <omath/engines/cry_engine/traits/camera_trait.hpp>
+
+#include <omath/engines/rage_engine/camera.hpp>
+#include <omath/engines/rage_engine/traits/camera_trait.hpp>
 
 #include <omath/projectile_prediction/projectile.hpp>
 #include <omath/projectile_prediction/target.hpp>
@@ -41,6 +51,43 @@ static void expect_matrix_near(const MatT& a, const MatT& b, float eps = 1e-5f)
 }
 
 // ── Launch offset tests for all engines ──────────────────────────────────────
+#ifdef OMATH_USE_GCEM
+template<class MatType, class NumericType>
+constexpr bool matrix_has_non_zero_element(const MatType& mat)
+{
+    for (std::size_t r = 0; r < 4; ++r)
+        for (std::size_t c = 0; c < 4; ++c)
+            if (mat.at(r, c) != NumericType{0})
+                return true;
+
+    return false;
+}
+
+template<class CameraType, class NumericType>
+constexpr bool camera_can_calculate_matrices_at_compile_time()
+{
+    using FieldOfView = projection::FieldOfView;
+
+    CameraType camera{{}, {}, {1280.f, 720.f}, FieldOfView::from_degrees(90.f), NumericType{0.01}, NumericType{1000}};
+    const auto view = camera.get_view_matrix();
+    const auto projection = camera.get_projection_matrix();
+    const auto view_projection = camera.get_view_projection_matrix();
+
+    return matrix_has_non_zero_element<decltype(view), NumericType>(view)
+           && matrix_has_non_zero_element<decltype(projection), NumericType>(projection)
+           && matrix_has_non_zero_element<decltype(view_projection), NumericType>(view_projection);
+}
+
+static_assert(camera_can_calculate_matrices_at_compile_time<source_engine::Camera, float>());
+static_assert(camera_can_calculate_matrices_at_compile_time<iw_engine::Camera, float>());
+static_assert(camera_can_calculate_matrices_at_compile_time<frostbite_engine::Camera, float>());
+static_assert(camera_can_calculate_matrices_at_compile_time<opengl_engine::Camera, float>());
+static_assert(camera_can_calculate_matrices_at_compile_time<unity_engine::Camera, float>());
+static_assert(camera_can_calculate_matrices_at_compile_time<cry_engine::Camera, float>());
+static_assert(camera_can_calculate_matrices_at_compile_time<rage_engine::Camera, float>());
+static_assert(camera_can_calculate_matrices_at_compile_time<unreal_engine::Camera, double>());
+#endif
+
 #include <omath/engines/cry_engine/traits/pred_engine_trait.hpp>
 
 // Helper: verify that zero offset matches default-initialized offset behavior

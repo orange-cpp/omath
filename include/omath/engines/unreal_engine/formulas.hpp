@@ -8,31 +8,86 @@
 namespace omath::unreal_engine
 {
     [[nodiscard]]
-    Vector3<double> forward_vector(const ViewAngles& angles) noexcept;
+    inline OMATH_CONSTEXPR Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept;
 
     [[nodiscard]]
-    Vector3<double> right_vector(const ViewAngles& angles) noexcept;
+    inline OMATH_CONSTEXPR Vector3<double> forward_vector(const ViewAngles& angles) noexcept
+    {
+        const auto vec = rotation_matrix(angles) * mat_column_from_vector(k_abs_forward);
+
+        return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
+    }
 
     [[nodiscard]]
-    Vector3<double> up_vector(const ViewAngles& angles) noexcept;
+    inline OMATH_CONSTEXPR Vector3<double> right_vector(const ViewAngles& angles) noexcept
+    {
+        const auto vec = rotation_matrix(angles) * mat_column_from_vector(k_abs_right);
 
-    [[nodiscard]] Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<double>& cam_origin) noexcept;
-
-    [[nodiscard]]
-    Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept;
-
-    [[nodiscard]]
-    Vector3<double> extract_origin(const Mat4X4& mat) noexcept;
+        return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
+    }
 
     [[nodiscard]]
-    Vector3<double> extract_scale(const Mat4X4& mat) noexcept;
+    inline OMATH_CONSTEXPR Vector3<double> up_vector(const ViewAngles& angles) noexcept
+    {
+        const auto vec = rotation_matrix(angles) * mat_column_from_vector(k_abs_up);
+
+        return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
+    }
 
     [[nodiscard]]
-    ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept;
+    inline OMATH_CONSTEXPR Mat4X4 calc_view_matrix(const ViewAngles& angles,
+                                                    const Vector3<double>& cam_origin) noexcept
+    {
+        return mat_camera_view<double, MatStoreType::ROW_MAJOR>(forward_vector(angles), right_vector(angles),
+                                                               up_vector(angles), cam_origin);
+    }
 
     [[nodiscard]]
-    Mat4X4 calc_perspective_projection_matrix(double field_of_view, double aspect_ratio, double near, double far,
-                                             NDCDepthRange ndc_depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE) noexcept;
+    inline OMATH_CONSTEXPR Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
+    {
+        return mat_rotation_axis_z<double, MatStoreType::ROW_MAJOR>(angles.yaw)
+               * mat_rotation_axis_y<double, MatStoreType::ROW_MAJOR>(-angles.pitch)
+               * mat_rotation_axis_x<double, MatStoreType::ROW_MAJOR>(-angles.roll);
+    }
+
+    [[nodiscard]]
+    inline OMATH_CONSTEXPR Vector3<double> extract_origin(const Mat4X4& mat) noexcept
+    {
+        return mat_extract_origin(mat);
+    }
+
+    [[nodiscard]]
+    inline OMATH_CONSTEXPR Vector3<double> extract_scale(const Mat4X4& mat) noexcept
+    {
+        return mat_extract_scale(mat);
+    }
+
+    [[nodiscard]]
+    inline OMATH_CONSTEXPR ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept
+    {
+        const auto angles = mat_extract_rotation_zyx(mat);
+        return {
+                PitchAngle::from_degrees(-angles.y),
+                YawAngle::from_degrees(angles.z),
+                RollAngle::from_degrees(-angles.x),
+        };
+    }
+
+    [[nodiscard]]
+    inline OMATH_CONSTEXPR Mat4X4 calc_perspective_projection_matrix(
+            const double field_of_view, const double aspect_ratio, const double near, const double far,
+            const NDCDepthRange ndc_depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE) noexcept
+    {
+        if (ndc_depth_range == NDCDepthRange::ZERO_TO_ONE)
+            return mat_perspective_left_handed_horizontal_fov<
+                    double, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+                    field_of_view, aspect_ratio, near, far);
+        if (ndc_depth_range == NDCDepthRange::NEGATIVE_ONE_TO_ONE)
+            return mat_perspective_left_handed_horizontal_fov<
+                    double, MatStoreType::ROW_MAJOR, NDCDepthRange::NEGATIVE_ONE_TO_ONE>(
+                    field_of_view, aspect_ratio, near, far);
+        std::unreachable();
+    }
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
