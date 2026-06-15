@@ -10,7 +10,7 @@ namespace omath::unreal_engine
     class MeshTrait final
     {
     public:
-        [[nodiscard]]
+        [[nodiscard("rotation matrix result should not be discarded")]]
         static Mat4X4 rotation_matrix(const ViewAngles& rotation)
         {
             return unreal_engine::rotation_matrix(rotation);

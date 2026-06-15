@@ -13,6 +13,7 @@ namespace omath::source_engine
     class PredEngineTrait final
     {
     public:
+        [[nodiscard("projectile position result should not be discarded")]]
         constexpr static Vector3<float> predict_projectile_position(const projectile_prediction::Projectile<float>& projectile,
                                                                     const float pitch, const float yaw,
                                                                     const float time, const float gravity) noexcept
@@ -26,7 +27,7 @@ namespace omath::source_engine
 
             return current_pos;
         }
-        [[nodiscard]]
+        [[nodiscard("target position result should not be discarded")]]
         static constexpr Vector3<float> predict_target_position(const projectile_prediction::Target<float>& target,
                                                                 const float time, const float gravity) noexcept
         {
@@ -37,19 +38,19 @@ namespace omath::source_engine
 
             return predicted;
         }
-        [[nodiscard]]
+        [[nodiscard("2d distance result should not be discarded")]]
         static float calc_vector_2d_distance(const Vector3<float>& delta) noexcept
         {
             return std::sqrt(delta.x * delta.x + delta.y * delta.y);
         }
 
-        [[nodiscard]]
+        [[nodiscard("height coordinate result should not be discarded")]]
         constexpr static float get_vector_height_coordinate(const Vector3<float>& vec) noexcept
         {
             return vec.z;
         }
 
-        [[nodiscard]]
+        [[nodiscard("viewpoint result should not be discarded")]]
         static Vector3<float> calc_viewpoint_from_angles(const projectile_prediction::Projectile<float>& projectile,
                                                          Vector3<float> predicted_target_position,
                                                          const std::optional<float> projectile_pitch) noexcept
@@ -61,7 +62,7 @@ namespace omath::source_engine
         }
         // Due to specification of maybe_calculate_projectile_launch_pitch_angle, pitch angle must be:
         // 89 look up, -89 look down
-        [[nodiscard]]
+        [[nodiscard("pitch angle result should not be discarded")]]
         static float calc_direct_pitch_angle(const Vector3<float>& origin, const Vector3<float>& view_to) noexcept
         {
             const auto distance = origin.distance_to(view_to);
@@ -69,7 +70,7 @@ namespace omath::source_engine
 
             return angles::radians_to_degrees(std::asin(delta.z / distance));
         }
-        [[nodiscard]]
+        [[nodiscard("yaw angle result should not be discarded")]]
         static float calc_direct_yaw_angle(const Vector3<float>& origin, const Vector3<float>& view_to) noexcept
         {
             const auto delta = view_to - origin;

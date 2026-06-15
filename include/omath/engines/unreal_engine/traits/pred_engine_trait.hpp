@@ -12,6 +12,7 @@ namespace omath::unreal_engine
     class PredEngineTrait final
     {
     public:
+        [[nodiscard("projectile position result should not be discarded")]]
         static Vector3<double> predict_projectile_position(const projectile_prediction::Projectile<double>& projectile,
                                                            const double pitch, const double yaw,
                                                            const double time, const double gravity) noexcept
@@ -27,7 +28,7 @@ namespace omath::unreal_engine
             return current_pos;
         }
 
-        [[nodiscard]]
+        [[nodiscard("target position result should not be discarded")]]
         static Vector3<double> predict_target_position(const projectile_prediction::Target<double>& target,
                                                        const double time, const double gravity) noexcept
         {
@@ -39,19 +40,19 @@ namespace omath::unreal_engine
             return predicted;
         }
 
-        [[nodiscard]]
+        [[nodiscard("2d distance result should not be discarded")]]
         static double calc_vector_2d_distance(const Vector3<double>& delta) noexcept
         {
             return std::sqrt(delta.x * delta.x + delta.z * delta.z);
         }
 
-        [[nodiscard]]
+        [[nodiscard("height coordinate result should not be discarded")]]
         static double get_vector_height_coordinate(const Vector3<double>& vec) noexcept
         {
             return vec.y;
         }
 
-        [[nodiscard]]
+        [[nodiscard("viewpoint result should not be discarded")]]
         static Vector3<double> calc_viewpoint_from_angles(const projectile_prediction::Projectile<double>& projectile,
                                                           Vector3<double> predicted_target_position,
                                                           const std::optional<double> projectile_pitch) noexcept
@@ -64,7 +65,7 @@ namespace omath::unreal_engine
 
         // Due to specification of maybe_calculate_projectile_launch_pitch_angle, pitch angle must be:
         // 89 look up, -89 look down
-        [[nodiscard]]
+        [[nodiscard("pitch angle result should not be discarded")]]
         static double calc_direct_pitch_angle(const Vector3<double>& origin, const Vector3<double>& view_to) noexcept
         {
             const auto direction = (view_to - origin).normalized();
@@ -72,7 +73,7 @@ namespace omath::unreal_engine
             return angles::radians_to_degrees(std::asin(direction.z));
         }
 
-        [[nodiscard]]
+        [[nodiscard("yaw angle result should not be discarded")]]
         static double calc_direct_yaw_angle(const Vector3<double>& origin, const Vector3<double>& view_to) noexcept
         {
             const auto direction = (view_to - origin).normalized();

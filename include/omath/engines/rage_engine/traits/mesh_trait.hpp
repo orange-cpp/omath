@@ -11,7 +11,7 @@ namespace omath::rage_engine
     class MeshTrait final
     {
     public:
-        [[nodiscard]]
+        [[nodiscard("rotation matrix result should not be discarded")]]
         static Mat4X4 rotation_matrix(const ViewAngles& rotation)
         {
             return rage_engine::rotation_matrix(rotation);

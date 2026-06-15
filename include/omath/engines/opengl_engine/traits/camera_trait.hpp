@@ -12,7 +12,7 @@ namespace omath::opengl_engine
     class CameraTrait final
     {
     public:
-        [[nodiscard]]
+        [[nodiscard("look-at angle result should not be discarded")]]
         constexpr static ViewAngles calc_look_at_angle(const Vector3<float>& cam_origin,
                                                        const Vector3<float>& look_at) noexcept
         {
@@ -22,12 +22,12 @@ namespace omath::opengl_engine
                     YawAngle::from_radians(-internal::atan2(direction.x, -direction.z)), RollAngle::from_radians(0.f)};
         }
 
-        [[nodiscard]]
+        [[nodiscard("view matrix result should not be discarded")]]
         constexpr static Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
         {
             return opengl_engine::calc_view_matrix(angles, cam_origin);
         }
-        [[nodiscard]]
+        [[nodiscard("projection matrix result should not be discarded")]]
         constexpr static Mat4X4 calc_projection_matrix(const projection::FieldOfView& fov,
                                                        const projection::ViewPort& view_port, const float near_plane,
                                                        const float far_plane,
