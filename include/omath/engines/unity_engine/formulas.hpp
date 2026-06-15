@@ -7,10 +7,10 @@
 
 namespace omath::unity_engine
 {
-    [[nodiscard]]
+    [[nodiscard("rotation matrix result should not be discarded")]]
     constexpr Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept;
 
-    [[nodiscard]]
+    [[nodiscard("forward vector result should not be discarded")]]
     constexpr Vector3<float> forward_vector(const ViewAngles& angles) noexcept
     {
         const auto vec = rotation_matrix(angles) * mat_column_from_vector(k_abs_forward);
@@ -18,7 +18,7 @@ namespace omath::unity_engine
         return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
     }
 
-    [[nodiscard]]
+    [[nodiscard("right vector result should not be discarded")]]
     constexpr Vector3<float> right_vector(const ViewAngles& angles) noexcept
     {
         const auto vec = rotation_matrix(angles) * mat_column_from_vector(k_abs_right);
@@ -26,7 +26,7 @@ namespace omath::unity_engine
         return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
     }
 
-    [[nodiscard]]
+    [[nodiscard("up vector result should not be discarded")]]
     constexpr Vector3<float> up_vector(const ViewAngles& angles) noexcept
     {
         const auto vec = rotation_matrix(angles) * mat_column_from_vector(k_abs_up);
@@ -34,14 +34,14 @@ namespace omath::unity_engine
         return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
     }
 
-    [[nodiscard]]
+    [[nodiscard("view matrix result should not be discarded")]]
     constexpr Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
     {
         return mat_camera_view<float, MatStoreType::ROW_MAJOR>(-forward_vector(angles), right_vector(angles),
                                                                up_vector(angles), cam_origin);
     }
 
-    [[nodiscard]]
+    [[nodiscard("rotation matrix result should not be discarded")]]
     constexpr Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
         return mat_rotation_axis_z<float, MatStoreType::ROW_MAJOR>(angles.roll)
@@ -49,19 +49,19 @@ namespace omath::unity_engine
                * mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(angles.pitch);
     }
 
-    [[nodiscard]]
+    [[nodiscard("origin result should not be discarded")]]
     constexpr Vector3<float> extract_origin(const Mat4X4& mat) noexcept
     {
         return mat_extract_origin(mat);
     }
 
-    [[nodiscard]]
+    [[nodiscard("scale result should not be discarded")]]
     constexpr Vector3<float> extract_scale(const Mat4X4& mat) noexcept
     {
         return mat_extract_scale(mat);
     }
 
-    [[nodiscard]]
+    [[nodiscard("rotation angles result should not be discarded")]]
     constexpr ViewAngles extract_rotation_angles(const Mat4X4& mat) noexcept
     {
         const auto angles = mat_extract_rotation_zyx(mat);
@@ -72,7 +72,7 @@ namespace omath::unity_engine
         };
     }
 
-    [[nodiscard]]
+    [[nodiscard("perspective projection matrix result should not be discarded")]]
     constexpr Mat4X4 calc_perspective_projection_matrix(
             const float field_of_view, const float aspect_ratio, const float near_plane, const float far_plane,
             const NDCDepthRange ndc_depth_range = NDCDepthRange::NEGATIVE_ONE_TO_ONE) noexcept
@@ -90,7 +90,7 @@ namespace omath::unity_engine
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
-    [[nodiscard]]
+    [[nodiscard("centimeters value should not be discarded")]]
     constexpr FloatingType units_to_centimeters(const FloatingType& units)
     {
         return units / static_cast<FloatingType>(100);
@@ -98,7 +98,7 @@ namespace omath::unity_engine
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
-    [[nodiscard]]
+    [[nodiscard("meters value should not be discarded")]]
     constexpr FloatingType units_to_meters(const FloatingType& units)
     {
         return units;
@@ -106,7 +106,7 @@ namespace omath::unity_engine
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
-    [[nodiscard]]
+    [[nodiscard("kilometers value should not be discarded")]]
     constexpr FloatingType units_to_kilometers(const FloatingType& units)
     {
         return units_to_meters(units) / static_cast<FloatingType>(1000);
@@ -114,7 +114,7 @@ namespace omath::unity_engine
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
-    [[nodiscard]]
+    [[nodiscard("units value should not be discarded")]]
     constexpr FloatingType centimeters_to_units(const FloatingType& centimeters)
     {
         return centimeters * static_cast<FloatingType>(100);
@@ -122,7 +122,7 @@ namespace omath::unity_engine
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
-    [[nodiscard]]
+    [[nodiscard("units value should not be discarded")]]
     constexpr FloatingType meters_to_units(const FloatingType& meters)
     {
         return meters;
@@ -130,7 +130,7 @@ namespace omath::unity_engine
 
     template<class FloatingType>
     requires std::is_floating_point_v<FloatingType>
-    [[nodiscard]]
+    [[nodiscard("units value should not be discarded")]]
     constexpr FloatingType kilometers_to_units(const FloatingType& kilometers)
     {
         return meters_to_units(kilometers * static_cast<FloatingType>(1000));
