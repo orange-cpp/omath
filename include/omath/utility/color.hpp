@@ -34,13 +34,13 @@ namespace omath
             m_value.clamp(0.f, 1.f);
         }
         constexpr explicit Color() noexcept = default;
-        [[nodiscard]]
+        [[nodiscard("color result should not be discarded")]]
         constexpr static Color from_rgba(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) noexcept
         {
             return Color(Vector4<float>(r, g, b, a) / 255.f);
         }
 
-        [[nodiscard]]
+        [[nodiscard("color result should not be discarded")]]
         constexpr static Color from_hsv(float hue, const float saturation, const float value) noexcept
         {
             float r{}, g{}, b{};
@@ -80,13 +80,13 @@ namespace omath
             return {r, g, b, 1.f};
         }
 
-        [[nodiscard]]
+        [[nodiscard("color result should not be discarded")]]
         constexpr static Color from_hsv(const Hsv& hsv) noexcept
         {
             return from_hsv(hsv.hue, hsv.saturation, hsv.value);
         }
 
-        [[nodiscard]]
+        [[nodiscard("hsv result should not be discarded")]]
         constexpr Hsv to_hsv() const noexcept
         {
             Hsv hsv_data;
@@ -141,33 +141,33 @@ namespace omath
 
             *this = from_hsv(hsv);
         }
-        [[nodiscard]]
+        [[nodiscard("blended color result should not be discarded")]]
         constexpr Color blend(const Color& other, float ratio) const noexcept
         {
             ratio = std::clamp(ratio, 0.f, 1.f);
             return Color(this->m_value * (1.f - ratio) + other.m_value * ratio);
         }
 
-        [[nodiscard]] static constexpr Color red()
+        [[nodiscard("color result should not be discarded")]] static constexpr Color red()
         {
             return {1.f, 0.f, 0.f, 1.f};
         }
-        [[nodiscard]] static constexpr Color green()
+        [[nodiscard("color result should not be discarded")]] static constexpr Color green()
         {
             return {0.f, 1.f, 0.f, 1.f};
         }
-        [[nodiscard]] static constexpr Color blue()
+        [[nodiscard("color result should not be discarded")]] static constexpr Color blue()
         {
             return {0.f, 0.f, 1.f, 1.f};
         }
 #ifdef OMATH_IMGUI_INTEGRATION
-        [[nodiscard]]
+        [[nodiscard("ImColor result should not be discarded")]]
         ImColor to_im_color() const noexcept
         {
             return {m_value.to_im_vec4()};
         }
 #endif
-        [[nodiscard]] std::string to_string() const noexcept
+        [[nodiscard("string result should not be discarded")]] std::string to_string() const noexcept
         {
             return std::format("[r:{}, g:{}, b:{}, a:{}]",
                             static_cast<int>(m_value.x * 255.f),
@@ -175,24 +175,24 @@ namespace omath
                             static_cast<int>(m_value.z * 255.f),
                             static_cast<int>(m_value.w * 255.f));
         }
-        [[nodiscard]] std::string to_rgbf_string() const noexcept
+        [[nodiscard("string result should not be discarded")]] std::string to_rgbf_string() const noexcept
         {
             return std::format("[r:{}, g:{}, b:{}, a:{}]",
                             m_value.x, m_value.y, m_value.z, m_value.w);
         }
-        [[nodiscard]] std::string to_hsv_string() const noexcept
+        [[nodiscard("string result should not be discarded")]] std::string to_hsv_string() const noexcept
         {
             const auto [hue, saturation, value] = to_hsv();
             return std::format("[h:{}, s:{}, v:{}]", hue, saturation, value);
         }
-        [[nodiscard]] std::wstring to_wstring() const noexcept
+        [[nodiscard("wide string result should not be discarded")]] std::wstring to_wstring() const noexcept
         {
             const auto ascii_string = to_string();
             return {ascii_string.cbegin(), ascii_string.cend()};
         }
 
         // ReSharper disable once CppInconsistentNaming
-        [[nodiscard]] std::u8string to_u8string() const noexcept
+        [[nodiscard("UTF-8 string result should not be discarded")]] std::u8string to_u8string() const noexcept
         {
             const auto ascii_string = to_string();
             return {ascii_string.cbegin(), ascii_string.cend()};
