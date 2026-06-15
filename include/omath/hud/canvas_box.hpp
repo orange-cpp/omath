@@ -11,7 +11,7 @@ namespace omath::hud
     public:
         CanvasBox(Vector2<float> top, Vector2<float> bottom, float ratio = 4.f);
 
-        [[nodiscard]]
+        [[nodiscard("You have to use array")]]
         std::array<Vector2<float>, 4> as_array() const;
 
         Vector2<float> top_left_corner;
