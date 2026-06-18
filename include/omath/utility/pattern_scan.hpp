@@ -38,17 +38,24 @@ namespace omath
         friend unit_test_pattern_scan_consteval_spacing_and_case_Test;
 
     public:
-        template<std::size_t N>
+        template<std::size_t Length>
         struct ConstevalPattern final
         {
-            char value[N]{};
+            char value[Length]{};
 
             // ReSharper disable once CppNonExplicitConvertingConstructor
-            constexpr ConstevalPattern(const char (&text)[N]) // NOLINT(*-explicit-constructor)
+            constexpr ConstevalPattern(const char (&text)[Length]) // NOLINT(*-explicit-constructor)
             {
                 std::ranges::copy(text, value);
             }
+            [[nodiscard("You forgot to use string")]]
+            constexpr operator std::string_view() const noexcept // NOLINT(*-explicit-constructor)
+            {
+                return {value, Length - 1};
+            }
         };
+        template<std::size_t N>
+        ConstevalPattern(const char (&)[N]) -> ConstevalPattern<N>;
 
         [[nodiscard]]
         static std::span<std::byte>::iterator scan_for_pattern(const std::span<std::byte>& range,

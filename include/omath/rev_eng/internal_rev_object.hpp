@@ -21,24 +21,6 @@
 
 namespace omath::rev_eng
 {
-    template<std::size_t Length>
-    struct FixedString final
-    {
-        char data[Length]{};
-        // ReSharper disable once CppNonExplicitConvertingConstructor
-        constexpr FixedString(const char (&str)[Length]) noexcept // NOLINT(*-explicit-constructor)
-        {
-            std::ranges::copy_n(str, Length, data);
-        }
-        // ReSharper disable once CppNonExplicitConversionOperator
-        [[nodiscard("You forgot to use string")]]
-        constexpr operator std::string_view() const noexcept // NOLINT(*-explicit-constructor)
-        {
-            return {data, Length - 1};
-        }
-    };
-    template<std::size_t N>
-    FixedString(const char (&)[N]) -> FixedString<N>;
 
     class InternalReverseEngineeredObject
     {
@@ -78,14 +60,16 @@ namespace omath::rev_eng
             return reinterpret_cast<MethodType>(const_cast<void*>(ptr))(this, arg_list...);
         }
 
-        template<FixedString ModuleName, FixedString Pattern, class ReturnType>
+        template<PatternScanner::ConstevalPattern ModuleName, PatternScanner::ConstevalPattern Pattern,
+                 class ReturnType>
         ReturnType call_method(auto... arg_list)
         {
             static const auto* address = resolve_pattern(ModuleName, Pattern);
             return call_method<ReturnType>(address, arg_list...);
         }
 
-        template<FixedString ModuleName, FixedString Pattern, class ReturnType>
+        template<PatternScanner::ConstevalPattern ModuleName, PatternScanner::ConstevalPattern Pattern,
+                 class ReturnType>
         ReturnType call_method(auto... arg_list) const
         {
             static const auto* address = resolve_pattern(ModuleName, Pattern);
@@ -93,14 +77,15 @@ namespace omath::rev_eng
         }
 
         template<class ReturnType>
-        ReturnType call_method(const std::string_view& module_name,const std::string_view& pattern, auto... arg_list)
+        ReturnType call_method(const std::string_view& module_name, const std::string_view& pattern, auto... arg_list)
         {
             static const auto* address = resolve_pattern(module_name, pattern);
             return call_method<ReturnType>(address, arg_list...);
         }
 
         template<class ReturnType>
-        ReturnType call_method(const std::string_view& module_name,const std::string_view& pattern, auto... arg_list) const
+        ReturnType call_method(const std::string_view& module_name, const std::string_view& pattern,
+                               auto... arg_list) const
         {
             static const auto* address = resolve_pattern(module_name, pattern);
             return call_method<ReturnType>(address, arg_list...);
@@ -121,26 +106,24 @@ namespace omath::rev_eng
         template<std::ptrdiff_t TableOffset, std::size_t Id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list)
         {
-            auto sub_this = reinterpret_cast<void*>(
-                reinterpret_cast<std::uintptr_t>(this) + TableOffset);
+            auto sub_this = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(this) + TableOffset);
             const auto vtable = *reinterpret_cast<void***>(sub_this);
 #ifdef _MSC_VER
             using Fn = ReturnType(__thiscall*)(void*, decltype(arg_list)...);
 #else
-            using Fn = ReturnType(*)(void*, decltype(arg_list)...);
+            using Fn = ReturnType (*)(void*, decltype(arg_list)...);
 #endif
             return reinterpret_cast<Fn>(vtable[Id])(sub_this, arg_list...);
         }
         template<std::ptrdiff_t TableOffset, std::size_t Id, class ReturnType>
         ReturnType call_virtual_method(auto... arg_list) const
         {
-            auto sub_this = reinterpret_cast<const void*>(
-                reinterpret_cast<std::uintptr_t>(this) + TableOffset);
+            auto sub_this = reinterpret_cast<const void*>(reinterpret_cast<std::uintptr_t>(this) + TableOffset);
             const auto vtable = *reinterpret_cast<void* const* const*>(sub_this);
 #ifdef _MSC_VER
             using Fn = ReturnType(__thiscall*)(const void*, decltype(arg_list)...);
 #else
-            using Fn = ReturnType(*)(const void*, decltype(arg_list)...);
+            using Fn = ReturnType (*)(const void*, decltype(arg_list)...);
 #endif
             return reinterpret_cast<Fn>(vtable[Id])(sub_this, arg_list...);
         }
