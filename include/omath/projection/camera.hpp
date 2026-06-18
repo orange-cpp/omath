@@ -238,7 +238,8 @@ namespace omath::projection
             return m_view_projection_matrix.value();
         }
 
-        [[nodiscard("You must use view matrix")]] constexpr const Mat4X4Type& get_view_matrix() const noexcept
+        [[nodiscard("You must use view matrix")]]
+        constexpr const Mat4X4Type& get_view_matrix() const noexcept
         {
             if (!m_view_matrix.has_value())
                 m_view_matrix = calc_view_matrix();
@@ -295,27 +296,32 @@ namespace omath::projection
             m_projection_matrix = std::nullopt;
         }
 
-        [[nodiscard("You must use field of view")]] constexpr const FieldOfView& get_field_of_view() const noexcept
+        [[nodiscard("You must use field of view")]]
+        constexpr const FieldOfView& get_field_of_view() const noexcept
         {
             return m_field_of_view;
         }
 
-        [[nodiscard("You must use near plane")]] constexpr const NumericType& get_near_plane() const noexcept
+        [[nodiscard("You must use near plane")]]
+        constexpr const NumericType& get_near_plane() const noexcept
         {
             return m_near_plane_distance;
         }
 
-        [[nodiscard("You must use far plane")]] constexpr const NumericType& get_far_plane() const noexcept
+        [[nodiscard("You must use far plane")]]
+        constexpr const NumericType& get_far_plane() const noexcept
         {
             return m_far_plane_distance;
         }
 
-        [[nodiscard("You must use view angles")]] constexpr const ViewAnglesType& get_view_angles() const noexcept
+        [[nodiscard("You must use view angles")]]
+        constexpr const ViewAnglesType& get_view_angles() const noexcept
         {
             return m_view_angles;
         }
 
-        [[nodiscard("You must use origin")]] constexpr const Vector3<NumericType>& get_origin() const noexcept
+        [[nodiscard("You must use origin")]]
+        constexpr const Vector3<NumericType>& get_origin() const noexcept
         {
             return m_origin;
         }
