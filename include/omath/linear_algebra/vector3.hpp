@@ -318,14 +318,15 @@ namespace omath
     };
 } // namespace omath
 
-template<> struct std::hash<omath::Vector3<float>>
+template<class Type>
+struct std::hash<omath::Vector3<Type>> // NOLINT(*-dcl58-cpp)
 {
     // NOTE: Cannot be constexpr because of MSVC
     [[nodiscard("You must use hash value")]]
-    std::size_t operator()(const omath::Vector3<float>& vec) const noexcept
+    std::size_t operator()(const omath::Vector3<Type>& vec) const noexcept
     {
         std::size_t hash = 0;
-        constexpr std::hash<float> hasher;
+        constexpr std::hash<Type> hasher;
 
         hash ^= hasher(vec.x) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
         hash ^= hasher(vec.y) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
