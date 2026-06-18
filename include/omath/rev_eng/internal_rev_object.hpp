@@ -21,20 +21,20 @@
 
 namespace omath::rev_eng
 {
-    template<std::size_t N>
+    template<std::size_t Length>
     struct FixedString final
     {
-        char data[N]{};
+        char data[Length]{};
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        constexpr FixedString(const char (&str)[N]) noexcept // NOLINT(*-explicit-constructor)
+        constexpr FixedString(const char (&str)[Length]) noexcept // NOLINT(*-explicit-constructor)
         {
-            for (std::size_t i = 0; i < N; ++i)
-                data[i] = str[i];
+            std::ranges::copy_n(str, Length, data);
         }
         // ReSharper disable once CppNonExplicitConversionOperator
+        [[nodiscard("You forgot to use string")]]
         constexpr operator std::string_view() const noexcept // NOLINT(*-explicit-constructor)
         {
-            return {data, N - 1};
+            return {data, Length - 1};
         }
     };
     template<std::size_t N>
@@ -44,13 +44,15 @@ namespace omath::rev_eng
     {
     protected:
         template<class Type>
-        [[nodiscard]] Type& get_by_offset(const std::ptrdiff_t offset)
+        [[nodiscard("You must use value")]]
+        Type& get_by_offset(const std::ptrdiff_t offset) noexcept
         {
             return *reinterpret_cast<Type*>(reinterpret_cast<std::uintptr_t>(this) + offset);
         }
 
         template<class Type>
-        [[nodiscard]] const Type& get_by_offset(const std::ptrdiff_t offset) const
+        [[nodiscard("You must use value")]]
+        const Type& get_by_offset(const std::ptrdiff_t offset) const noexcept
         {
             return *reinterpret_cast<Type*>(reinterpret_cast<std::uintptr_t>(this) + offset);
         }
@@ -161,8 +163,8 @@ namespace omath::rev_eng
             return reinterpret_cast<const void*>(*result);
         }
 
-        [[nodiscard]]
-        static const void* get_module_base(const std::string_view module_name)
+        [[nodiscard("You forgot to use module base address")]]
+        static const void* get_module_base(const std::string_view module_name) noexcept
         {
 #ifdef _WIN32
             return GetModuleHandleA(module_name.data());
