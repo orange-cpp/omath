@@ -873,7 +873,7 @@ namespace omath
 } // namespace omath
 
 template<size_t Rows, size_t Columns, class Type, omath::MatStoreType StoreType>
-struct std::formatter<omath::Mat<Rows, Columns, Type, StoreType>> // NOLINT(*-dcl58-cpp)
+struct std::formatter<omath::Mat<Rows, Columns, Type, StoreType>> final // NOLINT(*-dcl58-cpp)
 {
     using MatType = omath::Mat<Rows, Columns, Type, StoreType>;
     [[nodiscard("You must use parse iterator")]]
