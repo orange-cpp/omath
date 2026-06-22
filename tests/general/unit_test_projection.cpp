@@ -580,6 +580,48 @@ TEST(UnitTestProjection, AabbUnityEngineStraddlesNearNotCulled)
     EXPECT_FALSE(cam.is_aabb_culled_by_frustum(aabb));
 }
 
+TEST(UnitTestProjection, WorldToViewCoordinates_TranslatedSourceCamera)
+{
+    constexpr float k_eps = 1e-4f;
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::source_engine::Camera({10.f, 20.f, 30.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    const auto view_coordinates = cam.world_to_view_coordinates({15.f, 12.f, 37.f});
+
+    EXPECT_NEAR(view_coordinates.x, 8.f, k_eps);
+    EXPECT_NEAR(view_coordinates.y, 7.f, k_eps);
+    EXPECT_NEAR(view_coordinates.z, 5.f, k_eps);
+}
+
+TEST(UnitTestProjection, WorldToViewCoordinates_RotatedSourceCamera)
+{
+    constexpr float k_eps = 1e-4f;
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    const omath::source_engine::ViewAngles angles{omath::source_engine::PitchAngle::from_degrees(0.f),
+                                                  omath::source_engine::YawAngle::from_degrees(90.f),
+                                                  omath::source_engine::RollAngle::from_degrees(0.f)};
+    auto cam = omath::source_engine::Camera({10.f, 20.f, 30.f}, angles, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    const auto view_coordinates = cam.world_to_view_coordinates({14.f, 26.f, 38.f});
+
+    EXPECT_NEAR(view_coordinates.x, 4.f, k_eps);
+    EXPECT_NEAR(view_coordinates.y, 8.f, k_eps);
+    EXPECT_NEAR(view_coordinates.z, 6.f, k_eps);
+}
+
+TEST(UnitTestProjection, WorldToViewCoordinates_ColumnMajorOpenGlCamera)
+{
+    constexpr float k_eps = 1e-4f;
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    auto cam = omath::opengl_engine::Camera({10.f, 20.f, 30.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
+
+    const auto view_coordinates = cam.world_to_view_coordinates({14.f, 26.f, 22.f});
+
+    EXPECT_NEAR(view_coordinates.x, 4.f, k_eps);
+    EXPECT_NEAR(view_coordinates.y, 6.f, k_eps);
+    EXPECT_NEAR(view_coordinates.z, -8.f, k_eps);
+}
+
 TEST(UnitTestProjection, CalcViewAnglesFromViewMatrix_LookingForward)
 {
     constexpr float k_eps = 1e-4f;

@@ -466,6 +466,23 @@ namespace omath::projection
             return false;
         }
 
+        [[nodiscard("You must view camera space coordinates")]]
+        constexpr Vector3<NumericType> world_to_view_coordinates(const Vector3<NumericType>& world_coordinates) const noexcept
+        {
+            if consteval
+            {
+                const auto view_coordinates =
+                    calc_view_matrix()
+                    * mat_column_from_vector<NumericType, Mat4X4Type::get_store_ordering()>(world_coordinates);
+
+                return {view_coordinates.at(0, 0), view_coordinates.at(1, 0), view_coordinates.at(2, 0)};
+            }
+            const auto view_coordinates =
+                    get_view_matrix()
+                    * mat_column_from_vector<NumericType, Mat4X4Type::get_store_ordering()>(world_coordinates);
+
+            return {view_coordinates.at(0, 0), view_coordinates.at(1, 0), view_coordinates.at(2, 0)};
+        }
         [[nodiscard("You must use view port position")]] constexpr std::expected<Vector3<NumericType>, Error>
         world_to_view_port(const Vector3<NumericType>& world_position,
                            const ViewPortClipping& clipping = ViewPortClipping::AUTO) const noexcept
