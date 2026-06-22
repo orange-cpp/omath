@@ -13,12 +13,12 @@ namespace omath::pathfinding
     class Astar final
     {
     public:
-        [[nodiscard]]
+        [[nodiscard("You forgot to use returned path")]]
         static std::vector<Vector3<float>> find_path(const Vector3<float>& start, const Vector3<float>& end,
                                                      const NavigationMesh& nav_mesh) noexcept;
 
     private:
-        [[nodiscard]]
+        [[nodiscard("You forgot to use reconstructed path")]]
         static std::vector<Vector3<float>>
         reconstruct_final_path(const std::unordered_map<Vector3<float>, PathNode>& closed_list,
                                const Vector3<float>& current) noexcept;
