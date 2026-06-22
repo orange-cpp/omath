@@ -226,7 +226,7 @@ namespace omath
 } // namespace omath
 
 template<class Type>
-struct std::hash<omath::Vector4<Type>> // NOLINT(*-dcl58-cpp)
+struct std::hash<omath::Vector4<Type>> final // NOLINT(*-dcl58-cpp)
 {
     [[nodiscard("You must use hash value")]]
     std::size_t operator()(const omath::Vector4<Type>& vec) const noexcept
@@ -242,7 +242,7 @@ struct std::hash<omath::Vector4<Type>> // NOLINT(*-dcl58-cpp)
     }
 };
 template<class Type>
-struct std::formatter<omath::Vector4<Type>> // NOLINT(*-dcl58-cpp)
+struct std::formatter<omath::Vector4<Type>> final // NOLINT(*-dcl58-cpp)
 {
     [[nodiscard("You must use parse iterator")]]
     static constexpr auto parse(std::format_parse_context& ctx) noexcept

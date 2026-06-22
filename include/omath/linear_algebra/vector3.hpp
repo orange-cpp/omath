@@ -319,7 +319,7 @@ namespace omath
 } // namespace omath
 
 template<class Type>
-struct std::hash<omath::Vector3<Type>> // NOLINT(*-dcl58-cpp)
+struct std::hash<omath::Vector3<Type>> final // NOLINT(*-dcl58-cpp)
 {
     // NOTE: Cannot be constexpr because of MSVC
     [[nodiscard("You must use hash value")]]
@@ -337,7 +337,7 @@ struct std::hash<omath::Vector3<Type>> // NOLINT(*-dcl58-cpp)
 };
 
 template<class Type>
-struct std::formatter<omath::Vector3<Type>> // NOLINT(*-dcl58-cpp)
+struct std::formatter<omath::Vector3<Type>> final // NOLINT(*-dcl58-cpp)
 {
     [[nodiscard("You must use parse iterator")]]
     static constexpr auto parse(std::format_parse_context& ctx) noexcept
