@@ -162,6 +162,23 @@ TEST(AabbTests, TopAndBottomAreSymmetric)
     EXPECT_FLOAT_EQ(box.top<UpAxis::Z>().z, -box.bottom<UpAxis::Z>().z);
 }
 
+// --- vertices() ---
+
+TEST(AabbTests, VerticesReturnsAllCorners)
+{
+    constexpr AABB box{{1.f, 2.f, 3.f}, {4.f, 6.f, 8.f}};
+    constexpr auto v = box.vertices();
+
+    EXPECT_EQ(v[0], Vec3(1.f, 2.f, 3.f));
+    EXPECT_EQ(v[1], Vec3(4.f, 2.f, 3.f));
+    EXPECT_EQ(v[2], Vec3(1.f, 6.f, 3.f));
+    EXPECT_EQ(v[3], Vec3(4.f, 6.f, 3.f));
+    EXPECT_EQ(v[4], Vec3(1.f, 2.f, 8.f));
+    EXPECT_EQ(v[5], Vec3(4.f, 2.f, 8.f));
+    EXPECT_EQ(v[6], Vec3(1.f, 6.f, 8.f));
+    EXPECT_EQ(v[7], Vec3(4.f, 6.f, 8.f));
+}
+
 // --- is_collide() ---
 
 TEST(AabbTests, OverlappingBoxesCollide)

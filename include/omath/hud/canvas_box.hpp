@@ -9,6 +9,7 @@ namespace omath::hud
     class CanvasBox final
     {
     public:
+        CanvasBox() = default;
         CanvasBox(Vector2<float> top, Vector2<float> bottom, float ratio = 4.f);
 
         [[nodiscard("You have to use array")]]

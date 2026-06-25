@@ -5,11 +5,11 @@
 #include "canvas_box.hpp"
 #include "entity_overlay_widgets.hpp"
 #include "hud_renderer_interface.hpp"
+#include "omath/3d_primitives/aabb.hpp"
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
 #include <memory>
 #include <string_view>
-
 namespace omath::hud
 {
     class EntityOverlay final
@@ -57,13 +57,17 @@ namespace omath::hud
                                              float offset = 5.f);
 
         // ── Labels ───────────────────────────────────────────────────────
-        EntityOverlay& add_right_label(const Color& color, float offset, widget::Outlined outlined, const std::string_view& text);
+        EntityOverlay& add_right_label(const Color& color, float offset, widget::Outlined outlined,
+                                       const std::string_view& text);
 
-        EntityOverlay& add_left_label(const Color& color, float offset, widget::Outlined outlined, const std::string_view& text);
+        EntityOverlay& add_left_label(const Color& color, float offset, widget::Outlined outlined,
+                                      const std::string_view& text);
 
-        EntityOverlay& add_top_label(const Color& color, float offset, widget::Outlined outlined, std::string_view text);
+        EntityOverlay& add_top_label(const Color& color, float offset, widget::Outlined outlined,
+                                     std::string_view text);
 
-        EntityOverlay& add_bottom_label(const Color& color, float offset, widget::Outlined outlined, std::string_view text);
+        EntityOverlay& add_bottom_label(const Color& color, float offset, widget::Outlined outlined,
+                                        std::string_view text);
 
         EntityOverlay& add_centered_top_label(const Color& color, float offset, widget::Outlined outlined,
                                               const std::string_view& text);
@@ -72,24 +76,24 @@ namespace omath::hud
                                                  const std::string_view& text);
 
         template<typename... Args>
-        EntityOverlay& add_right_label(const Color& color, const float offset, const widget::Outlined outlined, std::format_string<Args...> fmt,
-                                       Args&&... args)
+        EntityOverlay& add_right_label(const Color& color, const float offset, const widget::Outlined outlined,
+                                       std::format_string<Args...> fmt, Args&&... args)
         {
             return add_right_label(color, offset, outlined,
                                    std::string_view{std::vformat(fmt.get(), std::make_format_args(args...))});
         }
 
         template<typename... Args>
-        EntityOverlay& add_left_label(const Color& color, const float offset, const widget::Outlined outlined, std::format_string<Args...> fmt,
-                                      Args&&... args)
+        EntityOverlay& add_left_label(const Color& color, const float offset, const widget::Outlined outlined,
+                                      std::format_string<Args...> fmt, Args&&... args)
         {
             return add_left_label(color, offset, outlined,
                                   std::string_view{std::vformat(fmt.get(), std::make_format_args(args...))});
         }
 
         template<typename... Args>
-        EntityOverlay& add_top_label(const Color& color, const float offset, const widget::Outlined outlined, std::format_string<Args...> fmt,
-                                     Args&&... args)
+        EntityOverlay& add_top_label(const Color& color, const float offset, const widget::Outlined outlined,
+                                     std::format_string<Args...> fmt, Args&&... args)
         {
             return add_top_label(color, offset, outlined,
                                  std::string_view{std::vformat(fmt.get(), std::make_format_args(args...))});
@@ -112,8 +116,9 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_centered_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                 std::format_string<Args...> fmt, Args&&... args)
+        EntityOverlay& add_centered_bottom_label(const Color& color, const float offset,
+                                                 const widget::Outlined outlined, std::format_string<Args...> fmt,
+                                                 Args&&... args)
         {
             return add_centered_bottom_label(color, offset, outlined,
                                              std::string_view{std::vformat(fmt.get(), std::make_format_args(args...))});
@@ -162,6 +167,44 @@ namespace omath::hud
         {
             (dispatch(std::forward<Widgets>(widgets)), ...);
             return *this;
+        }
+
+        template<class Camera, class Aabb>
+        static std::expected<EntityOverlay, std::string>
+        from_aabb(const Camera& camera, const Aabb& aabb, const float aspect,
+                  const std::shared_ptr<HudRendererInterface>& renderer)
+        {
+            Vector3<float> top;
+            Vector3<float> bottom;
+            bool has_projected_vertex = false;
+
+            for (const auto& vertex: aabb.vertices())
+            {
+                if (auto projected = camera.world_to_screen_unclipped(vertex))
+                {
+                    if (!has_projected_vertex)
+                    {
+                        top = *projected;
+                        bottom = *projected;
+                        has_projected_vertex = true;
+                        continue;
+                    }
+
+                    if (projected->y < top.y)
+                        top = *projected;
+                    if (projected->y > bottom.y)
+                        bottom = *projected;
+                }
+            }
+
+            if (!has_projected_vertex)
+                return std::unexpected("");
+
+            auto center = camera.world_to_screen_unclipped(aabb.center());
+            if (!center)
+                return std::unexpected("");
+
+            return EntityOverlay{{center->x, top.y}, {center->x, bottom.y}, aspect, renderer};
         }
 
     private:
