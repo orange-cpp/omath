@@ -16,6 +16,7 @@ namespace
     struct frame_context
     {
         ID3D12Resource* render_target = nullptr;
+        // Each back buffer gets its own allocator because allocators cannot be reset while GPU work uses them.
         ID3D12CommandAllocator* command_allocator = nullptr;
         D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = {};
         UINT64 fence_value = 0;
@@ -35,6 +36,7 @@ namespace
     UINT64 g_fence_value = 0;
     std::vector<frame_context> g_frames;
 
+    // This fence tracks only the overlay work submitted by this DLL, not the game's whole frame.
     bool create_sync_objects()
     {
         if (g_fence)
@@ -69,12 +71,14 @@ namespace
 
     void wait_for_frame(frame_context& fc)
     {
+        // The current back buffer's allocator is safe to reset only after its previous overlay pass completes.
         if (wait_for_fence_value(fc.fence_value))
             fc.fence_value = 0;
     }
 
     void wait_for_gpu()
     {
+        // ResizeBuffers and shutdown must not release back buffers still referenced by queued overlay commands.
         if (!g_command_queue || !g_fence || !g_fence_event)
             return;
 
@@ -169,6 +173,7 @@ namespace
 
     bool create_render_targets(IDXGISwapChain* swap_chain)
     {
+        // These references must be released before IDXGISwapChain::ResizeBuffers reaches the original function.
         DXGI_SWAP_CHAIN_DESC desc{};
         if (FAILED(swap_chain->GetDesc(&desc)))
             return false;
@@ -269,6 +274,7 @@ namespace
 
     void on_execute_command_lists(ID3D12CommandQueue* queue, UINT, ID3D12CommandList* const*)
     {
+        // The overlay records DIRECT command lists; executing them on COPY/COMPUTE queues can remove the device.
         if (!g_command_queue)
         {
             const D3D12_COMMAND_QUEUE_DESC desc = queue->GetDesc();
@@ -328,6 +334,7 @@ namespace
 
         wait_for_frame(fc);
 
+        // Both resets depend on wait_for_frame(); otherwise DLSSG/Streamline can observe invalid GPU work.
         if (FAILED(fc.command_allocator->Reset()))
             return;
 
