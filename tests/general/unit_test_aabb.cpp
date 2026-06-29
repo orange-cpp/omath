@@ -4,7 +4,9 @@
 #include <gtest/gtest.h>
 #include "omath/3d_primitives/aabb.hpp"
 
+using UpAxis = omath::primitives::UpAxis;
 using AABB = omath::primitives::Aabb<float>;
+using AABBZ = omath::primitives::Aabb<float, UpAxis::Z>;
 using Vec3 = omath::Vector3<float>;
 
 // --- center() ---
@@ -65,14 +67,12 @@ TEST(AabbTests, ExtentsOfDegenerateBox)
     EXPECT_FLOAT_EQ(e.z, 0.f);
 }
 
-using UpAxis = omath::primitives::UpAxis;
-
 // --- top() ---
 
 TEST(AabbTests, TopYUpSymmetricBox)
 {
     constexpr AABB box{{-1.f, -2.f, -3.f}, {1.f, 2.f, 3.f}};
-    constexpr auto t = box.top<UpAxis::Y>();
+    constexpr auto t = box.top();
     EXPECT_FLOAT_EQ(t.x, 0.f);
     EXPECT_FLOAT_EQ(t.y, 2.f);
     EXPECT_FLOAT_EQ(t.z, 0.f);
@@ -81,7 +81,7 @@ TEST(AabbTests, TopYUpSymmetricBox)
 TEST(AabbTests, TopYUpOffsetBox)
 {
     constexpr AABB box{{1.f, 4.f, 2.f}, {3.f, 10.f, 6.f}};
-    constexpr auto t = box.top<UpAxis::Y>();
+    constexpr auto t = box.top();
     EXPECT_FLOAT_EQ(t.x, 2.f);
     EXPECT_FLOAT_EQ(t.y, 10.f);
     EXPECT_FLOAT_EQ(t.z, 4.f);
@@ -89,8 +89,8 @@ TEST(AabbTests, TopYUpOffsetBox)
 
 TEST(AabbTests, TopZUpSymmetricBox)
 {
-    constexpr AABB box{{-1.f, -2.f, -3.f}, {1.f, 2.f, 3.f}};
-    constexpr auto t = box.top<UpAxis::Z>();
+    constexpr AABBZ box{{-1.f, -2.f, -3.f}, {1.f, 2.f, 3.f}};
+    constexpr auto t = box.top();
     EXPECT_FLOAT_EQ(t.x, 0.f);
     EXPECT_FLOAT_EQ(t.y, 0.f);
     EXPECT_FLOAT_EQ(t.z, 3.f);
@@ -98,8 +98,8 @@ TEST(AabbTests, TopZUpSymmetricBox)
 
 TEST(AabbTests, TopZUpOffsetBox)
 {
-    constexpr AABB box{{1.f, 4.f, 2.f}, {3.f, 10.f, 6.f}};
-    constexpr auto t = box.top<UpAxis::Z>();
+    constexpr AABBZ box{{1.f, 4.f, 2.f}, {3.f, 10.f, 6.f}};
+    constexpr auto t = box.top();
     EXPECT_FLOAT_EQ(t.x, 2.f);
     EXPECT_FLOAT_EQ(t.y, 7.f);
     EXPECT_FLOAT_EQ(t.z, 6.f);
@@ -108,7 +108,8 @@ TEST(AabbTests, TopZUpOffsetBox)
 TEST(AabbTests, TopDefaultIsYUp)
 {
     constexpr AABB box{{0.f, 0.f, 0.f}, {2.f, 4.f, 6.f}};
-    EXPECT_EQ(box.top(), box.top<UpAxis::Y>());
+    EXPECT_EQ(AABB::get_up_axis(), UpAxis::Y);
+    EXPECT_FLOAT_EQ(box.top().y, 4.f);
 }
 
 // --- bottom() ---
@@ -116,7 +117,7 @@ TEST(AabbTests, TopDefaultIsYUp)
 TEST(AabbTests, BottomYUpSymmetricBox)
 {
     constexpr AABB box{{-1.f, -2.f, -3.f}, {1.f, 2.f, 3.f}};
-    constexpr auto b = box.bottom<UpAxis::Y>();
+    constexpr auto b = box.bottom();
     EXPECT_FLOAT_EQ(b.x, 0.f);
     EXPECT_FLOAT_EQ(b.y, -2.f);
     EXPECT_FLOAT_EQ(b.z, 0.f);
@@ -125,7 +126,7 @@ TEST(AabbTests, BottomYUpSymmetricBox)
 TEST(AabbTests, BottomYUpOffsetBox)
 {
     constexpr AABB box{{1.f, 4.f, 2.f}, {3.f, 10.f, 6.f}};
-    constexpr auto b = box.bottom<UpAxis::Y>();
+    constexpr auto b = box.bottom();
     EXPECT_FLOAT_EQ(b.x, 2.f);
     EXPECT_FLOAT_EQ(b.y, 4.f);
     EXPECT_FLOAT_EQ(b.z, 4.f);
@@ -133,8 +134,8 @@ TEST(AabbTests, BottomYUpOffsetBox)
 
 TEST(AabbTests, BottomZUpSymmetricBox)
 {
-    constexpr AABB box{{-1.f, -2.f, -3.f}, {1.f, 2.f, 3.f}};
-    constexpr auto b = box.bottom<UpAxis::Z>();
+    constexpr AABBZ box{{-1.f, -2.f, -3.f}, {1.f, 2.f, 3.f}};
+    constexpr auto b = box.bottom();
     EXPECT_FLOAT_EQ(b.x, 0.f);
     EXPECT_FLOAT_EQ(b.y, 0.f);
     EXPECT_FLOAT_EQ(b.z, -3.f);
@@ -142,8 +143,8 @@ TEST(AabbTests, BottomZUpSymmetricBox)
 
 TEST(AabbTests, BottomZUpOffsetBox)
 {
-    constexpr AABB box{{1.f, 4.f, 2.f}, {3.f, 10.f, 6.f}};
-    constexpr auto b = box.bottom<UpAxis::Z>();
+    constexpr AABBZ box{{1.f, 4.f, 2.f}, {3.f, 10.f, 6.f}};
+    constexpr auto b = box.bottom();
     EXPECT_FLOAT_EQ(b.x, 2.f);
     EXPECT_FLOAT_EQ(b.y, 7.f);
     EXPECT_FLOAT_EQ(b.z, 2.f);
@@ -152,14 +153,16 @@ TEST(AabbTests, BottomZUpOffsetBox)
 TEST(AabbTests, BottomDefaultIsYUp)
 {
     constexpr AABB box{{0.f, 0.f, 0.f}, {2.f, 4.f, 6.f}};
-    EXPECT_EQ(box.bottom(), box.bottom<UpAxis::Y>());
+    EXPECT_EQ(AABB::get_up_axis(), UpAxis::Y);
+    EXPECT_FLOAT_EQ(box.bottom().y, 0.f);
 }
 
 TEST(AabbTests, TopAndBottomAreSymmetric)
 {
     constexpr AABB box{{-1.f, -2.f, -3.f}, {1.f, 2.f, 3.f}};
-    EXPECT_FLOAT_EQ(box.top<UpAxis::Y>().y, -box.bottom<UpAxis::Y>().y);
-    EXPECT_FLOAT_EQ(box.top<UpAxis::Z>().z, -box.bottom<UpAxis::Z>().z);
+    constexpr AABBZ z_up_box{{-1.f, -2.f, -3.f}, {1.f, 2.f, 3.f}};
+    EXPECT_FLOAT_EQ(box.top().y, -box.bottom().y);
+    EXPECT_FLOAT_EQ(z_up_box.top().z, -z_up_box.bottom().z);
 }
 
 // --- vertices() ---
