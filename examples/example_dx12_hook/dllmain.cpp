@@ -283,41 +283,56 @@ namespace
         }
     }
 
-    void on_present(IDXGISwapChain* swap_chain, UINT, UINT)
+    bool ensure_initialized(IDXGISwapChain* swap_chain)
     {
-        if (!g_initialized)
-        {
-            if (!g_init_attempted && g_command_queue)
-                init(swap_chain);
-            return;
-        }
+        if (g_initialized)
+            return true;
 
-        if (!g_command_queue)
-            return;
+        if (!g_init_attempted && g_command_queue)
+            init(swap_chain);
 
-        if (g_frames.empty() || !g_rtv_heap)
-        {
-            if (!create_render_targets(swap_chain))
-                return;
-        }
+        return false;
+    }
 
-        if (!g_command_list)
-        {
-            if (!create_command_objects())
-                return;
-        }
+    bool ensure_render_targets(IDXGISwapChain* swap_chain)
+    {
+        if (!g_frames.empty() && g_rtv_heap)
+            return true;
 
-        if (!g_fence)
-        {
-            if (!create_sync_objects())
-                return;
-        }
+        return create_render_targets(swap_chain);
+    }
 
+    bool ensure_command_list()
+    {
+        if (g_command_list)
+            return true;
+
+        return create_command_objects();
+    }
+
+    bool ensure_sync_ready()
+    {
+        if (g_fence)
+            return true;
+
+        return create_sync_objects();
+    }
+
+    bool ensure_present_resources(IDXGISwapChain* swap_chain)
+    {
+        if (!ensure_initialized(swap_chain) || !g_command_queue)
+            return false;
+
+        return ensure_render_targets(swap_chain) && ensure_command_list() && ensure_sync_ready();
+    }
+
+    bool begin_imgui_frame()
+    {
         if (GetAsyncKeyState(VK_INSERT) & 1)
             show_menu = !show_menu;
 
         if (!show_menu)
-            return;
+            return false;
 
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -325,45 +340,77 @@ namespace
         ImGui::GetIO().MouseDrawCursor = true;
         ImGui::ShowDemoWindow();
         ImGui::EndFrame();
+        return true;
+    }
 
+    frame_context* current_frame_context()
+    {
         const UINT buf_idx = g_swap_chain->GetCurrentBackBufferIndex();
         if (buf_idx >= g_frames.size())
-            return;
+            return nullptr;
 
-        auto& fc = g_frames[buf_idx];
+        return &g_frames[buf_idx];
+    }
 
+    bool reset_overlay_command_list(frame_context& fc)
+    {
         wait_for_frame(fc);
 
         // Both resets depend on wait_for_frame(); otherwise DLSSG/Streamline can observe invalid GPU work.
         if (FAILED(fc.command_allocator->Reset()))
-            return;
+            return false;
 
         if (FAILED(g_command_list->Reset(fc.command_allocator, nullptr)))
-            return;
+            return false;
 
+        return true;
+    }
+
+    void transition_render_target(frame_context& fc, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after)
+    {
         D3D12_RESOURCE_BARRIER barrier{};
         barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
         barrier.Transition.pResource = fc.render_target;
         barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        barrier.Transition.StateBefore = before;
+        barrier.Transition.StateAfter = after;
         g_command_list->ResourceBarrier(1, &barrier);
+    }
+
+    void record_overlay_commands(frame_context& fc)
+    {
+        transition_render_target(fc, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
         g_command_list->OMSetRenderTargets(1, &fc.rtv_handle, FALSE, nullptr);
         g_command_list->SetDescriptorHeaps(1, &g_srv_heap);
 
         ImGui::Render();
         ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), g_command_list);
 
-        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-        g_command_list->ResourceBarrier(1, &barrier);
+        transition_render_target(fc, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+    }
+
+    bool submit_overlay_commands(frame_context& fc)
+    {
         if (FAILED(g_command_list->Close()))
-            return;
+            return false;
 
         ID3D12CommandList* cmd_lists[] = {g_command_list};
         g_command_queue->ExecuteCommandLists(1, cmd_lists);
-        std::ignore = signal_frame(fc);
+        return signal_frame(fc);
+    }
+
+    void on_present(IDXGISwapChain* swap_chain, UINT, UINT)
+    {
+        if (!ensure_present_resources(swap_chain) || !begin_imgui_frame())
+            return;
+
+        frame_context* fc = current_frame_context();
+        if (!fc || !reset_overlay_command_list(*fc))
+            return;
+
+        record_overlay_commands(*fc);
+        std::ignore = submit_overlay_commands(*fc);
     }
 
     void on_resize_buffers(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)
