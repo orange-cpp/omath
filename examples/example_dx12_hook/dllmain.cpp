@@ -16,7 +16,9 @@ namespace
     struct frame_context
     {
         ID3D12Resource* render_target = nullptr;
+        ID3D12CommandAllocator* command_allocator = nullptr;
         D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = {};
+        UINT64 fence_value = 0;
     };
 
     bool g_initialized = false;
@@ -28,8 +30,183 @@ namespace
     ID3D12DescriptorHeap* g_rtv_heap = nullptr;
     ID3D12DescriptorHeap* g_srv_heap = nullptr;
     ID3D12GraphicsCommandList* g_command_list = nullptr;
-    ID3D12CommandAllocator* g_command_allocator = nullptr;
+    ID3D12Fence* g_fence = nullptr;
+    HANDLE g_fence_event = nullptr;
+    UINT64 g_fence_value = 0;
     std::vector<frame_context> g_frames;
+
+    bool create_sync_objects()
+    {
+        if (g_fence)
+            return true;
+
+        if (FAILED(g_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&g_fence))))
+            return false;
+
+        g_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        if (!g_fence_event)
+        {
+            g_fence->Release();
+            g_fence = nullptr;
+            return false;
+        }
+
+        g_fence_value = 0;
+        return true;
+    }
+
+    bool wait_for_fence_value(UINT64 fence_value)
+    {
+        if (!g_fence || !g_fence_event || fence_value == 0 || g_fence->GetCompletedValue() >= fence_value)
+            return true;
+
+        if (FAILED(g_fence->SetEventOnCompletion(fence_value, g_fence_event)))
+            return false;
+
+        WaitForSingleObject(g_fence_event, INFINITE);
+        return true;
+    }
+
+    void wait_for_frame(frame_context& fc)
+    {
+        if (wait_for_fence_value(fc.fence_value))
+            fc.fence_value = 0;
+    }
+
+    void wait_for_gpu()
+    {
+        if (!g_command_queue || !g_fence || !g_fence_event)
+            return;
+
+        const UINT64 fence_value = ++g_fence_value;
+        if (FAILED(g_command_queue->Signal(g_fence, fence_value)))
+            return;
+
+        if (wait_for_fence_value(fence_value))
+        {
+            for (auto& fc : g_frames)
+                fc.fence_value = 0;
+        }
+    }
+
+    bool signal_frame(frame_context& fc)
+    {
+        if (!g_command_queue || !g_fence)
+            return false;
+
+        const UINT64 fence_value = ++g_fence_value;
+        if (FAILED(g_command_queue->Signal(g_fence, fence_value)))
+            return false;
+
+        fc.fence_value = fence_value;
+        return true;
+    }
+
+    void release_sync_objects()
+    {
+        if (g_fence_event)
+        {
+            CloseHandle(g_fence_event);
+            g_fence_event = nullptr;
+        }
+        if (g_fence)
+        {
+            g_fence->Release();
+            g_fence = nullptr;
+        }
+        g_fence_value = 0;
+    }
+
+    void release_frame_contexts()
+    {
+        for (auto& fc : g_frames)
+        {
+            if (fc.render_target)
+            {
+                fc.render_target->Release();
+                fc.render_target = nullptr;
+            }
+            if (fc.command_allocator)
+            {
+                fc.command_allocator->Release();
+                fc.command_allocator = nullptr;
+            }
+            fc.fence_value = 0;
+        }
+        g_frames.clear();
+
+        if (g_rtv_heap)
+        {
+            g_rtv_heap->Release();
+            g_rtv_heap = nullptr;
+        }
+    }
+
+    void release_command_objects()
+    {
+        if (g_command_list)
+        {
+            g_command_list->Release();
+            g_command_list = nullptr;
+        }
+    }
+
+    bool create_command_objects()
+    {
+        if (g_frames.empty() || !g_frames[0].command_allocator)
+            return false;
+
+        if (FAILED(g_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, g_frames[0].command_allocator,
+                                               nullptr, IID_PPV_ARGS(&g_command_list))))
+        {
+            release_command_objects();
+            return false;
+        }
+
+        g_command_list->Close();
+        return true;
+    }
+
+    bool create_render_targets(IDXGISwapChain* swap_chain)
+    {
+        DXGI_SWAP_CHAIN_DESC desc{};
+        if (FAILED(swap_chain->GetDesc(&desc)))
+            return false;
+
+        const UINT buffer_count = desc.BufferCount;
+
+        D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
+        heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        heap_desc.NumDescriptors = buffer_count;
+        heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        heap_desc.NodeMask = 1;
+        if (FAILED(g_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&g_rtv_heap))))
+            return false;
+
+        g_frames.resize(buffer_count);
+        const UINT rtv_size = g_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+        D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = g_rtv_heap->GetCPUDescriptorHandleForHeapStart();
+
+        for (UINT i = 0; i < buffer_count; ++i)
+        {
+            g_frames[i].rtv_handle = rtv_handle;
+            if (FAILED(g_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                                        IID_PPV_ARGS(&g_frames[i].command_allocator))))
+            {
+                release_frame_contexts();
+                return false;
+            }
+            if (FAILED(swap_chain->GetBuffer(i, IID_PPV_ARGS(&g_frames[i].render_target))))
+            {
+                release_frame_contexts();
+                return false;
+            }
+            g_device->CreateRenderTargetView(g_frames[i].render_target, nullptr, rtv_handle);
+            rtv_handle.ptr += rtv_size;
+        }
+
+        return true;
+    }
 
     void init(IDXGISwapChain* swap_chain)
     {
@@ -53,37 +230,15 @@ namespace
             if (FAILED(g_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&g_srv_heap))))
                 return;
         }
-        {
-            D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
-            heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-            heap_desc.NumDescriptors = buffer_count;
-            heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-            heap_desc.NodeMask = 1;
-            if (FAILED(g_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&g_rtv_heap))))
-                return;
-        }
 
-        if (FAILED(g_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                                    IID_PPV_ARGS(&g_command_allocator))))
+        if (!create_render_targets(swap_chain))
             return;
 
-        g_frames.resize(buffer_count);
-        const UINT rtv_size = g_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-        D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = g_rtv_heap->GetCPUDescriptorHandleForHeapStart();
-
-        for (UINT i = 0; i < buffer_count; ++i)
-        {
-            g_frames[i].rtv_handle = rtv_handle;
-            if (FAILED(swap_chain->GetBuffer(i, IID_PPV_ARGS(&g_frames[i].render_target))))
-                return;
-            g_device->CreateRenderTargetView(g_frames[i].render_target, nullptr, rtv_handle);
-            rtv_handle.ptr += rtv_size;
-        }
-
-        if (FAILED(g_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, g_command_allocator, nullptr,
-                                               IID_PPV_ARGS(&g_command_list))))
+        if (!create_command_objects())
             return;
-        g_command_list->Close();
+
+        if (!create_sync_objects())
+            return;
 
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
@@ -115,7 +270,11 @@ namespace
     void on_execute_command_lists(ID3D12CommandQueue* queue, UINT, ID3D12CommandList* const*)
     {
         if (!g_command_queue)
-            g_command_queue = queue;
+        {
+            const D3D12_COMMAND_QUEUE_DESC desc = queue->GetDesc();
+            if (desc.Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+                g_command_queue = queue;
+        }
     }
 
     void on_present(IDXGISwapChain* swap_chain, UINT, UINT)
@@ -129,6 +288,24 @@ namespace
 
         if (!g_command_queue)
             return;
+
+        if (g_frames.empty() || !g_rtv_heap)
+        {
+            if (!create_render_targets(swap_chain))
+                return;
+        }
+
+        if (!g_command_list)
+        {
+            if (!create_command_objects())
+                return;
+        }
+
+        if (!g_fence)
+        {
+            if (!create_sync_objects())
+                return;
+        }
 
         if (GetAsyncKeyState(VK_INSERT) & 1)
             show_menu = !show_menu;
@@ -144,10 +321,18 @@ namespace
         ImGui::EndFrame();
 
         const UINT buf_idx = g_swap_chain->GetCurrentBackBufferIndex();
+        if (buf_idx >= g_frames.size())
+            return;
+
         auto& fc = g_frames[buf_idx];
 
-        g_command_allocator->Reset();
-        g_command_list->Reset(g_command_allocator, nullptr);
+        wait_for_frame(fc);
+
+        if (FAILED(fc.command_allocator->Reset()))
+            return;
+
+        if (FAILED(g_command_list->Reset(fc.command_allocator, nullptr)))
+            return;
 
         D3D12_RESOURCE_BARRIER barrier{};
         barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -166,42 +351,31 @@ namespace
         barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
         barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
         g_command_list->ResourceBarrier(1, &barrier);
-        g_command_list->Close();
+        if (FAILED(g_command_list->Close()))
+            return;
 
         ID3D12CommandList* cmd_lists[] = {g_command_list};
         g_command_queue->ExecuteCommandLists(1, cmd_lists);
+        std::ignore = signal_frame(fc);
+    }
+
+    void on_resize_buffers(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)
+    {
+        wait_for_gpu();
+        release_command_objects();
+        release_frame_contexts();
     }
 
     void release_dx12_resources()
     {
-        for (auto& fc : g_frames)
-        {
-            if (fc.render_target)
-            {
-                fc.render_target->Release();
-                fc.render_target = nullptr;
-            }
-        }
-        g_frames.clear();
-        if (g_command_allocator)
-        {
-            g_command_allocator->Release();
-            g_command_allocator = nullptr;
-        }
-        if (g_command_list)
-        {
-            g_command_list->Release();
-            g_command_list = nullptr;
-        }
+        wait_for_gpu();
+        release_command_objects();
+        release_frame_contexts();
+        release_sync_objects();
         if (g_srv_heap)
         {
             g_srv_heap->Release();
             g_srv_heap = nullptr;
-        }
-        if (g_rtv_heap)
-        {
-            g_rtv_heap->Release();
-            g_rtv_heap = nullptr;
         }
         if (g_swap_chain)
         {
@@ -230,6 +404,7 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
 
                     auto& mgr = omath::hooks::HooksManager::get();
                     mgr.set_on_present(on_present);
+                    mgr.set_on_resize_buffers(on_resize_buffers);
                     mgr.set_on_execute_command_lists(on_execute_command_lists);
                     std::ignore = mgr.hook_dx12();
                     return 0;
