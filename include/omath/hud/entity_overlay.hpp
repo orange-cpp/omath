@@ -8,10 +8,18 @@
 #include "omath/3d_primitives/aabb.hpp"
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
+#include <expected>
 #include <memory>
 #include <string_view>
+#include <type_traits>
 namespace omath::hud
 {
+    enum class EntityOverlayError
+    {
+        NO_PROJECTED_VERTEX,
+        CENTER_PROJECTION_FAILED,
+    };
+
     class EntityOverlay final
     {
     public:
@@ -170,15 +178,18 @@ namespace omath::hud
         }
 
         template<class Camera, class Aabb>
-        static std::expected<EntityOverlay, std::string>
+        [[nodiscard]]
+        static std::expected<EntityOverlay, EntityOverlayError>
         from_aabb(const Camera& camera, const Aabb& aabb, const float aspect,
                   const std::shared_ptr<HudRendererInterface>& renderer)
         {
-            Vector3<float> top;
-            Vector3<float> bottom;
+            using ProjectedVector = std::invoke_result_t<decltype(&Aabb::center), const Aabb&>;
+
+            ProjectedVector top;
+            ProjectedVector bottom;
             bool has_projected_vertex = false;
 
-            for (const auto& vertex: aabb.vertices())
+            for (const auto& vertex : aabb.vertices())
             {
                 if (auto projected = camera.world_to_screen_unclipped(vertex))
                 {
@@ -198,13 +209,15 @@ namespace omath::hud
             }
 
             if (!has_projected_vertex)
-                return std::unexpected("");
+                return std::unexpected(EntityOverlayError::NO_PROJECTED_VERTEX);
 
             auto center = camera.world_to_screen_unclipped(aabb.center());
             if (!center)
-                return std::unexpected("");
+                return std::unexpected(EntityOverlayError::CENTER_PROJECTION_FAILED);
 
-            return EntityOverlay{{center->x, top.y}, {center->x, bottom.y}, aspect, renderer};
+            const auto center_x = static_cast<float>(center->x);
+            return EntityOverlay{
+                    {center_x, static_cast<float>(top.y)}, {center_x, static_cast<float>(bottom.y)}, aspect, renderer};
         }
 
     private:
