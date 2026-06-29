@@ -119,11 +119,11 @@ namespace
         switch (axis)
         {
         case omath::primitives::UpAxis::X:
-            return aabb.top<omath::primitives::UpAxis::X>();
+            return omath::primitives::Aabb<float, omath::primitives::UpAxis::X>{aabb.min, aabb.max}.top();
         case omath::primitives::UpAxis::Y:
-            return aabb.top<omath::primitives::UpAxis::Y>();
+            return aabb.top();
         case omath::primitives::UpAxis::Z:
-            return aabb.top<omath::primitives::UpAxis::Z>();
+            return omath::primitives::Aabb<float, omath::primitives::UpAxis::Z>{aabb.min, aabb.max}.top();
         }
         std::unreachable();
     }
@@ -133,11 +133,11 @@ namespace
         switch (axis)
         {
         case omath::primitives::UpAxis::X:
-            return aabb.bottom<omath::primitives::UpAxis::X>();
+            return omath::primitives::Aabb<float, omath::primitives::UpAxis::X>{aabb.min, aabb.max}.bottom();
         case omath::primitives::UpAxis::Y:
-            return aabb.bottom<omath::primitives::UpAxis::Y>();
+            return aabb.bottom();
         case omath::primitives::UpAxis::Z:
-            return aabb.bottom<omath::primitives::UpAxis::Z>();
+            return omath::primitives::Aabb<float, omath::primitives::UpAxis::Z>{aabb.min, aabb.max}.bottom();
         }
         std::unreachable();
     }
