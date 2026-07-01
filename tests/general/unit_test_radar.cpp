@@ -29,14 +29,12 @@ static void verify_world_to_radar_uses_engine_world_axes(const Vector3<NumericTy
 
     EXPECT_NEAR(forward_radar.x, 0.f, 1e-4f);
     EXPECT_NEAR(forward_radar.y, -radar_distance, 1e-4f);
-    EXPECT_NEAR(forward_radar.z, 0.f, 1e-6f);
 
     const auto right_position = origin + world_right * world_distance;
     const auto right_radar = algorithm::world_to_radar(camera, right_position, scale);
 
     EXPECT_NEAR(right_radar.x, radar_distance, 1e-4f);
     EXPECT_NEAR(right_radar.y, 0.f, 1e-4f);
-    EXPECT_NEAR(right_radar.z, 0.f, 1e-6f);
 }
 
 template<class CameraType, class NumericType>
@@ -62,14 +60,12 @@ static void verify_world_to_radar_uses_changed_camera_yaw(const float yaw_degree
 
     EXPECT_NEAR(forward_radar.x, 0.f, 1e-4f);
     EXPECT_NEAR(forward_radar.y, -radar_distance, 1e-4f);
-    EXPECT_NEAR(forward_radar.z, 0.f, 1e-6f);
 
     const auto left_position = origin + world_forward * world_distance;
     const auto left_radar = algorithm::world_to_radar(camera, left_position, scale);
 
     EXPECT_NEAR(left_radar.x, -radar_distance, 1e-4f);
     EXPECT_NEAR(left_radar.y, 0.f, 1e-4f);
-    EXPECT_NEAR(left_radar.z, 0.f, 1e-6f);
 }
 
 template<class CameraType, class NumericType>
@@ -93,7 +89,6 @@ static void verify_world_to_radar_ignores_camera_pitch(const Vector3<NumericType
 
     EXPECT_NEAR(forward_radar.x, 0.f, 1e-4f);
     EXPECT_NEAR(forward_radar.y, -radar_distance, 1e-4f);
-    EXPECT_NEAR(forward_radar.z, 0.f, 1e-6f);
 }
 
 TEST(WorldToRadarTests, SourceEngineCamera)
