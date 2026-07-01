@@ -12,17 +12,15 @@ namespace omath::algorithm
     [[nodiscard]]
     Vector3<float> world_to_radar(const Camera& camera, const Vector3<FloatingType>& position, const FloatingType scale)
     {
-        const auto origin = static_cast<Vector3<FloatingType>>(camera.get_origin());
-        auto current_angles = camera.get_view_angles();
         auto look_at_angles = camera.calc_look_at_angles(position);
-        auto yaw = look_at_angles.yaw - current_angles.yaw;
+        auto current_angles = camera.get_view_angles();
 
-        const auto right = origin + static_cast<Vector3<FloatingType>>(camera.get_abs_right());
-        auto right_yaw = camera.calc_look_at_angles(right).yaw - current_angles.yaw;
-        const auto right_sign = right_yaw.sin() < FloatingType{0} ? FloatingType{-1} : FloatingType{1};
-        const auto radar_distance = position.distance_to(origin) * scale;
+        auto yaw = look_at_angles.yaw - current_angles.yaw + decltype(current_angles.yaw)::from_degrees(180);
+        auto right_yaw = camera.calc_look_at_angles(camera.get_origin() + camera.get_abs_right()).yaw
+                         - current_angles.yaw + decltype(current_angles.yaw)::from_degrees(180);
+        const auto right_scale = right_yaw.sin() < 0 ? -1.f : 1.f;
 
-        return {static_cast<float>(yaw.sin() * right_sign * radar_distance),
-                static_cast<float>(-yaw.cos() * radar_distance), 0.f};
+        return omath::Vector3<float>(static_cast<float>(yaw.sin()) * right_scale, yaw.cos(), 0.f)
+               * (camera.get_origin().distance_to(position) * scale);
     }
 } // namespace omath::algorithm
