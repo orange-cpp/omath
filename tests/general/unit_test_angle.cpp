@@ -183,7 +183,7 @@ TEST(UnitTestAngle, Formatter_PrintsDegreesWithSuffix)
 
 TEST(UnitTestAngle, BinaryPlus_ReturnsWrappedSum)
 {
-    Angle<> a = Deg::from_degrees(350.0f);
+    const Angle<> a = Deg::from_degrees(350.0f);
     const Deg b = Deg::from_degrees(20.0f);
     const Deg c = a + b; // expect 10°
     EXPECT_FLOAT_EQ(c.as_degrees(), 10.0f);
@@ -191,7 +191,7 @@ TEST(UnitTestAngle, BinaryPlus_ReturnsWrappedSum)
 
 TEST(UnitTestAngle, BinaryMinus_ReturnsWrappedDiff)
 {
-    Angle<> a = Deg::from_degrees(10.0f);
+    const Angle<> a = Deg::from_degrees(10.0f);
     const Deg b = Deg::from_degrees(30.0f);
     const Deg c = a - b; // expect 340°
     EXPECT_FLOAT_EQ(c.as_degrees(), 340.0f);
