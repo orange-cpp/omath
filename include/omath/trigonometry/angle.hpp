@@ -125,7 +125,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Angle operator+(const Angle& other) noexcept
+        constexpr Angle operator+(const Angle& other) const noexcept
         {
             if constexpr (flags == AngleFlags::Normalized)
                 return Angle{angles::wrap_angle(m_angle + other.m_angle, min, max)};
@@ -140,7 +140,7 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Angle operator-(const Angle& other) noexcept
+        constexpr Angle operator-(const Angle& other) const noexcept
         {
             return operator+(-other);
         }
