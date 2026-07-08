@@ -449,9 +449,8 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
     if (reason == DLL_PROCESS_ATTACH)
     {
         DisableThreadLibraryCalls(h_instance);
-        CreateThread(
-                nullptr, 0,
-                [](LPVOID) -> DWORD
+        std::thread(
+                []()
                 {
                     while (!GetModuleHandle("d3d12.dll"))
                         Sleep(100);
@@ -462,8 +461,8 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
                     mgr.set_on_execute_command_lists(on_execute_command_lists);
                     std::ignore = mgr.hook_dx12();
                     return 0;
-                },
-                nullptr, 0, nullptr);
+                })
+                .detach();
     }
     else if (reason == DLL_PROCESS_DETACH)
     {
