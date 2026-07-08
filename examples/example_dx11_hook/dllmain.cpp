@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
+#include <tuple>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
@@ -17,13 +18,34 @@ namespace
     ID3D11DeviceContext* g_context = nullptr;
     ID3D11RenderTargetView* g_render_target_view = nullptr;
 
-    void create_render_target(IDXGISwapChain* swap_chain)
+    bool create_render_target(IDXGISwapChain* swap_chain)
     {
         ID3D11Texture2D* back_buffer = nullptr;
         if (FAILED(swap_chain->GetBuffer(0, IID_PPV_ARGS(&back_buffer))))
-            return;
-        g_device->CreateRenderTargetView(back_buffer, nullptr, &g_render_target_view);
+            return false;
+
+        D3D11_RENDER_TARGET_VIEW_DESC desc{};
+        desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+        const HRESULT result = g_device->CreateRenderTargetView(back_buffer, &desc, &g_render_target_view);
         back_buffer->Release();
+        return SUCCEEDED(result);
+    }
+
+    void release_render_target()
+    {
+        if (g_context)
+            g_context->OMSetRenderTargets(0, nullptr, nullptr);
+
+        if (g_render_target_view)
+        {
+            g_render_target_view->Release();
+            g_render_target_view = nullptr;
+        }
+
+        if (g_context)
+            g_context->Flush();
     }
 
     void init(IDXGISwapChain* swap_chain)
@@ -71,8 +93,13 @@ namespace
             return;
         }
 
-        if (!g_render_target_view)
-            create_render_target(swap_chain);
+        if (!g_render_target_view && !create_render_target(swap_chain))
+            return;
+
+        ID3D11RenderTargetView* previous_render_target_views[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
+        ID3D11DepthStencilView* previous_depth_stencil_view = nullptr;
+        g_context->OMGetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, previous_render_target_views,
+                                      &previous_depth_stencil_view);
 
         g_context->OMSetRenderTargets(1, &g_render_target_view, nullptr);
 
@@ -89,15 +116,21 @@ namespace
 
         ImGui::Render();
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+        g_context->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, previous_render_target_views,
+                                      previous_depth_stencil_view);
+        for (ID3D11RenderTargetView* render_target_view : previous_render_target_views)
+        {
+            if (render_target_view)
+                render_target_view->Release();
+        }
+        if (previous_depth_stencil_view)
+            previous_depth_stencil_view->Release();
     }
 
     void on_resize_buffers(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)
     {
-        if (g_render_target_view)
-        {
-            g_render_target_view->Release();
-            g_render_target_view = nullptr;
-        }
+        release_render_target();
     }
 } // namespace
 
@@ -116,7 +149,7 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
                     auto& mgr = omath::hooks::HooksManager::get();
                     mgr.set_on_present(on_present);
                     mgr.set_on_resize_buffers(on_resize_buffers);
-                    mgr.hook_dx11();
+                    std::ignore = mgr.hook_dx11();
                     return 0;
                 },
                 nullptr, 0, nullptr);
@@ -134,11 +167,7 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
             ImGui::DestroyContext();
         }
 
-        if (g_render_target_view)
-        {
-            g_render_target_view->Release();
-            g_render_target_view = nullptr;
-        }
+        release_render_target();
         if (g_context)
         {
             g_context->Release();
