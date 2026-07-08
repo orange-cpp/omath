@@ -18,6 +18,7 @@ namespace
     ID3D11DeviceContext* g_context = nullptr;
     ID3D11RenderTargetView* g_render_target_view = nullptr;
 
+    [[nodiscard]]
     bool create_render_target(IDXGISwapChain* swap_chain)
     {
         ID3D11Texture2D* back_buffer = nullptr;
@@ -58,9 +59,9 @@ namespace
         g_device->GetImmediateContext(&g_context);
 
         DXGI_SWAP_CHAIN_DESC desc{};
-        swap_chain->GetDesc(&desc);
+        std::ignore = swap_chain->GetDesc(&desc);
 
-        create_render_target(swap_chain);
+        std::ignore = create_render_target(swap_chain);
 
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
@@ -73,7 +74,7 @@ namespace
 
         auto& mgr = omath::hooks::HooksManager::get();
         mgr.set_on_wnd_proc(
-                [](HWND h, UINT msg, WPARAM wp, LPARAM lp) -> std::optional<LRESULT>
+                [](const HWND h, const UINT msg, const WPARAM wp, const LPARAM lp) -> std::optional<LRESULT>
                 {
                     if (ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp))
                         return 0;
@@ -107,12 +108,7 @@ namespace
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::SetNextWindowSize({300.f, 80.f}, ImGuiCond_Once);
-        ImGui::SetNextWindowPos({10.f, 10.f}, ImGuiCond_Once);
-        ImGui::Begin("omath | DX11 hook");
-        ImGui::Text("Hook active");
-        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-        ImGui::End();
+        ImGui::ShowDemoWindow();
 
         ImGui::Render();
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -134,7 +130,7 @@ namespace
     }
 } // namespace
 
-BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
+BOOL WINAPI DllMain(const HINSTANCE h_instance, const DWORD reason, LPVOID)
 {
     if (reason == DLL_PROCESS_ATTACH)
     {

@@ -36,7 +36,7 @@ namespace
                 return 0;
             return std::nullopt;
         });
-        mgr.hook_wnd_proc(params.hFocusWindow);
+        std::ignore = mgr.hook_wnd_proc(params.hFocusWindow);
 
         g_initialized = true;
     }
@@ -86,7 +86,7 @@ BOOL WINAPI DllMain(HINSTANCE h_instance, DWORD reason, LPVOID)
             auto& mgr = omath::hooks::HooksManager::get();
             mgr.set_on_dx9_present(on_present);
             mgr.set_on_dx9_reset(on_reset);
-            mgr.hook_dx9();
+            std::ignore = mgr.hook_dx9();
             return 0;
         }, nullptr, 0, nullptr);
     }
