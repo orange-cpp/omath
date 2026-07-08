@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
+#include <thread>
 #include <tuple>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
@@ -135,9 +136,8 @@ BOOL WINAPI DllMain(const HINSTANCE h_instance, const DWORD reason, LPVOID)
     if (reason == DLL_PROCESS_ATTACH)
     {
         DisableThreadLibraryCalls(h_instance);
-        CreateThread(
-                nullptr, 0,
-                [](LPVOID) -> DWORD
+        std::thread(
+                []()
                 {
                     while (!GetModuleHandle("d3d11.dll"))
                         Sleep(100);
@@ -147,8 +147,8 @@ BOOL WINAPI DllMain(const HINSTANCE h_instance, const DWORD reason, LPVOID)
                     mgr.set_on_resize_buffers(on_resize_buffers);
                     std::ignore = mgr.hook_dx11();
                     return 0;
-                },
-                nullptr, 0, nullptr);
+                })
+                .detach();
     }
     else if (reason == DLL_PROCESS_DETACH)
     {
