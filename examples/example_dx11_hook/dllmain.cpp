@@ -107,7 +107,7 @@ namespace
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
-
+        ImGui::GetIO().MouseDrawCursor = true;
         ImGui::ShowDemoWindow();
 
         ImGui::Render();
