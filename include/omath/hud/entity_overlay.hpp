@@ -41,16 +41,16 @@ namespace omath::hud
                                       float thickness = 1.f);
 
         // ── Bars ─────────────────────────────────────────────────────────
-        EntityOverlay& add_right_bar(const Color& color, const Color& outline_color, const Color& bg_color, float width,
-                                     float ratio, float offset = 5.f);
+        EntityOverlay& add_right_bar(const widget::Paint& color, const Color& outline_color, const Color& bg_color,
+                                     float width, float ratio, float offset = 5.f);
 
-        EntityOverlay& add_left_bar(const Color& color, const Color& outline_color, const Color& bg_color, float width,
-                                    float ratio, float offset = 5.f);
+        EntityOverlay& add_left_bar(const widget::Paint& color, const Color& outline_color, const Color& bg_color,
+                                    float width, float ratio, float offset = 5.f);
 
-        EntityOverlay& add_top_bar(const Color& color, const Color& outline_color, const Color& bg_color, float height,
-                                   float ratio, float offset = 5.f);
+        EntityOverlay& add_top_bar(const widget::Paint& color, const Color& outline_color, const Color& bg_color,
+                                   float height, float ratio, float offset = 5.f);
 
-        EntityOverlay& add_bottom_bar(const Color& color, const Color& outline_color, const Color& bg_color,
+        EntityOverlay& add_bottom_bar(const widget::Paint& color, const Color& outline_color, const Color& bg_color,
                                       float height, float ratio, float offset = 5.f);
 
         EntityOverlay& add_right_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
@@ -254,6 +254,8 @@ namespace omath::hud
         void draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring);
         void draw_label(const Vector2<float>& position, const widget::Paint& paint, widget::Outlined outlined,
                         const std::string_view& text);
+        void draw_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max,
+                                   const widget::Paint& paint) const;
         void draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color, float dash_len,
                               float gap_len, float thickness) const;
         void draw_dashed_fill(const Vector2<float>& origin, const Vector2<float>& step_dir,

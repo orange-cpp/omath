@@ -109,6 +109,7 @@ namespace imgui_desktop::gui
             ImGui::ColorEdit4("BG##bar", reinterpret_cast<float*>(&m_bar_bg_color), ImGuiColorEditFlags_NoInputs);
             ImGui::ColorEdit4("Outline##bar", reinterpret_cast<float*>(&m_bar_outline_color),
                               ImGuiColorEditFlags_NoInputs);
+            ImGui::Checkbox("Gradient bars", &m_gradient_bars);
             ImGui::SliderFloat("Width##bar", &m_bar_width, 1.f, 20.f);
             ImGui::SliderFloat("Value##bar", &m_bar_value, 0.f, 1.f);
             ImGui::SliderFloat("Offset##bar", &m_bar_offset, 1.f, 20.f);
@@ -211,7 +212,6 @@ namespace imgui_desktop::gui
         using namespace omath::hud::widget;
         using omath::hud::when;
         const auto* vp = ImGui::GetMainViewport();
-        const Bar bar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_offset};
         const DashedBar dbar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
                              m_bar_value, m_bar_dash_len,      m_bar_dash_gap, m_bar_offset};
         const auto animated_color = [&](const omath::Color& color, const float hue_offset)
@@ -226,15 +226,27 @@ namespace imgui_desktop::gui
         };
         const auto box_gradient_top = animated_color(m_box_gradient_top, 0.f);
         const auto box_gradient_bottom = animated_color(m_box_gradient_bottom, 0.5f);
-        const auto label_gradient_left = animated_color(m_label_gradient_left, 0.f);
-        const auto label_gradient_right = animated_color(m_label_gradient_right, 0.5f);
+        const auto red = omath::Color{1.f, 0.f, 0.f, 1.f};
+        const auto green = omath::Color{0.f, 1.f, 0.f, 1.f};
+        const auto bar_value_color = omath::Color{red.value() * (1.f - m_bar_value) + green.value() * m_bar_value};
+        const Paint vertical_bar_color =
+                m_gradient_bars ? Paint{omath::hud::Gradient{bar_value_color, bar_value_color, red, red}}
+                                : Paint{m_bar_color};
+        const Paint horizontal_bar_color =
+                m_gradient_bars ? Paint{omath::hud::Gradient{red, bar_value_color, bar_value_color, red}}
+                                : Paint{m_bar_color};
+        const Bar vertical_bar{vertical_bar_color, m_bar_outline_color, m_bar_bg_color,
+                               m_bar_width,        m_bar_value,         m_bar_offset};
+        const Bar horizontal_bar{horizontal_bar_color, m_bar_outline_color, m_bar_bg_color,
+                                 m_bar_width,          m_bar_value,         m_bar_offset};
         const Paint box_fill = m_gradient_box_fill
                                        ? Paint{omath::hud::Gradient{box_gradient_top, box_gradient_top,
                                                                     box_gradient_bottom, box_gradient_bottom}}
                                        : Paint{m_box_fill};
         const Paint centered_label_color =
-                m_gradient_label ? Paint{omath::hud::Gradient{label_gradient_left, label_gradient_right,
-                                                              label_gradient_right, label_gradient_left}}
+                m_gradient_label ? Paint{omath::hud::Gradient{m_label_gradient_left, m_label_gradient_right,
+                                                              m_label_gradient_right, m_label_gradient_left,
+                                                              m_animate_gradients}}
                                  : Paint{omath::Color::from_rgba(255, 255, 255, 255)};
 
         auto outline_helper = [](const bool is_outline) -> Outlined
@@ -250,7 +262,7 @@ namespace imgui_desktop::gui
                                                               m_box_outline, m_corner_ratio, m_box_thickness}),
                         when(m_show_dashed_box, DashedBox{m_dash_color, m_dash_len, m_dash_gap, m_dash_thickness}),
                         RightSide{
-                                when(m_show_right_bar, bar),
+                                when(m_show_right_bar, vertical_bar),
                                 when(m_show_right_dashed_bar, dbar),
                                 when(m_show_right_labels, Label{{0.f, 1.f, 0.f, 1.f},
                                                                 m_label_offset,
@@ -270,7 +282,7 @@ namespace imgui_desktop::gui
                                                                m_ring_thickness, m_ring_offset}),
                         },
                         LeftSide{
-                                when(m_show_left_bar, bar),
+                                when(m_show_left_bar, vertical_bar),
                                 when(m_show_left_dashed_bar, dbar),
                                 when(m_show_left_labels,
                                      Label{omath::Color::from_rgba(255, 128, 0, 255), m_label_offset,
@@ -280,7 +292,7 @@ namespace imgui_desktop::gui
                                            outline_helper(m_outlined), "Level: 42"}),
                         },
                         TopSide{
-                                when(m_show_top_bar, bar),
+                                when(m_show_top_bar, horizontal_bar),
                                 when(m_show_top_dashed_bar, dbar),
                                 when(m_show_centered_top,
                                      Centered{Label{omath::Color::from_rgba(0, 255, 255, 255), m_label_offset,
@@ -291,7 +303,7 @@ namespace imgui_desktop::gui
                                                               outline_helper(m_outlined), "*BLEEDING*"}),
                         },
                         BottomSide{
-                                when(m_show_bottom_bar, bar),
+                                when(m_show_bottom_bar, horizontal_bar),
                                 when(m_show_bottom_dashed_bar, dbar),
                                 when(m_show_centered_bottom,
                                      Centered{Label{centered_label_color, m_label_offset, outline_helper(m_outlined),

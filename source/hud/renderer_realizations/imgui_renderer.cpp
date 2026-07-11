@@ -4,7 +4,9 @@
 #include "omath/hud/renderer_realizations/imgui_renderer.hpp"
 
 #ifdef OMATH_IMGUI_INTEGRATION
+#include <cmath>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 namespace omath::hud
 {
@@ -87,6 +89,34 @@ namespace omath::hud
                                              const std::string_view& text)
     {
         auto* draw_list = ImGui::GetBackgroundDrawList();
+        if (gradient.animated)
+        {
+            const float animation_offset = static_cast<float>(ImGui::GetTime()) * gradient.animation_speed;
+            float cursor_x = position.x;
+            const char* glyph_start = text.data();
+            const char* const text_end = text.data() + text.size();
+            int glyph_index = 0;
+            while (glyph_start < text_end)
+            {
+                unsigned int codepoint;
+                const int glyph_size = ImTextCharFromUtf8(&codepoint, glyph_start, text_end);
+                if (glyph_size <= 0)
+                    break;
+                static_cast<void>(codepoint);
+
+                const char* const glyph_end = glyph_start + glyph_size;
+                const float blend =
+                        (std::sin(animation_offset + static_cast<float>(glyph_index) * gradient.animation_spread) + 1.f)
+                        * 0.5f;
+                const auto color = gradient.top_left.value() * (1.f - blend) + gradient.top_right.value() * blend;
+                draw_list->AddText({cursor_x, position.y}, Color{color}.to_im_color(), glyph_start, glyph_end);
+                cursor_x += ImGui::CalcTextSize(glyph_start, glyph_end).x;
+                glyph_start = glyph_end;
+                ++glyph_index;
+            }
+            return;
+        }
+
         const int vertex_start = draw_list->VtxBuffer.Size;
         draw_list->AddText(position.to_im_vec2(), IM_COL32_WHITE, text.data(), text.data() + text.size());
 

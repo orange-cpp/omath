@@ -108,7 +108,7 @@ namespace omath::hud::widget
     /// A filled bar. `size` is width for left/right sides, height for top/bottom.
     struct Bar
     {
-        Color color;
+        Paint color;
         Color outline;
         Color bg;
         float size;

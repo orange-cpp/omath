@@ -76,8 +76,9 @@ namespace omath::hud
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_right_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                                const float width, float ratio, const float offset)
+    EntityOverlay& EntityOverlay::add_right_bar(const widget::Paint& color, const Color& outline_color,
+                                                const Color& bg_color, const float width, float ratio,
+                                                const float offset)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_height = std::abs(m_canvas.top_right_corner.y - m_canvas.bottom_right_corner.y);
@@ -85,7 +86,7 @@ namespace omath::hud
         const auto bar_start = Vector2<float>{m_text_cursor_right.x + offset, m_canvas.bottom_right_corner.y};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
 
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
+        draw_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
         m_renderer->add_rectangle(bar_start - Vector2<float>(1.f, 0.f),
                                   bar_start + Vector2<float>(width, -max_bar_height), outline_color);
 
@@ -93,8 +94,9 @@ namespace omath::hud
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_left_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                               const float width, float ratio, const float offset)
+    EntityOverlay& EntityOverlay::add_left_bar(const widget::Paint& color, const Color& outline_color,
+                                               const Color& bg_color, const float width, float ratio,
+                                               const float offset)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_height = std::abs(m_canvas.top_left_corner.y - m_canvas.bottom_right_corner.y);
@@ -102,7 +104,7 @@ namespace omath::hud
         const auto bar_start = Vector2<float>{m_text_cursor_left.x - (offset + width), m_canvas.bottom_left_corner.y};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
 
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
+        draw_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
         m_renderer->add_rectangle(bar_start - Vector2<float>(1.f, 0.f),
                                   bar_start + Vector2<float>(width, -max_bar_height), outline_color);
 
@@ -128,8 +130,9 @@ namespace omath::hud
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_top_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                              const float height, float ratio, const float offset)
+    EntityOverlay& EntityOverlay::add_top_bar(const widget::Paint& color, const Color& outline_color,
+                                              const Color& bg_color, const float height, float ratio,
+                                              const float offset)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_width = std::abs(m_canvas.top_left_corner.x - m_canvas.bottom_right_corner.x);
@@ -137,7 +140,7 @@ namespace omath::hud
         const auto bar_start = Vector2<float>{m_canvas.top_left_corner.x, m_text_cursor_top.y - offset};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, -height), bg_color);
 
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, -height), color);
+        draw_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, -height), color);
         m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, -height), outline_color);
 
         m_text_cursor_top.y -= offset + height;
@@ -397,15 +400,35 @@ namespace omath::hud
                 },
                 paint);
     }
-    EntityOverlay& EntityOverlay::add_bottom_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                                 const float height, float ratio, const float offset)
+
+    void EntityOverlay::draw_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max,
+                                              const widget::Paint& paint) const
+    {
+        const Vector2<float> top_left{std::min(min.x, max.x), std::min(min.y, max.y)};
+        const Vector2<float> bottom_right{std::max(min.x, max.x), std::max(min.y, max.y)};
+        std::visit(
+                widget::Overloaded{
+                        [&](const Color& color)
+                        {
+                            m_renderer->add_filled_rectangle(top_left, bottom_right, color);
+                        },
+                        [&](const Gradient& gradient)
+                        {
+                            m_renderer->add_gradient_rectangle(top_left, bottom_right, gradient);
+                        },
+                },
+                paint);
+    }
+    EntityOverlay& EntityOverlay::add_bottom_bar(const widget::Paint& color, const Color& outline_color,
+                                                 const Color& bg_color, const float height, float ratio,
+                                                 const float offset)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_width = std::abs(m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x);
 
         const auto bar_start = Vector2<float>{m_canvas.bottom_left_corner.x, m_text_cursor_bottom.y + offset};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), bg_color);
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, height), color);
+        draw_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, height), color);
         m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), outline_color);
 
         m_text_cursor_bottom.y += offset + height;
