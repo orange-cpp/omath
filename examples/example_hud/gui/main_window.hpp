@@ -78,7 +78,6 @@ namespace imgui_desktop::gui
         GlowSettings m_label_glow;
         GlowSettings m_canvas_glow{{1.f, 0.5f, 0.f, 0.8f}, 100.f};
         int m_canvas_glow_layers = 64;
-        int m_canvas_glow_mode = 2;
         float m_canvas_glow_rounding = 40.f;
 
         // Skeleton

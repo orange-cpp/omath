@@ -2,6 +2,7 @@
 // Created by orange on 13.03.2026.
 //
 #include "omath/hud/entity_overlay.hpp"
+#include <limits>
 
 namespace omath::hud
 {
@@ -478,77 +479,51 @@ namespace omath::hud
 
     void EntityOverlay::draw_canvas_glow(const widget::CanvasGlow& canvas_glow) const
     {
-        constexpr int segments = 96;
         const int layers = std::max(canvas_glow.layers, 2);
         const auto min = m_canvas.top_left_corner;
         const auto max = m_canvas.bottom_right_corner;
         const auto value = canvas_glow.glow.color.value();
         const float intensity = std::max(canvas_glow.glow.intensity, 0.f);
 
-        if (canvas_glow.mode == widget::CanvasGlowMode::OUTSIDE || canvas_glow.mode == widget::CanvasGlowMode::BOTH)
-        {
-            constexpr int corner_segments = 12;
-            const float max_rounding = std::min(std::abs(max.x - min.x), std::abs(max.y - min.y)) * 0.5f;
-            const float rounding = std::clamp(canvas_glow.rounding, 0.f, max_rounding);
-            const float extent = std::max(canvas_glow.glow.radius, 0.f);
-            const float stroke = std::max(extent / static_cast<float>(layers - 1) * 2.f, 1.f);
-            for (int layer = 0; layer < layers; ++layer)
-            {
-                const float progress = static_cast<float>(layer) / static_cast<float>(layers - 1);
-                const float expansion = extent * (1.f - progress);
-                const float falloff = progress * progress * (3.f - 2.f * progress);
-                const Color color{value.x, value.y, value.z, value.w * intensity * falloff * 0.35f};
-                const auto expanded_min = min - Vector2<float>{expansion, expansion};
-                const auto expanded_max = max + Vector2<float>{expansion, expansion};
-                const float expanded_rounding = rounding + expansion;
-                const std::array corner_centers = {
-                        expanded_min + Vector2<float>{expanded_rounding, expanded_rounding},
-                        Vector2<float>{expanded_max.x - expanded_rounding, expanded_min.y + expanded_rounding},
-                        expanded_max - Vector2<float>{expanded_rounding, expanded_rounding},
-                        Vector2<float>{expanded_min.x + expanded_rounding, expanded_max.y - expanded_rounding},
-                };
-                std::array<Vector2<float>, corner_segments * 4> points;
-                for (int corner = 0; corner < 4; ++corner)
-                {
-                    const float start_angle =
-                            std::numbers::pi_v<float> + static_cast<float>(corner) * std::numbers::pi_v<float> * 0.5f;
-                    for (int segment = 0; segment < corner_segments; ++segment)
-                    {
-                        const float arc_progress =
-                                static_cast<float>(segment) / static_cast<float>(corner_segments - 1);
-                        const float angle = start_angle + arc_progress * std::numbers::pi_v<float> * 0.5f;
-                        points[corner * corner_segments + segment] =
-                                corner_centers[corner]
-                                + Vector2<float>{std::cos(angle) * expanded_rounding,
-                                                 std::sin(angle) * expanded_rounding};
-                    }
-                }
-                m_renderer->add_polyline(points, color, stroke);
-            }
-        }
-
-        if (canvas_glow.mode == widget::CanvasGlowMode::OUTSIDE)
-            return;
-
-        const auto center = (min + max) * 0.5f;
-        const float half_width = std::abs(max.x - min.x) * 0.5f;
-        const float half_height = std::abs(max.y - min.y) * 0.5f;
-        if (half_width <= 0.f || half_height <= 0.f)
-            return;
-        const float vertical_radius = std::min(std::max(canvas_glow.glow.radius, 0.f), half_height);
-        const float horizontal_radius = vertical_radius * half_width / half_height;
-        if (vertical_radius <= 0.f || horizontal_radius <= 0.f)
-            return;
-
+        constexpr int corner_segments = 12;
+        const float max_rounding = std::min(std::abs(max.x - min.x), std::abs(max.y - min.y)) * 0.5f;
+        const float rounding = std::clamp(canvas_glow.rounding, 0.f, max_rounding);
+        const float extent = std::max(canvas_glow.glow.radius, 0.f);
+        const float stroke = std::max(extent / static_cast<float>(layers - 1) * 2.f, 1.f);
         for (int layer = 0; layer < layers; ++layer)
         {
             const float progress = static_cast<float>(layer) / static_cast<float>(layers - 1);
-            const float scale = 1.f - progress * 0.95f;
-            const float falloff = progress * progress;
-            const float alpha = value.w * intensity * falloff * 3.f / static_cast<float>(layers);
-            const Color color{value.x, value.y, value.z, alpha};
-            m_renderer->add_filled_ellipse(center, {horizontal_radius * scale, vertical_radius * scale}, color,
-                                           segments);
+            const float expansion = extent * (1.f - progress);
+            const float falloff = progress * progress * (3.f - 2.f * progress);
+            const Color color{value.x, value.y, value.z, value.w * intensity * falloff * 0.35f};
+            const auto expanded_min = min - Vector2<float>{expansion, expansion};
+            const auto expanded_max = max + Vector2<float>{expansion, expansion};
+            const float expanded_rounding = rounding + expansion;
+            const std::array corner_centers = {
+                    expanded_min + Vector2<float>{expanded_rounding, expanded_rounding},
+                    Vector2<float>{expanded_max.x - expanded_rounding, expanded_min.y + expanded_rounding},
+                    expanded_max - Vector2<float>{expanded_rounding, expanded_rounding},
+                    Vector2<float>{expanded_min.x + expanded_rounding, expanded_max.y - expanded_rounding},
+            };
+            std::array<Vector2<float>, corner_segments * 4> points;
+            for (int corner = 0; corner < 4; ++corner)
+            {
+                const float start_angle =
+                        std::numbers::pi_v<float> + static_cast<float>(corner) * std::numbers::pi_v<float> * 0.5f;
+                for (int segment = 0; segment < corner_segments; ++segment)
+                {
+                    const float arc_progress = static_cast<float>(segment) / static_cast<float>(corner_segments - 1);
+                    const float angle = start_angle + arc_progress * std::numbers::pi_v<float> * 0.5f;
+                    points[corner * corner_segments + segment] =
+                            corner_centers[corner]
+                            + Vector2<float>{std::cos(angle) * expanded_rounding, std::sin(angle) * expanded_rounding};
+                }
+            }
+            constexpr float clip_extent = std::numeric_limits<float>::max() * 0.25f;
+            m_renderer->add_polyline_clipped(points, {-clip_extent, -clip_extent}, {clip_extent, min.y}, color, stroke);
+            m_renderer->add_polyline_clipped(points, {-clip_extent, max.y}, {clip_extent, clip_extent}, color, stroke);
+            m_renderer->add_polyline_clipped(points, {-clip_extent, min.y}, {min.x, max.y}, color, stroke);
+            m_renderer->add_polyline_clipped(points, {max.x, min.y}, {clip_extent, max.y}, color, stroke);
         }
     }
 

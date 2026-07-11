@@ -15,6 +15,8 @@ namespace omath::hud
                       float thickness) override;
         void add_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color,
                           float thickness) override;
+        void add_polyline_clipped(const std::span<const Vector2<float>>& vertexes, const Vector2<float>& clip_min,
+                                  const Vector2<float>& clip_max, const Color& color, float thickness) override;
         void add_filled_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color) override;
         void add_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) override;
         void add_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) override;
@@ -24,8 +26,6 @@ namespace omath::hud
                         int segments = 0) override;
         void add_filled_circle(const Vector2<float>& center, float radius, const Color& color,
                                int segments = 0) override;
-        void add_filled_ellipse(const Vector2<float>& center, const Vector2<float>& radius, const Color& color,
-                                int segments = 0) override;
         void add_arc(const Vector2<float>& center, float radius, float a_min, float a_max, const Color& color,
                      float thickness, int segments = 0) override;
         void add_image(const std::any& texture_id, const Vector2<float>& min, const Vector2<float>& max,

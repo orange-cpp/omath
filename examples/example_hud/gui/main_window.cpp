@@ -90,7 +90,6 @@ namespace imgui_desktop::gui
             if (m_canvas_glow.enabled)
             {
                 ImGui::InputInt("Blur layers##canvas", &m_canvas_glow_layers);
-                ImGui::Combo("Mode##canvas", &m_canvas_glow_mode, "Inside\0Outside\0Both\0");
                 ImGui::InputFloat("Rounding##canvas", &m_canvas_glow_rounding);
             }
         }
@@ -291,9 +290,8 @@ namespace imgui_desktop::gui
         omath::hud::EntityOverlay({m_entity_x, m_entity_top_y}, {m_entity_x, m_entity_bottom_y}, m_entity_aspect,
                                   std::make_shared<omath::hud::ImguiHudRenderer>())
                 .contents(
-                        when(canvas_glow.has_value(),
-                             CanvasGlow{canvas_glow.value_or(Glow{m_canvas_glow.color}), m_canvas_glow_layers,
-                                        static_cast<CanvasGlowMode>(m_canvas_glow_mode), m_canvas_glow_rounding}),
+                        when(canvas_glow.has_value(), CanvasGlow{canvas_glow.value_or(Glow{m_canvas_glow.color}),
+                                                                 m_canvas_glow_layers, m_canvas_glow_rounding}),
                         // ── Boxes ────────────────────────────────────────────────────
                         when(m_show_box, Box{m_box_color, box_fill, m_box_outline, m_box_thickness, box_glow}),
                         when(m_show_cornered_box,

@@ -39,18 +39,10 @@ namespace omath::hud::widget
         float intensity = 1.f;
     };
 
-    enum class CanvasGlowMode
-    {
-        INSIDE,
-        OUTSIDE,
-        BOTH,
-    };
-
     struct CanvasGlow
     {
         Glow glow;
         int layers = 64;
-        CanvasGlowMode mode = CanvasGlowMode::INSIDE;
         float rounding = 20.f;
     };
 

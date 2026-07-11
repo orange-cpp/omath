@@ -27,6 +27,17 @@ namespace omath::hud
                                                     ImDrawFlags_Closed, thickness);
     }
 
+    void ImguiHudRenderer::add_polyline_clipped(const std::span<const Vector2<float>>& vertexes,
+                                                const Vector2<float>& clip_min, const Vector2<float>& clip_max,
+                                                const Color& color, const float thickness)
+    {
+        auto* draw_list = ImGui::GetBackgroundDrawList();
+        draw_list->PushClipRect(clip_min.to_im_vec2(), clip_max.to_im_vec2(), true);
+        draw_list->AddPolyline(reinterpret_cast<const ImVec2*>(vertexes.data()), static_cast<int>(vertexes.size()),
+                               color.to_im_color(), ImDrawFlags_Closed, thickness);
+        draw_list->PopClipRect();
+    }
+
     void ImguiHudRenderer::add_filled_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color)
     {
         ImGui::GetBackgroundDrawList()->AddConvexPolyFilled(reinterpret_cast<const ImVec2*>(vertexes.data()),
@@ -63,13 +74,6 @@ namespace omath::hud
                                              const int segments)
     {
         ImGui::GetBackgroundDrawList()->AddCircleFilled(center.to_im_vec2(), radius, color.to_im_color(), segments);
-    }
-
-    void ImguiHudRenderer::add_filled_ellipse(const Vector2<float>& center, const Vector2<float>& radius,
-                                              const Color& color, const int segments)
-    {
-        ImGui::GetBackgroundDrawList()->AddEllipseFilled(center.to_im_vec2(), radius.to_im_vec2(), color.to_im_color(),
-                                                         0.f, segments);
     }
 
     void ImguiHudRenderer::add_arc(const Vector2<float>& center, const float radius, const float a_min,
