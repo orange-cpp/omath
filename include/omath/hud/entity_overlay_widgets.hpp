@@ -2,6 +2,7 @@
 // Created by orange on 15.03.2026.
 //
 #pragma once
+#include "gradient.hpp"
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
 #include <any>
@@ -12,6 +13,16 @@
 
 namespace omath::hud::widget
 {
+    struct Paint : std::variant<Color, Gradient>
+    {
+        using std::variant<Color, Gradient>::variant;
+
+        constexpr Paint(const float red, const float green, const float blue, const float alpha)
+            : std::variant<Color, Gradient>(Color{red, green, blue, alpha})
+        {
+        }
+    };
+
     // ── Overloaded helper for std::visit ──────────────────────────────────────
     template<typename... Ts>
     struct Overloaded : Ts...
@@ -25,7 +36,7 @@ namespace omath::hud::widget
     struct Box
     {
         Color color;
-        Color fill{0.f, 0.f, 0.f, 0.f};
+        Paint fill{Color{0.f, 0.f, 0.f, 0.f}};
         Color outline{0.f, 0.f, 0.f, 0.f};
         float thickness = 1.f;
     };
@@ -92,7 +103,6 @@ namespace omath::hud::widget
         Figure figure = Figure::SQUARE;
     };
 
-
     // ── Side-agnostic widgets (used inside XxxSide containers) ────────────────
 
     /// A filled bar. `size` is width for left/right sides, height for top/bottom.
@@ -121,7 +131,7 @@ namespace omath::hud::widget
 
     struct Label
     {
-        Color color;
+        Paint color;
         float offset;
         Outlined outlined;
         std::string_view text;
@@ -172,8 +182,8 @@ namespace omath::hud::widget
     struct None
     {
     }; ///< No-op placeholder — used by widget::when for disabled elements.
-    using SideWidget =
-            std::variant<None, Bar, DashedBar, Label, Centered<Label>, SpaceVertical, SpaceHorizontal, ProgressRing, Icon>;
+    using SideWidget = std::variant<None, Bar, DashedBar, Label, Centered<Label>, SpaceVertical, SpaceHorizontal,
+                                    ProgressRing, Icon>;
 
     // ── Side containers ───────────────────────────────────────────────────────
     // Storing std::initializer_list<SideWidget> is safe here: the backing array

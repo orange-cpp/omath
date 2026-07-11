@@ -13,10 +13,13 @@ namespace omath::hud
         ~ImguiHudRenderer() override;
         void add_line(const Vector2<float>& line_start, const Vector2<float>& line_end, const Color& color,
                       float thickness) override;
-        void add_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color, float thickness) override;
+        void add_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color,
+                          float thickness) override;
         void add_filled_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color) override;
         void add_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) override;
         void add_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) override;
+        void add_gradient_rectangle(const Vector2<float>& min, const Vector2<float>& max,
+                                    const Gradient& gradient) override;
         void add_circle(const Vector2<float>& center, float radius, const Color& color, float thickness,
                         int segments = 0) override;
         void add_filled_circle(const Vector2<float>& center, float radius, const Color& color,
@@ -26,6 +29,8 @@ namespace omath::hud
         void add_image(const std::any& texture_id, const Vector2<float>& min, const Vector2<float>& max,
                        const Color& tint = Color{1.f, 1.f, 1.f, 1.f}) override;
         void add_text(const Vector2<float>& position, const Color& color, const std::string_view& text) override;
+        void add_gradient_text(const Vector2<float>& position, const Gradient& gradient,
+                               const std::string_view& text) override;
         [[nodiscard]]
         Vector2<float> calc_text_size(const std::string_view& text) override;
     };

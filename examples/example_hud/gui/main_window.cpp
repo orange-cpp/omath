@@ -4,6 +4,7 @@
 #include "main_window.hpp"
 #include "omath/hud/renderer_realizations/imgui_renderer.hpp"
 #include <GLFW/glfw3.h>
+#include <cmath>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -83,6 +84,15 @@ namespace imgui_desktop::gui
             ImGui::Checkbox("Dashed", &m_show_dashed_box);
             ImGui::ColorEdit4("Color##box", reinterpret_cast<float*>(&m_box_color), ImGuiColorEditFlags_NoInputs);
             ImGui::ColorEdit4("Fill##box", reinterpret_cast<float*>(&m_box_fill), ImGuiColorEditFlags_NoInputs);
+            ImGui::Checkbox("Gradient fill", &m_gradient_box_fill);
+            ImGui::Checkbox("Animate gradients", &m_animate_gradients);
+            if (m_gradient_box_fill)
+            {
+                ImGui::ColorEdit4("Gradient top##box", reinterpret_cast<float*>(&m_box_gradient_top),
+                                  ImGuiColorEditFlags_NoInputs);
+                ImGui::ColorEdit4("Gradient bottom##box", reinterpret_cast<float*>(&m_box_gradient_bottom),
+                                  ImGuiColorEditFlags_NoInputs);
+            }
             ImGui::ColorEdit4("Outline##box", reinterpret_cast<float*>(&m_box_outline), ImGuiColorEditFlags_NoInputs);
             ImGui::SliderFloat("Thickness", &m_box_thickness, 0.5f, 5.f);
             ImGui::SliderFloat("Corner ratio", &m_corner_ratio, 0.05f, 0.5f);
@@ -121,6 +131,14 @@ namespace imgui_desktop::gui
         if (ImGui::CollapsingHeader("Labels", ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Checkbox("Outlined", &m_outlined);
+            ImGui::Checkbox("Gradient centered label", &m_gradient_label);
+            if (m_gradient_label)
+            {
+                ImGui::ColorEdit4("Gradient left##lbl", reinterpret_cast<float*>(&m_label_gradient_left),
+                                  ImGuiColorEditFlags_NoInputs);
+                ImGui::ColorEdit4("Gradient right##lbl", reinterpret_cast<float*>(&m_label_gradient_right),
+                                  ImGuiColorEditFlags_NoInputs);
+            }
             ImGui::SliderFloat("Offset##lbl", &m_label_offset, 0.f, 15.f);
             ImGui::Checkbox("Right##lbl", &m_show_right_labels);
             ImGui::SameLine();
@@ -196,6 +214,28 @@ namespace imgui_desktop::gui
         const Bar bar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_offset};
         const DashedBar dbar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
                              m_bar_value, m_bar_dash_len,      m_bar_dash_gap, m_bar_offset};
+        const auto animated_color = [&](const omath::Color& color, const float hue_offset)
+        {
+            if (!m_animate_gradients)
+                return color;
+
+            auto hsv = color.to_hsv();
+            hsv.hue = std::fmod(hsv.hue + static_cast<float>(ImGui::GetTime()) * 0.15f + hue_offset, 1.f);
+            const auto animated = omath::Color::from_hsv(hsv).value();
+            return omath::Color{animated.x, animated.y, animated.z, color.value().w};
+        };
+        const auto box_gradient_top = animated_color(m_box_gradient_top, 0.f);
+        const auto box_gradient_bottom = animated_color(m_box_gradient_bottom, 0.5f);
+        const auto label_gradient_left = animated_color(m_label_gradient_left, 0.f);
+        const auto label_gradient_right = animated_color(m_label_gradient_right, 0.5f);
+        const Paint box_fill = m_gradient_box_fill
+                                       ? Paint{omath::hud::Gradient{box_gradient_top, box_gradient_top,
+                                                                    box_gradient_bottom, box_gradient_bottom}}
+                                       : Paint{m_box_fill};
+        const Paint centered_label_color =
+                m_gradient_label ? Paint{omath::hud::Gradient{label_gradient_left, label_gradient_right,
+                                                              label_gradient_right, label_gradient_left}}
+                                 : Paint{omath::Color::from_rgba(255, 255, 255, 255)};
 
         auto outline_helper = [](const bool is_outline) -> Outlined
         {
@@ -205,7 +245,7 @@ namespace imgui_desktop::gui
                                   std::make_shared<omath::hud::ImguiHudRenderer>())
                 .contents(
                         // ── Boxes ────────────────────────────────────────────────────
-                        when(m_show_box, Box{m_box_color, m_box_fill, m_box_outline, m_box_thickness}),
+                        when(m_show_box, Box{m_box_color, box_fill, m_box_outline, m_box_thickness}),
                         when(m_show_cornered_box, CorneredBox{omath::Color::from_rgba(255, 0, 255, 255), m_box_fill,
                                                               m_box_outline, m_corner_ratio, m_box_thickness}),
                         when(m_show_dashed_box, DashedBox{m_dash_color, m_dash_len, m_dash_gap, m_dash_thickness}),
@@ -254,8 +294,8 @@ namespace imgui_desktop::gui
                                 when(m_show_bottom_bar, bar),
                                 when(m_show_bottom_dashed_bar, dbar),
                                 when(m_show_centered_bottom,
-                                     Centered{Label{omath::Color::from_rgba(255, 255, 255, 255), m_label_offset,
-                                                    outline_helper(m_outlined), "PlayerName"}}),
+                                     Centered{Label{centered_label_color, m_label_offset, outline_helper(m_outlined),
+                                                    "Gradient PlayerName"}}),
                                 when(m_show_bottom_labels, Label{omath::Color::from_rgba(200, 200, 0, 255),
                                                                  m_label_offset, outline_helper(m_outlined), "42m"}),
                         },

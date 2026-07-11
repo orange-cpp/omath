@@ -20,6 +20,20 @@ namespace omath::hud
 
         return *this;
     }
+
+    EntityOverlay& EntityOverlay::add_2d_box(const Color& box_color, const Gradient& fill_gradient,
+                                             const Color& outline_color, const float thickness)
+    {
+        const auto points = m_canvas.as_array();
+
+        if (outline_color.value().w > 0.f)
+            m_renderer->add_polyline({points.data(), points.size()}, outline_color, thickness + 2.f);
+
+        m_renderer->add_polyline({points.data(), points.size()}, box_color, thickness);
+        m_renderer->add_gradient_rectangle(m_canvas.top_left_corner, m_canvas.bottom_right_corner, fill_gradient);
+
+        return *this;
+    }
     EntityOverlay& EntityOverlay::add_cornered_2d_box(const Color& box_color, const Color& fill_color,
                                                       const Color& outline_color, const float corner_ratio_len,
                                                       const float thickness)
@@ -38,11 +52,9 @@ namespace omath::hud
         };
 
         // Left Side
-        draw_corner_line(m_canvas.top_left_corner,
-                         m_canvas.top_left_corner + Vector2<float>{corner_line_length, 0.f});
+        draw_corner_line(m_canvas.top_left_corner, m_canvas.top_left_corner + Vector2<float>{corner_line_length, 0.f});
 
-        draw_corner_line(m_canvas.top_left_corner,
-                         m_canvas.top_left_corner + Vector2<float>{0.f, corner_line_length});
+        draw_corner_line(m_canvas.top_left_corner, m_canvas.top_left_corner + Vector2<float>{0.f, corner_line_length});
 
         draw_corner_line(m_canvas.bottom_left_corner,
                          m_canvas.bottom_left_corner - Vector2<float>{0.f, corner_line_length});
@@ -98,28 +110,21 @@ namespace omath::hud
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_right_label(const Color& color, const float offset,
-                                                  const widget::Outlined outlined,
-                                                  const std::string_view& text)
+    EntityOverlay& EntityOverlay::add_right_label(const widget::Paint& color, const float offset,
+                                                  const widget::Outlined outlined, const std::string_view& text)
     {
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, text);
-        else
-            m_renderer->add_text(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, text.data());
+        draw_label(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, outlined, text);
 
         m_text_cursor_right.y += m_renderer->calc_text_size(text.data()).y;
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_top_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                const std::string_view text)
+    EntityOverlay& EntityOverlay::add_top_label(const widget::Paint& color, const float offset,
+                                                const widget::Outlined outlined, const std::string_view text)
     {
         m_text_cursor_top.y -= m_renderer->calc_text_size(text.data()).y;
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, text);
-        else
-            m_renderer->add_text(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, text.data());
+        draw_label(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, outlined, text);
 
         return *this;
     }
@@ -366,16 +371,31 @@ namespace omath::hud
         return *this;
     }
 
-    void EntityOverlay::draw_outlined_text(const Vector2<float>& position, const Color& color,
-                                           const std::string_view& text)
+    void EntityOverlay::draw_label(const Vector2<float>& position, const widget::Paint& paint,
+                                   const widget::Outlined outlined, const std::string_view& text)
     {
-        static constexpr std::array outline_offsets = {
-                Vector2<float>{-1, -1}, Vector2<float>{-1, 0}, Vector2<float>{-1, 1}, Vector2<float>{0, -1},
-                Vector2<float>{0, 1},   Vector2<float>{1, -1}, Vector2<float>{1, 0},  Vector2<float>{1, 1}};
+        if (outlined == widget::Outlined::On)
+        {
+            static constexpr std::array outline_offsets = {
+                    Vector2<float>{-1, -1}, Vector2<float>{-1, 0}, Vector2<float>{-1, 1}, Vector2<float>{0, -1},
+                    Vector2<float>{0, 1},   Vector2<float>{1, -1}, Vector2<float>{1, 0},  Vector2<float>{1, 1}};
 
-        for (const auto& outline_offset : outline_offsets)
-            m_renderer->add_text(position + outline_offset, Color{0.f, 0.f, 0.f, 1.f}, text.data());
-        m_renderer->add_text(position, color, text.data());
+            for (const auto& outline_offset : outline_offsets)
+                m_renderer->add_text(position + outline_offset, Color{0.f, 0.f, 0.f, 1.f}, text);
+        }
+
+        std::visit(
+                widget::Overloaded{
+                        [&](const Color& color)
+                        {
+                            m_renderer->add_text(position, color, text);
+                        },
+                        [&](const Gradient& gradient)
+                        {
+                            m_renderer->add_gradient_text(position, gradient, text);
+                        },
+                },
+                paint);
     }
     EntityOverlay& EntityOverlay::add_bottom_bar(const Color& color, const Color& outline_color, const Color& bg_color,
                                                  const float height, float ratio, const float offset)
@@ -393,38 +413,33 @@ namespace omath::hud
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                   const std::string_view text)
+    EntityOverlay& EntityOverlay::add_bottom_label(const widget::Paint& color, const float offset,
+                                                   const widget::Outlined outlined, const std::string_view text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, text);
-        else
-            m_renderer->add_text(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, text);
+        draw_label(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, outlined, text);
 
         m_text_cursor_bottom.y += text_size.y;
 
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_left_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                 const std::string_view& text)
+    EntityOverlay& EntityOverlay::add_left_label(const widget::Paint& color, const float offset,
+                                                 const widget::Outlined outlined, const std::string_view& text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto pos = m_text_cursor_left + Vector2<float>{-(offset + text_size.x), 0.f};
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(pos, color, text);
-        else
-            m_renderer->add_text(pos, color, text);
+        draw_label(pos, color, outlined, text);
 
         m_text_cursor_left.y += text_size.y;
 
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_centered_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
+    EntityOverlay& EntityOverlay::add_centered_bottom_label(const widget::Paint& color, const float offset,
+                                                            const widget::Outlined outlined,
                                                             const std::string_view& text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
@@ -432,18 +447,15 @@ namespace omath::hud
                 m_canvas.bottom_left_corner.x + (m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x) / 2.f;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_bottom.y + offset};
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(pos, color, text);
-        else
-            m_renderer->add_text(pos, color, text);
+        draw_label(pos, color, outlined, text);
 
         m_text_cursor_bottom.y += text_size.y;
 
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_centered_top_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                         const std::string_view& text)
+    EntityOverlay& EntityOverlay::add_centered_top_label(const widget::Paint& color, const float offset,
+                                                         const widget::Outlined outlined, const std::string_view& text)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto box_center_x =
@@ -452,10 +464,7 @@ namespace omath::hud
         m_text_cursor_top.y -= text_size.y;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_top.y - offset};
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(pos, color, text);
-        else
-            m_renderer->add_text(pos, color, text);
+        draw_label(pos, color, outlined, text);
 
         return *this;
     }
@@ -601,7 +610,12 @@ namespace omath::hud
     // ── widget dispatch ───────────────────────────────────────────────────────
     void EntityOverlay::dispatch(const widget::Box& box)
     {
-        add_2d_box(box.color, box.fill, box.outline, box.thickness);
+        std::visit(
+                [&](const auto& fill)
+                {
+                    add_2d_box(box.color, fill, box.outline, box.thickness);
+                },
+                box.fill);
     }
 
     void EntityOverlay::dispatch(const widget::CorneredBox& cornered_box)
