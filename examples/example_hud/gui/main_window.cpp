@@ -66,6 +66,19 @@ namespace imgui_desktop::gui
         ImGui::Begin("Controls", &m_opened,
                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
         ImGui::PushItemWidth(160.f);
+        const auto draw_glow_controls = [](const char* label, GlowSettings& settings)
+        {
+            ImGui::PushID(label);
+            ImGui::TextUnformatted(label);
+            ImGui::Checkbox("Glow", &settings.enabled);
+            if (settings.enabled)
+            {
+                ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&settings.color), ImGuiColorEditFlags_NoInputs);
+                ImGui::SliderFloat("Radius", &settings.radius, 1.f, 12.f);
+                ImGui::SliderFloat("Intensity", &settings.intensity, 0.f, 1.f);
+            }
+            ImGui::PopID();
+        };
 
         if (ImGui::CollapsingHeader("Entity", ImGuiTreeNodeFlags_DefaultOpen))
         {
@@ -96,6 +109,8 @@ namespace imgui_desktop::gui
             ImGui::ColorEdit4("Outline##box", reinterpret_cast<float*>(&m_box_outline), ImGuiColorEditFlags_NoInputs);
             ImGui::SliderFloat("Thickness", &m_box_thickness, 0.5f, 5.f);
             ImGui::SliderFloat("Corner ratio", &m_corner_ratio, 0.05f, 0.5f);
+            draw_glow_controls("Box glow", m_box_glow);
+            draw_glow_controls("Cornered box glow", m_cornered_box_glow);
             ImGui::Separator();
             ImGui::ColorEdit4("Dash color", reinterpret_cast<float*>(&m_dash_color), ImGuiColorEditFlags_NoInputs);
             ImGui::SliderFloat("Dash length", &m_dash_len, 2.f, 30.f);
@@ -127,6 +142,7 @@ namespace imgui_desktop::gui
             ImGui::Checkbox("Bot dashed##bar", &m_show_bottom_dashed_bar);
             ImGui::SliderFloat("Dash len##bar", &m_bar_dash_len, 2.f, 20.f);
             ImGui::SliderFloat("Dash gap##bar", &m_bar_dash_gap, 1.f, 15.f);
+            draw_glow_controls("Bar glow", m_bar_glow);
         }
 
         if (ImGui::CollapsingHeader("Labels", ImGuiTreeNodeFlags_DefaultOpen))
@@ -150,6 +166,7 @@ namespace imgui_desktop::gui
             ImGui::Checkbox("Ctr top##lbl", &m_show_centered_top);
             ImGui::SameLine();
             ImGui::Checkbox("Ctr bot##lbl", &m_show_centered_bottom);
+            draw_glow_controls("Label glow", m_label_glow);
         }
 
         if (ImGui::CollapsingHeader("Skeleton"))
@@ -229,16 +246,26 @@ namespace imgui_desktop::gui
         const auto red = omath::Color{1.f, 0.f, 0.f, 1.f};
         const auto green = omath::Color{0.f, 1.f, 0.f, 1.f};
         const auto bar_value_color = omath::Color{red.value() * (1.f - m_bar_value) + green.value() * m_bar_value};
+        const auto make_glow = [](const GlowSettings& settings) -> std::optional<Glow>
+        {
+            if (!settings.enabled)
+                return std::nullopt;
+            return Glow{settings.color, settings.radius, settings.intensity};
+        };
+        const auto box_glow = make_glow(m_box_glow);
+        const auto cornered_box_glow = make_glow(m_cornered_box_glow);
+        const auto bar_glow = make_glow(m_bar_glow);
+        const auto label_glow = make_glow(m_label_glow);
         const Paint vertical_bar_color =
                 m_gradient_bars ? Paint{omath::hud::Gradient{bar_value_color, bar_value_color, red, red}}
                                 : Paint{m_bar_color};
         const Paint horizontal_bar_color =
                 m_gradient_bars ? Paint{omath::hud::Gradient{red, bar_value_color, bar_value_color, red}}
                                 : Paint{m_bar_color};
-        const Bar vertical_bar{vertical_bar_color, m_bar_outline_color, m_bar_bg_color,
-                               m_bar_width,        m_bar_value,         m_bar_offset};
-        const Bar horizontal_bar{horizontal_bar_color, m_bar_outline_color, m_bar_bg_color,
-                                 m_bar_width,          m_bar_value,         m_bar_offset};
+        const Bar vertical_bar{vertical_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
+                               m_bar_value,        m_bar_offset,        bar_glow};
+        const Bar horizontal_bar{horizontal_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
+                                 m_bar_value,          m_bar_offset,        bar_glow};
         const Paint box_fill = m_gradient_box_fill
                                        ? Paint{omath::hud::Gradient{box_gradient_top, box_gradient_top,
                                                                     box_gradient_bottom, box_gradient_bottom}}
@@ -257,9 +284,10 @@ namespace imgui_desktop::gui
                                   std::make_shared<omath::hud::ImguiHudRenderer>())
                 .contents(
                         // ── Boxes ────────────────────────────────────────────────────
-                        when(m_show_box, Box{m_box_color, box_fill, m_box_outline, m_box_thickness}),
-                        when(m_show_cornered_box, CorneredBox{omath::Color::from_rgba(255, 0, 255, 255), m_box_fill,
-                                                              m_box_outline, m_corner_ratio, m_box_thickness}),
+                        when(m_show_box, Box{m_box_color, box_fill, m_box_outline, m_box_thickness, box_glow}),
+                        when(m_show_cornered_box,
+                             CorneredBox{omath::Color::from_rgba(255, 0, 255, 255), m_box_fill, m_box_outline,
+                                         m_corner_ratio, m_box_thickness, cornered_box_glow}),
                         when(m_show_dashed_box, DashedBox{m_dash_color, m_dash_len, m_dash_gap, m_dash_thickness}),
                         RightSide{
                                 when(m_show_right_bar, vertical_bar),
@@ -307,7 +335,7 @@ namespace imgui_desktop::gui
                                 when(m_show_bottom_dashed_bar, dbar),
                                 when(m_show_centered_bottom,
                                      Centered{Label{centered_label_color, m_label_offset, outline_helper(m_outlined),
-                                                    "Gradient PlayerName"}}),
+                                                    "Gradient PlayerName", label_glow}}),
                                 when(m_show_bottom_labels, Label{omath::Color::from_rgba(200, 200, 0, 255),
                                                                  m_label_offset, outline_helper(m_outlined), "42m"}),
                         },

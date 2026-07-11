@@ -32,6 +32,13 @@ namespace omath::hud::widget
     template<typename... Ts>
     Overloaded(Ts...) -> Overloaded<Ts...>;
 
+    struct Glow
+    {
+        Color color;
+        float radius = 4.f;
+        float intensity = 1.f;
+    };
+
     // ── Standalone widgets ────────────────────────────────────────────────────
     struct Box
     {
@@ -39,6 +46,7 @@ namespace omath::hud::widget
         Paint fill{Color{0.f, 0.f, 0.f, 0.f}};
         Color outline{0.f, 0.f, 0.f, 0.f};
         float thickness = 1.f;
+        std::optional<Glow> glow = std::nullopt;
     };
 
     enum class Outlined
@@ -53,6 +61,7 @@ namespace omath::hud::widget
         Color outline{0.f, 0.f, 0.f, 0.f};
         float corner_ratio = 0.2f;
         float thickness = 1.f;
+        std::optional<Glow> glow = std::nullopt;
     };
 
     struct DashedBox
@@ -114,6 +123,7 @@ namespace omath::hud::widget
         float size;
         float ratio;
         float offset = 5.f;
+        std::optional<Glow> glow = std::nullopt;
     };
 
     /// A dashed bar. Same field semantics as Bar plus dash parameters.
@@ -135,6 +145,7 @@ namespace omath::hud::widget
         float offset;
         Outlined outlined;
         std::string_view text;
+        std::optional<Glow> glow = std::nullopt;
     };
 
     /// Wraps a Label to request horizontal centering (only applied in TopSide / BottomSide).

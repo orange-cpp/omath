@@ -17,6 +17,14 @@ namespace imgui_desktop::gui
         void Run();
 
     private:
+        struct GlowSettings
+        {
+            omath::Color color{0.f, 0.7f, 1.f, 0.8f};
+            float radius = 4.f;
+            float intensity = 0.8f;
+            bool enabled = false;
+        };
+
         void draw_controls();
         void draw_overlay();
         void present();
@@ -63,6 +71,11 @@ namespace imgui_desktop::gui
         bool m_show_right_labels = true, m_show_left_labels = true;
         bool m_show_top_labels = true, m_show_bottom_labels = true;
         bool m_show_centered_top = true, m_show_centered_bottom = true;
+
+        GlowSettings m_box_glow;
+        GlowSettings m_cornered_box_glow{{1.f, 0.f, 1.f, 0.8f}};
+        GlowSettings m_bar_glow{{1.f, 0.f, 0.f, 0.8f}};
+        GlowSettings m_label_glow;
 
         // Skeleton
         omath::Color m_skel_color = omath::Color::from_rgba(255, 255, 255, 200);

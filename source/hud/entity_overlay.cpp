@@ -78,7 +78,7 @@ namespace omath::hud
     }
     EntityOverlay& EntityOverlay::add_right_bar(const widget::Paint& color, const Color& outline_color,
                                                 const Color& bg_color, const float width, float ratio,
-                                                const float offset)
+                                                const float offset, const std::optional<widget::Glow>& glow)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_height = std::abs(m_canvas.top_right_corner.y - m_canvas.bottom_right_corner.y);
@@ -86,6 +86,7 @@ namespace omath::hud
         const auto bar_start = Vector2<float>{m_text_cursor_right.x + offset, m_canvas.bottom_right_corner.y};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
 
+        draw_glow_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), glow);
         draw_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
         m_renderer->add_rectangle(bar_start - Vector2<float>(1.f, 0.f),
                                   bar_start + Vector2<float>(width, -max_bar_height), outline_color);
@@ -96,7 +97,7 @@ namespace omath::hud
     }
     EntityOverlay& EntityOverlay::add_left_bar(const widget::Paint& color, const Color& outline_color,
                                                const Color& bg_color, const float width, float ratio,
-                                               const float offset)
+                                               const float offset, const std::optional<widget::Glow>& glow)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_height = std::abs(m_canvas.top_left_corner.y - m_canvas.bottom_right_corner.y);
@@ -104,6 +105,7 @@ namespace omath::hud
         const auto bar_start = Vector2<float>{m_text_cursor_left.x - (offset + width), m_canvas.bottom_left_corner.y};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
 
+        draw_glow_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), glow);
         draw_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
         m_renderer->add_rectangle(bar_start - Vector2<float>(1.f, 0.f),
                                   bar_start + Vector2<float>(width, -max_bar_height), outline_color);
@@ -113,26 +115,28 @@ namespace omath::hud
         return *this;
     }
     EntityOverlay& EntityOverlay::add_right_label(const widget::Paint& color, const float offset,
-                                                  const widget::Outlined outlined, const std::string_view& text)
+                                                  const widget::Outlined outlined, const std::string_view& text,
+                                                  const std::optional<widget::Glow>& glow)
     {
-        draw_label(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, outlined, text);
+        draw_label(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, outlined, text, glow);
 
         m_text_cursor_right.y += m_renderer->calc_text_size(text.data()).y;
 
         return *this;
     }
     EntityOverlay& EntityOverlay::add_top_label(const widget::Paint& color, const float offset,
-                                                const widget::Outlined outlined, const std::string_view text)
+                                                const widget::Outlined outlined, const std::string_view text,
+                                                const std::optional<widget::Glow>& glow)
     {
         m_text_cursor_top.y -= m_renderer->calc_text_size(text.data()).y;
 
-        draw_label(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, outlined, text);
+        draw_label(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, outlined, text, glow);
 
         return *this;
     }
     EntityOverlay& EntityOverlay::add_top_bar(const widget::Paint& color, const Color& outline_color,
                                               const Color& bg_color, const float height, float ratio,
-                                              const float offset)
+                                              const float offset, const std::optional<widget::Glow>& glow)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_width = std::abs(m_canvas.top_left_corner.x - m_canvas.bottom_right_corner.x);
@@ -140,6 +144,7 @@ namespace omath::hud
         const auto bar_start = Vector2<float>{m_canvas.top_left_corner.x, m_text_cursor_top.y - offset};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, -height), bg_color);
 
+        draw_glow_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, -height), glow);
         draw_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, -height), color);
         m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, -height), outline_color);
 
@@ -375,8 +380,35 @@ namespace omath::hud
     }
 
     void EntityOverlay::draw_label(const Vector2<float>& position, const widget::Paint& paint,
-                                   const widget::Outlined outlined, const std::string_view& text)
+                                   const widget::Outlined outlined, const std::string_view& text,
+                                   const std::optional<widget::Glow>& glow)
     {
+        if (glow)
+        {
+            const int radius = static_cast<int>(std::ceil(std::max(glow->radius, 0.f)));
+            for (int layer = radius; layer > 0; --layer)
+            {
+                const float alpha = glow->color.value().w * std::clamp(glow->intensity, 0.f, 1.f)
+                                    * (1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1));
+                const auto value = glow->color.value();
+                const Color color{value.x, value.y, value.z, alpha / static_cast<float>(radius)};
+                for (int x = -layer; x <= layer; ++x)
+                {
+                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(x), static_cast<float>(-layer)},
+                                         color, text);
+                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(x), static_cast<float>(layer)},
+                                         color, text);
+                }
+                for (int y = -layer + 1; y < layer; ++y)
+                {
+                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(-layer), static_cast<float>(y)},
+                                         color, text);
+                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(layer), static_cast<float>(y)},
+                                         color, text);
+                }
+            }
+        }
+
         if (outlined == widget::Outlined::On)
         {
             static constexpr std::array outline_offsets = {
@@ -401,6 +433,49 @@ namespace omath::hud
                 paint);
     }
 
+    void EntityOverlay::draw_glow_polyline(const std::span<const Vector2<float>>& points, const widget::Glow& glow,
+                                           const float thickness) const
+    {
+        const int radius = static_cast<int>(std::ceil(std::max(glow.radius, 0.f)));
+        const auto value = glow.color.value();
+        for (int layer = radius; layer > 0; --layer)
+        {
+            const float falloff = 1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1);
+            const Color color{value.x, value.y, value.z,
+                              value.w * std::clamp(glow.intensity, 0.f, 1.f) * falloff / static_cast<float>(radius)};
+            m_renderer->add_polyline(points, color, thickness + static_cast<float>(layer) * 2.f);
+        }
+    }
+
+    void EntityOverlay::draw_glow_line(const Vector2<float>& from, const Vector2<float>& to, const widget::Glow& glow,
+                                       const float thickness) const
+    {
+        const int radius = static_cast<int>(std::ceil(std::max(glow.radius, 0.f)));
+        const auto value = glow.color.value();
+        for (int layer = radius; layer > 0; --layer)
+        {
+            const float falloff = 1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1);
+            const Color color{value.x, value.y, value.z,
+                              value.w * std::clamp(glow.intensity, 0.f, 1.f) * falloff / static_cast<float>(radius)};
+            m_renderer->add_line(from, to, color, thickness + static_cast<float>(layer) * 2.f);
+        }
+    }
+
+    void EntityOverlay::draw_glow_rectangle(const Vector2<float>& min, const Vector2<float>& max,
+                                            const std::optional<widget::Glow>& glow) const
+    {
+        if (!glow || glow->radius <= 0.f)
+            return;
+
+        const std::array points = {
+                Vector2<float>{std::min(min.x, max.x), std::min(min.y, max.y)},
+                Vector2<float>{std::max(min.x, max.x), std::min(min.y, max.y)},
+                Vector2<float>{std::max(min.x, max.x), std::max(min.y, max.y)},
+                Vector2<float>{std::min(min.x, max.x), std::max(min.y, max.y)},
+        };
+        draw_glow_polyline(points, *glow, 1.f);
+    }
+
     void EntityOverlay::draw_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max,
                                               const widget::Paint& paint) const
     {
@@ -421,13 +496,14 @@ namespace omath::hud
     }
     EntityOverlay& EntityOverlay::add_bottom_bar(const widget::Paint& color, const Color& outline_color,
                                                  const Color& bg_color, const float height, float ratio,
-                                                 const float offset)
+                                                 const float offset, const std::optional<widget::Glow>& glow)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_width = std::abs(m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x);
 
         const auto bar_start = Vector2<float>{m_canvas.bottom_left_corner.x, m_text_cursor_bottom.y + offset};
         m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), bg_color);
+        draw_glow_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, height), glow);
         draw_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, height), color);
         m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), outline_color);
 
@@ -437,11 +513,12 @@ namespace omath::hud
     }
 
     EntityOverlay& EntityOverlay::add_bottom_label(const widget::Paint& color, const float offset,
-                                                   const widget::Outlined outlined, const std::string_view text)
+                                                   const widget::Outlined outlined, const std::string_view text,
+                                                   const std::optional<widget::Glow>& glow)
     {
         const auto text_size = m_renderer->calc_text_size(text);
 
-        draw_label(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, outlined, text);
+        draw_label(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, outlined, text, glow);
 
         m_text_cursor_bottom.y += text_size.y;
 
@@ -449,12 +526,13 @@ namespace omath::hud
     }
 
     EntityOverlay& EntityOverlay::add_left_label(const widget::Paint& color, const float offset,
-                                                 const widget::Outlined outlined, const std::string_view& text)
+                                                 const widget::Outlined outlined, const std::string_view& text,
+                                                 const std::optional<widget::Glow>& glow)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto pos = m_text_cursor_left + Vector2<float>{-(offset + text_size.x), 0.f};
 
-        draw_label(pos, color, outlined, text);
+        draw_label(pos, color, outlined, text, glow);
 
         m_text_cursor_left.y += text_size.y;
 
@@ -463,14 +541,15 @@ namespace omath::hud
 
     EntityOverlay& EntityOverlay::add_centered_bottom_label(const widget::Paint& color, const float offset,
                                                             const widget::Outlined outlined,
-                                                            const std::string_view& text)
+                                                            const std::string_view& text,
+                                                            const std::optional<widget::Glow>& glow)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto box_center_x =
                 m_canvas.bottom_left_corner.x + (m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x) / 2.f;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_bottom.y + offset};
 
-        draw_label(pos, color, outlined, text);
+        draw_label(pos, color, outlined, text, glow);
 
         m_text_cursor_bottom.y += text_size.y;
 
@@ -478,7 +557,8 @@ namespace omath::hud
     }
 
     EntityOverlay& EntityOverlay::add_centered_top_label(const widget::Paint& color, const float offset,
-                                                         const widget::Outlined outlined, const std::string_view& text)
+                                                         const widget::Outlined outlined, const std::string_view& text,
+                                                         const std::optional<widget::Glow>& glow)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto box_center_x =
@@ -487,7 +567,7 @@ namespace omath::hud
         m_text_cursor_top.y -= text_size.y;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_top.y - offset};
 
-        draw_label(pos, color, outlined, text);
+        draw_label(pos, color, outlined, text, glow);
 
         return *this;
     }
@@ -633,6 +713,11 @@ namespace omath::hud
     // ── widget dispatch ───────────────────────────────────────────────────────
     void EntityOverlay::dispatch(const widget::Box& box)
     {
+        if (box.glow)
+        {
+            const auto points = m_canvas.as_array();
+            draw_glow_polyline(points, *box.glow, box.thickness);
+        }
         std::visit(
                 [&](const auto& fill)
                 {
@@ -643,6 +728,23 @@ namespace omath::hud
 
     void EntityOverlay::dispatch(const widget::CorneredBox& cornered_box)
     {
+        if (cornered_box.glow)
+        {
+            const float length =
+                    std::abs(m_canvas.top_left_corner.x - m_canvas.top_right_corner.x) * cornered_box.corner_ratio;
+            const std::array lines = {
+                    std::pair{m_canvas.top_left_corner, m_canvas.top_left_corner + Vector2<float>{length, 0.f}},
+                    std::pair{m_canvas.top_left_corner, m_canvas.top_left_corner + Vector2<float>{0.f, length}},
+                    std::pair{m_canvas.bottom_left_corner, m_canvas.bottom_left_corner - Vector2<float>{0.f, length}},
+                    std::pair{m_canvas.bottom_left_corner, m_canvas.bottom_left_corner + Vector2<float>{length, 0.f}},
+                    std::pair{m_canvas.top_right_corner, m_canvas.top_right_corner - Vector2<float>{length, 0.f}},
+                    std::pair{m_canvas.top_right_corner, m_canvas.top_right_corner + Vector2<float>{0.f, length}},
+                    std::pair{m_canvas.bottom_right_corner, m_canvas.bottom_right_corner - Vector2<float>{0.f, length}},
+                    std::pair{m_canvas.bottom_right_corner, m_canvas.bottom_right_corner - Vector2<float>{length, 0.f}},
+            };
+            for (const auto& [from, to] : lines)
+                draw_glow_line(from, to, *cornered_box.glow, cornered_box.thickness);
+        }
         add_cornered_2d_box(cornered_box.color, cornered_box.fill, cornered_box.outline, cornered_box.corner_ratio,
                             cornered_box.thickness);
     }
@@ -741,7 +843,7 @@ namespace omath::hud
                             },
                             [this](const widget::Bar& w)
                             {
-                                add_right_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset);
+                                add_right_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset, w.glow);
                             },
                             [this](const widget::DashedBar& w)
                             {
@@ -750,11 +852,12 @@ namespace omath::hud
                             },
                             [this](const widget::Label& w)
                             {
-                                add_right_label(w.color, w.offset, w.outlined, w.text);
+                                add_right_label(w.color, w.offset, w.outlined, w.text, w.glow);
                             },
                             [this](const widget::Centered<widget::Label>& w)
                             {
-                                add_right_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
+                                add_right_label(w.child.color, w.child.offset, w.child.outlined, w.child.text,
+                                                w.child.glow);
                             },
                             [this](const widget::SpaceVertical& w)
                             {
@@ -787,7 +890,7 @@ namespace omath::hud
                             },
                             [this](const widget::Bar& w)
                             {
-                                add_left_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset);
+                                add_left_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset, w.glow);
                             },
                             [this](const widget::DashedBar& w)
                             {
@@ -796,11 +899,12 @@ namespace omath::hud
                             },
                             [this](const widget::Label& w)
                             {
-                                add_left_label(w.color, w.offset, w.outlined, w.text);
+                                add_left_label(w.color, w.offset, w.outlined, w.text, w.glow);
                             },
                             [this](const widget::Centered<widget::Label>& w)
                             {
-                                add_left_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
+                                add_left_label(w.child.color, w.child.offset, w.child.outlined, w.child.text,
+                                               w.child.glow);
                             },
                             [this](const widget::SpaceVertical& w)
                             {
@@ -833,7 +937,7 @@ namespace omath::hud
                             },
                             [this](const widget::Bar& w)
                             {
-                                add_top_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset);
+                                add_top_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset, w.glow);
                             },
                             [this](const widget::DashedBar& w)
                             {
@@ -842,11 +946,12 @@ namespace omath::hud
                             },
                             [this](const widget::Label& w)
                             {
-                                add_top_label(w.color, w.offset, w.outlined, w.text);
+                                add_top_label(w.color, w.offset, w.outlined, w.text, w.glow);
                             },
                             [this](const widget::Centered<widget::Label>& w)
                             {
-                                add_centered_top_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
+                                add_centered_top_label(w.child.color, w.child.offset, w.child.outlined, w.child.text,
+                                                       w.child.glow);
                             },
                             [this](const widget::SpaceVertical& w)
                             {
@@ -878,7 +983,7 @@ namespace omath::hud
                             },
                             [this](const widget::Bar& w)
                             {
-                                add_bottom_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset);
+                                add_bottom_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset, w.glow);
                             },
                             [this](const widget::DashedBar& w)
                             {
@@ -887,12 +992,12 @@ namespace omath::hud
                             },
                             [this](const widget::Label& w)
                             {
-                                add_bottom_label(w.color, w.offset, w.outlined, w.text);
+                                add_bottom_label(w.color, w.offset, w.outlined, w.text, w.glow);
                             },
                             [this](const widget::Centered<widget::Label>& w)
                             {
-                                add_centered_bottom_label(w.child.color, w.child.offset, w.child.outlined,
-                                                          w.child.text);
+                                add_centered_bottom_label(w.child.color, w.child.offset, w.child.outlined, w.child.text,
+                                                          w.child.glow);
                             },
                             [this](const widget::SpaceVertical& w)
                             {
