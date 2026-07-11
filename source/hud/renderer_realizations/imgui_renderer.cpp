@@ -65,6 +65,13 @@ namespace omath::hud
         ImGui::GetBackgroundDrawList()->AddCircleFilled(center.to_im_vec2(), radius, color.to_im_color(), segments);
     }
 
+    void ImguiHudRenderer::add_filled_ellipse(const Vector2<float>& center, const Vector2<float>& radius,
+                                              const Color& color, const int segments)
+    {
+        ImGui::GetBackgroundDrawList()->AddEllipseFilled(center.to_im_vec2(), radius.to_im_vec2(), color.to_im_color(),
+                                                         0.f, segments);
+    }
+
     void ImguiHudRenderer::add_arc(const Vector2<float>& center, const float radius, const float a_min,
                                    const float a_max, const Color& color, const float thickness, const int segments)
     {

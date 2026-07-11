@@ -66,7 +66,7 @@ namespace imgui_desktop::gui
         ImGui::Begin("Controls", &m_opened,
                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
         ImGui::PushItemWidth(160.f);
-        const auto draw_glow_controls = [](const char* label, GlowSettings& settings, const float max_radius = 30.f)
+        const auto draw_glow_controls = [](const char* label, GlowSettings& settings)
         {
             ImGui::PushID(label);
             ImGui::TextUnformatted(label);
@@ -74,8 +74,8 @@ namespace imgui_desktop::gui
             if (settings.enabled)
             {
                 ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&settings.color), ImGuiColorEditFlags_NoInputs);
-                ImGui::SliderFloat("Radius", &settings.radius, 1.f, max_radius);
-                ImGui::SliderFloat("Intensity", &settings.intensity, 0.f, 1.f);
+                ImGui::InputFloat("Radius", &settings.radius);
+                ImGui::InputFloat("Intensity", &settings.intensity);
             }
             ImGui::PopID();
         };
@@ -86,7 +86,13 @@ namespace imgui_desktop::gui
             ImGui::SliderFloat("Top Y", &m_entity_top_y, 20.f, m_entity_bottom_y - 20.f);
             ImGui::SliderFloat("Bottom Y", &m_entity_bottom_y, m_entity_top_y + 20.f, vp->Size.y - 20.f);
             ImGui::SliderFloat("Aspect", &m_entity_aspect, 1.f, 10.f);
-            draw_glow_controls("Canvas light", m_canvas_glow, 500.f);
+            draw_glow_controls("Canvas light", m_canvas_glow);
+            if (m_canvas_glow.enabled)
+            {
+                ImGui::InputInt("Blur layers##canvas", &m_canvas_glow_layers);
+                ImGui::Combo("Mode##canvas", &m_canvas_glow_mode, "Inside\0Outside\0Both\0");
+                ImGui::InputFloat("Rounding##canvas", &m_canvas_glow_rounding);
+            }
         }
 
         if (ImGui::CollapsingHeader("Box", ImGuiTreeNodeFlags_DefaultOpen))
@@ -285,7 +291,9 @@ namespace imgui_desktop::gui
         omath::hud::EntityOverlay({m_entity_x, m_entity_top_y}, {m_entity_x, m_entity_bottom_y}, m_entity_aspect,
                                   std::make_shared<omath::hud::ImguiHudRenderer>())
                 .contents(
-                        when(canvas_glow.has_value(), CanvasGlow{canvas_glow.value_or(Glow{m_canvas_glow.color})}),
+                        when(canvas_glow.has_value(),
+                             CanvasGlow{canvas_glow.value_or(Glow{m_canvas_glow.color}), m_canvas_glow_layers,
+                                        static_cast<CanvasGlowMode>(m_canvas_glow_mode), m_canvas_glow_rounding}),
                         // ── Boxes ────────────────────────────────────────────────────
                         when(m_show_box, Box{m_box_color, box_fill, m_box_outline, m_box_thickness, box_glow}),
                         when(m_show_cornered_box,

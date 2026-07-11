@@ -388,7 +388,7 @@ namespace omath::hud
             const int radius = static_cast<int>(std::ceil(std::max(glow->radius, 0.f)));
             for (int layer = radius; layer > 0; --layer)
             {
-                const float alpha = glow->color.value().w * std::clamp(glow->intensity, 0.f, 1.f)
+                const float alpha = glow->color.value().w * std::max(glow->intensity, 0.f)
                                     * (1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1));
                 const auto value = glow->color.value();
                 const Color color{value.x, value.y, value.z, alpha / static_cast<float>(radius)};
@@ -442,7 +442,7 @@ namespace omath::hud
         {
             const float falloff = 1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1);
             const Color color{value.x, value.y, value.z,
-                              value.w * std::clamp(glow.intensity, 0.f, 1.f) * falloff / static_cast<float>(radius)};
+                              value.w * std::max(glow.intensity, 0.f) * falloff / static_cast<float>(radius)};
             m_renderer->add_polyline(points, color, thickness + static_cast<float>(layer) * 2.f);
         }
     }
@@ -456,7 +456,7 @@ namespace omath::hud
         {
             const float falloff = 1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1);
             const Color color{value.x, value.y, value.z,
-                              value.w * std::clamp(glow.intensity, 0.f, 1.f) * falloff / static_cast<float>(radius)};
+                              value.w * std::max(glow.intensity, 0.f) * falloff / static_cast<float>(radius)};
             m_renderer->add_line(from, to, color, thickness + static_cast<float>(layer) * 2.f);
         }
     }
@@ -478,10 +478,58 @@ namespace omath::hud
 
     void EntityOverlay::draw_canvas_glow(const widget::CanvasGlow& canvas_glow) const
     {
-        constexpr int layers = 32;
-        constexpr int segments = 64;
+        constexpr int segments = 96;
+        const int layers = std::max(canvas_glow.layers, 2);
         const auto min = m_canvas.top_left_corner;
         const auto max = m_canvas.bottom_right_corner;
+        const auto value = canvas_glow.glow.color.value();
+        const float intensity = std::max(canvas_glow.glow.intensity, 0.f);
+
+        if (canvas_glow.mode == widget::CanvasGlowMode::OUTSIDE || canvas_glow.mode == widget::CanvasGlowMode::BOTH)
+        {
+            constexpr int corner_segments = 12;
+            const float max_rounding = std::min(std::abs(max.x - min.x), std::abs(max.y - min.y)) * 0.5f;
+            const float rounding = std::clamp(canvas_glow.rounding, 0.f, max_rounding);
+            const float extent = std::max(canvas_glow.glow.radius, 0.f);
+            const float stroke = std::max(extent / static_cast<float>(layers - 1) * 2.f, 1.f);
+            for (int layer = 0; layer < layers; ++layer)
+            {
+                const float progress = static_cast<float>(layer) / static_cast<float>(layers - 1);
+                const float expansion = extent * (1.f - progress);
+                const float falloff = progress * progress * (3.f - 2.f * progress);
+                const Color color{value.x, value.y, value.z, value.w * intensity * falloff * 0.35f};
+                const auto expanded_min = min - Vector2<float>{expansion, expansion};
+                const auto expanded_max = max + Vector2<float>{expansion, expansion};
+                const float expanded_rounding = rounding + expansion;
+                const std::array corner_centers = {
+                        expanded_min + Vector2<float>{expanded_rounding, expanded_rounding},
+                        Vector2<float>{expanded_max.x - expanded_rounding, expanded_min.y + expanded_rounding},
+                        expanded_max - Vector2<float>{expanded_rounding, expanded_rounding},
+                        Vector2<float>{expanded_min.x + expanded_rounding, expanded_max.y - expanded_rounding},
+                };
+                std::array<Vector2<float>, corner_segments * 4> points;
+                for (int corner = 0; corner < 4; ++corner)
+                {
+                    const float start_angle =
+                            std::numbers::pi_v<float> + static_cast<float>(corner) * std::numbers::pi_v<float> * 0.5f;
+                    for (int segment = 0; segment < corner_segments; ++segment)
+                    {
+                        const float arc_progress =
+                                static_cast<float>(segment) / static_cast<float>(corner_segments - 1);
+                        const float angle = start_angle + arc_progress * std::numbers::pi_v<float> * 0.5f;
+                        points[corner * corner_segments + segment] =
+                                corner_centers[corner]
+                                + Vector2<float>{std::cos(angle) * expanded_rounding,
+                                                 std::sin(angle) * expanded_rounding};
+                    }
+                }
+                m_renderer->add_polyline(points, color, stroke);
+            }
+        }
+
+        if (canvas_glow.mode == widget::CanvasGlowMode::OUTSIDE)
+            return;
+
         const auto center = (min + max) * 0.5f;
         const float half_width = std::abs(max.x - min.x) * 0.5f;
         const float half_height = std::abs(max.y - min.y) * 0.5f;
@@ -492,24 +540,15 @@ namespace omath::hud
         if (vertical_radius <= 0.f || horizontal_radius <= 0.f)
             return;
 
-        const auto value = canvas_glow.glow.color.value();
-        const float intensity = std::clamp(canvas_glow.glow.intensity, 0.f, 1.f);
         for (int layer = 0; layer < layers; ++layer)
         {
             const float progress = static_cast<float>(layer) / static_cast<float>(layers - 1);
             const float scale = 1.f - progress * 0.95f;
-            const float alpha = value.w * intensity / static_cast<float>(layers);
+            const float falloff = progress * progress;
+            const float alpha = value.w * intensity * falloff * 3.f / static_cast<float>(layers);
             const Color color{value.x, value.y, value.z, alpha};
-            std::array<Vector2<float>, segments> points;
-            for (int segment = 0; segment < segments; ++segment)
-            {
-                const float angle =
-                        static_cast<float>(segment) / static_cast<float>(segments) * 2.f * std::numbers::pi_v<float>;
-                points[segment] = center
-                                  + Vector2<float>{std::cos(angle) * horizontal_radius * scale,
-                                                   std::sin(angle) * vertical_radius * scale};
-            }
-            m_renderer->add_filled_polyline(points, color);
+            m_renderer->add_filled_ellipse(center, {horizontal_radius * scale, vertical_radius * scale}, color,
+                                           segments);
         }
     }
 
