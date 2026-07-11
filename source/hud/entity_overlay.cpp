@@ -476,6 +476,43 @@ namespace omath::hud
         draw_glow_polyline(points, *glow, 1.f);
     }
 
+    void EntityOverlay::draw_canvas_glow(const widget::CanvasGlow& canvas_glow) const
+    {
+        constexpr int layers = 32;
+        constexpr int segments = 64;
+        const auto min = m_canvas.top_left_corner;
+        const auto max = m_canvas.bottom_right_corner;
+        const auto center = (min + max) * 0.5f;
+        const float half_width = std::abs(max.x - min.x) * 0.5f;
+        const float half_height = std::abs(max.y - min.y) * 0.5f;
+        if (half_width <= 0.f || half_height <= 0.f)
+            return;
+        const float vertical_radius = std::min(std::max(canvas_glow.glow.radius, 0.f), half_height);
+        const float horizontal_radius = vertical_radius * half_width / half_height;
+        if (vertical_radius <= 0.f || horizontal_radius <= 0.f)
+            return;
+
+        const auto value = canvas_glow.glow.color.value();
+        const float intensity = std::clamp(canvas_glow.glow.intensity, 0.f, 1.f);
+        for (int layer = 0; layer < layers; ++layer)
+        {
+            const float progress = static_cast<float>(layer) / static_cast<float>(layers - 1);
+            const float scale = 1.f - progress * 0.95f;
+            const float alpha = value.w * intensity / static_cast<float>(layers);
+            const Color color{value.x, value.y, value.z, alpha};
+            std::array<Vector2<float>, segments> points;
+            for (int segment = 0; segment < segments; ++segment)
+            {
+                const float angle =
+                        static_cast<float>(segment) / static_cast<float>(segments) * 2.f * std::numbers::pi_v<float>;
+                points[segment] = center
+                                  + Vector2<float>{std::cos(angle) * horizontal_radius * scale,
+                                                   std::sin(angle) * vertical_radius * scale};
+            }
+            m_renderer->add_filled_polyline(points, color);
+        }
+    }
+
     void EntityOverlay::draw_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max,
                                               const widget::Paint& paint) const
     {
@@ -724,6 +761,11 @@ namespace omath::hud
                     add_2d_box(box.color, fill, box.outline, box.thickness);
                 },
                 box.fill);
+    }
+
+    void EntityOverlay::dispatch(const widget::CanvasGlow& canvas_glow)
+    {
+        draw_canvas_glow(canvas_glow);
     }
 
     void EntityOverlay::dispatch(const widget::CorneredBox& cornered_box)

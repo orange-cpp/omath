@@ -248,6 +248,7 @@ namespace omath::hud
         }
 
         void dispatch(const widget::Box& box);
+        void dispatch(const widget::CanvasGlow& canvas_glow);
         void dispatch(const widget::CorneredBox& cornered_box);
         void dispatch(const widget::DashedBox& dashed_box);
         void dispatch(const widget::RightSide& right_side);
@@ -268,6 +269,7 @@ namespace omath::hud
                             float thickness) const;
         void draw_glow_rectangle(const Vector2<float>& min, const Vector2<float>& max,
                                  const std::optional<widget::Glow>& glow) const;
+        void draw_canvas_glow(const widget::CanvasGlow& canvas_glow) const;
         void draw_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max,
                                    const widget::Paint& paint) const;
         void draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color, float dash_len,

@@ -76,6 +76,7 @@ namespace imgui_desktop::gui
         GlowSettings m_cornered_box_glow{{1.f, 0.f, 1.f, 0.8f}};
         GlowSettings m_bar_glow{{1.f, 0.f, 0.f, 0.8f}};
         GlowSettings m_label_glow;
+        GlowSettings m_canvas_glow{{1.f, 0.5f, 0.f, 0.8f}, 100.f};
 
         // Skeleton
         omath::Color m_skel_color = omath::Color::from_rgba(255, 255, 255, 200);

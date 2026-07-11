@@ -39,6 +39,11 @@ namespace omath::hud::widget
         float intensity = 1.f;
     };
 
+    struct CanvasGlow
+    {
+        Glow glow;
+    };
+
     // ── Standalone widgets ────────────────────────────────────────────────────
     struct Box
     {
