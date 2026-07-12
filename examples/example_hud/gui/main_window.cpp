@@ -237,6 +237,44 @@ namespace imgui_desktop::gui
         const auto* vp = ImGui::GetMainViewport();
         const DashedBar dbar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
                              m_bar_value, m_bar_dash_len,      m_bar_dash_gap, m_bar_offset};
+        const float entity_height = m_entity_bottom_y - m_entity_top_y;
+        const float entity_half_width = entity_height / m_entity_aspect;
+        const auto joint = [&](const float x, const float y)
+        {
+            return omath::Vector2<float>{m_entity_x + (x * 2.f - 1.f) * entity_half_width,
+                                         m_entity_top_y + y * entity_height};
+        };
+        const auto head = joint(0.5f, 0.1f);
+        const auto neck = joint(0.5f, 0.22f);
+        const auto torso = joint(0.5f, 0.5f);
+        const auto left_shoulder = joint(0.3f, 0.25f);
+        const auto right_shoulder = joint(0.7f, 0.25f);
+        const auto left_elbow = joint(0.18f, 0.42f);
+        const auto right_elbow = joint(0.82f, 0.42f);
+        const auto left_hand = joint(0.1f, 0.58f);
+        const auto right_hand = joint(0.9f, 0.58f);
+        const auto left_hip = joint(0.4f, 0.55f);
+        const auto right_hip = joint(0.6f, 0.55f);
+        const auto left_knee = joint(0.36f, 0.75f);
+        const auto right_knee = joint(0.64f, 0.75f);
+        const auto left_foot = joint(0.3f, 0.95f);
+        const auto right_foot = joint(0.7f, 0.95f);
+        const std::array skeleton_bones = {
+                Bone{head, neck},
+                Bone{neck, torso},
+                Bone{neck, left_shoulder},
+                Bone{left_shoulder, left_elbow},
+                Bone{left_elbow, left_hand},
+                Bone{neck, right_shoulder},
+                Bone{right_shoulder, right_elbow},
+                Bone{right_elbow, right_hand},
+                Bone{torso, left_hip},
+                Bone{left_hip, left_knee},
+                Bone{left_knee, left_foot},
+                Bone{torso, right_hip},
+                Bone{right_hip, right_knee},
+                Bone{right_knee, right_foot},
+        };
         const auto animated_color = [&](const omath::Color& color, const float hue_offset)
         {
             if (!m_animate_gradients)
@@ -341,7 +379,7 @@ namespace imgui_desktop::gui
                         },
                         when(m_show_aim, AimDot{{m_entity_x, m_entity_top_y + 40.f}, m_aim_color, m_aim_radius}),
                         when(m_show_scan, ScanMarker{m_scan_color, m_scan_outline, m_scan_outline_thickness}),
-                        when(m_show_skeleton, Skeleton{m_skel_color, m_skel_thickness}),
+                        when(m_show_skeleton, Skeleton{skeleton_bones, m_skel_color, m_skel_thickness}),
                         when(m_show_proj, ProjectileAim{{m_proj_pos_x, m_proj_pos_y},
                                                         m_proj_color,
                                                         m_proj_size,

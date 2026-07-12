@@ -184,6 +184,7 @@ namespace omath::hud
         EntityOverlay& add_snap_line(const Vector2<float>& start_pos, const Color& color, float width);
 
         EntityOverlay& add_skeleton(const Color& color, float thickness = 1.f);
+        EntityOverlay& add_skeleton(std::span<const widget::Bone> bones, const Color& color, float thickness = 1.f);
 
         // ── Declarative interface ─────────────────────────────────────────
         /// Pass any combination of widget:: descriptor structs (and std::optional<W>

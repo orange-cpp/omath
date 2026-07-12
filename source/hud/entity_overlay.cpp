@@ -337,6 +337,14 @@ namespace omath::hud
         return *this;
     }
 
+    EntityOverlay& EntityOverlay::add_skeleton(const std::span<const widget::Bone> bones, const Color& color,
+                                               const float thickness)
+    {
+        for (const auto& bone : bones)
+            m_renderer->add_line(bone.start, bone.end, color, thickness);
+        return *this;
+    }
+
     void EntityOverlay::draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color,
                                          const float dash_len, const float gap_len, const float thickness) const
     {
@@ -848,7 +856,10 @@ namespace omath::hud
 
     void EntityOverlay::dispatch(const widget::Skeleton& skeleton)
     {
-        add_skeleton(skeleton.color, skeleton.thickness);
+        if (skeleton.bones.empty())
+            add_skeleton(skeleton.color, skeleton.thickness);
+        else
+            add_skeleton(skeleton.bones, skeleton.color, skeleton.thickness);
     }
 
     void EntityOverlay::dispatch(const widget::SnapLine& snap_line)

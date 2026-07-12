@@ -6,11 +6,14 @@
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
 #include <any>
+#include <array>
 #include <initializer_list>
 #include <optional>
+#include <span>
 #include <string_view>
 #include <type_traits>
 #include <variant>
+#include <vector>
 
 namespace omath::hud::widget
 {
@@ -106,10 +109,37 @@ namespace omath::hud::widget
         float thickness = 1.f;
     };
 
+    struct Bone
+    {
+        Vector2<float> start;
+        Vector2<float> end;
+    };
+
     struct Skeleton
     {
+        std::vector<Bone> bones;
         Color color;
         float thickness = 1.f;
+
+        Skeleton(const Color& color, const float thickness = 1.f): color(color), thickness(thickness)
+        {
+        }
+
+        Skeleton(const std::span<const Bone> bones, const Color& color, const float thickness = 1.f)
+            : bones(bones.begin(), bones.end()), color(color), thickness(thickness)
+        {
+        }
+
+        Skeleton(const std::initializer_list<Bone> bones, const Color& color, const float thickness = 1.f)
+            : bones(bones), color(color), thickness(thickness)
+        {
+        }
+
+        template<std::size_t Size>
+        Skeleton(const std::array<Bone, Size>& bones, const Color& color, const float thickness = 1.f)
+            : Skeleton(std::span<const Bone>{bones}, color, thickness)
+        {
+        }
     };
     struct SnapLine
     {
