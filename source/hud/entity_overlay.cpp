@@ -85,12 +85,14 @@ namespace omath::hud
         const auto max_bar_height = std::abs(m_canvas.top_right_corner.y - m_canvas.bottom_right_corner.y);
 
         const auto bar_start = Vector2<float>{m_text_cursor_right.x + offset, m_canvas.bottom_right_corner.y};
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
+        const auto bar_min = bar_start - Vector2<float>{0.f, max_bar_height};
+        const auto bar_max = bar_start + Vector2<float>{width, 0.f};
+        const auto fill_min = bar_start - Vector2<float>{0.f, max_bar_height * ratio};
+        m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
 
-        draw_glow_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), glow);
-        draw_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
-        m_renderer->add_rectangle(bar_start - Vector2<float>(1.f, 0.f),
-                                  bar_start + Vector2<float>(width, -max_bar_height), outline_color);
+        draw_glow_rectangle(fill_min, bar_max, glow);
+        draw_filled_rectangle(fill_min, bar_max, color);
+        m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_right.x += offset + width;
 
@@ -104,12 +106,14 @@ namespace omath::hud
         const auto max_bar_height = std::abs(m_canvas.top_left_corner.y - m_canvas.bottom_right_corner.y);
 
         const auto bar_start = Vector2<float>{m_text_cursor_left.x - (offset + width), m_canvas.bottom_left_corner.y};
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
+        const auto bar_min = bar_start - Vector2<float>{0.f, max_bar_height};
+        const auto bar_max = bar_start + Vector2<float>{width, 0.f};
+        const auto fill_min = bar_start - Vector2<float>{0.f, max_bar_height * ratio};
+        m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
 
-        draw_glow_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), glow);
-        draw_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
-        m_renderer->add_rectangle(bar_start - Vector2<float>(1.f, 0.f),
-                                  bar_start + Vector2<float>(width, -max_bar_height), outline_color);
+        draw_glow_rectangle(fill_min, bar_max, glow);
+        draw_filled_rectangle(fill_min, bar_max, color);
+        m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_left.x -= offset + width;
 
@@ -143,11 +147,14 @@ namespace omath::hud
         const auto max_bar_width = std::abs(m_canvas.top_left_corner.x - m_canvas.bottom_right_corner.x);
 
         const auto bar_start = Vector2<float>{m_canvas.top_left_corner.x, m_text_cursor_top.y - offset};
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, -height), bg_color);
+        const auto bar_min = bar_start - Vector2<float>{0.f, height};
+        const auto bar_max = bar_start + Vector2<float>{max_bar_width, 0.f};
+        const auto fill_max = Vector2<float>{bar_start.x + max_bar_width * ratio, bar_start.y};
+        m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
 
-        draw_glow_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, -height), glow);
-        draw_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, -height), color);
-        m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, -height), outline_color);
+        draw_glow_rectangle(bar_min, fill_max, glow);
+        draw_filled_rectangle(bar_min, fill_max, color);
+        m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_top.y -= offset + height;
 
@@ -553,10 +560,13 @@ namespace omath::hud
         const auto max_bar_width = std::abs(m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x);
 
         const auto bar_start = Vector2<float>{m_canvas.bottom_left_corner.x, m_text_cursor_bottom.y + offset};
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), bg_color);
-        draw_glow_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, height), glow);
-        draw_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, height), color);
-        m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), outline_color);
+        const auto bar_min = bar_start;
+        const auto bar_max = bar_start + Vector2<float>{max_bar_width, height};
+        const auto fill_max = bar_start + Vector2<float>{max_bar_width * ratio, height};
+        m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
+        draw_glow_rectangle(bar_min, fill_max, glow);
+        draw_filled_rectangle(bar_min, fill_max, color);
+        m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_bottom.y += offset + height;
 
