@@ -77,7 +77,7 @@ namespace omath::hud
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_right_bar(const widget::Paint& color, const Color& outline_color,
+    EntityOverlay& EntityOverlay::add_right_bar(const widget::BarPaint& color, const Color& outline_color,
                                                 const Color& bg_color, const float width, float ratio,
                                                 const float offset, const std::optional<widget::Glow>& glow)
     {
@@ -91,14 +91,14 @@ namespace omath::hud
         m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
 
         draw_glow_rectangle(fill_min, bar_max, glow);
-        draw_filled_rectangle(fill_min, bar_max, color);
+        draw_filled_rectangle(fill_min, bar_max, resolve_bar_paint(color, ratio, true));
         m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_right.x += offset + width;
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_left_bar(const widget::Paint& color, const Color& outline_color,
+    EntityOverlay& EntityOverlay::add_left_bar(const widget::BarPaint& color, const Color& outline_color,
                                                const Color& bg_color, const float width, float ratio,
                                                const float offset, const std::optional<widget::Glow>& glow)
     {
@@ -112,7 +112,7 @@ namespace omath::hud
         m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
 
         draw_glow_rectangle(fill_min, bar_max, glow);
-        draw_filled_rectangle(fill_min, bar_max, color);
+        draw_filled_rectangle(fill_min, bar_max, resolve_bar_paint(color, ratio, true));
         m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_left.x -= offset + width;
@@ -139,7 +139,7 @@ namespace omath::hud
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_top_bar(const widget::Paint& color, const Color& outline_color,
+    EntityOverlay& EntityOverlay::add_top_bar(const widget::BarPaint& color, const Color& outline_color,
                                               const Color& bg_color, const float height, float ratio,
                                               const float offset, const std::optional<widget::Glow>& glow)
     {
@@ -153,7 +153,7 @@ namespace omath::hud
         m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
 
         draw_glow_rectangle(bar_min, fill_max, glow);
-        draw_filled_rectangle(bar_min, fill_max, color);
+        draw_filled_rectangle(bar_min, fill_max, resolve_bar_paint(color, ratio, false));
         m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_top.y -= offset + height;
@@ -552,7 +552,33 @@ namespace omath::hud
                 },
                 paint);
     }
-    EntityOverlay& EntityOverlay::add_bottom_bar(const widget::Paint& color, const Color& outline_color,
+
+    widget::Paint EntityOverlay::resolve_bar_paint(const widget::BarPaint& paint, const float ratio,
+                                                   const bool vertical)
+    {
+        return std::visit(
+                widget::Overloaded{
+                        [](const Color& color) -> widget::Paint
+                        {
+                            return color;
+                        },
+                        [](const Gradient& gradient) -> widget::Paint
+                        {
+                            return gradient;
+                        },
+                        [&](const widget::BarGradient& gradient) -> widget::Paint
+                        {
+                            const float value = std::clamp(ratio, 0.f, 1.f);
+                            const auto current = Color{gradient.empty_color.value() * (1.f - value)
+                                                       + gradient.full_color.value() * value};
+                            if (vertical)
+                                return Gradient{current, current, gradient.empty_color, gradient.empty_color};
+                            return Gradient{gradient.empty_color, current, current, gradient.empty_color};
+                        },
+                },
+                paint);
+    }
+    EntityOverlay& EntityOverlay::add_bottom_bar(const widget::BarPaint& color, const Color& outline_color,
                                                  const Color& bg_color, const float height, float ratio,
                                                  const float offset, const std::optional<widget::Glow>& glow)
     {
@@ -565,7 +591,7 @@ namespace omath::hud
         const auto fill_max = bar_start + Vector2<float>{max_bar_width * ratio, height};
         m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
         draw_glow_rectangle(bar_min, fill_max, glow);
-        draw_filled_rectangle(bar_min, fill_max, color);
+        draw_filled_rectangle(bar_min, fill_max, resolve_bar_paint(color, ratio, false));
         m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_bottom.y += offset + height;

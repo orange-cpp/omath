@@ -9,6 +9,7 @@
 #include <initializer_list>
 #include <optional>
 #include <string_view>
+#include <type_traits>
 #include <variant>
 
 namespace omath::hud::widget
@@ -20,6 +21,32 @@ namespace omath::hud::widget
         constexpr Paint(const float red, const float green, const float blue, const float alpha)
             : std::variant<Color, Gradient>(Color{red, green, blue, alpha})
         {
+        }
+    };
+
+    struct BarGradient
+    {
+        Color empty_color;
+        Color full_color;
+    };
+
+    struct BarPaint : std::variant<Color, Gradient, BarGradient>
+    {
+        using std::variant<Color, Gradient, BarGradient>::variant;
+
+        constexpr BarPaint(const float red, const float green, const float blue, const float alpha)
+            : std::variant<Color, Gradient, BarGradient>(Color{red, green, blue, alpha})
+        {
+        }
+
+        BarPaint(const Paint& paint)
+        {
+            std::visit(
+                    [this](const auto& value)
+                    {
+                        this->template emplace<std::decay_t<decltype(value)>>(value);
+                    },
+                    paint);
         }
     };
 
@@ -124,7 +151,7 @@ namespace omath::hud::widget
     /// A filled bar. `size` is width for left/right sides, height for top/bottom.
     struct Bar
     {
-        Paint color;
+        BarPaint color;
         Color outline;
         Color bg;
         float size;
