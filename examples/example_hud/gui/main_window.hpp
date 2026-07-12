@@ -17,6 +17,14 @@ namespace imgui_desktop::gui
         void Run();
 
     private:
+        struct GlowSettings
+        {
+            omath::Color color{0.f, 0.7f, 1.f, 0.8f};
+            float radius = 4.f;
+            float intensity = 0.8f;
+            bool enabled = false;
+        };
+
         void draw_controls();
         void draw_overlay();
         void present();
@@ -30,8 +38,12 @@ namespace imgui_desktop::gui
         // Box
         omath::Color m_box_color{1.f, 1.f, 1.f, 1.f};
         omath::Color m_box_fill{0.f, 0.f, 0.f, 0.f};
+        omath::Color m_box_gradient_top{0.1f, 0.6f, 1.f, 0.55f};
+        omath::Color m_box_gradient_bottom{0.7f, 0.1f, 1.f, 0.15f};
         omath::Color m_box_outline{0.f, 0.f, 0.f, 0.f};
         float m_box_thickness = 1.f, m_corner_ratio = 0.2f;
+        bool m_gradient_box_fill = true;
+        bool m_animate_gradients = false;
         bool m_show_box = true, m_show_cornered_box = true, m_show_dashed_box = false;
 
         // Dashed box
@@ -43,18 +55,30 @@ namespace imgui_desktop::gui
         omath::Color m_bar_bg_color{0.f, 0.f, 0.f, 0.5f};
         omath::Color m_bar_outline_color{0.f, 0.f, 0.f, 1.f};
         float m_bar_width = 4.f, m_bar_value = 0.75f, m_bar_offset = 5.f;
-        bool m_show_right_bar = true,         m_show_left_bar = true;
-        bool m_show_top_bar = true,           m_show_bottom_bar = true;
+        bool m_gradient_bars = true;
+        bool m_show_right_bar = true, m_show_left_bar = true;
+        bool m_show_top_bar = true, m_show_bottom_bar = true;
         bool m_show_right_dashed_bar = false, m_show_left_dashed_bar = false;
-        bool m_show_top_dashed_bar = false,   m_show_bottom_dashed_bar = false;
+        bool m_show_top_dashed_bar = false, m_show_bottom_dashed_bar = false;
         float m_bar_dash_len = 6.f, m_bar_dash_gap = 4.f;
 
         // Labels
         float m_label_offset = 3.f;
+        omath::Color m_label_gradient_left{0.f, 0.8f, 1.f, 1.f};
+        omath::Color m_label_gradient_right{1.f, 0.2f, 0.7f, 1.f};
         bool m_outlined = true;
+        bool m_gradient_label = true;
         bool m_show_right_labels = true, m_show_left_labels = true;
-        bool m_show_top_labels = true,   m_show_bottom_labels = true;
+        bool m_show_top_labels = true, m_show_bottom_labels = true;
         bool m_show_centered_top = true, m_show_centered_bottom = true;
+
+        GlowSettings m_box_glow;
+        GlowSettings m_cornered_box_glow{{1.f, 0.f, 1.f, 0.8f}};
+        GlowSettings m_bar_glow{{1.f, 0.f, 0.f, 0.8f}};
+        GlowSettings m_label_glow;
+        GlowSettings m_canvas_glow{{1.f, 0.5f, 0.f, 0.8f}, 100.f};
+        int m_canvas_glow_layers = 64;
+        float m_canvas_glow_rounding = 40.f;
 
         // Skeleton
         omath::Color m_skel_color = omath::Color::from_rgba(255, 255, 255, 200);

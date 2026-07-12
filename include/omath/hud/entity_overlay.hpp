@@ -30,6 +30,9 @@ namespace omath::hud
         EntityOverlay& add_2d_box(const Color& box_color, const Color& fill_color = Color{0.f, 0.f, 0.f, 0.f},
                                   const Color& outline_color = Color{0.f, 0.f, 0.f, 0.f}, float thickness = 1.f);
 
+        EntityOverlay& add_2d_box(const Color& box_color, const Gradient& fill_gradient,
+                                  const Color& outline_color = Color{0.f, 0.f, 0.f, 0.f}, float thickness = 1.f);
+
         EntityOverlay& add_cornered_2d_box(const Color& box_color, const Color& fill_color = Color{0.f, 0.f, 0.f, 0.f},
                                            const Color& outline_color = Color{0.f, 0.f, 0.f, 0.f},
                                            float corner_ratio_len = 0.2f, float thickness = 1.f);
@@ -38,17 +41,21 @@ namespace omath::hud
                                       float thickness = 1.f);
 
         // ── Bars ─────────────────────────────────────────────────────────
-        EntityOverlay& add_right_bar(const Color& color, const Color& outline_color, const Color& bg_color, float width,
-                                     float ratio, float offset = 5.f);
+        EntityOverlay& add_right_bar(const widget::BarPaint& color, const Color& outline_color, const Color& bg_color,
+                                     float width, float ratio, float offset = 5.f,
+                                     const std::optional<widget::Glow>& glow = std::nullopt);
 
-        EntityOverlay& add_left_bar(const Color& color, const Color& outline_color, const Color& bg_color, float width,
-                                    float ratio, float offset = 5.f);
+        EntityOverlay& add_left_bar(const widget::BarPaint& color, const Color& outline_color, const Color& bg_color,
+                                    float width, float ratio, float offset = 5.f,
+                                    const std::optional<widget::Glow>& glow = std::nullopt);
 
-        EntityOverlay& add_top_bar(const Color& color, const Color& outline_color, const Color& bg_color, float height,
-                                   float ratio, float offset = 5.f);
+        EntityOverlay& add_top_bar(const widget::BarPaint& color, const Color& outline_color, const Color& bg_color,
+                                   float height, float ratio, float offset = 5.f,
+                                   const std::optional<widget::Glow>& glow = std::nullopt);
 
-        EntityOverlay& add_bottom_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                      float height, float ratio, float offset = 5.f);
+        EntityOverlay& add_bottom_bar(const widget::BarPaint& color, const Color& outline_color, const Color& bg_color,
+                                      float height, float ratio, float offset = 5.f,
+                                      const std::optional<widget::Glow>& glow = std::nullopt);
 
         EntityOverlay& add_right_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
                                             float width, float ratio, float dash_len, float gap_len,
@@ -65,26 +72,31 @@ namespace omath::hud
                                              float offset = 5.f);
 
         // ── Labels ───────────────────────────────────────────────────────
-        EntityOverlay& add_right_label(const Color& color, float offset, widget::Outlined outlined,
-                                       const std::string_view& text);
+        EntityOverlay& add_right_label(const widget::Paint& color, float offset, widget::Outlined outlined,
+                                       const std::string_view& text,
+                                       const std::optional<widget::Glow>& glow = std::nullopt);
 
-        EntityOverlay& add_left_label(const Color& color, float offset, widget::Outlined outlined,
-                                      const std::string_view& text);
+        EntityOverlay& add_left_label(const widget::Paint& color, float offset, widget::Outlined outlined,
+                                      const std::string_view& text,
+                                      const std::optional<widget::Glow>& glow = std::nullopt);
 
-        EntityOverlay& add_top_label(const Color& color, float offset, widget::Outlined outlined,
-                                     std::string_view text);
+        EntityOverlay& add_top_label(const widget::Paint& color, float offset, widget::Outlined outlined,
+                                     std::string_view text, const std::optional<widget::Glow>& glow = std::nullopt);
 
-        EntityOverlay& add_bottom_label(const Color& color, float offset, widget::Outlined outlined,
-                                        std::string_view text);
+        EntityOverlay& add_bottom_label(const widget::Paint& color, float offset, widget::Outlined outlined,
+                                        std::string_view text, const std::optional<widget::Glow>& glow = std::nullopt);
 
-        EntityOverlay& add_centered_top_label(const Color& color, float offset, widget::Outlined outlined,
-                                              const std::string_view& text);
+        EntityOverlay& add_centered_top_label(const widget::Paint& color, float offset, widget::Outlined outlined,
+                                              const std::string_view& text,
+                                              const std::optional<widget::Glow>& glow = std::nullopt);
 
-        EntityOverlay& add_centered_bottom_label(const Color& color, float offset, widget::Outlined outlined,
-                                                 const std::string_view& text);
+        EntityOverlay& add_centered_bottom_label(const widget::Paint& color, float offset, widget::Outlined outlined,
+                                                 const std::string_view& text,
+                                                 const std::optional<widget::Glow>& glow = std::nullopt);
 
         template<typename... Args>
-        EntityOverlay& add_right_label(const Color& color, const float offset, const widget::Outlined outlined,
+        requires(sizeof...(Args) > 0)
+        EntityOverlay& add_right_label(const widget::Paint& color, const float offset, const widget::Outlined outlined,
                                        std::format_string<Args...> fmt, Args&&... args)
         {
             return add_right_label(color, offset, outlined,
@@ -92,7 +104,8 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_left_label(const Color& color, const float offset, const widget::Outlined outlined,
+        requires(sizeof...(Args) > 0)
+        EntityOverlay& add_left_label(const widget::Paint& color, const float offset, const widget::Outlined outlined,
                                       std::format_string<Args...> fmt, Args&&... args)
         {
             return add_left_label(color, offset, outlined,
@@ -100,7 +113,8 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_top_label(const Color& color, const float offset, const widget::Outlined outlined,
+        requires(sizeof...(Args) > 0)
+        EntityOverlay& add_top_label(const widget::Paint& color, const float offset, const widget::Outlined outlined,
                                      std::format_string<Args...> fmt, Args&&... args)
         {
             return add_top_label(color, offset, outlined,
@@ -108,7 +122,8 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
+        requires(sizeof...(Args) > 0)
+        EntityOverlay& add_bottom_label(const widget::Paint& color, const float offset, const widget::Outlined outlined,
                                         std::format_string<Args...> fmt, Args&&... args)
         {
             return add_bottom_label(color, offset, outlined,
@@ -116,15 +131,18 @@ namespace omath::hud
         }
 
         template<typename... Args>
-        EntityOverlay& add_centered_top_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                              std::format_string<Args...> fmt, Args&&... args)
+        requires(sizeof...(Args) > 0)
+        EntityOverlay& add_centered_top_label(const widget::Paint& color, const float offset,
+                                              const widget::Outlined outlined, std::format_string<Args...> fmt,
+                                              Args&&... args)
         {
             return add_centered_top_label(color, offset, outlined,
                                           std::string_view{std::vformat(fmt.get(), std::make_format_args(args...))});
         }
 
         template<typename... Args>
-        EntityOverlay& add_centered_bottom_label(const Color& color, const float offset,
+        requires(sizeof...(Args) > 0)
+        EntityOverlay& add_centered_bottom_label(const widget::Paint& color, const float offset,
                                                  const widget::Outlined outlined, std::format_string<Args...> fmt,
                                                  Args&&... args)
         {
@@ -166,6 +184,7 @@ namespace omath::hud
         EntityOverlay& add_snap_line(const Vector2<float>& start_pos, const Color& color, float width);
 
         EntityOverlay& add_skeleton(const Color& color, float thickness = 1.f);
+        EntityOverlay& add_skeleton(std::span<const widget::Bone> bones, const Color& color, float thickness = 1.f);
 
         // ── Declarative interface ─────────────────────────────────────────
         /// Pass any combination of widget:: descriptor structs (and std::optional<W>
@@ -230,6 +249,7 @@ namespace omath::hud
         }
 
         void dispatch(const widget::Box& box);
+        void dispatch(const widget::CanvasGlow& canvas_glow);
         void dispatch(const widget::CorneredBox& cornered_box);
         void dispatch(const widget::DashedBox& dashed_box);
         void dispatch(const widget::RightSide& right_side);
@@ -242,7 +262,19 @@ namespace omath::hud
         void dispatch(const widget::AimDot& aim_dot);
         void dispatch(const widget::ProjectileAim& proj_widget);
         void draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring);
-        void draw_outlined_text(const Vector2<float>& position, const Color& color, const std::string_view& text);
+        void draw_label(const Vector2<float>& position, const widget::Paint& paint, widget::Outlined outlined,
+                        const std::string_view& text, const std::optional<widget::Glow>& glow);
+        void draw_glow_polyline(const std::span<const Vector2<float>>& points, const widget::Glow& glow,
+                                float thickness) const;
+        void draw_glow_line(const Vector2<float>& from, const Vector2<float>& to, const widget::Glow& glow,
+                            float thickness) const;
+        void draw_glow_rectangle(const Vector2<float>& min, const Vector2<float>& max,
+                                 const std::optional<widget::Glow>& glow) const;
+        void draw_canvas_glow(const widget::CanvasGlow& canvas_glow) const;
+        void draw_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max,
+                                   const widget::Paint& paint) const;
+        [[nodiscard]]
+        static widget::Paint resolve_bar_paint(const widget::BarPaint& paint, float ratio, bool vertical);
         void draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color, float dash_len,
                               float gap_len, float thickness) const;
         void draw_dashed_fill(const Vector2<float>& origin, const Vector2<float>& step_dir,

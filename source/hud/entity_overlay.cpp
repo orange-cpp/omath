@@ -2,6 +2,7 @@
 // Created by orange on 13.03.2026.
 //
 #include "omath/hud/entity_overlay.hpp"
+#include <limits>
 
 namespace omath::hud
 {
@@ -17,6 +18,20 @@ namespace omath::hud
 
         if (fill_color.value().w > 0.f)
             m_renderer->add_filled_polyline({points.data(), points.size()}, fill_color);
+
+        return *this;
+    }
+
+    EntityOverlay& EntityOverlay::add_2d_box(const Color& box_color, const Gradient& fill_gradient,
+                                             const Color& outline_color, const float thickness)
+    {
+        const auto points = m_canvas.as_array();
+
+        if (outline_color.value().w > 0.f)
+            m_renderer->add_polyline({points.data(), points.size()}, outline_color, thickness + 2.f);
+
+        m_renderer->add_polyline({points.data(), points.size()}, box_color, thickness);
+        m_renderer->add_gradient_rectangle(m_canvas.top_left_corner, m_canvas.bottom_right_corner, fill_gradient);
 
         return *this;
     }
@@ -38,11 +53,9 @@ namespace omath::hud
         };
 
         // Left Side
-        draw_corner_line(m_canvas.top_left_corner,
-                         m_canvas.top_left_corner + Vector2<float>{corner_line_length, 0.f});
+        draw_corner_line(m_canvas.top_left_corner, m_canvas.top_left_corner + Vector2<float>{corner_line_length, 0.f});
 
-        draw_corner_line(m_canvas.top_left_corner,
-                         m_canvas.top_left_corner + Vector2<float>{0.f, corner_line_length});
+        draw_corner_line(m_canvas.top_left_corner, m_canvas.top_left_corner + Vector2<float>{0.f, corner_line_length});
 
         draw_corner_line(m_canvas.bottom_left_corner,
                          m_canvas.bottom_left_corner - Vector2<float>{0.f, corner_line_length});
@@ -64,76 +77,84 @@ namespace omath::hud
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_right_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                                const float width, float ratio, const float offset)
+    EntityOverlay& EntityOverlay::add_right_bar(const widget::BarPaint& color, const Color& outline_color,
+                                                const Color& bg_color, const float width, float ratio,
+                                                const float offset, const std::optional<widget::Glow>& glow)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_height = std::abs(m_canvas.top_right_corner.y - m_canvas.bottom_right_corner.y);
 
         const auto bar_start = Vector2<float>{m_text_cursor_right.x + offset, m_canvas.bottom_right_corner.y};
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
+        const auto bar_min = bar_start - Vector2<float>{0.f, max_bar_height};
+        const auto bar_max = bar_start + Vector2<float>{width, 0.f};
+        const auto fill_min = bar_start - Vector2<float>{0.f, max_bar_height * ratio};
+        m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
 
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
-        m_renderer->add_rectangle(bar_start - Vector2<float>(1.f, 0.f),
-                                  bar_start + Vector2<float>(width, -max_bar_height), outline_color);
+        draw_glow_rectangle(fill_min, bar_max, glow);
+        draw_filled_rectangle(fill_min, bar_max, resolve_bar_paint(color, ratio, true));
+        m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_right.x += offset + width;
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_left_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                               const float width, float ratio, const float offset)
+    EntityOverlay& EntityOverlay::add_left_bar(const widget::BarPaint& color, const Color& outline_color,
+                                               const Color& bg_color, const float width, float ratio,
+                                               const float offset, const std::optional<widget::Glow>& glow)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_height = std::abs(m_canvas.top_left_corner.y - m_canvas.bottom_right_corner.y);
 
         const auto bar_start = Vector2<float>{m_text_cursor_left.x - (offset + width), m_canvas.bottom_left_corner.y};
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height), bg_color);
+        const auto bar_min = bar_start - Vector2<float>{0.f, max_bar_height};
+        const auto bar_max = bar_start + Vector2<float>{width, 0.f};
+        const auto fill_min = bar_start - Vector2<float>{0.f, max_bar_height * ratio};
+        m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
 
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(width, -max_bar_height * ratio), color);
-        m_renderer->add_rectangle(bar_start - Vector2<float>(1.f, 0.f),
-                                  bar_start + Vector2<float>(width, -max_bar_height), outline_color);
+        draw_glow_rectangle(fill_min, bar_max, glow);
+        draw_filled_rectangle(fill_min, bar_max, resolve_bar_paint(color, ratio, true));
+        m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_left.x -= offset + width;
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_right_label(const Color& color, const float offset,
-                                                  const widget::Outlined outlined,
-                                                  const std::string_view& text)
+    EntityOverlay& EntityOverlay::add_right_label(const widget::Paint& color, const float offset,
+                                                  const widget::Outlined outlined, const std::string_view& text,
+                                                  const std::optional<widget::Glow>& glow)
     {
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, text);
-        else
-            m_renderer->add_text(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, text.data());
+        draw_label(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, outlined, text, glow);
 
         m_text_cursor_right.y += m_renderer->calc_text_size(text.data()).y;
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_top_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                const std::string_view text)
+    EntityOverlay& EntityOverlay::add_top_label(const widget::Paint& color, const float offset,
+                                                const widget::Outlined outlined, const std::string_view text,
+                                                const std::optional<widget::Glow>& glow)
     {
         m_text_cursor_top.y -= m_renderer->calc_text_size(text.data()).y;
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, text);
-        else
-            m_renderer->add_text(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, text.data());
+        draw_label(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, outlined, text, glow);
 
         return *this;
     }
-    EntityOverlay& EntityOverlay::add_top_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                              const float height, float ratio, const float offset)
+    EntityOverlay& EntityOverlay::add_top_bar(const widget::BarPaint& color, const Color& outline_color,
+                                              const Color& bg_color, const float height, float ratio,
+                                              const float offset, const std::optional<widget::Glow>& glow)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_width = std::abs(m_canvas.top_left_corner.x - m_canvas.bottom_right_corner.x);
 
         const auto bar_start = Vector2<float>{m_canvas.top_left_corner.x, m_text_cursor_top.y - offset};
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, -height), bg_color);
+        const auto bar_min = bar_start - Vector2<float>{0.f, height};
+        const auto bar_max = bar_start + Vector2<float>{max_bar_width, 0.f};
+        const auto fill_max = Vector2<float>{bar_start.x + max_bar_width * ratio, bar_start.y};
+        m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
 
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, -height), color);
-        m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, -height), outline_color);
+        draw_glow_rectangle(bar_min, fill_max, glow);
+        draw_filled_rectangle(bar_min, fill_max, resolve_bar_paint(color, ratio, false));
+        m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_top.y -= offset + height;
 
@@ -316,6 +337,14 @@ namespace omath::hud
         return *this;
     }
 
+    EntityOverlay& EntityOverlay::add_skeleton(const std::span<const widget::Bone> bones, const Color& color,
+                                               const float thickness)
+    {
+        for (const auto& bone : bones)
+            m_renderer->add_line(bone.start, bone.end, color, thickness);
+        return *this;
+    }
+
     void EntityOverlay::draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color,
                                          const float dash_len, const float gap_len, const float thickness) const
     {
@@ -366,84 +395,265 @@ namespace omath::hud
         return *this;
     }
 
-    void EntityOverlay::draw_outlined_text(const Vector2<float>& position, const Color& color,
-                                           const std::string_view& text)
+    void EntityOverlay::draw_label(const Vector2<float>& position, const widget::Paint& paint,
+                                   const widget::Outlined outlined, const std::string_view& text,
+                                   const std::optional<widget::Glow>& glow)
     {
-        static constexpr std::array outline_offsets = {
-                Vector2<float>{-1, -1}, Vector2<float>{-1, 0}, Vector2<float>{-1, 1}, Vector2<float>{0, -1},
-                Vector2<float>{0, 1},   Vector2<float>{1, -1}, Vector2<float>{1, 0},  Vector2<float>{1, 1}};
+        if (glow)
+        {
+            const int radius = static_cast<int>(std::ceil(std::max(glow->radius, 0.f)));
+            for (int layer = radius; layer > 0; --layer)
+            {
+                const float alpha = glow->color.value().w * std::max(glow->intensity, 0.f)
+                                    * (1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1));
+                const auto value = glow->color.value();
+                const Color color{value.x, value.y, value.z, alpha / static_cast<float>(radius)};
+                for (int x = -layer; x <= layer; ++x)
+                {
+                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(x), static_cast<float>(-layer)},
+                                         color, text);
+                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(x), static_cast<float>(layer)},
+                                         color, text);
+                }
+                for (int y = -layer + 1; y < layer; ++y)
+                {
+                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(-layer), static_cast<float>(y)},
+                                         color, text);
+                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(layer), static_cast<float>(y)},
+                                         color, text);
+                }
+            }
+        }
 
-        for (const auto& outline_offset : outline_offsets)
-            m_renderer->add_text(position + outline_offset, Color{0.f, 0.f, 0.f, 1.f}, text.data());
-        m_renderer->add_text(position, color, text.data());
+        if (outlined == widget::Outlined::On)
+        {
+            static constexpr std::array outline_offsets = {
+                    Vector2<float>{-1, -1}, Vector2<float>{-1, 0}, Vector2<float>{-1, 1}, Vector2<float>{0, -1},
+                    Vector2<float>{0, 1},   Vector2<float>{1, -1}, Vector2<float>{1, 0},  Vector2<float>{1, 1}};
+
+            for (const auto& outline_offset : outline_offsets)
+                m_renderer->add_text(position + outline_offset, Color{0.f, 0.f, 0.f, 1.f}, text);
+        }
+
+        std::visit(
+                widget::Overloaded{
+                        [&](const Color& color)
+                        {
+                            m_renderer->add_text(position, color, text);
+                        },
+                        [&](const Gradient& gradient)
+                        {
+                            m_renderer->add_gradient_text(position, gradient, text);
+                        },
+                },
+                paint);
     }
-    EntityOverlay& EntityOverlay::add_bottom_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                                 const float height, float ratio, const float offset)
+
+    void EntityOverlay::draw_glow_polyline(const std::span<const Vector2<float>>& points, const widget::Glow& glow,
+                                           const float thickness) const
+    {
+        const int radius = static_cast<int>(std::ceil(std::max(glow.radius, 0.f)));
+        const auto value = glow.color.value();
+        for (int layer = radius; layer > 0; --layer)
+        {
+            const float falloff = 1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1);
+            const Color color{value.x, value.y, value.z,
+                              value.w * std::max(glow.intensity, 0.f) * falloff / static_cast<float>(radius)};
+            m_renderer->add_polyline(points, color, thickness + static_cast<float>(layer) * 2.f);
+        }
+    }
+
+    void EntityOverlay::draw_glow_line(const Vector2<float>& from, const Vector2<float>& to, const widget::Glow& glow,
+                                       const float thickness) const
+    {
+        const int radius = static_cast<int>(std::ceil(std::max(glow.radius, 0.f)));
+        const auto value = glow.color.value();
+        for (int layer = radius; layer > 0; --layer)
+        {
+            const float falloff = 1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1);
+            const Color color{value.x, value.y, value.z,
+                              value.w * std::max(glow.intensity, 0.f) * falloff / static_cast<float>(radius)};
+            m_renderer->add_line(from, to, color, thickness + static_cast<float>(layer) * 2.f);
+        }
+    }
+
+    void EntityOverlay::draw_glow_rectangle(const Vector2<float>& min, const Vector2<float>& max,
+                                            const std::optional<widget::Glow>& glow) const
+    {
+        if (!glow || glow->radius <= 0.f)
+            return;
+
+        const std::array points = {
+                Vector2<float>{std::min(min.x, max.x), std::min(min.y, max.y)},
+                Vector2<float>{std::max(min.x, max.x), std::min(min.y, max.y)},
+                Vector2<float>{std::max(min.x, max.x), std::max(min.y, max.y)},
+                Vector2<float>{std::min(min.x, max.x), std::max(min.y, max.y)},
+        };
+        draw_glow_polyline(points, *glow, 1.f);
+    }
+
+    void EntityOverlay::draw_canvas_glow(const widget::CanvasGlow& canvas_glow) const
+    {
+        const int layers = std::max(canvas_glow.layers, 2);
+        const auto min = m_canvas.top_left_corner;
+        const auto max = m_canvas.bottom_right_corner;
+        const auto value = canvas_glow.glow.color.value();
+        const float intensity = std::max(canvas_glow.glow.intensity, 0.f);
+
+        constexpr int corner_segments = 12;
+        const float max_rounding = std::min(std::abs(max.x - min.x), std::abs(max.y - min.y)) * 0.5f;
+        const float rounding = std::clamp(canvas_glow.rounding, 0.f, max_rounding);
+        const float extent = std::max(canvas_glow.glow.radius, 0.f);
+        const float stroke = std::max(extent / static_cast<float>(layers - 1) * 2.f, 1.f);
+        for (int layer = 0; layer < layers; ++layer)
+        {
+            const float progress = static_cast<float>(layer) / static_cast<float>(layers - 1);
+            const float expansion = extent * (1.f - progress);
+            const float falloff = progress * progress * (3.f - 2.f * progress);
+            const Color color{value.x, value.y, value.z, value.w * intensity * falloff * 0.35f};
+            const auto expanded_min = min - Vector2<float>{expansion, expansion};
+            const auto expanded_max = max + Vector2<float>{expansion, expansion};
+            const float expanded_rounding = rounding + expansion;
+            const std::array corner_centers = {
+                    expanded_min + Vector2<float>{expanded_rounding, expanded_rounding},
+                    Vector2<float>{expanded_max.x - expanded_rounding, expanded_min.y + expanded_rounding},
+                    expanded_max - Vector2<float>{expanded_rounding, expanded_rounding},
+                    Vector2<float>{expanded_min.x + expanded_rounding, expanded_max.y - expanded_rounding},
+            };
+            std::array<Vector2<float>, corner_segments * 4> points;
+            for (int corner = 0; corner < 4; ++corner)
+            {
+                const float start_angle =
+                        std::numbers::pi_v<float> + static_cast<float>(corner) * std::numbers::pi_v<float> * 0.5f;
+                for (int segment = 0; segment < corner_segments; ++segment)
+                {
+                    const float arc_progress = static_cast<float>(segment) / static_cast<float>(corner_segments - 1);
+                    const float angle = start_angle + arc_progress * std::numbers::pi_v<float> * 0.5f;
+                    points[corner * corner_segments + segment] =
+                            corner_centers[corner]
+                            + Vector2<float>{std::cos(angle) * expanded_rounding, std::sin(angle) * expanded_rounding};
+                }
+            }
+            constexpr float clip_extent = std::numeric_limits<float>::max() * 0.25f;
+            m_renderer->add_polyline_clipped(points, {-clip_extent, -clip_extent}, {clip_extent, min.y}, color, stroke);
+            m_renderer->add_polyline_clipped(points, {-clip_extent, max.y}, {clip_extent, clip_extent}, color, stroke);
+            m_renderer->add_polyline_clipped(points, {-clip_extent, min.y}, {min.x, max.y}, color, stroke);
+            m_renderer->add_polyline_clipped(points, {max.x, min.y}, {clip_extent, max.y}, color, stroke);
+        }
+    }
+
+    void EntityOverlay::draw_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max,
+                                              const widget::Paint& paint) const
+    {
+        const Vector2<float> top_left{std::min(min.x, max.x), std::min(min.y, max.y)};
+        const Vector2<float> bottom_right{std::max(min.x, max.x), std::max(min.y, max.y)};
+        std::visit(
+                widget::Overloaded{
+                        [&](const Color& color)
+                        {
+                            m_renderer->add_filled_rectangle(top_left, bottom_right, color);
+                        },
+                        [&](const Gradient& gradient)
+                        {
+                            m_renderer->add_gradient_rectangle(top_left, bottom_right, gradient);
+                        },
+                },
+                paint);
+    }
+
+    widget::Paint EntityOverlay::resolve_bar_paint(const widget::BarPaint& paint, const float ratio,
+                                                   const bool vertical)
+    {
+        return std::visit(
+                widget::Overloaded{
+                        [](const Color& color) -> widget::Paint
+                        {
+                            return color;
+                        },
+                        [](const Gradient& gradient) -> widget::Paint
+                        {
+                            return gradient;
+                        },
+                        [&](const widget::BarGradient& gradient) -> widget::Paint
+                        {
+                            const float value = std::clamp(ratio, 0.f, 1.f);
+                            const auto current = Color{gradient.empty_color.value() * (1.f - value)
+                                                       + gradient.full_color.value() * value};
+                            if (vertical)
+                                return Gradient{current, current, gradient.empty_color, gradient.empty_color};
+                            return Gradient{gradient.empty_color, current, current, gradient.empty_color};
+                        },
+                },
+                paint);
+    }
+    EntityOverlay& EntityOverlay::add_bottom_bar(const widget::BarPaint& color, const Color& outline_color,
+                                                 const Color& bg_color, const float height, float ratio,
+                                                 const float offset, const std::optional<widget::Glow>& glow)
     {
         ratio = std::clamp(ratio, 0.f, 1.f);
         const auto max_bar_width = std::abs(m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x);
 
         const auto bar_start = Vector2<float>{m_canvas.bottom_left_corner.x, m_text_cursor_bottom.y + offset};
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), bg_color);
-        m_renderer->add_filled_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width * ratio, height), color);
-        m_renderer->add_rectangle(bar_start, bar_start + Vector2<float>(max_bar_width, height), outline_color);
+        const auto bar_min = bar_start;
+        const auto bar_max = bar_start + Vector2<float>{max_bar_width, height};
+        const auto fill_max = bar_start + Vector2<float>{max_bar_width * ratio, height};
+        m_renderer->add_filled_rectangle(bar_min, bar_max, bg_color);
+        draw_glow_rectangle(bar_min, fill_max, glow);
+        draw_filled_rectangle(bar_min, fill_max, resolve_bar_paint(color, ratio, false));
+        m_renderer->add_rectangle(bar_min, bar_max, outline_color);
 
         m_text_cursor_bottom.y += offset + height;
 
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                   const std::string_view text)
+    EntityOverlay& EntityOverlay::add_bottom_label(const widget::Paint& color, const float offset,
+                                                   const widget::Outlined outlined, const std::string_view text,
+                                                   const std::optional<widget::Glow>& glow)
     {
         const auto text_size = m_renderer->calc_text_size(text);
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, text);
-        else
-            m_renderer->add_text(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, text);
+        draw_label(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, outlined, text, glow);
 
         m_text_cursor_bottom.y += text_size.y;
 
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_left_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                 const std::string_view& text)
+    EntityOverlay& EntityOverlay::add_left_label(const widget::Paint& color, const float offset,
+                                                 const widget::Outlined outlined, const std::string_view& text,
+                                                 const std::optional<widget::Glow>& glow)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto pos = m_text_cursor_left + Vector2<float>{-(offset + text_size.x), 0.f};
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(pos, color, text);
-        else
-            m_renderer->add_text(pos, color, text);
+        draw_label(pos, color, outlined, text, glow);
 
         m_text_cursor_left.y += text_size.y;
 
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_centered_bottom_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                            const std::string_view& text)
+    EntityOverlay& EntityOverlay::add_centered_bottom_label(const widget::Paint& color, const float offset,
+                                                            const widget::Outlined outlined,
+                                                            const std::string_view& text,
+                                                            const std::optional<widget::Glow>& glow)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto box_center_x =
                 m_canvas.bottom_left_corner.x + (m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x) / 2.f;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_bottom.y + offset};
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(pos, color, text);
-        else
-            m_renderer->add_text(pos, color, text);
+        draw_label(pos, color, outlined, text, glow);
 
         m_text_cursor_bottom.y += text_size.y;
 
         return *this;
     }
 
-    EntityOverlay& EntityOverlay::add_centered_top_label(const Color& color, const float offset, const widget::Outlined outlined,
-                                                         const std::string_view& text)
+    EntityOverlay& EntityOverlay::add_centered_top_label(const widget::Paint& color, const float offset,
+                                                         const widget::Outlined outlined, const std::string_view& text,
+                                                         const std::optional<widget::Glow>& glow)
     {
         const auto text_size = m_renderer->calc_text_size(text);
         const auto box_center_x =
@@ -452,10 +662,7 @@ namespace omath::hud
         m_text_cursor_top.y -= text_size.y;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_top.y - offset};
 
-        if (outlined == widget::Outlined::On)
-            draw_outlined_text(pos, color, text);
-        else
-            m_renderer->add_text(pos, color, text);
+        draw_label(pos, color, outlined, text, glow);
 
         return *this;
     }
@@ -601,11 +808,43 @@ namespace omath::hud
     // ── widget dispatch ───────────────────────────────────────────────────────
     void EntityOverlay::dispatch(const widget::Box& box)
     {
-        add_2d_box(box.color, box.fill, box.outline, box.thickness);
+        if (box.glow)
+        {
+            const auto points = m_canvas.as_array();
+            draw_glow_polyline(points, *box.glow, box.thickness);
+        }
+        std::visit(
+                [&](const auto& fill)
+                {
+                    add_2d_box(box.color, fill, box.outline, box.thickness);
+                },
+                box.fill);
+    }
+
+    void EntityOverlay::dispatch(const widget::CanvasGlow& canvas_glow)
+    {
+        draw_canvas_glow(canvas_glow);
     }
 
     void EntityOverlay::dispatch(const widget::CorneredBox& cornered_box)
     {
+        if (cornered_box.glow)
+        {
+            const float length =
+                    std::abs(m_canvas.top_left_corner.x - m_canvas.top_right_corner.x) * cornered_box.corner_ratio;
+            const std::array lines = {
+                    std::pair{m_canvas.top_left_corner, m_canvas.top_left_corner + Vector2<float>{length, 0.f}},
+                    std::pair{m_canvas.top_left_corner, m_canvas.top_left_corner + Vector2<float>{0.f, length}},
+                    std::pair{m_canvas.bottom_left_corner, m_canvas.bottom_left_corner - Vector2<float>{0.f, length}},
+                    std::pair{m_canvas.bottom_left_corner, m_canvas.bottom_left_corner + Vector2<float>{length, 0.f}},
+                    std::pair{m_canvas.top_right_corner, m_canvas.top_right_corner - Vector2<float>{length, 0.f}},
+                    std::pair{m_canvas.top_right_corner, m_canvas.top_right_corner + Vector2<float>{0.f, length}},
+                    std::pair{m_canvas.bottom_right_corner, m_canvas.bottom_right_corner - Vector2<float>{0.f, length}},
+                    std::pair{m_canvas.bottom_right_corner, m_canvas.bottom_right_corner - Vector2<float>{length, 0.f}},
+            };
+            for (const auto& [from, to] : lines)
+                draw_glow_line(from, to, *cornered_box.glow, cornered_box.thickness);
+        }
         add_cornered_2d_box(cornered_box.color, cornered_box.fill, cornered_box.outline, cornered_box.corner_ratio,
                             cornered_box.thickness);
     }
@@ -617,7 +856,10 @@ namespace omath::hud
 
     void EntityOverlay::dispatch(const widget::Skeleton& skeleton)
     {
-        add_skeleton(skeleton.color, skeleton.thickness);
+        if (skeleton.bones.empty())
+            add_skeleton(skeleton.color, skeleton.thickness);
+        else
+            add_skeleton(skeleton.bones, skeleton.color, skeleton.thickness);
     }
 
     void EntityOverlay::dispatch(const widget::SnapLine& snap_line)
@@ -704,7 +946,7 @@ namespace omath::hud
                             },
                             [this](const widget::Bar& w)
                             {
-                                add_right_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset);
+                                add_right_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset, w.glow);
                             },
                             [this](const widget::DashedBar& w)
                             {
@@ -713,11 +955,12 @@ namespace omath::hud
                             },
                             [this](const widget::Label& w)
                             {
-                                add_right_label(w.color, w.offset, w.outlined, w.text);
+                                add_right_label(w.color, w.offset, w.outlined, w.text, w.glow);
                             },
                             [this](const widget::Centered<widget::Label>& w)
                             {
-                                add_right_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
+                                add_right_label(w.child.color, w.child.offset, w.child.outlined, w.child.text,
+                                                w.child.glow);
                             },
                             [this](const widget::SpaceVertical& w)
                             {
@@ -750,7 +993,7 @@ namespace omath::hud
                             },
                             [this](const widget::Bar& w)
                             {
-                                add_left_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset);
+                                add_left_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset, w.glow);
                             },
                             [this](const widget::DashedBar& w)
                             {
@@ -759,11 +1002,12 @@ namespace omath::hud
                             },
                             [this](const widget::Label& w)
                             {
-                                add_left_label(w.color, w.offset, w.outlined, w.text);
+                                add_left_label(w.color, w.offset, w.outlined, w.text, w.glow);
                             },
                             [this](const widget::Centered<widget::Label>& w)
                             {
-                                add_left_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
+                                add_left_label(w.child.color, w.child.offset, w.child.outlined, w.child.text,
+                                               w.child.glow);
                             },
                             [this](const widget::SpaceVertical& w)
                             {
@@ -796,7 +1040,7 @@ namespace omath::hud
                             },
                             [this](const widget::Bar& w)
                             {
-                                add_top_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset);
+                                add_top_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset, w.glow);
                             },
                             [this](const widget::DashedBar& w)
                             {
@@ -805,11 +1049,12 @@ namespace omath::hud
                             },
                             [this](const widget::Label& w)
                             {
-                                add_top_label(w.color, w.offset, w.outlined, w.text);
+                                add_top_label(w.color, w.offset, w.outlined, w.text, w.glow);
                             },
                             [this](const widget::Centered<widget::Label>& w)
                             {
-                                add_centered_top_label(w.child.color, w.child.offset, w.child.outlined, w.child.text);
+                                add_centered_top_label(w.child.color, w.child.offset, w.child.outlined, w.child.text,
+                                                       w.child.glow);
                             },
                             [this](const widget::SpaceVertical& w)
                             {
@@ -841,7 +1086,7 @@ namespace omath::hud
                             },
                             [this](const widget::Bar& w)
                             {
-                                add_bottom_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset);
+                                add_bottom_bar(w.color, w.outline, w.bg, w.size, w.ratio, w.offset, w.glow);
                             },
                             [this](const widget::DashedBar& w)
                             {
@@ -850,12 +1095,12 @@ namespace omath::hud
                             },
                             [this](const widget::Label& w)
                             {
-                                add_bottom_label(w.color, w.offset, w.outlined, w.text);
+                                add_bottom_label(w.color, w.offset, w.outlined, w.text, w.glow);
                             },
                             [this](const widget::Centered<widget::Label>& w)
                             {
-                                add_centered_bottom_label(w.child.color, w.child.offset, w.child.outlined,
-                                                          w.child.text);
+                                add_centered_bottom_label(w.child.color, w.child.offset, w.child.outlined, w.child.text,
+                                                          w.child.glow);
                             },
                             [this](const widget::SpaceVertical& w)
                             {

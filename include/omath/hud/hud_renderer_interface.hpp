@@ -2,6 +2,7 @@
 // Created by orange on 13.03.2026.
 //
 #pragma once
+#include "gradient.hpp"
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
 #include <any>
@@ -19,11 +20,23 @@ namespace omath::hud
         virtual void add_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color,
                                   float thickness) = 0;
 
+        virtual void add_polyline_clipped(const std::span<const Vector2<float>>& vertexes, const Vector2<float>&,
+                                          const Vector2<float>&, const Color& color, float thickness)
+        {
+            add_polyline(vertexes, color, thickness);
+        }
+
         virtual void add_filled_polyline(const std::span<const Vector2<float>>& vertexes, const Color& color) = 0;
 
         virtual void add_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) = 0;
 
         virtual void add_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max, const Color& color) = 0;
+
+        virtual void add_gradient_rectangle(const Vector2<float>& min, const Vector2<float>& max,
+                                            const Gradient& gradient)
+        {
+            add_filled_rectangle(min, max, gradient.top_left);
+        }
 
         virtual void add_circle(const Vector2<float>& center, float radius, const Color& color, float thickness,
                                 int segments = 0) = 0;
@@ -40,6 +53,12 @@ namespace omath::hud
                                const Color& tint = Color{1.f, 1.f, 1.f, 1.f}) = 0;
 
         virtual void add_text(const Vector2<float>& position, const Color& color, const std::string_view& text) = 0;
+
+        virtual void add_gradient_text(const Vector2<float>& position, const Gradient& gradient,
+                                       const std::string_view& text)
+        {
+            add_text(position, gradient.top_left, text);
+        }
 
         [[nodiscard]]
         virtual Vector2<float> calc_text_size(const std::string_view& text) = 0;
