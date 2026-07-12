@@ -103,6 +103,7 @@ namespace omath::hud
         if (gradient.animated)
         {
             const float animation_offset = static_cast<float>(ImGui::GetTime()) * gradient.animation_speed;
+            const float direction = gradient.direction == GradientDirection::RightToLeft ? 1.f : -1.f;
             float cursor_x = position.x;
             const char* glyph_start = text.data();
             const char* const text_end = text.data() + text.size();
@@ -117,7 +118,9 @@ namespace omath::hud
 
                 const char* const glyph_end = glyph_start + glyph_size;
                 const float blend =
-                        (std::sin(animation_offset + static_cast<float>(glyph_index) * gradient.animation_spread) + 1.f)
+                        (std::sin(animation_offset + direction * static_cast<float>(glyph_index)
+                                                             * gradient.animation_spread)
+                         + 1.f)
                         * 0.5f;
                 const auto color = gradient.top_left.value() * (1.f - blend) + gradient.top_right.value() * blend;
                 draw_list->AddText({cursor_x, position.y}, Color{color}.to_im_color(), glyph_start, glyph_end);

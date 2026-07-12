@@ -3,6 +3,12 @@
 
 namespace omath::hud
 {
+    enum class GradientDirection
+    {
+        RightToLeft,
+        LeftToRight,
+    };
+
     struct Gradient
     {
         Color top_left;
@@ -12,5 +18,6 @@ namespace omath::hud
         bool animated = false;
         float animation_speed = 4.f;
         float animation_spread = 0.7f;
+        GradientDirection direction = GradientDirection::RightToLeft;
     };
 } // namespace omath::hud

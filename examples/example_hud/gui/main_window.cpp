@@ -161,6 +161,12 @@ namespace imgui_desktop::gui
                                   ImGuiColorEditFlags_NoInputs);
                 ImGui::ColorEdit4("Gradient right##lbl", reinterpret_cast<float*>(&m_label_gradient_right),
                                   ImGuiColorEditFlags_NoInputs);
+                if (m_animate_gradients)
+                {
+                    int direction = static_cast<int>(m_label_gradient_direction);
+                    if (ImGui::Combo("Direction##lbl", &direction, "Right to left\0Left to right\0"))
+                        m_label_gradient_direction = static_cast<omath::hud::GradientDirection>(direction);
+                }
             }
             ImGui::SliderFloat("Offset##lbl", &m_label_offset, 0.f, 15.f);
             ImGui::Checkbox("Right##lbl", &m_show_right_labels);
@@ -309,7 +315,8 @@ namespace imgui_desktop::gui
         const Paint centered_label_color =
                 m_gradient_label ? Paint{omath::hud::Gradient{m_label_gradient_left, m_label_gradient_right,
                                                               m_label_gradient_right, m_label_gradient_left,
-                                                              m_animate_gradients}}
+                                                              m_animate_gradients, 4.f, 0.7f,
+                                                              m_label_gradient_direction}}
                                  : Paint{omath::Color::from_rgba(255, 255, 255, 255)};
 
         auto outline_helper = [](const bool is_outline) -> Outlined

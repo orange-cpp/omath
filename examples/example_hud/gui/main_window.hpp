@@ -68,6 +68,7 @@ namespace imgui_desktop::gui
         omath::Color m_label_gradient_right{1.f, 0.2f, 0.7f, 1.f};
         bool m_outlined = true;
         bool m_gradient_label = true;
+        omath::hud::GradientDirection m_label_gradient_direction = omath::hud::GradientDirection::RightToLeft;
         bool m_show_right_labels = true, m_show_left_labels = true;
         bool m_show_top_labels = true, m_show_bottom_labels = true;
         bool m_show_centered_top = true, m_show_centered_bottom = true;
