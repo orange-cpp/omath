@@ -245,72 +245,37 @@ jobs:
         run: |
           ./out/Debug/unit_tests.exe
 
-      - name: Process Coverage (llvm-profdata & llvm-cov)
+      - name: Process and render coverage
         if: ${{ matrix.triplet == 'x64-windows' }}
         shell: pwsh
         run: |
-          $BUILD_DIR = "cmake-build/build/${{ matrix.preset }}"
-          $EXE_PATH = "./out/Debug/unit_tests.exe"
-          
-          # 1. Merge raw profile data (essential step)
+          $buildDir = "cmake-build/build/${{ matrix.preset }}"
+          $exePath = "./out/Debug/unit_tests.exe"
+          $profile = "$buildDir/unit_tests.profdata"
+          $htmlDir = "$buildDir/coverage-html"
+
           & "C:/Program Files/LLVM/bin/llvm-profdata.exe" merge `
-            -sparse "$BUILD_DIR/unit_tests.profraw" `
-            -o "$BUILD_DIR/unit_tests.profdata"
+            -sparse "$buildDir/unit_tests.profraw" `
+            -o $profile
 
-          # 2. Export to LCOV format
-          #    NOTE: We explicitly ignore vcpkg_installed and system headers
-          & "C:/Program Files/LLVM/bin/llvm-cov.exe" export "$EXE_PATH" `
-            -instr-profile="$BUILD_DIR/unit_tests.profdata" `
-            -format=lcov `
-            -ignore-filename-regex="vcpkg_installed|external|tests" `
-            > "$BUILD_DIR/lcov.info"
-
-          if (Test-Path "$BUILD_DIR/lcov.info") {
-            Write-Host "✅ LCOV info created at $BUILD_DIR/lcov.info"
-          } else {
-            Write-Error "Failed to create LCOV info"
-            exit 1
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
           }
 
-      - name: Install LCOV (for genhtml)
-        if: ${{ matrix.triplet == 'x64-windows' }}
-        run: choco install lcov -y
+          & "C:/Program Files/LLVM/bin/llvm-cov.exe" show $exePath `
+            "-instr-profile=$profile" `
+            "-format=html" `
+            "-output-dir=$htmlDir" `
+            "-ignore-filename-regex=vcpkg_installed|external|tests" `
+            "-show-branches=count"
 
-      - name: Generate HTML Report
-        if: ${{ matrix.triplet == 'x64-windows' }}
-        shell: bash
-        run: |
-          BUILD_DIR="cmake-build/build/${{ matrix.preset }}"
-          LCOV_INFO="${BUILD_DIR}/lcov.info"
-          HTML_DIR="${BUILD_DIR}/coverage-html"
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
 
-          # Fix paths for genhtml (Perl hates backslashes)
-          sed -i 's|\\|/|g' "${LCOV_INFO}"
-          
-          # Locate genhtml provided by 'choco install lcov'
-          # It is typically in ProgramData/chocolatey/lib/lcov/tools/bin
-          GENHTML=$(find /c/ProgramData/chocolatey -name genhtml -print -quit)
-          
-          if [ -z "$GENHTML" ]; then
-            echo "Error: genhtml executable not found"
-            exit 1
-          fi
-          
-          echo "Using genhtml: $GENHTML"
-          mkdir -p "$HTML_DIR"
-          
-          # Run genhtml
-          # Added --demangle-cpp if your version supports it, otherwise remove it
-          perl "$GENHTML" \
-            "${LCOV_INFO}" \
-            --output-directory "$HTML_DIR" \
-            --title "OMath Coverage Report" \
-            --legend \
-            --show-details \
-            --branch-coverage \
-            --ignore-errors source
-            
-          echo "✅ LCOV HTML report generated at $HTML_DIR"
+          if (-not (Test-Path "$htmlDir/index.html")) {
+            throw "LLVM coverage report was not generated"
+          }
 
       - name: Upload Coverage (HTML Report)
         if: ${{ matrix.triplet == 'x64-windows' }}
