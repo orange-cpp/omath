@@ -16,6 +16,21 @@ namespace
         const float diff = actual - expected;
         return (diff < 0.0f ? -diff : diff) <= epsilon;
     }
+
+    template<size_t Rows, size_t Columns, size_t OtherColumns, class Type, MatStoreType StoreType>
+    void expect_multiplication_matches_scalar_reference(const Mat<Rows, Columns, Type, StoreType>& left,
+                                                        const Mat<Columns, OtherColumns, Type, StoreType>& right)
+    {
+        const auto result = left * right;
+        for (size_t row = 0; row < Rows; ++row)
+            for (size_t column = 0; column < OtherColumns; ++column)
+            {
+                Type expected{};
+                for (size_t shared_index = 0; shared_index < Columns; ++shared_index)
+                    expected += left.at(row, shared_index) * right.at(shared_index, column);
+                EXPECT_EQ(result.at(row, column), expected);
+            }
+    }
 } // namespace
 
 class UnitTestMat : public ::testing::Test
@@ -90,6 +105,45 @@ TEST_F(UnitTestMat, Operator_Multiplication_Matrix)
     EXPECT_FLOAT_EQ(m3.at(0, 1), 10.0f);
     EXPECT_FLOAT_EQ(m3.at(1, 0), 15.0f);
     EXPECT_FLOAT_EQ(m3.at(1, 1), 22.0f);
+}
+
+TEST(UnitTestMatStandalone, Operator_Multiplication_RowMajorSimdAndTail)
+{
+    Mat<3, 5, float, MatStoreType::ROW_MAJOR> left;
+    Mat<5, 33, float, MatStoreType::ROW_MAJOR> right;
+    for (size_t row = 0; row < left.row_count(); ++row)
+        for (size_t column = 0; column < left.columns_count(); ++column)
+            left.at(row, column) = static_cast<float>(row * 3 + column + 1);
+    for (size_t row = 0; row < right.row_count(); ++row)
+        for (size_t column = 0; column < right.columns_count(); ++column)
+            right.at(row, column) = static_cast<float>((row + 1) * (column % 5 + 1));
+
+    expect_multiplication_matches_scalar_reference(left, right);
+}
+
+TEST(UnitTestMatStandalone, Operator_Multiplication_ColumnMajorSimdAndTail)
+{
+    Mat<17, 5, double, MatStoreType::COLUMN_MAJOR> left;
+    Mat<5, 3, double, MatStoreType::COLUMN_MAJOR> right;
+    for (size_t row = 0; row < left.row_count(); ++row)
+        for (size_t column = 0; column < left.columns_count(); ++column)
+            left.at(row, column) = static_cast<double>(row * 3 + column + 1);
+    for (size_t row = 0; row < right.row_count(); ++row)
+        for (size_t column = 0; column < right.columns_count(); ++column)
+            right.at(row, column) = static_cast<double>((row + 1) * (column + 1));
+
+    expect_multiplication_matches_scalar_reference(left, right);
+}
+
+TEST(UnitTestMatStandalone, Operator_Multiplication_IntegerFallsBackFromAvx)
+{
+    constexpr Mat<2, 3, int> left{{1, 2, 3}, {4, 5, 6}};
+    constexpr Mat<3, 2, int> right{{7, 8}, {9, 10}, {11, 12}};
+    constexpr auto result = left * right;
+    static_assert(result.at(0, 0) == 58);
+    static_assert(result.at(1, 1) == 154);
+
+    expect_multiplication_matches_scalar_reference(left, right);
 }
 
 TEST_F(UnitTestMat, Operator_Multiplication_Scalar)

@@ -2,10 +2,8 @@
 // Created by Vlad on 9/17/2025.
 //
 #include <benchmark/benchmark.h>
-
 #include <omath/omath.hpp>
 using namespace omath;
-
 
 void mat_float_multiplication_col_major(benchmark::State& state)
 {
@@ -15,9 +13,12 @@ void mat_float_multiplication_col_major(benchmark::State& state)
     a.set(3.f);
     b.set(7.f);
 
-
     for ([[maybe_unused]] const auto _ : state)
-        std::ignore = a * b;
+    {
+        benchmark::DoNotOptimize(a);
+        benchmark::DoNotOptimize(b);
+        benchmark::DoNotOptimize(a * b);
+    }
 }
 void mat_float_multiplication_row_major(benchmark::State& state)
 {
@@ -27,9 +28,12 @@ void mat_float_multiplication_row_major(benchmark::State& state)
     a.set(3.f);
     b.set(7.f);
 
-
     for ([[maybe_unused]] const auto _ : state)
-        std::ignore = a * b;
+    {
+        benchmark::DoNotOptimize(a);
+        benchmark::DoNotOptimize(b);
+        benchmark::DoNotOptimize(a * b);
+    }
 }
 
 void mat_double_multiplication_row_major(benchmark::State& state)
@@ -40,9 +44,12 @@ void mat_double_multiplication_row_major(benchmark::State& state)
     a.set(3.f);
     b.set(7.f);
 
-
     for ([[maybe_unused]] const auto _ : state)
-        std::ignore = a * b;
+    {
+        benchmark::DoNotOptimize(a);
+        benchmark::DoNotOptimize(b);
+        benchmark::DoNotOptimize(a * b);
+    }
 }
 
 void mat_double_multiplication_col_major(benchmark::State& state)
@@ -53,9 +60,12 @@ void mat_double_multiplication_col_major(benchmark::State& state)
     a.set(3.f);
     b.set(7.f);
 
-
     for ([[maybe_unused]] const auto _ : state)
-        std::ignore = a * b;
+    {
+        benchmark::DoNotOptimize(a);
+        benchmark::DoNotOptimize(b);
+        benchmark::DoNotOptimize(a * b);
+    }
 }
 
 BENCHMARK(mat_float_multiplication_col_major)->Iterations(5000);
