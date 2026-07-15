@@ -6,6 +6,17 @@ if (@OMATH_IMGUI_INTEGRATION@)
     find_dependency(imgui CONFIG)
 endif()
 
+if (@OMATH_ENABLE_LUA@)
+    find_dependency(Lua)
+endif()
+
+if (@OMATH_ENABLE_HOOKING@)
+    find_dependency(safetyhook CONFIG)
+    if (NOT WIN32 AND (UNIX AND NOT APPLE))
+        find_dependency(OpenGL)
+    endif()
+endif()
+
 # Load the targets for the omath library
 include("${CMAKE_CURRENT_LIST_DIR}/omathTargets.cmake")
 check_required_components(omath)
