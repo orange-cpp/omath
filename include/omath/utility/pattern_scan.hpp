@@ -54,9 +54,6 @@ namespace omath
                 return {value, Length - 1};
             }
         };
-        template<std::size_t N>
-        ConstevalPattern(const char (&)[N]) -> ConstevalPattern<N>;
-
         [[nodiscard]]
         static std::span<std::byte>::iterator scan_for_pattern(const std::span<std::byte>& range,
                                                                const std::string_view& pattern);
