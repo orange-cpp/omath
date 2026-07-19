@@ -4,7 +4,7 @@
 > Namespace: `omath::angles`
 > All functions are `[[nodiscard]]` and `noexcept` where applicable.
 
-A small set of constexpr-friendly utilities for converting between degrees/radians, converting horizontal/vertical field of view, and wrapping angles into a closed interval.
+A small set of constexpr-friendly utilities for converting between degrees/radians, converting horizontal/vertical field of view, and wrapping angles into a half-open interval.
 
 ---
 
@@ -29,9 +29,9 @@ template<class Type>
 requires std::is_floating_point_v<Type>
 Type vertical_fov_to_horizontal(const Type& vertical_fov, const Type& aspect) noexcept;
 
-// Wrap angle into [min, max] (any arithmetic type)
+// Wrap angle into [min, max) (floating-point types)
 template<class Type>
-requires std::is_arithmetic_v<Type>
+requires std::is_floating_point_v<Type>
 Type wrap_angle(const Type& angle, const Type& min, const Type& max) noexcept;
 ```
 
@@ -66,10 +66,10 @@ Formulas (in radians):
 
 ### Wrapping angles (or any periodic value)
 
-Wrap any numeric `angle` into `[min, max]`:
+Wrap any floating-point `angle` into `[min, max)`:
 
 ```cpp
-// Wrap degrees into [0, 360]
+// Wrap degrees into [0, 360)
 float a = omath::angles::wrap_angle(   370.0f, 0.0f, 360.0f); // 10
 float b = omath::angles::wrap_angle(   -15.0f, 0.0f, 360.0f); // 345
 // Signed range [-180,180]
@@ -83,10 +83,10 @@ float c = omath::angles::wrap_angle(  200.0f, -180.0f, 180.0f); // -160
 * **Type requirements**
 
     * Converters & FOV helpers require **floating-point** `Type`.
-    * `wrap_angle` accepts any arithmetic `Type` (floats or integers).
+    * `wrap_angle` accepts floating-point types.
 * **Aspect ratio** must be **positive** and finite. For `aspect == 0` the FOV helpers are undefined.
 * **Units**: FOV functions accept/return **degrees** but compute internally in radians.
-* **Wrapping interval**: Behavior assumes `max > min`. The result lies in the **closed interval** `[min, max]` with modulo arithmetic; if you need half-open behavior (e.g., `[min,max)`), adjust your range or post-process endpoint cases.
+* **Wrapping interval**: Behavior assumes `max > min`. The result lies in the half-open interval `[min, max)`.
 * **constexpr**: Converters are `constexpr`; FOV helpers are runtime constexpr-compatible except for `std::atan/std::tan` constraints on some standard libraries.
 
 ---
@@ -103,5 +103,5 @@ float v = horizontal_fov_to_vertical(90.0f, 16.0f/9.0f);
 float h = vertical_fov_to_horizontal(v, 16.0f/9.0f);
 assert(std::abs(h - 90.0f) < 1e-5f);
 
-assert(wrap_angle(360.0f, 0.0f, 360.0f) == 0.0f || wrap_angle(360.0f, 0.0f, 360.0f) == 360.0f);
+assert(wrap_angle(360.0f, 0.0f, 360.0f) == 0.0f);
 ```

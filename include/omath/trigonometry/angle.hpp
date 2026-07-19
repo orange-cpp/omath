@@ -6,7 +6,9 @@
 #include "omath/internal/constexpr_math.hpp"
 #include "omath/trigonometry/angles.hpp"
 #include <algorithm>
+#include <compare>
 #include <format>
+#include <type_traits>
 #include <utility>
 
 namespace omath
@@ -18,7 +20,7 @@ namespace omath
     };
 
     template<class Type = float, Type min = Type(0), Type max = Type(360), AngleFlags flags = AngleFlags::Normalized>
-    requires std::is_arithmetic_v<Type>
+    requires std::is_floating_point_v<Type>
     class Angle
     {
         Type m_angle;
@@ -43,13 +45,37 @@ namespace omath
         {
             return Angle{degrees};
         }
-        constexpr Angle() noexcept: m_angle(0)
+        constexpr Angle() noexcept: Angle(Type{0})
         {
         }
         [[nodiscard]]
         constexpr static Angle from_radians(const Type& degrees) noexcept
         {
             return Angle{angles::radians_to_degrees<Type>(degrees)};
+        }
+
+        [[nodiscard]]
+        constexpr static Angle from_asin(const Type& value) noexcept
+        {
+            return from_radians(internal::asin(value));
+        }
+
+        [[nodiscard]]
+        constexpr static Angle from_acos(const Type& value) noexcept
+        {
+            return from_radians(internal::acos(value));
+        }
+
+        [[nodiscard]]
+        constexpr static Angle from_atan(const Type& value) noexcept
+        {
+            return from_radians(internal::atan(value));
+        }
+
+        [[nodiscard]]
+        constexpr static Angle from_atan2(const Type& y, const Type& x) noexcept
+        {
+            return from_radians(internal::atan2(y, x));
         }
 
         [[nodiscard]]
@@ -89,12 +115,6 @@ namespace omath
         }
 
         [[nodiscard]]
-        constexpr Type atan() const noexcept
-        {
-            return internal::atan(as_radians());
-        }
-
-        [[nodiscard]]
         constexpr Type cot() const noexcept
         {
             return cos() / sin();
@@ -121,7 +141,8 @@ namespace omath
 
         constexpr Angle& operator-=(const Angle& other) noexcept
         {
-            return operator+=(-other);
+            *this = Angle{m_angle - other.m_angle};
+            return *this;
         }
 
         [[nodiscard]]
@@ -142,7 +163,7 @@ namespace omath
         [[nodiscard]]
         constexpr Angle operator-(const Angle& other) const noexcept
         {
-            return operator+(-other);
+            return Angle{m_angle - other.m_angle};
         }
 
         [[nodiscard]]
@@ -172,7 +193,6 @@ struct std::formatter<omath::Angle<T, MinV, MaxV, F>, char> final // NOLINT(*-dc
         return std::format_to(ctx.out(), "{}deg", a.as_degrees());
     }
 };
-
 // wchar_t formatter
 template<class T, T MinV, T MaxV, omath::AngleFlags F>
 struct std::formatter<omath::Angle<T, MinV, MaxV, F>, wchar_t> final // NOLINT(*-dcl58-cpp)
@@ -191,26 +211,5 @@ struct std::formatter<omath::Angle<T, MinV, MaxV, F>, wchar_t> final // NOLINT(*
     {
         static_assert(std::is_same_v<typename FormatContext::char_type, wchar_t>);
         return std::format_to(ctx.out(), L"{}deg", a.as_degrees());
-    }
-};
-
-// wchar_t formatter
-template<class T, T MinV, T MaxV, omath::AngleFlags F>
-struct std::formatter<omath::Angle<T, MinV, MaxV, F>, char8_t> final // NOLINT(*-dcl58-cpp)
-{
-    using AngleT = omath::Angle<T, MinV, MaxV, F>;
-
-    [[nodiscard]]
-    static constexpr auto parse(std::wformat_parse_context& ctx)
-    {
-        return ctx.begin();
-    }
-
-    template<class FormatContext>
-    [[nodiscard]]
-    auto format(const AngleT& a, FormatContext& ctx) const
-    {
-        static_assert(std::is_same_v<typename FormatContext::char_type, char8_t>);
-        return std::format_to(ctx.out(), u8"{}deg", a.as_degrees());
     }
 };

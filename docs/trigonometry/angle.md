@@ -3,8 +3,8 @@
 > Header: `omath/trigonometry/angle.hpp`
 > Namespace: `omath`
 > Template: `Angle<Type = float, min = 0, max = 360, flags = AngleFlags::Normalized>`
-> Requires: `std::is_arithmetic_v<Type>`
-> Formatters: `std::formatter` for `char`, `wchar_t`, `char8_t` → `"{}deg"`
+> Requires: `std::is_floating_point_v<Type>`
+> Formatters: `std::formatter` for `char` and `wchar_t` → `"{}deg"`
 
 ---
 
@@ -14,7 +14,7 @@
 
 Two behaviors via `AngleFlags`:
 
-* `AngleFlags::Normalized` (default): values are wrapped into `[min, max]` using `angles::wrap_angle`.
+* `AngleFlags::Normalized` (default): values are wrapped into `[min, max)` using `angles::wrap_angle`.
 * `AngleFlags::Clamped`: values are clamped to `[min, max]` using `std::clamp`.
 
 ---
@@ -28,12 +28,16 @@ enum class AngleFlags { Normalized = 0, Clamped = 1 };
 
 template<class Type = float, Type min = Type(0), Type max = Type(360),
          AngleFlags flags = AngleFlags::Normalized>
-requires std::is_arithmetic_v<Type>
+requires std::is_floating_point_v<Type>
 class Angle {
 public:
   // Construction
   static constexpr Angle from_degrees(const Type& deg) noexcept;
   static constexpr Angle from_radians(const Type& rad) noexcept;
+  static constexpr Angle from_asin(const Type& value) noexcept;
+  static constexpr Angle from_acos(const Type& value) noexcept;
+  static constexpr Angle from_atan(const Type& value) noexcept;
+  static constexpr Angle from_atan2(const Type& y, const Type& x) noexcept;
   constexpr Angle() noexcept;                  // 0 deg, adjusted by flags/range
 
   // Accessors / conversions (degrees stored internally)
@@ -45,10 +49,9 @@ public:
   Type sin() const noexcept;
   Type cos() const noexcept;
   Type tan() const noexcept;
-  Type atan() const noexcept;  // atan(as_radians())  (rarely used)
   Type cot() const noexcept;   // cos()/sin()  (watch sin≈0)
 
-  // Arithmetic (wraps or clamps per flags and [min,max])
+  // Arithmetic (wraps or clamps per flags and configured range)
   constexpr Angle& operator+=(const Angle&) noexcept;
   constexpr Angle& operator-=(const Angle&) noexcept;
   constexpr Angle  operator+(const Angle&) noexcept;
@@ -68,7 +71,7 @@ public:
 std::format("{}", Angle<float>::from_degrees(45)); // "45deg"
 ```
 
-Formatters exist for `char`, `wchar_t`, and `char8_t`.
+Formatters exist for `char` and `wchar_t`.
 
 ---
 
@@ -116,10 +119,9 @@ float deg = *yaw;                                // same as yaw.as_degrees()
 ## Semantics & notes
 
 * **Storage & units:** Internally stores **degrees** (`Type m_angle`). `as_radians()`/`from_radians()` use the project helpers in `omath::angles`.
-* **Arithmetic honors policy:** `operator+=`/`-=` and the binary `+`/`-` apply **wrap** or **clamp** in `[min,max]`, mirroring construction behavior.
-* **`atan()`**: returns `std::atan(as_radians())` (the arctangent of the *radian value*). This is mathematically unusual for an angle type and is rarely useful; prefer `tan()`/`atan2` in client code when solving geometry problems.
+* **Arithmetic honors policy:** `operator+=`/`-=` and the binary `+`/`-` apply **wrap** or **clamp**, mirroring construction behavior.
 * **`cot()` / `tan()` singularities:** Near multiples where `sin() ≈ 0` or `cos() ≈ 0`, results blow up. Guard in your usage if inputs can approach these points.
-* **Comparison:** `operator<=>` is defaulted. With normalization, distinct representatives can compare as expected (e.g., `-180` vs `180` in signed ranges are distinct endpoints).
+* **Comparison:** `operator<=>` is defaulted. Normalization canonicalizes the maximum endpoint to the minimum endpoint.
 * **No implicit numeric conversion:** There’s **no `operator Type()`**. Use `as_degrees()`/`as_radians()` (or `*angle`) explicitly—this intentional friction avoids unit mistakes.
 
 ---

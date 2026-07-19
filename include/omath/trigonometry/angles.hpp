@@ -48,10 +48,10 @@ namespace omath::angles
     }
 
     template<class Type>
-    requires std::is_arithmetic_v<Type>
+    requires std::is_floating_point_v<Type>
     [[nodiscard]] constexpr Type wrap_angle(const Type& angle, const Type& min, const Type& max) noexcept
     {
-        if (angle <= max && angle >= min)
+        if (angle < max && angle >= min)
             return angle;
 
         const Type range = max - min;

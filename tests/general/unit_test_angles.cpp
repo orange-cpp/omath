@@ -47,3 +47,10 @@ TEST(unit_test_angles, wrap_angle_negative_range)
 
     EXPECT_NEAR(wrapped, 270.f, 0.01f);
 }
+
+TEST(unit_test_angles, wrap_angle_maximum_maps_to_minimum)
+{
+    const float wrapped = omath::angles::wrap_angle(360.f, 0.f, 360.f);
+
+    EXPECT_FLOAT_EQ(wrapped, 0.f);
+}

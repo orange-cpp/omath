@@ -14,8 +14,13 @@ namespace
 
     // Handy aliases (defaults: Type=float, [0,360], Normalized)
     using Deg = Angle<float, static_cast<float>(0), static_cast<float>(360), AngleFlags::Normalized>;
+    using Fov = Angle<float, static_cast<float>(0), static_cast<float>(180), AngleFlags::Clamped>;
+    using Offset = Angle<float, static_cast<float>(10), static_cast<float>(20), AngleFlags::Clamped>;
     using Pitch = Angle<float, static_cast<float>(-90), static_cast<float>(90), AngleFlags::Clamped>;
     using Turn = Angle<float, static_cast<float>(-180), static_cast<float>(180), AngleFlags::Normalized>;
+
+    template<class Type>
+    concept SupportedAngleType = requires { typename Angle<Type>; };
 
     constexpr float k_eps = 1e-5f;
 
@@ -34,6 +39,12 @@ TEST(UnitTestAngle, DefaultConstructor_IsZeroDegrees)
     constexpr Deg a; // default ctor
     EXPECT_FLOAT_EQ(*a, 0.0f);
     EXPECT_FLOAT_EQ(a.as_degrees(), 0.0f);
+}
+
+TEST(UnitTestAngle, DefaultConstructor_AppliesRangePolicy)
+{
+    constexpr Offset a;
+    EXPECT_FLOAT_EQ(a.as_degrees(), 10.0f);
 }
 
 TEST(UnitTestAngle, FromDegrees_Normalized_WrapsAboveMax)
@@ -64,6 +75,14 @@ TEST(UnitTestAngle, FromRadians_And_AsRadians)
 
     const Deg b = Deg::from_degrees(180.0f);
     EXPECT_NEAR(b.as_radians(), std::numbers::pi_v<float>, 1e-6f);
+}
+
+TEST(UnitTestAngle, FromInverseTrigonometricFunctions)
+{
+    EXPECT_NEAR(Pitch::from_asin(0.5f).as_degrees(), 30.0f, k_eps);
+    EXPECT_NEAR(Pitch::from_acos(0.5f).as_degrees(), 60.0f, k_eps);
+    EXPECT_NEAR(Pitch::from_atan(1.0f).as_degrees(), 45.0f, k_eps);
+    EXPECT_NEAR(Turn::from_atan2(-1.0f, -1.0f).as_degrees(), -135.0f, k_eps);
 }
 
 // ---------- Unary minus & deref ----------
@@ -101,17 +120,6 @@ TEST(UnitTestAngle, SinCosTanCot_BasicCases)
     EXPECT_NEAR(a90.cos(), 0.0f, 1e-4f);
 }
 
-TEST(UnitTestAngle, Atan_IsAtanOfRadians)
-{
-    // atan(as_radians). For 0° -> atan(0)=0.
-    const Deg a0 = Deg::from_degrees(0.0f);
-    EXPECT_NEAR(a0.atan(), 0.0f, k_eps);
-
-    const Deg a45 = Deg::from_degrees(45.0f);
-    // atan(pi/4) ≈ 0.665773...
-    EXPECT_NEAR(a45.atan(), 0.66577375f, 1e-6f);
-}
-
 // ---------- Compound arithmetic ----------
 
 TEST(UnitTestAngle, PlusEquals_Normalized_Wraps)
@@ -140,6 +148,16 @@ TEST(UnitTestAngle, MinusEquals_Clamped_Clamps)
     Pitch p = Pitch::from_degrees(-70.0f);
     p -= Pitch::from_degrees(40.0f); // -110 -> clamp to -90
     EXPECT_FLOAT_EQ(p.as_degrees(), -90.0f);
+}
+
+TEST(UnitTestAngle, Subtraction_ClampedNonSymmetricRange)
+{
+    Fov compound = Fov::from_degrees(90.0f);
+    compound -= Fov::from_degrees(10.0f);
+    EXPECT_FLOAT_EQ(compound.as_degrees(), 80.0f);
+
+    const Fov binary = Fov::from_degrees(90.0f) - Fov::from_degrees(10.0f);
+    EXPECT_FLOAT_EQ(binary.as_degrees(), 80.0f);
 }
 
 // ---------- Alternative ranges ----------
@@ -205,5 +223,12 @@ static_assert(close_to(Pitch::from_degrees(45.0f).tan(), 1.0f, 1e-4f),
               "Tan should be constexpr with embedded constexpr math");
 static_assert(close_to(Pitch::from_degrees(45.0f).cot(), 1.0f, 1e-4f),
               "Cot should be constexpr with embedded constexpr math");
-static_assert(close_to(Pitch::from_degrees(45.0f).atan(), 0.66577375f, 1e-6f),
-              "Atan should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_asin(0.5f).as_degrees(), 30.0f, k_eps),
+              "From asin should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_acos(0.5f).as_degrees(), 60.0f, k_eps),
+              "From acos should be constexpr with embedded constexpr math");
+static_assert(close_to(Pitch::from_atan(1.0f).as_degrees(), 45.0f, k_eps),
+              "From atan should be constexpr with embedded constexpr math");
+static_assert(close_to(Turn::from_atan2(-1.0f, -1.0f).as_degrees(), -135.0f, k_eps),
+              "From atan2 should be constexpr with embedded constexpr math");
+static_assert(!SupportedAngleType<int>, "Angle should only accept floating-point types");
