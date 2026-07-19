@@ -4,7 +4,6 @@
 
 #pragma once
 #include "omath/engines/rage_engine/formulas.hpp"
-#include "omath/internal/constexpr_math.hpp"
 #include "omath/projection/camera.hpp"
 
 namespace omath::rage_engine
@@ -18,8 +17,8 @@ namespace omath::rage_engine
         {
             const auto direction = (look_at - cam_origin).normalized();
 
-            return {PitchAngle::from_radians(internal::asin(direction.z)),
-                    YawAngle::from_radians(-internal::atan2(direction.x, direction.y)), RollAngle::from_radians(0.f)};
+            return {PitchAngle::from_asin(direction.z), -YawAngle::from_atan2(direction.x, direction.y),
+                    RollAngle::from_radians(0.f)};
         }
 
         [[nodiscard("view matrix result should not be discarded")]]
