@@ -707,7 +707,11 @@ jobs:
 
       - name: Build
         run: |
-          cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
+          if [[ "${{ matrix.msystem }}" == "MINGW32" ]]; then
+            cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath --parallel 1
+          else
+            cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
+          fi
 
       - name: Run unit_tests.exe
         run: |
