@@ -179,7 +179,7 @@ if command -v genhtml >/dev/null 2>&1; then
         --legend \
         --demangle-cpp \
         --num-spaces 4 \
-        --sort \
+        --sort-tables \
         --function-coverage \
         --branch-coverage
     
