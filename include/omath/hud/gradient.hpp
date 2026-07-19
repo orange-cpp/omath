@@ -9,7 +9,7 @@ namespace omath::hud
         LeftToRight,
     };
 
-    struct Gradient
+    struct Gradient final
     {
         Color top_left;
         Color top_right;
