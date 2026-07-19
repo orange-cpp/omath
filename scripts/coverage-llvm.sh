@@ -177,9 +177,7 @@ if command -v genhtml >/dev/null 2>&1; then
         --title "Omath Coverage Report" \
         --show-details \
         --legend \
-        --demangle-cpp c++filt \
         --num-spaces 4 \
-        --sort-tables \
         --function-coverage \
         --branch-coverage
     
