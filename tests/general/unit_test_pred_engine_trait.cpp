@@ -1,4 +1,5 @@
 // Tests for PredEngineTrait
+#include <array>
 #include <gtest/gtest.h>
 #include <omath/engines/source_engine/traits/pred_engine_trait.hpp>
 #include <omath/projectile_prediction/projectile.hpp>
@@ -75,6 +76,77 @@ TEST(PredEngineTrait, PredictProjectilePositionWithLaunchOffset)
     EXPECT_NEAR(pos_t1.x, 5.f + 10.f, 1e-3f);
     EXPECT_NEAR(pos_t1.y, 3.f, 1e-3f);
     EXPECT_NEAR(pos_t1.z, -2.f - 9.81f * 0.5f, 1e-3f);
+}
+
+TEST(PredEngineTrait, PredictProjectilePositionMatchesRotationMatrix)
+{
+    constexpr Projectile projectile{
+            .m_origin = {10.f, -20.f, 30.f},
+            .m_launch_offset = {2.f, 3.f, -4.f},
+            .m_launch_speed = 750.f,
+            .m_gravity_scale = 0.6f,
+    };
+    struct TestCase
+    {
+        float pitch;
+        float yaw;
+        float time;
+    };
+    constexpr std::array test_cases{
+            TestCase{0.f, 0.f, 0.f},
+            TestCase{25.f, 45.f, 0.25f},
+            TestCase{-60.f, -135.f, 1.5f},
+            TestCase{120.f, 540.f, 2.f},
+    };
+    constexpr float gravity = 9.81f;
+
+    for (const auto& test_case : test_cases)
+    {
+        const auto launch_position = projectile.m_origin + projectile.m_launch_offset;
+        auto expected_position = launch_position
+                                 + forward_vector({PitchAngle::from_degrees(-test_case.pitch),
+                                                   YawAngle::from_degrees(test_case.yaw), RollAngle::from_degrees(0.f)})
+                                           * projectile.m_launch_speed * test_case.time;
+        expected_position.z -= gravity * projectile.m_gravity_scale * test_case.time * test_case.time * 0.5f;
+
+        const auto actual_position = PredEngineTrait::predict_projectile_position(
+                projectile, test_case.pitch, test_case.yaw, test_case.time, gravity);
+
+        EXPECT_NEAR(actual_position.x, expected_position.x, 1e-5f);
+        EXPECT_NEAR(actual_position.y, expected_position.y, 1e-5f);
+        EXPECT_NEAR(actual_position.z, expected_position.z, 1e-5f);
+    }
+}
+
+TEST(PredEngineTrait, ReachabilityCheckUsesDistanceTolerance)
+{
+    constexpr Projectile projectile{
+            .m_origin = {0.f, 0.f, 0.f},
+            .m_launch_speed = 100.f,
+            .m_gravity_scale = 0.f,
+    };
+
+    EXPECT_FALSE(PredEngineTrait::can_projectile_reach_target_at_time(projectile, {100.f, 0.f, 0.f}, 0.5f, 9.81f, 0.f));
+    EXPECT_TRUE(PredEngineTrait::can_projectile_reach_target_at_time(projectile, {100.f, 0.f, 0.f}, 1.f, 9.81f, 0.f));
+    EXPECT_TRUE(PredEngineTrait::can_projectile_reach_target_at_time(projectile, {101.f, 0.f, 0.f}, 1.f, 9.81f, 1.f));
+    EXPECT_TRUE(PredEngineTrait::can_projectile_reach_target_at_time(projectile, {99.f, 0.f, 0.f}, 1.f, 9.81f, 1.f));
+    EXPECT_FALSE(PredEngineTrait::can_projectile_reach_target_at_time(projectile, {101.f, 0.f, 0.f}, 1.f, 9.81f, 0.f));
+    EXPECT_FALSE(PredEngineTrait::can_projectile_reach_target_at_time(projectile, {98.f, 0.f, 0.f}, 1.f, 9.81f, 1.f));
+}
+
+TEST(PredEngineTrait, ReachabilityCheckIncludesFloatingPointError)
+{
+    constexpr Projectile projectile{
+            .m_origin = {1.f, 2.f, 3.f},
+            .m_launch_offset = {0.1f, -0.2f, 0.3f},
+            .m_launch_speed = 100.f,
+            .m_gravity_scale = 1.f,
+    };
+    constexpr float gravity = 9.81f;
+    constexpr float time = 0.3f;
+    const auto target_position = PredEngineTrait::predict_projectile_position(projectile, 25.f, 45.f, time, gravity);
+
+    EXPECT_TRUE(PredEngineTrait::can_projectile_reach_target_at_time(projectile, target_position, time, gravity, 0.f));
 }
 
 TEST(PredEngineTrait, ZeroLaunchOffsetMatchesOriginalBehavior)

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <limits>
 #include <omath/projectile_prediction/proj_pred_engine_legacy.hpp>
 #include <omath/projectile_prediction/projectile.hpp>
 #include <omath/projectile_prediction/target.hpp>
@@ -15,25 +16,45 @@ struct FakeEngineZeroGravity
     {
         return t.m_origin;
     }
-    static Vector3<float> predict_projectile_position(const Projectile& /*p*/, float /*pitch*/, float /*yaw*/, float /*time*/, float /*gravity*/) noexcept
+    static Vector3<float> predict_projectile_position(const Projectile& /*p*/, float /*pitch*/, float /*yaw*/,
+                                                      float /*time*/, float /*gravity*/) noexcept
     {
         // Return a fixed point matching typical target used in the test
         return Vector3<float>{100.f, 0.f, 0.f};
     }
-    static float calc_vector_2d_distance(const Vector3<float>& v) noexcept { return std::hypot(v.x, v.y); }
-    static float get_vector_height_coordinate(const Vector3<float>& v) noexcept { return v.z; }
-    static Vector3<float> calc_viewpoint_from_angles(const Projectile& /*p*/, Vector3<float> /*v*/, std::optional<float> /*maybe_pitch*/) noexcept
+    static float calc_vector_2d_distance(const Vector3<float>& v) noexcept
+    {
+        return std::hypot(v.x, v.y);
+    }
+    static float get_vector_height_coordinate(const Vector3<float>& v) noexcept
+    {
+        return v.z;
+    }
+    static Vector3<float> calc_viewpoint_from_angles(const Projectile& /*p*/, Vector3<float> /*v*/,
+                                                     std::optional<float> /*maybe_pitch*/) noexcept
     {
         return Vector3<float>{1.f, 2.f, 3.f};
     }
-    static float calc_direct_pitch_angle(const Vector3<float>& /*a*/, const Vector3<float>& /*b*/) noexcept { return 12.5f; }
-    static float calc_direct_yaw_angle(const Vector3<float>& /*a*/, const Vector3<float>& /*b*/) noexcept { return 0.f; }
+    static float calc_direct_pitch_angle(const Vector3<float>& /*a*/, const Vector3<float>& /*b*/) noexcept
+    {
+        return 12.5f;
+    }
+    static float calc_direct_yaw_angle(const Vector3<float>& /*a*/, const Vector3<float>& /*b*/) noexcept
+    {
+        return 0.f;
+    }
+    static bool can_projectile_reach_target_at_time(const Projectile& /*projectile*/,
+                                                    const Vector3<float>& /*target_position*/, float /*time*/,
+                                                    float /*gravity*/, float /*distance_tolerance*/)
+    {
+        return false;
+    }
 };
 
 TEST(ProjPredLegacyMore, ZeroGravityUsesDirectPitchAndReturnsViewpoint)
 {
-    constexpr Projectile proj{ .m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 10.f, .m_gravity_scale = 0.f };
-    constexpr Target target{ .m_origin = {100.f, 0.f, 0.f}, .m_velocity = {0.f,0.f,0.f}, .m_is_airborne = false };
+    constexpr Projectile proj{.m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 10.f, .m_gravity_scale = 0.f};
+    constexpr Target target{.m_origin = {100.f, 0.f, 0.f}, .m_velocity = {0.f, 0.f, 0.f}, .m_is_airborne = false};
 
     using Engine = omath::projectile_prediction::ProjPredEngineLegacy<FakeEngineZeroGravity>;
     const Engine engine(9.8f, 0.1f, 5.f, 1e-3f);
@@ -116,4 +137,78 @@ TEST(ProjPredLegacyMore, AngleComputedButMissReturnsNullopt)
 
     const auto res = engine.maybe_calculate_aim_point(proj, target);
     EXPECT_FALSE(res.has_value());
+}
+
+TEST(ProjPredLegacyMore, IncludesMaximumSimulationTime)
+{
+    constexpr Projectile projectile{.m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 10.f, .m_gravity_scale = 0.f};
+    constexpr Target target{.m_origin = {10.f, 0.f, 0.f}, .m_velocity = {0.f, 0.f, 0.f}, .m_is_airborne = false};
+    const omath::projectile_prediction::ProjPredEngineLegacy<> engine(0.f, 0.1f, 1.f, 0.f);
+
+    const auto result = engine.maybe_calculate_aim_point(projectile, target);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_NEAR(result->x, target.m_origin.x, 1e-6f);
+    EXPECT_NEAR(result->y, target.m_origin.y, 1e-6f);
+    EXPECT_NEAR(result->z, target.m_origin.z, 1e-6f);
+}
+
+TEST(ProjPredLegacyMore, RejectsInvalidSimulationSteps)
+{
+    constexpr Projectile projectile{.m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 10.f, .m_gravity_scale = 0.f};
+    constexpr Target target{.m_origin = {10.f, 0.f, 0.f}, .m_velocity = {0.f, 0.f, 0.f}, .m_is_airborne = false};
+
+    EXPECT_FALSE(omath::projectile_prediction::ProjPredEngineLegacy<>(0.f, 0.f, 1.f, 1.f)
+                         .maybe_calculate_aim_point(projectile, target));
+    EXPECT_FALSE(omath::projectile_prediction::ProjPredEngineLegacy<>(0.f, -0.1f, 1.f, 1.f)
+                         .maybe_calculate_aim_point(projectile, target));
+    EXPECT_FALSE(
+            omath::projectile_prediction::ProjPredEngineLegacy<>(0.f, std::numeric_limits<float>::infinity(), 1.f, 1.f)
+                    .maybe_calculate_aim_point(projectile, target));
+}
+
+TEST(ProjPredLegacyMore, RejectsInvalidProjectileSpeedAndTolerance)
+{
+    constexpr Target target{.m_origin = {1.f, 0.f, 0.f}, .m_velocity = {0.f, 0.f, 0.f}, .m_is_airborne = false};
+    constexpr Projectile stopped_projectile{.m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 0.f, .m_gravity_scale = 0.f};
+    constexpr Projectile moving_projectile{.m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 10.f, .m_gravity_scale = 0.f};
+
+    EXPECT_FALSE(omath::projectile_prediction::ProjPredEngineLegacy<>(0.f, 0.1f, 1.f, 2.f)
+                         .maybe_calculate_aim_point(stopped_projectile, target));
+    EXPECT_FALSE(omath::projectile_prediction::ProjPredEngineLegacy<>(0.f, 0.1f, 1.f, -1.f)
+                         .maybe_calculate_aim_point(moving_projectile, target));
+}
+
+TEST(ProjPredLegacyMore, StablePitchFindsHighSpeedLowArc)
+{
+    constexpr Projectile projectile{.m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 10'000.f, .m_gravity_scale = 1.f};
+    constexpr Target target{.m_origin = {100.f, 0.f, 0.f}, .m_velocity = {0.f, 0.f, 0.f}, .m_is_airborne = false};
+    const omath::projectile_prediction::ProjPredEngineLegacy<> engine(9.81f, 0.01f, 0.02f, 0.0001f);
+
+    const auto result = engine.maybe_calculate_aim_angles(projectile, target);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_GT(result->pitch, 0.f);
+    EXPECT_NEAR(result->yaw, 0.f, 1e-6f);
+}
+
+TEST(ProjPredLegacyMore, CoincidentTargetReturnsLaunchOrigin)
+{
+    constexpr Projectile projectile{.m_origin = {5.f, 4.f, 3.f}, .m_launch_speed = 100.f, .m_gravity_scale = 1.f};
+    constexpr Target target{.m_origin = projectile.m_origin, .m_velocity = {0.f, 0.f, 0.f}, .m_is_airborne = false};
+    const omath::projectile_prediction::ProjPredEngineLegacy<> engine(9.81f, 0.01f, 0.01f, 0.f);
+
+    const auto result = engine.maybe_calculate_aim_point(projectile, target);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result.value(), projectile.m_origin);
+}
+
+TEST(ProjPredLegacyMore, TinyDistanceDoesNotUnderflowToAHit)
+{
+    constexpr Projectile projectile{.m_origin = {0.f, 0.f, 0.f}, .m_launch_speed = 1.f, .m_gravity_scale = 0.f};
+    constexpr Target target{.m_origin = {1e-30f, 0.f, 0.f}, .m_velocity = {0.f, 0.f, 0.f}, .m_is_airborne = false};
+    const omath::projectile_prediction::ProjPredEngineLegacy<> engine(0.f, 0.1f, 0.f, 0.f);
+
+    EXPECT_FALSE(engine.maybe_calculate_aim_point(projectile, target));
 }
