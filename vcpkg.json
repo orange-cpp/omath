@@ -21,7 +21,11 @@
       "dependencies": [
         {
           "name": "omath",
-          "features": ["imgui", "lua", "hooking"]
+          "features": [
+            "imgui",
+            "lua",
+            "hooking"
+          ]
         }
       ]
     },
@@ -50,16 +54,26 @@
         "opengl",
         {
           "name": "omath",
-          "features": ["hooking"],
+          "features": [
+            "hooking"
+          ],
           "platform": "windows & !arm & !uwp"
         },
         {
           "name": "imgui",
-          "features": ["glfw-binding", "opengl3-binding"]
+          "features": [
+            "glfw-binding",
+            "opengl3-binding"
+          ]
         },
         {
           "name": "imgui",
-          "features": ["dx9-binding", "dx11-binding", "dx12-binding", "win32-binding"],
+          "features": [
+            "dx9-binding",
+            "dx11-binding",
+            "dx12-binding",
+            "win32-binding"
+          ],
           "platform": "windows & !arm & !uwp"
         }
       ]
