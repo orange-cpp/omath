@@ -6,6 +6,7 @@
 #pragma once
 
 // Basic math utilities
+#include "omath/hashing.hpp"
 #include "omath/trigonometry/angles.hpp"
 #include "omath/trigonometry/angle.hpp"
 
