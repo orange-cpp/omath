@@ -706,12 +706,7 @@ jobs:
             -DVCPKG_MANIFEST_FEATURES="imgui;tests;lua"
 
       - name: Build
-        run: |
-          if [[ "${{ matrix.msystem }}" == "MINGW32" ]]; then
-            cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath --parallel 1
-          else
-            cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
-          fi
+        run: cmake --build cmake-build/build/${{ matrix.preset }} --target unit_tests omath
 
       - name: Run unit_tests.exe
         run: |
