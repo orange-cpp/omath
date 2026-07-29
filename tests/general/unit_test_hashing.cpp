@@ -25,10 +25,8 @@ TEST(unit_test_hashing, base64_encode)
 
 TEST(unit_test_hashing, base64_decode)
 {
-    constexpr auto decoded = omath::hashing::base64_decode("Zm9v");
-
-    static_assert(decoded.has_value());
-    static_assert(decoded.value() == "foo");
+    static_assert(omath::hashing::base64_decode("Zm9v").has_value());
+    static_assert(omath::hashing::base64_decode("Zm9v").value() == "foo");
     EXPECT_EQ(omath::hashing::base64_decode("Zm9vYmFy").value(), "foobar");
     EXPECT_EQ(omath::hashing::base64_decode("Zm9v=").error(), omath::hashing::Base64Error::INVALID_LENGTH);
     EXPECT_EQ(omath::hashing::base64_decode("Zm?v").error(), omath::hashing::Base64Error::INVALID_CHARACTER);
