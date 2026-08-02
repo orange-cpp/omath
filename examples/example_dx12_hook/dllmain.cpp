@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <imgui_impl_dx12.h>
 #include <imgui_impl_win32.h>
+#include <mutex>
 #include <tuple>
 #include <vector>
 
@@ -13,6 +14,8 @@ bool show_menu = true;
 
 namespace
 {
+    constexpr UINT srv_heap_size = 64;
+
     struct frame_context
     {
         ID3D12Resource* render_target = nullptr;
@@ -27,14 +30,94 @@ namespace
 
     ID3D12Device* g_device = nullptr;
     ID3D12CommandQueue* g_command_queue = nullptr;
+    ID3D12CommandQueue* g_pending_command_queue = nullptr;
     IDXGISwapChain3* g_swap_chain = nullptr;
+    IUnknown* g_swap_chain_identity = nullptr;
     ID3D12DescriptorHeap* g_rtv_heap = nullptr;
     ID3D12DescriptorHeap* g_srv_heap = nullptr;
     ID3D12GraphicsCommandList* g_command_list = nullptr;
     ID3D12Fence* g_fence = nullptr;
     HANDLE g_fence_event = nullptr;
     UINT64 g_fence_value = 0;
+    UINT g_srv_descriptor_size = 0;
+    bool g_command_queue_selected = false;
+    std::mutex g_command_queue_mutex;
+    std::vector<UINT> g_free_srv_indices;
     std::vector<frame_context> g_frames;
+
+    void allocate_srv_descriptor(ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* cpu_handle,
+                                 D3D12_GPU_DESCRIPTOR_HANDLE* gpu_handle)
+    {
+        IM_ASSERT(!g_free_srv_indices.empty());
+        const UINT index = g_free_srv_indices.back();
+        g_free_srv_indices.pop_back();
+
+        *cpu_handle = g_srv_heap->GetCPUDescriptorHandleForHeapStart();
+        *gpu_handle = g_srv_heap->GetGPUDescriptorHandleForHeapStart();
+        cpu_handle->ptr += static_cast<SIZE_T>(index) * g_srv_descriptor_size;
+        gpu_handle->ptr += static_cast<UINT64>(index) * g_srv_descriptor_size;
+    }
+
+    void free_srv_descriptor(ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle,
+                             D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)
+    {
+        const D3D12_CPU_DESCRIPTOR_HANDLE cpu_start = g_srv_heap->GetCPUDescriptorHandleForHeapStart();
+        const D3D12_GPU_DESCRIPTOR_HANDLE gpu_start = g_srv_heap->GetGPUDescriptorHandleForHeapStart();
+        const UINT cpu_index = static_cast<UINT>((cpu_handle.ptr - cpu_start.ptr) / g_srv_descriptor_size);
+        const UINT gpu_index = static_cast<UINT>((gpu_handle.ptr - gpu_start.ptr) / g_srv_descriptor_size);
+        IM_ASSERT(cpu_index == gpu_index && cpu_index < srv_heap_size);
+        g_free_srv_indices.push_back(cpu_index);
+    }
+
+    void remember_direct_command_queue(ID3D12CommandQueue* queue)
+    {
+        if (queue->GetDesc().Type != D3D12_COMMAND_LIST_TYPE_DIRECT)
+            return;
+
+        std::scoped_lock lock(g_command_queue_mutex);
+        if (g_command_queue_selected || g_pending_command_queue == queue)
+            return;
+
+        queue->AddRef();
+        if (g_pending_command_queue)
+            g_pending_command_queue->Release();
+        g_pending_command_queue = queue;
+    }
+
+    ID3D12CommandQueue* take_command_queue_for_device(ID3D12Device* device)
+    {
+        std::scoped_lock lock(g_command_queue_mutex);
+        if (!g_pending_command_queue)
+            return nullptr;
+
+        ID3D12Device* queue_device = nullptr;
+        if (FAILED(g_pending_command_queue->GetDevice(IID_PPV_ARGS(&queue_device))))
+            return nullptr;
+
+        const bool matches = queue_device == device;
+        queue_device->Release();
+        if (!matches)
+            return nullptr;
+
+        ID3D12CommandQueue* queue = g_pending_command_queue;
+        g_pending_command_queue = nullptr;
+        g_command_queue_selected = true;
+        return queue;
+    }
+
+    bool is_target_swap_chain(IDXGISwapChain* swap_chain)
+    {
+        if (!g_swap_chain_identity)
+            return false;
+
+        IUnknown* identity = nullptr;
+        if (FAILED(swap_chain->QueryInterface(IID_PPV_ARGS(&identity))))
+            return false;
+
+        const bool matches = identity == g_swap_chain_identity;
+        identity->Release();
+        return matches;
+    }
 
     // This fence tracks only the overlay work submitted by this DLL, not the game's whole frame.
     bool create_sync_objects()
@@ -215,25 +298,62 @@ namespace
 
     void init(IDXGISwapChain* swap_chain)
     {
-        g_init_attempted = true;
-
-        if (FAILED(swap_chain->QueryInterface(IID_PPV_ARGS(&g_swap_chain))))
+        IDXGISwapChain3* swap_chain3 = nullptr;
+        if (FAILED(swap_chain->QueryInterface(IID_PPV_ARGS(&swap_chain3))))
             return;
 
-        if (FAILED(swap_chain->GetDevice(IID_PPV_ARGS(&g_device))))
+        ID3D12Device* device = nullptr;
+        if (FAILED(swap_chain->GetDevice(IID_PPV_ARGS(&device))))
+        {
+            swap_chain3->Release();
             return;
+        }
+
+        IUnknown* swap_chain_identity = nullptr;
+        if (FAILED(swap_chain->QueryInterface(IID_PPV_ARGS(&swap_chain_identity))))
+        {
+            device->Release();
+            swap_chain3->Release();
+            return;
+        }
 
         DXGI_SWAP_CHAIN_DESC desc{};
-        swap_chain->GetDesc(&desc);
+        if (FAILED(swap_chain->GetDesc(&desc)))
+        {
+            swap_chain_identity->Release();
+            device->Release();
+            swap_chain3->Release();
+            return;
+        }
+
+        ID3D12CommandQueue* command_queue = take_command_queue_for_device(device);
+        if (!command_queue)
+        {
+            swap_chain_identity->Release();
+            device->Release();
+            swap_chain3->Release();
+            return;
+        }
+
+        g_init_attempted = true;
+        g_swap_chain = swap_chain3;
+        g_swap_chain_identity = swap_chain_identity;
+        g_device = device;
+        g_command_queue = command_queue;
         const UINT buffer_count = desc.BufferCount;
 
         {
             D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
             heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-            heap_desc.NumDescriptors = buffer_count;
+            heap_desc.NumDescriptors = srv_heap_size;
             heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             if (FAILED(g_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&g_srv_heap))))
                 return;
+
+            g_srv_descriptor_size = g_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+            g_free_srv_indices.reserve(srv_heap_size);
+            for (UINT i = srv_heap_size; i > 0; --i)
+                g_free_srv_indices.push_back(i - 1);
         }
 
         if (!create_render_targets(swap_chain))
@@ -252,9 +372,17 @@ namespace
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
         ImGui_ImplWin32_Init(desc.OutputWindow);
-        ImGui_ImplDX12_Init(g_device, static_cast<int>(buffer_count), desc.BufferDesc.Format, g_srv_heap,
-                            g_srv_heap->GetCPUDescriptorHandleForHeapStart(),
-                            g_srv_heap->GetGPUDescriptorHandleForHeapStart());
+
+        ImGui_ImplDX12_InitInfo init_info{};
+        init_info.Device = g_device;
+        init_info.CommandQueue = g_command_queue;
+        init_info.NumFramesInFlight = static_cast<int>(buffer_count);
+        init_info.RTVFormat = desc.BufferDesc.Format;
+        init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
+        init_info.SrvDescriptorHeap = g_srv_heap;
+        init_info.SrvDescriptorAllocFn = allocate_srv_descriptor;
+        init_info.SrvDescriptorFreeFn = free_srv_descriptor;
+        ImGui_ImplDX12_Init(&init_info);
         ImGui_ImplDX12_CreateDeviceObjects();
 
         auto& mgr = omath::hooks::HooksManager::get();
@@ -264,8 +392,10 @@ namespace
                     if (!show_menu)
                         return std::nullopt;
 
-                    ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp);
-                    return true;
+                    if (ImGui_ImplWin32_WndProcHandler(h, msg, wp, lp))
+                        return true;
+
+                    return std::nullopt;
                 });
         std::ignore = mgr.hook_wnd_proc(desc.OutputWindow);
 
@@ -274,13 +404,8 @@ namespace
 
     void on_execute_command_lists(ID3D12CommandQueue* queue, UINT, ID3D12CommandList* const*)
     {
-        // The overlay records DIRECT command lists; executing them on COPY/COMPUTE queues can remove the device.
-        if (!g_command_queue)
-        {
-            const D3D12_COMMAND_QUEUE_DESC desc = queue->GetDesc();
-            if (desc.Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
-                g_command_queue = queue;
-        }
+        // The most recently used DIRECT queue is the best available proxy for the swap chain's presentation queue.
+        remember_direct_command_queue(queue);
     }
 
     bool ensure_initialized(IDXGISwapChain* swap_chain)
@@ -288,7 +413,7 @@ namespace
         if (g_initialized)
             return true;
 
-        if (!g_init_attempted && g_command_queue)
+        if (!g_init_attempted)
             init(swap_chain);
 
         return false;
@@ -402,6 +527,9 @@ namespace
 
     void on_present(IDXGISwapChain* swap_chain, UINT, UINT)
     {
+        if (g_initialized && !is_target_swap_chain(swap_chain))
+            return;
+
         if (!ensure_present_resources(swap_chain) || !begin_imgui_frame())
             return;
 
@@ -413,8 +541,11 @@ namespace
         std::ignore = submit_overlay_commands(*fc);
     }
 
-    void on_resize_buffers(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)
+    void on_resize_buffers(IDXGISwapChain* swap_chain, UINT, UINT, UINT, DXGI_FORMAT, UINT)
     {
+        if (!is_target_swap_chain(swap_chain))
+            return;
+
         wait_for_gpu();
         release_command_objects();
         release_frame_contexts();
@@ -431,16 +562,36 @@ namespace
             g_srv_heap->Release();
             g_srv_heap = nullptr;
         }
+        g_srv_descriptor_size = 0;
+        g_free_srv_indices.clear();
         if (g_swap_chain)
         {
             g_swap_chain->Release();
             g_swap_chain = nullptr;
+        }
+        if (g_swap_chain_identity)
+        {
+            g_swap_chain_identity->Release();
+            g_swap_chain_identity = nullptr;
         }
         if (g_device)
         {
             g_device->Release();
             g_device = nullptr;
         }
+        if (g_command_queue)
+        {
+            g_command_queue->Release();
+            g_command_queue = nullptr;
+        }
+
+        std::scoped_lock lock(g_command_queue_mutex);
+        if (g_pending_command_queue)
+        {
+            g_pending_command_queue->Release();
+            g_pending_command_queue = nullptr;
+        }
+        g_command_queue_selected = false;
     }
 } // namespace
 
