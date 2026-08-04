@@ -87,6 +87,9 @@ jobs:
         shell: bash
         run: ${{ matrix.install_cmd }}
 
+      - name: Set up CMake and Ninja
+        uses: lukka/get-cmake@v4.3.4
+
       - name: Checkout repository (with sub-modules)
         uses: actions/checkout@v4
         with:
