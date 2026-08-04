@@ -475,9 +475,8 @@ jobs:
           # Build vcpkg in /tmp to avoid sshfs timestamp sync issues
           export VCPKG_ROOT=/tmp/vcpkg
           rm -rf "$VCPKG_ROOT"
-          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           # FreeBSD 15 packages CMake 3.31; newer vcpkg requires CMake 4.3.
-          git -C "$VCPKG_ROOT" checkout 9c49a77ea9365898484a06379fa2340fd4851060
+          git clone --branch 2026.06.24 --depth 1 https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
           cd "$VCPKG_ROOT"
           ./bootstrap-vcpkg.sh
           cd -
