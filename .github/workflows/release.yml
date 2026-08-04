@@ -375,33 +375,38 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build and Package
-        uses: cross-platform-actions/action@v0.31.0
+      - name: Start FreeBSD VM
+        uses: cross-platform-actions/action@v1.3.0
         with:
           operating_system: freebsd
           architecture: ${{ matrix.arch }}
           version: '15.0'
           memory: '12G'
           cpu_count: 4
-          run: |
-            sudo pkg install -y git curl zip unzip gmake llvm gsed bash perl5 openssl 7-zip coreutils cmake ninja pkgconf patchelf
-            git config --global --add safe.directory `pwd`
-            # Build vcpkg in /tmp to avoid sshfs timestamp sync issues
-            export VCPKG_ROOT=/tmp/vcpkg
-            rm -rf "$VCPKG_ROOT"
-            git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
-            cd "$VCPKG_ROOT"
-            ./bootstrap-vcpkg.sh
-            cd -
-            export VCPKG_FORCE_SYSTEM_BINARIES=0
-            cmake --preset ${{ matrix.preset }} \
-              -DOMATH_BUILD_TESTS=OFF \
-              -DOMATH_BUILD_BENCHMARK=OFF \
-              -DVCPKG_MANIFEST_FEATURES="imgui;avx2" \
-              -DVCPKG_INSTALL_OPTIONS="--allow-unsupported"
-            cmake --build cmake-build/build/${{ matrix.preset }} --target omath
-            cmake --install cmake-build/build/${{ matrix.preset }} --prefix staging
-            tar -czf ${{ matrix.archive }}.tar.gz -C staging .
+
+      - name: Build and Package
+        shell: cpa.sh {0}
+        run: |
+          sudo pkg install -y git curl zip unzip gmake llvm gsed bash perl5 openssl 7-zip coreutils cmake ninja pkgconf patchelf
+          git config --global --add safe.directory `pwd`
+          # Build vcpkg in /tmp to avoid sshfs timestamp sync issues
+          export VCPKG_ROOT=/tmp/vcpkg
+          rm -rf "$VCPKG_ROOT"
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          # FreeBSD 15 packages CMake 3.31; newer vcpkg requires CMake 4.3.
+          git -C "$VCPKG_ROOT" checkout 9c49a77ea9365898484a06379fa2340fd4851060
+          cd "$VCPKG_ROOT"
+          ./bootstrap-vcpkg.sh
+          cd -
+          export VCPKG_FORCE_SYSTEM_BINARIES=0
+          cmake --preset ${{ matrix.preset }} \
+            -DOMATH_BUILD_TESTS=OFF \
+            -DOMATH_BUILD_BENCHMARK=OFF \
+            -DVCPKG_MANIFEST_FEATURES="imgui;avx2" \
+            -DVCPKG_INSTALL_OPTIONS="--allow-unsupported"
+          cmake --build cmake-build/build/${{ matrix.preset }} --target omath
+          cmake --install cmake-build/build/${{ matrix.preset }} --prefix staging
+          tar -czf ${{ matrix.archive }}.tar.gz -C staging .
 
       - name: Upload release asset
         env:
