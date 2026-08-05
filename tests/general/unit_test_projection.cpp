@@ -1286,7 +1286,6 @@ TEST(UnitTestProjection, TriangleStraddlingFrustumNotCulled)
     constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
     constexpr auto cam = omath::source_engine::Camera({0.f, 0.f, 0.f}, {}, {1920.f, 1080.f}, fov, 0.01f, 1000.f);
 
-    constexpr auto position = omath::algorithm::world_to_radar(cam, {-1.f, 0.f, 0.f}, 0.1f);
     // Large triangle with vertices on both sides of the frustum — should not be culled
     const omath::Triangle<omath::Vector3<float>> tri{{100.f, 0.f, 0.f}, {100.f, 5000.f, 0.f}, {100.f, 0.f, 5000.f}};
     EXPECT_FALSE(cam.is_culled_by_frustum(tri));
