@@ -35,16 +35,6 @@ It provides the latest features, is highly customizable, has all for cheat devel
 </div>
 
 
-<div align = center>
- <a href="https://www.star-history.com/?type=date&repos=orange-cpp%2Fomath">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=orange-cpp/omath&type=date&theme=dark&legend=top-left&sealed_token=xMAVTxYIOckW7iU04MZNfOGcVbvF564Wvt8aJ_CZ0h21S2aqrdkIDE-ulwZvoW4zqpAwE7qgWPViN7AAbxMJS1rekG_bayID-kbDBpwIZmZ6Y7FRh8nusxa8czUC-kQWh0P9Cz6BW5P1HTO4OhjJz44mVZ0mDqWa242LR8A42z5clwFOb8788GCZBxrS" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=orange-cpp/omath&type=date&legend=top-left&sealed_token=xMAVTxYIOckW7iU04MZNfOGcVbvF564Wvt8aJ_CZ0h21S2aqrdkIDE-ulwZvoW4zqpAwE7qgWPViN7AAbxMJS1rekG_bayID-kbDBpwIZmZ6Y7FRh8nusxa8czUC-kQWh0P9Cz6BW5P1HTO4OhjJz44mVZ0mDqWa242LR8A42z5clwFOb8788GCZBxrS" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=orange-cpp/omath&type=date&legend=top-left&sealed_token=xMAVTxYIOckW7iU04MZNfOGcVbvF564Wvt8aJ_CZ0h21S2aqrdkIDE-ulwZvoW4zqpAwE7qgWPViN7AAbxMJS1rekG_bayID-kbDBpwIZmZ6Y7FRh8nusxa8czUC-kQWh0P9Cz6BW5P1HTO4OhjJz44mVZ0mDqWa242LR8A42z5clwFOb8788GCZBxrS" />
- </picture>
-</a>
-</div>
-
 ## Quick Example
 
 ```cpp
