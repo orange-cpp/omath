@@ -144,11 +144,8 @@ namespace omath::unreal_engine
 
     namespace detail
     {
-        [[nodiscard("You must use shifted address")]]
-        constexpr std::uintptr_t shift_address(const std::uintptr_t address, const std::ptrdiff_t offset) noexcept
-        {
-            return address + static_cast<std::uintptr_t>(offset);
-        }
+        using rev_eng::read_pointer;
+        using rev_eng::shift_address;
 
         inline void append_as_utf8(std::string& text, const char16_t unit)
         {
@@ -169,16 +166,6 @@ namespace omath::unreal_engine
         }
 
         template<rev_eng::MemoryReadTrait MemoryTrait>
-        [[nodiscard("You must use read pointer")]]
-        std::uintptr_t read_pointer(const std::uintptr_t address, const NameLayout& layout)
-        {
-            if (layout.pointer_size == sizeof(std::uint32_t))
-                return MemoryTrait::template read_memory<std::uint32_t>(address);
-
-            return MemoryTrait::template read_memory<std::uintptr_t>(address);
-        }
-
-        template<rev_eng::MemoryReadTrait MemoryTrait>
         [[nodiscard("You must use name entry address")]]
         std::uintptr_t name_entry_address(const std::uintptr_t g_names, const std::uint32_t name_index,
                                           const NameLayout& layout)
@@ -188,29 +175,30 @@ namespace omath::unreal_engine
 
             if (layout.pool_kind == NamePoolKind::POINTER_ARRAY)
             {
-                const auto entries = read_pointer<MemoryTrait>(pool_data, layout);
+                const auto entries = read_pointer<MemoryTrait>(pool_data, pointer_size);
 
                 if (!entries)
                     return 0;
 
-                return read_pointer<MemoryTrait>(entries + name_index * pointer_size, layout);
+                return read_pointer<MemoryTrait>(entries + name_index * pointer_size, pointer_size);
             }
 
             if (layout.pool_kind == NamePoolKind::CHUNKED_ARRAY)
             {
                 const auto chunk = read_pointer<MemoryTrait>(
-                        pool_data + name_index / layout.elements_per_chunk * pointer_size, layout);
+                        pool_data + name_index / layout.elements_per_chunk * pointer_size, pointer_size);
 
                 if (!chunk)
                     return 0;
 
-                return read_pointer<MemoryTrait>(chunk + name_index % layout.elements_per_chunk * pointer_size, layout);
+                return read_pointer<MemoryTrait>(chunk + name_index % layout.elements_per_chunk * pointer_size,
+                                                 pointer_size);
             }
 
             if (layout.pool_kind == NamePoolKind::BLOCK_POOL)
             {
                 const auto block = read_pointer<MemoryTrait>(
-                        pool_data + (name_index >> layout.block_offset_bits) * pointer_size, layout);
+                        pool_data + (name_index >> layout.block_offset_bits) * pointer_size, pointer_size);
 
                 if (!block)
                     return 0;

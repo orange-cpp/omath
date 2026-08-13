@@ -100,6 +100,7 @@
 #include "omath/engines/unreal_engine/constants.hpp"
 #include "omath/engines/unreal_engine/formulas.hpp"
 #include "omath/engines/unreal_engine/camera.hpp"
+#include "omath/engines/unreal_engine/object_array.hpp"
 #include "omath/engines/unreal_engine/traits/camera_trait.hpp"
 #include "omath/engines/unreal_engine/traits/pred_engine_trait.hpp"
 
