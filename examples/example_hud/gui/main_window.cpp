@@ -9,6 +9,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <omath/hud/entity_overlay.hpp>
+#include <omath/hud/screen_overlay.hpp>
 
 namespace imgui_desktop::gui
 {
@@ -225,6 +226,80 @@ namespace imgui_desktop::gui
             ImGui::Combo("Figure##proj", &m_proj_figure, "Circle\0Square\0");
         }
 
+        if (ImGui::CollapsingHeader("Crosshair"))
+        {
+            ImGui::Checkbox("Show##cross", &m_show_crosshair);
+            ImGui::ColorEdit4("Color##cross", reinterpret_cast<float*>(&m_crosshair_color),
+                              ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("Outline##cross", reinterpret_cast<float*>(&m_crosshair_outline),
+                              ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Gap##cross", &m_crosshair_gap, 0.f, 30.f);
+            ImGui::SliderFloat("Length##cross", &m_crosshair_length, 1.f, 40.f);
+            ImGui::SliderFloat("Thick##cross", &m_crosshair_thickness, 0.5f, 5.f);
+            ImGui::SliderFloat("Dot radius##cross", &m_crosshair_dot_radius, 0.f, 8.f);
+        }
+
+        if (ImGui::CollapsingHeader("FOV Circle"))
+        {
+            ImGui::Checkbox("Show##fov", &m_show_fov);
+            ImGui::ColorEdit4("Color##fov", reinterpret_cast<float*>(&m_fov_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("Fill##fov", reinterpret_cast<float*>(&m_fov_fill), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Radius##fov", &m_fov_radius, 10.f, 300.f);
+            ImGui::SliderFloat("Thick##fov", &m_fov_thickness, 0.5f, 5.f);
+        }
+
+        if (ImGui::CollapsingHeader("Threat Arrow"))
+        {
+            ImGui::Checkbox("Show##threat", &m_show_threat);
+            ImGui::ColorEdit4("Color##threat", reinterpret_cast<float*>(&m_threat_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Angle##threat", &m_threat_angle_deg, 0.f, 360.f);
+            ImGui::SliderFloat("Radius##threat", &m_threat_radius, 20.f, 250.f);
+            ImGui::SliderFloat("Size##threat", &m_threat_size, 4.f, 30.f);
+        }
+
+        if (ImGui::CollapsingHeader("Hit Marker"))
+        {
+            ImGui::Checkbox("Show##hit", &m_show_hit);
+            ImGui::ColorEdit4("Color##hit", reinterpret_cast<float*>(&m_hit_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Size##hit", &m_hit_size, 2.f, 30.f);
+            ImGui::SliderFloat("Gap##hit", &m_hit_gap, 0.f, 15.f);
+            ImGui::SliderFloat("Thick##hit", &m_hit_thickness, 0.5f, 5.f);
+            ImGui::SliderFloat("Alpha##hit", &m_hit_alpha, 0.f, 1.f);
+        }
+
+        if (ImGui::CollapsingHeader("Corners", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Checkbox("Show##corners", &m_show_corners);
+        }
+
+        if (ImGui::CollapsingHeader("Center Bars", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Checkbox("Show##cbar", &m_show_center_bars);
+            ImGui::ColorEdit4("Color##cbar", reinterpret_cast<float*>(&m_center_bar_color),
+                              ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("Outline##cbar", reinterpret_cast<float*>(&m_center_bar_outline),
+                              ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("BG##cbar", reinterpret_cast<float*>(&m_center_bar_bg), ImGuiColorEditFlags_NoInputs);
+            ImGui::Checkbox("Gradient fill##cbar", &m_center_bar_gradient);
+            ImGui::Checkbox("Dashed##cbar", &m_center_bar_dashed);
+            if (m_center_bar_dashed)
+            {
+                ImGui::SliderFloat("Dash len##cbar", &m_center_bar_dash_len, 2.f, 30.f);
+                ImGui::SliderFloat("Gap len##cbar", &m_center_bar_gap_len, 1.f, 20.f);
+            }
+            ImGui::SliderFloat("Length##cbar", &m_center_bar_length, 20.f, 250.f);
+            ImGui::SliderFloat("Thick##cbar", &m_center_bar_thickness, 2.f, 30.f);
+            ImGui::SliderFloat("Offset##cbar", &m_center_bar_offset, 5.f, 60.f);
+            ImGui::SliderFloat("Left ratio##cbar", &m_center_bar_left_ratio, 0.f, 1.f);
+            ImGui::SliderFloat("Right ratio##cbar", &m_center_bar_right_ratio, 0.f, 1.f);
+            draw_glow_controls("Center bar glow", m_center_bar_glow);
+            if (m_center_bar_glow.enabled)
+            {
+                ImGui::InputInt("Blur layers##cbar", &m_center_bar_glow_layers);
+                ImGui::InputFloat("Rounding##cbar", &m_center_bar_glow_rounding);
+            }
+        }
+
         if (ImGui::CollapsingHeader("Snap Line"))
         {
             ImGui::Checkbox("Show##snap", &m_show_snap);
@@ -241,8 +316,6 @@ namespace imgui_desktop::gui
         using namespace omath::hud::widget;
         using omath::hud::when;
         const auto* vp = ImGui::GetMainViewport();
-        const DashedBar dbar{m_bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width,
-                             m_bar_value, m_bar_dash_len,      m_bar_dash_gap, m_bar_offset};
         const float entity_height = m_entity_bottom_y - m_entity_top_y;
         const float entity_half_width = entity_height / m_entity_aspect;
         const auto joint = [&](const float x, const float y)
@@ -306,8 +379,15 @@ namespace imgui_desktop::gui
         const auto bar_glow = make_glow(m_bar_glow);
         const auto label_glow = make_glow(m_label_glow);
         const auto canvas_glow = make_glow(m_canvas_glow);
+        const auto center_bar_glow = make_glow(m_center_bar_glow);
+        const std::optional<CanvasGlow> center_bar_edge_glow =
+                center_bar_glow ? std::optional<CanvasGlow>{CanvasGlow{*center_bar_glow, m_center_bar_glow_layers,
+                                                                       m_center_bar_glow_rounding}}
+                                : std::nullopt;
         const BarPaint bar_color = m_gradient_bars ? BarPaint{BarGradient{red, green}} : BarPaint{m_bar_color};
         const Bar bar{bar_color, m_bar_outline_color, m_bar_bg_color, m_bar_width, m_bar_value, m_bar_offset, bar_glow};
+        const DashedBar dbar{bar_color,   m_bar_outline_color, m_bar_bg_color, m_bar_width,
+                             m_bar_value, m_bar_dash_len,      m_bar_dash_gap, m_bar_offset};
         const Paint box_fill = m_gradient_box_fill
                                        ? Paint{omath::hud::Gradient{box_gradient_top, box_gradient_top,
                                                                     box_gradient_bottom, box_gradient_bottom}}
@@ -393,6 +473,50 @@ namespace imgui_desktop::gui
                                                         m_proj_line_width,
                                                         static_cast<ProjectileAim::Figure>(m_proj_figure)}),
                         when(m_show_snap, SnapLine{{vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width}));
+
+        const auto threat_angle = omath::angles::degrees_to_radians(m_threat_angle_deg);
+        const BarPaint center_bar_paint =
+                m_center_bar_gradient
+                        ? BarPaint{BarGradient{omath::Color::from_rgba(255, 60, 60, 255), m_center_bar_color}}
+                        : BarPaint{m_center_bar_color};
+
+        omath::hud::ScreenOverlay({vp->Size.x, vp->Size.y}, std::make_shared<omath::hud::ImguiHudRenderer>())
+                .contents(
+                        when(m_show_crosshair,
+                             Crosshair{m_crosshair_color, m_crosshair_gap, m_crosshair_length, m_crosshair_thickness,
+                                       m_crosshair_outline, m_crosshair_dot_radius}),
+                        when(m_show_fov, FovCircle{m_fov_color, m_fov_radius, m_fov_fill, m_fov_thickness}),
+                        when(m_show_threat, ThreatArrow{threat_angle, m_threat_color, m_threat_radius, m_threat_size}),
+                        when(m_show_hit, HitMarker{m_hit_color, m_hit_size, m_hit_gap, m_hit_thickness,
+                                                   omath::Color{0.f, 0.f, 0.f, 1.f}, m_hit_alpha}),
+                        when(m_show_corners, Corner{Anchor::TOP_LEFT,
+                                                    {Label{omath::Color::from_rgba(255, 255, 255, 255), 0.f,
+                                                           Outlined::On, "omath::hud"},
+                                                     Label{omath::Color::from_rgba(150, 220, 255, 255), 0.f,
+                                                           Outlined::On, "ScreenOverlay demo"}}}),
+                        when(m_show_corners,
+                             Corner{Anchor::BOTTOM_RIGHT,
+                                    {Label{omath::Color::from_rgba(0, 255, 120, 255), 0.f, Outlined::On, "FPS: 240"},
+                                     Label{omath::Color::from_rgba(200, 200, 200, 255), 0.f, Outlined::On,
+                                           "Ping: 24ms"}}}),
+                        when(m_show_center_bars && !m_center_bar_dashed,
+                             CenterBar{CenterBar::Side::LEFT, center_bar_paint, m_center_bar_outline, m_center_bar_bg,
+                                       m_center_bar_length, m_center_bar_thickness, m_center_bar_left_ratio,
+                                       m_center_bar_offset, center_bar_edge_glow}),
+                        when(m_show_center_bars && !m_center_bar_dashed,
+                             CenterBar{CenterBar::Side::RIGHT, center_bar_paint, m_center_bar_outline, m_center_bar_bg,
+                                       m_center_bar_length, m_center_bar_thickness, m_center_bar_right_ratio,
+                                       m_center_bar_offset, center_bar_edge_glow}),
+                        when(m_show_center_bars && m_center_bar_dashed,
+                             DashedCenterBar{CenterBar::Side::LEFT, center_bar_paint, m_center_bar_outline,
+                                             m_center_bar_bg, m_center_bar_length, m_center_bar_thickness,
+                                             m_center_bar_left_ratio, m_center_bar_dash_len, m_center_bar_gap_len,
+                                             m_center_bar_offset}),
+                        when(m_show_center_bars && m_center_bar_dashed,
+                             DashedCenterBar{CenterBar::Side::RIGHT, center_bar_paint, m_center_bar_outline,
+                                             m_center_bar_bg, m_center_bar_length, m_center_bar_thickness,
+                                             m_center_bar_right_ratio, m_center_bar_dash_len, m_center_bar_gap_len,
+                                             m_center_bar_offset}));
     }
 
     void MainWindow::present()

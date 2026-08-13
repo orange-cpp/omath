@@ -8,6 +8,7 @@
 #include "omath/3d_primitives/aabb.hpp"
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
+#include "widget_render.hpp"
 #include <expected>
 #include <memory>
 #include <string_view>
@@ -57,19 +58,21 @@ namespace omath::hud
                                       float height, float ratio, float offset = 5.f,
                                       const std::optional<widget::Glow>& glow = std::nullopt);
 
-        EntityOverlay& add_right_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                            float width, float ratio, float dash_len, float gap_len,
-                                            float offset = 5.f);
+        EntityOverlay& add_right_dashed_bar(const widget::BarPaint& color, const Color& outline_color,
+                                            const Color& bg_color, float width, float ratio, float dash_len,
+                                            float gap_len, float offset = 5.f);
 
-        EntityOverlay& add_left_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                           float width, float ratio, float dash_len, float gap_len, float offset = 5.f);
+        EntityOverlay& add_left_dashed_bar(const widget::BarPaint& color, const Color& outline_color,
+                                           const Color& bg_color, float width, float ratio, float dash_len,
+                                           float gap_len, float offset = 5.f);
 
-        EntityOverlay& add_top_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                          float height, float ratio, float dash_len, float gap_len, float offset = 5.f);
+        EntityOverlay& add_top_dashed_bar(const widget::BarPaint& color, const Color& outline_color,
+                                          const Color& bg_color, float height, float ratio, float dash_len,
+                                          float gap_len, float offset = 5.f);
 
-        EntityOverlay& add_bottom_dashed_bar(const Color& color, const Color& outline_color, const Color& bg_color,
-                                             float height, float ratio, float dash_len, float gap_len,
-                                             float offset = 5.f);
+        EntityOverlay& add_bottom_dashed_bar(const widget::BarPaint& color, const Color& outline_color,
+                                             const Color& bg_color, float height, float ratio, float dash_len,
+                                             float gap_len, float offset = 5.f);
 
         // ── Labels ───────────────────────────────────────────────────────
         EntityOverlay& add_right_label(const widget::Paint& color, float offset, widget::Outlined outlined,
@@ -262,24 +265,10 @@ namespace omath::hud
         void dispatch(const widget::AimDot& aim_dot);
         void dispatch(const widget::ProjectileAim& proj_widget);
         void draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring);
-        void draw_label(const Vector2<float>& position, const widget::Paint& paint, widget::Outlined outlined,
-                        const std::string_view& text, const std::optional<widget::Glow>& glow);
-        void draw_glow_polyline(const std::span<const Vector2<float>>& points, const widget::Glow& glow,
-                                float thickness) const;
         void draw_glow_line(const Vector2<float>& from, const Vector2<float>& to, const widget::Glow& glow,
                             float thickness) const;
-        void draw_glow_rectangle(const Vector2<float>& min, const Vector2<float>& max,
-                                 const std::optional<widget::Glow>& glow) const;
-        void draw_canvas_glow(const widget::CanvasGlow& canvas_glow) const;
-        void draw_filled_rectangle(const Vector2<float>& min, const Vector2<float>& max,
-                                   const widget::Paint& paint) const;
-        [[nodiscard]]
-        static widget::Paint resolve_bar_paint(const widget::BarPaint& paint, float ratio, bool vertical);
         void draw_dashed_line(const Vector2<float>& from, const Vector2<float>& to, const Color& color, float dash_len,
                               float gap_len, float thickness) const;
-        void draw_dashed_fill(const Vector2<float>& origin, const Vector2<float>& step_dir,
-                              const Vector2<float>& perp_dir, float full_len, float filled_len, const Color& fill_color,
-                              const Color& split_color, float dash_len, float gap_len) const;
 
         CanvasBox m_canvas;
         Vector2<float> m_text_cursor_right;
