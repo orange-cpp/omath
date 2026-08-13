@@ -105,6 +105,65 @@ namespace omath::hud
         return *this;
     }
 
+    ScreenOverlay& ScreenOverlay::add_center_bar(const widget::CenterBar& center_bar)
+    {
+        const auto ratio = std::clamp(center_bar.ratio, 0.f, 1.f);
+        const auto half_length = center_bar.length / 2.f;
+
+        Vector2<float> bar_min;
+        Vector2<float> bar_max;
+        if (center_bar.side == widget::CenterBar::Side::RIGHT)
+        {
+            bar_min = {m_center.x + center_bar.offset, m_center.y - half_length};
+            bar_max = {m_center.x + center_bar.offset + center_bar.thickness, m_center.y + half_length};
+        }
+        else
+        {
+            bar_min = {m_center.x - center_bar.offset - center_bar.thickness, m_center.y - half_length};
+            bar_max = {m_center.x - center_bar.offset, m_center.y + half_length};
+        }
+
+        const auto fill_min = Vector2<float>{bar_min.x, bar_max.y - center_bar.length * ratio};
+
+        m_renderer->add_filled_rectangle(bar_min, bar_max, center_bar.bg);
+        if (center_bar.glow)
+            draw_edge_glow(*m_renderer, fill_min, bar_max, *center_bar.glow);
+        draw_filled_rectangle(*m_renderer, fill_min, bar_max, resolve_bar_paint(center_bar.color, ratio, true));
+        m_renderer->add_rectangle(bar_min, bar_max, center_bar.outline);
+
+        return *this;
+    }
+
+    ScreenOverlay& ScreenOverlay::add_dashed_center_bar(const widget::DashedCenterBar& dashed_center_bar)
+    {
+        const auto ratio = std::clamp(dashed_center_bar.ratio, 0.f, 1.f);
+        const auto half_length = dashed_center_bar.length / 2.f;
+
+        Vector2<float> bar_min;
+        Vector2<float> bar_max;
+        if (dashed_center_bar.side == widget::CenterBar::Side::RIGHT)
+        {
+            bar_min = {m_center.x + dashed_center_bar.offset, m_center.y - half_length};
+            bar_max = {m_center.x + dashed_center_bar.offset + dashed_center_bar.thickness, m_center.y + half_length};
+        }
+        else
+        {
+            bar_min = {m_center.x - dashed_center_bar.offset - dashed_center_bar.thickness, m_center.y - half_length};
+            bar_max = {m_center.x - dashed_center_bar.offset, m_center.y + half_length};
+        }
+
+        const auto fill_min = Vector2<float>{bar_min.x, bar_max.y - dashed_center_bar.length * ratio};
+
+        m_renderer->add_filled_rectangle(bar_min, bar_max, dashed_center_bar.bg);
+        draw_filled_rectangle(*m_renderer, fill_min, bar_max, resolve_bar_paint(dashed_center_bar.color, ratio, true));
+        draw_dash_gaps(*m_renderer, {bar_min.x, bar_max.y}, {0.f, -1.f}, {dashed_center_bar.thickness, 0.f},
+                       dashed_center_bar.length, dashed_center_bar.outline, dashed_center_bar.dash_len,
+                       dashed_center_bar.gap_len);
+        m_renderer->add_rectangle(bar_min, bar_max, dashed_center_bar.outline);
+
+        return *this;
+    }
+
     ScreenOverlay& ScreenOverlay::add_corner(const widget::Corner& corner)
     {
         using widget::Anchor;
@@ -175,6 +234,16 @@ namespace omath::hud
     void ScreenOverlay::dispatch(const widget::HitMarker& hit_marker)
     {
         add_hit_marker(hit_marker);
+    }
+
+    void ScreenOverlay::dispatch(const widget::CenterBar& center_bar)
+    {
+        add_center_bar(center_bar);
+    }
+
+    void ScreenOverlay::dispatch(const widget::DashedCenterBar& dashed_center_bar)
+    {
+        add_dashed_center_bar(dashed_center_bar);
     }
 
     void ScreenOverlay::dispatch(const widget::Corner& corner)

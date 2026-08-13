@@ -193,7 +193,7 @@ namespace omath::hud::widget
     /// A dashed bar. Same field semantics as Bar plus dash parameters.
     struct DashedBar
     {
-        Color color;
+        BarPaint color;
         Color outline;
         Color bg;
         float size;

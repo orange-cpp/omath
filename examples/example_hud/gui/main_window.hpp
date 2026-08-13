@@ -134,6 +134,20 @@ namespace imgui_desktop::gui
         // Corners
         bool m_show_corners = true;
 
+        // Center bars
+        omath::Color m_center_bar_color = omath::Color::from_rgba(0, 220, 255, 255);
+        omath::Color m_center_bar_outline = omath::Color::from_rgba(0, 0, 0, 255);
+        omath::Color m_center_bar_bg = omath::Color::from_rgba(0, 0, 0, 130);
+        float m_center_bar_length = 100.f, m_center_bar_thickness = 8.f, m_center_bar_offset = 24.f;
+        float m_center_bar_left_ratio = 0.7f, m_center_bar_right_ratio = 0.4f;
+        bool m_center_bar_gradient = true;
+        bool m_show_center_bars = true;
+        GlowSettings m_center_bar_glow{{0.f, 0.9f, 1.f, 0.8f}};
+        int m_center_bar_glow_layers = 24;
+        float m_center_bar_glow_rounding = 6.f;
+        bool m_center_bar_dashed = false;
+        float m_center_bar_dash_len = 8.f, m_center_bar_gap_len = 4.f;
+
         // Projectile aim
         omath::Color m_proj_color = omath::Color::from_rgba(255, 50, 50, 255);
         float m_proj_size = 10.f;

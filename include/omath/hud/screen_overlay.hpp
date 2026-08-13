@@ -59,6 +59,52 @@ namespace omath::hud::widget
         float alpha = 1.f;
     };
 
+    /// Vertical bar flanking the screen center — pair a LEFT and a RIGHT instance to build a
+    /// `<bar> ... <bar>` layout around a Crosshair (or any other center widget; CenterBar is
+    /// not coupled to Crosshair). Supports the same paint vocabulary as EntityOverlay's
+    /// bars: solid/gradient/BarGradient fill, outline, background, and glow. `length` is the
+    /// bar's vertical extent, centered on the screen's vertical middle; `thickness` is its
+    /// horizontal extent. Fill grows bottom-to-top as `ratio` increases, matching
+    /// EntityOverlay's RightSide/LeftSide bars. `glow` wraps just the filled portion (so it
+    /// grows with the bar) and uses the same layered, rounded, smoothstep-falloff bloom as
+    /// EntityOverlay's CanvasGlow rather than a plain expanding-stroke glow.
+    struct CenterBar
+    {
+        enum class Side
+        {
+            LEFT,
+            RIGHT,
+        };
+
+        Side side;
+        BarPaint color;
+        Color outline{0.f, 0.f, 0.f, 0.f};
+        Color bg{0.f, 0.f, 0.f, 0.f};
+        float length;
+        float thickness = 6.f;
+        float ratio;
+        float offset = 20.f;
+        std::optional<CanvasGlow> glow = std::nullopt;
+    };
+
+    /// Dashed counterpart to CenterBar, matching EntityOverlay's Bar/DashedBar split. Same
+    /// positioning, bottom-to-top fill direction, and BarPaint (solid/gradient/BarGradient)
+    /// fill support as CenterBar; unlike CenterBar it has no glow. `outline` is also the
+    /// color drawn in the gaps between dashes.
+    struct DashedCenterBar
+    {
+        CenterBar::Side side;
+        BarPaint color;
+        Color outline{0.f, 0.f, 0.f, 0.f};
+        Color bg{0.f, 0.f, 0.f, 0.f};
+        float length;
+        float thickness = 6.f;
+        float ratio;
+        float dash_len = 8.f;
+        float gap_len = 5.f;
+        float offset = 20.f;
+    };
+
     // ── Corner anchors ──────────────────────────────────────────────────────
     enum class Anchor
     {
@@ -103,6 +149,8 @@ namespace omath::hud
         ScreenOverlay& add_fov_circle(const widget::FovCircle& fov_circle);
         ScreenOverlay& add_threat_arrow(const widget::ThreatArrow& threat_arrow);
         ScreenOverlay& add_hit_marker(const widget::HitMarker& hit_marker);
+        ScreenOverlay& add_center_bar(const widget::CenterBar& center_bar);
+        ScreenOverlay& add_dashed_center_bar(const widget::DashedCenterBar& dashed_center_bar);
         ScreenOverlay& add_corner(const widget::Corner& corner);
 
         // ── Declarative interface ─────────────────────────────────────────
@@ -128,6 +176,8 @@ namespace omath::hud
         void dispatch(const widget::FovCircle& fov_circle);
         void dispatch(const widget::ThreatArrow& threat_arrow);
         void dispatch(const widget::HitMarker& hit_marker);
+        void dispatch(const widget::CenterBar& center_bar);
+        void dispatch(const widget::DashedCenterBar& dashed_center_bar);
         void dispatch(const widget::Corner& corner);
 
         Vector2<float> m_screen_size;
