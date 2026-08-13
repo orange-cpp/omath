@@ -108,6 +108,19 @@ namespace imgui_desktop::gui
         float m_snap_width = 1.5f;
         bool m_show_snap = true;
 
+        // Crosshair
+        omath::Color m_crosshair_color = omath::Color::from_rgba(0, 255, 0, 255);
+        omath::Color m_crosshair_outline = omath::Color::from_rgba(0, 0, 0, 255);
+        float m_crosshair_gap = 4.f, m_crosshair_length = 8.f, m_crosshair_thickness = 1.f;
+        float m_crosshair_dot_radius = 0.f;
+        bool m_show_crosshair = true;
+
+        // FOV circle
+        omath::Color m_fov_color = omath::Color::from_rgba(255, 255, 0, 200);
+        omath::Color m_fov_fill = omath::Color::from_rgba(255, 255, 0, 25);
+        float m_fov_radius = 120.f, m_fov_thickness = 1.5f;
+        bool m_show_fov = false;
+
         // Projectile aim
         omath::Color m_proj_color = omath::Color::from_rgba(255, 50, 50, 255);
         float m_proj_size = 10.f;

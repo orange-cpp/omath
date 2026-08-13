@@ -9,6 +9,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <omath/hud/entity_overlay.hpp>
+#include <omath/hud/screen_overlay.hpp>
 
 namespace imgui_desktop::gui
 {
@@ -225,6 +226,28 @@ namespace imgui_desktop::gui
             ImGui::Combo("Figure##proj", &m_proj_figure, "Circle\0Square\0");
         }
 
+        if (ImGui::CollapsingHeader("Crosshair"))
+        {
+            ImGui::Checkbox("Show##cross", &m_show_crosshair);
+            ImGui::ColorEdit4("Color##cross", reinterpret_cast<float*>(&m_crosshair_color),
+                              ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("Outline##cross", reinterpret_cast<float*>(&m_crosshair_outline),
+                              ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Gap##cross", &m_crosshair_gap, 0.f, 30.f);
+            ImGui::SliderFloat("Length##cross", &m_crosshair_length, 1.f, 40.f);
+            ImGui::SliderFloat("Thick##cross", &m_crosshair_thickness, 0.5f, 5.f);
+            ImGui::SliderFloat("Dot radius##cross", &m_crosshair_dot_radius, 0.f, 8.f);
+        }
+
+        if (ImGui::CollapsingHeader("FOV Circle"))
+        {
+            ImGui::Checkbox("Show##fov", &m_show_fov);
+            ImGui::ColorEdit4("Color##fov", reinterpret_cast<float*>(&m_fov_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::ColorEdit4("Fill##fov", reinterpret_cast<float*>(&m_fov_fill), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Radius##fov", &m_fov_radius, 10.f, 300.f);
+            ImGui::SliderFloat("Thick##fov", &m_fov_thickness, 0.5f, 5.f);
+        }
+
         if (ImGui::CollapsingHeader("Snap Line"))
         {
             ImGui::Checkbox("Show##snap", &m_show_snap);
@@ -393,6 +416,12 @@ namespace imgui_desktop::gui
                                                         m_proj_line_width,
                                                         static_cast<ProjectileAim::Figure>(m_proj_figure)}),
                         when(m_show_snap, SnapLine{{vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width}));
+
+        omath::hud::ScreenOverlay({vp->Size.x, vp->Size.y}, std::make_shared<omath::hud::ImguiHudRenderer>())
+                .contents(when(m_show_crosshair,
+                               Crosshair{m_crosshair_color, m_crosshair_gap, m_crosshair_length, m_crosshair_thickness,
+                                         m_crosshair_outline, m_crosshair_dot_radius}),
+                          when(m_show_fov, FovCircle{m_fov_color, m_fov_radius, m_fov_fill, m_fov_thickness}));
     }
 
     void MainWindow::present()
