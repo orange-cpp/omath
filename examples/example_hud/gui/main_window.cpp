@@ -248,6 +248,30 @@ namespace imgui_desktop::gui
             ImGui::SliderFloat("Thick##fov", &m_fov_thickness, 0.5f, 5.f);
         }
 
+        if (ImGui::CollapsingHeader("Threat Arrow"))
+        {
+            ImGui::Checkbox("Show##threat", &m_show_threat);
+            ImGui::ColorEdit4("Color##threat", reinterpret_cast<float*>(&m_threat_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Angle##threat", &m_threat_angle_deg, 0.f, 360.f);
+            ImGui::SliderFloat("Radius##threat", &m_threat_radius, 20.f, 250.f);
+            ImGui::SliderFloat("Size##threat", &m_threat_size, 4.f, 30.f);
+        }
+
+        if (ImGui::CollapsingHeader("Hit Marker"))
+        {
+            ImGui::Checkbox("Show##hit", &m_show_hit);
+            ImGui::ColorEdit4("Color##hit", reinterpret_cast<float*>(&m_hit_color), ImGuiColorEditFlags_NoInputs);
+            ImGui::SliderFloat("Size##hit", &m_hit_size, 2.f, 30.f);
+            ImGui::SliderFloat("Gap##hit", &m_hit_gap, 0.f, 15.f);
+            ImGui::SliderFloat("Thick##hit", &m_hit_thickness, 0.5f, 5.f);
+            ImGui::SliderFloat("Alpha##hit", &m_hit_alpha, 0.f, 1.f);
+        }
+
+        if (ImGui::CollapsingHeader("Corners", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Checkbox("Show##corners", &m_show_corners);
+        }
+
         if (ImGui::CollapsingHeader("Snap Line"))
         {
             ImGui::Checkbox("Show##snap", &m_show_snap);
@@ -417,11 +441,27 @@ namespace imgui_desktop::gui
                                                         static_cast<ProjectileAim::Figure>(m_proj_figure)}),
                         when(m_show_snap, SnapLine{{vp->Size.x / 2.f, vp->Size.y}, m_snap_color, m_snap_width}));
 
+        const auto threat_angle = omath::angles::degrees_to_radians(m_threat_angle_deg);
+
         omath::hud::ScreenOverlay({vp->Size.x, vp->Size.y}, std::make_shared<omath::hud::ImguiHudRenderer>())
-                .contents(when(m_show_crosshair,
-                               Crosshair{m_crosshair_color, m_crosshair_gap, m_crosshair_length, m_crosshair_thickness,
-                                         m_crosshair_outline, m_crosshair_dot_radius}),
-                          when(m_show_fov, FovCircle{m_fov_color, m_fov_radius, m_fov_fill, m_fov_thickness}));
+                .contents(
+                        when(m_show_crosshair,
+                             Crosshair{m_crosshair_color, m_crosshair_gap, m_crosshair_length, m_crosshair_thickness,
+                                       m_crosshair_outline, m_crosshair_dot_radius}),
+                        when(m_show_fov, FovCircle{m_fov_color, m_fov_radius, m_fov_fill, m_fov_thickness}),
+                        when(m_show_threat, ThreatArrow{threat_angle, m_threat_color, m_threat_radius, m_threat_size}),
+                        when(m_show_hit, HitMarker{m_hit_color, m_hit_size, m_hit_gap, m_hit_thickness,
+                                                   omath::Color{0.f, 0.f, 0.f, 1.f}, m_hit_alpha}),
+                        when(m_show_corners, Corner{Anchor::TOP_LEFT,
+                                                    {Label{omath::Color::from_rgba(255, 255, 255, 255), 0.f,
+                                                           Outlined::On, "omath::hud"},
+                                                     Label{omath::Color::from_rgba(150, 220, 255, 255), 0.f,
+                                                           Outlined::On, "ScreenOverlay demo"}}}),
+                        when(m_show_corners,
+                             Corner{Anchor::BOTTOM_RIGHT,
+                                    {Label{omath::Color::from_rgba(0, 255, 120, 255), 0.f, Outlined::On, "FPS: 240"},
+                                     Label{omath::Color::from_rgba(200, 200, 200, 255), 0.f, Outlined::On,
+                                           "Ping: 24ms"}}}));
     }
 
     void MainWindow::present()

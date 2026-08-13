@@ -121,6 +121,19 @@ namespace imgui_desktop::gui
         float m_fov_radius = 120.f, m_fov_thickness = 1.5f;
         bool m_show_fov = false;
 
+        // Threat arrow
+        omath::Color m_threat_color = omath::Color::from_rgba(255, 40, 40, 255);
+        float m_threat_angle_deg = 45.f, m_threat_radius = 100.f, m_threat_size = 14.f;
+        bool m_show_threat = true;
+
+        // Hit marker
+        omath::Color m_hit_color = omath::Color::from_rgba(255, 255, 255, 255);
+        float m_hit_size = 8.f, m_hit_gap = 3.f, m_hit_thickness = 2.f, m_hit_alpha = 1.f;
+        bool m_show_hit = true;
+
+        // Corners
+        bool m_show_corners = true;
+
         // Projectile aim
         omath::Color m_proj_color = omath::Color::from_rgba(255, 50, 50, 255);
         float m_proj_size = 10.f;

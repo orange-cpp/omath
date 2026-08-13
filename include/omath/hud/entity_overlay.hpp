@@ -8,6 +8,7 @@
 #include "omath/3d_primitives/aabb.hpp"
 #include "omath/linear_algebra/vector2.hpp"
 #include "omath/utility/color.hpp"
+#include "widget_render.hpp"
 #include <expected>
 #include <memory>
 #include <string_view>
@@ -262,8 +263,6 @@ namespace omath::hud
         void dispatch(const widget::AimDot& aim_dot);
         void dispatch(const widget::ProjectileAim& proj_widget);
         void draw_progress_ring(const Vector2<float>& center, const widget::ProgressRing& ring);
-        void draw_label(const Vector2<float>& position, const widget::Paint& paint, widget::Outlined outlined,
-                        const std::string_view& text, const std::optional<widget::Glow>& glow);
         void draw_glow_polyline(const std::span<const Vector2<float>>& points, const widget::Glow& glow,
                                 float thickness) const;
         void draw_glow_line(const Vector2<float>& from, const Vector2<float>& to, const widget::Glow& glow,

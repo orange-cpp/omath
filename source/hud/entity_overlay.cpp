@@ -123,7 +123,7 @@ namespace omath::hud
                                                   const widget::Outlined outlined, const std::string_view& text,
                                                   const std::optional<widget::Glow>& glow)
     {
-        draw_label(m_text_cursor_right + Vector2<float>{offset, 0.f}, color, outlined, text, glow);
+        draw_label(*m_renderer, m_text_cursor_right + Vector2<float>{offset, 0.f}, color, outlined, text, glow);
 
         m_text_cursor_right.y += m_renderer->calc_text_size(text.data()).y;
 
@@ -135,7 +135,7 @@ namespace omath::hud
     {
         m_text_cursor_top.y -= m_renderer->calc_text_size(text.data()).y;
 
-        draw_label(m_text_cursor_top + Vector2<float>{0.f, -offset}, color, outlined, text, glow);
+        draw_label(*m_renderer, m_text_cursor_top + Vector2<float>{0.f, -offset}, color, outlined, text, glow);
 
         return *this;
     }
@@ -395,60 +395,6 @@ namespace omath::hud
         return *this;
     }
 
-    void EntityOverlay::draw_label(const Vector2<float>& position, const widget::Paint& paint,
-                                   const widget::Outlined outlined, const std::string_view& text,
-                                   const std::optional<widget::Glow>& glow)
-    {
-        if (glow)
-        {
-            const int radius = static_cast<int>(std::ceil(std::max(glow->radius, 0.f)));
-            for (int layer = radius; layer > 0; --layer)
-            {
-                const float alpha = glow->color.value().w * std::max(glow->intensity, 0.f)
-                                    * (1.f - static_cast<float>(layer - 1) / static_cast<float>(radius + 1));
-                const auto value = glow->color.value();
-                const Color color{value.x, value.y, value.z, alpha / static_cast<float>(radius)};
-                for (int x = -layer; x <= layer; ++x)
-                {
-                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(x), static_cast<float>(-layer)},
-                                         color, text);
-                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(x), static_cast<float>(layer)},
-                                         color, text);
-                }
-                for (int y = -layer + 1; y < layer; ++y)
-                {
-                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(-layer), static_cast<float>(y)},
-                                         color, text);
-                    m_renderer->add_text(position + Vector2<float>{static_cast<float>(layer), static_cast<float>(y)},
-                                         color, text);
-                }
-            }
-        }
-
-        if (outlined == widget::Outlined::On)
-        {
-            static constexpr std::array outline_offsets = {
-                    Vector2<float>{-1, -1}, Vector2<float>{-1, 0}, Vector2<float>{-1, 1}, Vector2<float>{0, -1},
-                    Vector2<float>{0, 1},   Vector2<float>{1, -1}, Vector2<float>{1, 0},  Vector2<float>{1, 1}};
-
-            for (const auto& outline_offset : outline_offsets)
-                m_renderer->add_text(position + outline_offset, Color{0.f, 0.f, 0.f, 1.f}, text);
-        }
-
-        std::visit(
-                widget::Overloaded{
-                        [&](const Color& color)
-                        {
-                            m_renderer->add_text(position, color, text);
-                        },
-                        [&](const Gradient& gradient)
-                        {
-                            m_renderer->add_gradient_text(position, gradient, text);
-                        },
-                },
-                paint);
-    }
-
     void EntityOverlay::draw_glow_polyline(const std::span<const Vector2<float>>& points, const widget::Glow& glow,
                                            const float thickness) const
     {
@@ -613,7 +559,7 @@ namespace omath::hud
     {
         const auto text_size = m_renderer->calc_text_size(text);
 
-        draw_label(m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, outlined, text, glow);
+        draw_label(*m_renderer, m_text_cursor_bottom + Vector2<float>{0.f, offset}, color, outlined, text, glow);
 
         m_text_cursor_bottom.y += text_size.y;
 
@@ -627,7 +573,7 @@ namespace omath::hud
         const auto text_size = m_renderer->calc_text_size(text);
         const auto pos = m_text_cursor_left + Vector2<float>{-(offset + text_size.x), 0.f};
 
-        draw_label(pos, color, outlined, text, glow);
+        draw_label(*m_renderer, pos, color, outlined, text, glow);
 
         m_text_cursor_left.y += text_size.y;
 
@@ -644,7 +590,7 @@ namespace omath::hud
                 m_canvas.bottom_left_corner.x + (m_canvas.bottom_right_corner.x - m_canvas.bottom_left_corner.x) / 2.f;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_bottom.y + offset};
 
-        draw_label(pos, color, outlined, text, glow);
+        draw_label(*m_renderer, pos, color, outlined, text, glow);
 
         m_text_cursor_bottom.y += text_size.y;
 
@@ -662,7 +608,7 @@ namespace omath::hud
         m_text_cursor_top.y -= text_size.y;
         const auto pos = Vector2<float>{box_center_x - text_size.x / 2.f, m_text_cursor_top.y - offset};
 
-        draw_label(pos, color, outlined, text, glow);
+        draw_label(*m_renderer, pos, color, outlined, text, glow);
 
         return *this;
     }
