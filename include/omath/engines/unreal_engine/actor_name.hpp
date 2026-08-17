@@ -60,9 +60,10 @@ namespace omath::unreal_engine
         // GNames -> TArray::Data (POINTER_ARRAY), chunk table (CHUNKED_ARRAY) or block table (BLOCK_POOL)
         std::ptrdiff_t pool_data_offset{0x10};
 
-        // Size of a pointer inside the pool tables. Set it to 4 when a 64 bit tool reads a 32 bit game, which is the
-        // usual case for UE 2.5 and UE 3 titles.
-        std::size_t pointer_size{sizeof(std::uintptr_t)};
+        // Size of a pointer inside the pool tables, in the TARGET process - not sizeof(std::uintptr_t) of whoever
+        // compiles this, which would silently flip if the tool itself is ever built as x86. Defaults to 8, the ue2_5()
+        // and ue3() presets below set it to 4 for their x86 targets.
+        std::size_t pointer_size{sizeof(std::uint64_t)};
 
         // CHUNKED_ARRAY only
         std::size_t elements_per_chunk{16384};
@@ -85,19 +86,21 @@ namespace omath::unreal_engine
         // Read guard for null terminated names (POINTER_ARRAY, CHUNKED_ARRAY)
         std::size_t max_name_length{1024};
 
-        // UE 2.5 (x86). FNameEntry: Index, QWORD Flags, HashNext, Name. FName has no Number and entries are not
-        // tagged as wide, so switch char_kind to WIDE for a UNICODE build of the game.
+        // UE 2.5 (x86), derived from Killing Floor 1 build 1065. FNameEntry: Index, Flags, HashNext, Name, and that
+        // build is a UNICODE one - switch char_kind to ANSI for a game that stores its names as ANSICHAR. FName is a
+        // bare index here, instance numbers arrived in UE 3.
         [[nodiscard("You must use name layout")]]
         static constexpr NameLayout ue2_5() noexcept
         {
             return {
-                    .object_name_offset = 0x28,
+                    .object_name_offset = 0x24,
                     .name_number_offset = std::nullopt,
                     .pool_kind = NamePoolKind::POINTER_ARRAY,
                     .pool_data_offset = 0x0,
+                    .pointer_size = sizeof(std::uint32_t),
                     .entry_flags_offset = 0x0,
-                    .entry_text_offset = 0x14,
-                    .char_kind = NameCharKind::ANSI,
+                    .entry_text_offset = 0xC,
+                    .char_kind = NameCharKind::WIDE,
             };
         }
 
@@ -109,6 +112,7 @@ namespace omath::unreal_engine
                     .object_name_offset = 0x28,
                     .pool_kind = NamePoolKind::POINTER_ARRAY,
                     .pool_data_offset = 0x0,
+                    .pointer_size = sizeof(std::uint32_t),
                     .entry_flags_offset = 0x8,
                     .entry_text_offset = 0x10,
             };

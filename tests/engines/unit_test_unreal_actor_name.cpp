@@ -219,7 +219,12 @@ TEST(unit_test_unreal_actor_name, ue3_pointer_array)
     game.write<std::uint32_t>(actor + 0x28, 4);
     game.write<std::uint32_t>(actor + 0x2C, 8);
 
-    const auto name = get_actor_name(actor, g_names, NameLayout::ue3());
+    // FakeGame hands out real addresses of this very process via InternalMemoryTrait, so the pointer width has to
+    // match this test binary's own build, not ue3()'s documented 32 bit target
+    auto layout = NameLayout::ue3();
+    layout.pointer_size = sizeof(std::uintptr_t);
+
+    const auto name = get_actor_name(actor, g_names, layout);
 
     ASSERT_TRUE(name.has_value());
     EXPECT_EQ(*name, "TdPawn_7");
@@ -230,7 +235,7 @@ TEST(unit_test_unreal_actor_name, ue2_5_pointer_array_has_no_instance_number)
     FakeGame game;
 
     const auto entry = game.allocate(0x40);
-    game.write_ansi(entry + 0x14, "Pawn");
+    game.write_wide(entry + 0xC, u"Pawn");
 
     const auto entries = game.allocate(0x40);
     game.write<std::uintptr_t>(entries + 2 * sizeof(std::uintptr_t), entry);
@@ -239,22 +244,27 @@ TEST(unit_test_unreal_actor_name, ue2_5_pointer_array_has_no_instance_number)
     game.write<std::uintptr_t>(g_names, entries);
 
     const auto actor = game.allocate(0x40);
-    game.write<std::uint32_t>(actor + 0x28, 2);
+    game.write<std::uint32_t>(actor + 0x24, 2);
     // UE 2.5 FName is a bare index, whatever follows it must not become a "_N" suffix
-    game.write<std::uint32_t>(actor + 0x2C, 777);
+    game.write<std::uint32_t>(actor + 0x28, 777);
 
-    const auto name = get_actor_name(actor, g_names, NameLayout::ue2_5());
+    // FakeGame hands out real addresses of this very process via InternalMemoryTrait, so the pointer width has to
+    // match this test binary's own build, not ue2_5()'s documented 32 bit target
+    auto layout = NameLayout::ue2_5();
+    layout.pointer_size = sizeof(std::uintptr_t);
+
+    const auto name = get_actor_name(actor, g_names, layout);
 
     ASSERT_TRUE(name.has_value());
     EXPECT_EQ(*name, "Pawn");
 }
 
-TEST(unit_test_unreal_actor_name, ue2_5_unicode_build)
+TEST(unit_test_unreal_actor_name, ue2_5_ansi_build)
 {
     FakeGame game;
 
     const auto entry = game.allocate(0x40);
-    game.write_wide(entry + 0x14, u"Pawn");
+    game.write_ansi(entry + 0xC, "Pawn");
 
     const auto entries = game.allocate(0x40);
     game.write<std::uintptr_t>(entries, entry);
@@ -263,10 +273,13 @@ TEST(unit_test_unreal_actor_name, ue2_5_unicode_build)
     game.write<std::uintptr_t>(g_names, entries);
 
     const auto actor = game.allocate(0x40);
-    game.write<std::uint32_t>(actor + 0x28, 0);
+    game.write<std::uint32_t>(actor + 0x24, 0);
 
+    // FakeGame hands out real addresses of this very process via InternalMemoryTrait, so the pointer width has to
+    // match this test binary's own build, not ue2_5()'s documented 32 bit target
     auto layout = NameLayout::ue2_5();
-    layout.char_kind = NameCharKind::WIDE;
+    layout.char_kind = NameCharKind::ANSI;
+    layout.pointer_size = sizeof(std::uintptr_t);
 
     const auto name = get_actor_name(actor, g_names, layout);
 

@@ -79,15 +79,16 @@ const auto name = get_actor_name<RpmTrait>(actor_address, g_names_address, layou
 ## Presets
 
 ```cpp
-NameLayout::ue2_5();      // UE 2.5, x86, ANSI entries, FName without Number
+NameLayout::ue2_5();      // UE 2.5, x86, UTF-16 entries, FName without Number
 NameLayout::ue3();        // UE 3, x86
 NameLayout::ue4_legacy(); // UE 4.0 - 4.22, x64
 NameLayout::ue4();        // UE 4.23+, x64, FNamePool
 NameLayout::ue5();        // same layout as ue4()
 ```
 
-Presets hold the values that are typical for their generation, **they are not guaranteed for your game**. Dump the
-target and override the fields that differ:
+Presets hold the values that are typical for their generation, **they are not guaranteed for your game**. The UE 2.5
+one was derived from Killing Floor 1 build 1065, see `examples/example_kf1_dumper`. Dump the target and override the
+fields that differ:
 
 ```cpp
 auto layout = NameLayout::ue5();

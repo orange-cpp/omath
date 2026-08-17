@@ -57,9 +57,10 @@ namespace omath::unreal_engine
         // Element -> UObject*, FUObjectItem keeps it first
         std::ptrdiff_t item_object_offset{0x0};
 
-        // Size of a pointer in the target. Set it to 4 together with item_stride when a 64 bit tool reads a 32 bit
-        // game, which is the usual case for UE 2.5 and UE 3 titles.
-        std::size_t pointer_size{sizeof(std::uintptr_t)};
+        // Size of a pointer in the TARGET process - not sizeof(std::uintptr_t) of whoever compiles this, which would
+        // silently flip if the tool itself is ever built as x86. Defaults to 8, the ue2_5()/ue3() preset below sets it
+        // to 4 together with item_stride for its x86 target.
+        std::size_t pointer_size{sizeof(std::uint64_t)};
 
         // UE 2.5 and UE 3 (x86): UObject::GObjObjects is a plain TArray<UObject*>
         [[nodiscard("You must use object array layout")]]
@@ -69,7 +70,8 @@ namespace omath::unreal_engine
                     .kind = ObjectArrayKind::FLAT,
                     .objects_offset = 0x0,
                     .count_offset = 0x4,
-                    .item_stride = sizeof(std::uintptr_t),
+                    .item_stride = sizeof(std::uint32_t),
+                    .pointer_size = sizeof(std::uint32_t),
             };
         }
 
