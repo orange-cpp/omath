@@ -41,9 +41,7 @@ namespace omath::opengl_engine
     [[nodiscard("rotation matrix result should not be discarded")]]
     constexpr Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
-        return mat_rotation_axis_z<float, MatStoreType::COLUMN_MAJOR>(angles.roll)
-               * mat_rotation_axis_y<float, MatStoreType::COLUMN_MAJOR>(angles.yaw)
-               * mat_rotation_axis_x<float, MatStoreType::COLUMN_MAJOR>(angles.pitch);
+        return mat_rotation_zyx<float, MatStoreType::COLUMN_MAJOR>(angles.roll, angles.yaw, angles.pitch);
     }
 
     [[nodiscard("origin result should not be discarded")]]

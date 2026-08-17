@@ -43,9 +43,7 @@ namespace omath::unreal_engine
     [[nodiscard("rotation matrix result should not be discarded")]]
     constexpr Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
-        return mat_rotation_axis_z<double, MatStoreType::ROW_MAJOR>(angles.yaw)
-               * mat_rotation_axis_y<double, MatStoreType::ROW_MAJOR>(-angles.pitch)
-               * mat_rotation_axis_x<double, MatStoreType::ROW_MAJOR>(-angles.roll);
+        return mat_rotation_zyx<double, MatStoreType::ROW_MAJOR>(angles.yaw, -angles.pitch, -angles.roll);
     }
 
     [[nodiscard("origin result should not be discarded")]]

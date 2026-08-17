@@ -31,7 +31,7 @@ namespace omath::iw_engine
     [[nodiscard("rotation matrix result should not be discarded")]]
     constexpr Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
-        return mat_rotation_axis_z(angles.yaw) * mat_rotation_axis_y(angles.pitch) * mat_rotation_axis_x(angles.roll);
+        return mat_rotation_zyx(angles.yaw, angles.pitch, angles.roll);
     }
 
     [[nodiscard("origin result should not be discarded")]]

@@ -10,9 +10,7 @@ namespace omath::cry_engine
     [[nodiscard("rotation matrix result should not be discarded")]]
     constexpr Mat4X4 rotation_matrix(const ViewAngles& angles) noexcept
     {
-        return mat_rotation_axis_z<float, MatStoreType::ROW_MAJOR>(angles.yaw)
-               * mat_rotation_axis_y<float, MatStoreType::ROW_MAJOR>(angles.roll)
-               * mat_rotation_axis_x<float, MatStoreType::ROW_MAJOR>(angles.pitch);
+        return mat_rotation_zyx<float, MatStoreType::ROW_MAJOR>(angles.yaw, angles.roll, angles.pitch);
     }
 
     [[nodiscard("forward vector result should not be discarded")]]

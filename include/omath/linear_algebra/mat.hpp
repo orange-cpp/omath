@@ -814,6 +814,28 @@ namespace omath
         };
     }
 
+    // Closed form of mat_rotation_axis_z(z) * mat_rotation_axis_y(y) * mat_rotation_axis_x(x). Composing the three axis
+    // matrices with two generic 4x4 multiplies spends 128 multiplies mostly multiplying by zero, and evaluates every
+    // sin/cos twice because the axis matrices each name them twice. This evaluates each once and does 12 multiplies.
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR, class AngleZ, class AngleY, class AngleX>
+    [[nodiscard("You must use rotation matrix")]]
+    constexpr Mat<4, 4, Type, St> mat_rotation_zyx(const AngleZ& z, const AngleY& y, const AngleX& x) noexcept
+    {
+        const auto sin_z = z.sin();
+        const auto cos_z = z.cos();
+        const auto sin_y = y.sin();
+        const auto cos_y = y.cos();
+        const auto sin_x = x.sin();
+        const auto cos_x = x.cos();
+
+        return {
+                {cos_z * cos_y, cos_z * sin_y * sin_x - sin_z * cos_x, cos_z * sin_y * cos_x + sin_z * sin_x, 0},
+                {sin_z * cos_y, sin_z * sin_y * sin_x + cos_z * cos_x, sin_z * sin_y * cos_x - cos_z * sin_x, 0},
+                {-sin_y, cos_y * sin_x, cos_y * cos_x, 0},
+                {0, 0, 0, 1},
+        };
+    }
+
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard("You must use camera view matrix")]]
     constexpr Mat<4, 4, Type, St> mat_camera_view(const Vector3<Type>& forward, const Vector3<Type>& right,
