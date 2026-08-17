@@ -207,6 +207,17 @@ template<class T=float, MatStoreType St=ROW_MAJOR>
 Mat<4,1,T,St> mat_column_from_vector(const Vector3<T>& v);
 ````
 
+### Rotating a vector
+
+```cpp
+template<class T=float, MatStoreType St=ROW_MAJOR>
+Vector3<T> mat_rotate_vector(const Mat<4,4,T,St>& m, const Vector3<T>& v) noexcept;
+```
+
+Applies only the upper-left 3×3 block of `m` to `v`, ignoring translation. Equivalent to
+`m * mat_column_from_vector(v)` followed by reading the first column, but at roughly half the
+multiplies. Use it to pull basis vectors out of a rotation matrix.
+
 ### Translation
 
 ```cpp
@@ -374,6 +385,7 @@ concept MatTemplateEqual =
 * Projection helpers: `mat_perspective_*`, `mat_ortho_*`
 * View helpers: `mat_look_at_*`, `mat_camera_view`
 * Construction helpers: `mat_row_from_vector`, `mat_column_from_vector`, `mat_translation`, `mat_rotation_axis_*`
+* Vector helpers: `mat_rotate_vector`
 
 ---
 

@@ -704,6 +704,19 @@ namespace omath
         return {{vector.x}, {vector.y}, {vector.z}, {1}};
     }
 
+    // Applies the rotation part of a transform to a vector. Same result as multiplying by mat_column_from_vector() and
+    // taking the first column, but touches only the upper left 3x3 block instead of running a full 4x4 by 4x1 multiply.
+    template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
+    [[nodiscard("You must use rotated vector")]]
+    constexpr Vector3<Type> mat_rotate_vector(const Mat<4, 4, Type, St>& mat, const Vector3<Type>& vector) noexcept
+    {
+        return {
+                mat.at(0, 0) * vector.x + mat.at(0, 1) * vector.y + mat.at(0, 2) * vector.z,
+                mat.at(1, 0) * vector.x + mat.at(1, 1) * vector.y + mat.at(1, 2) * vector.z,
+                mat.at(2, 0) * vector.x + mat.at(2, 1) * vector.y + mat.at(2, 2) * vector.z,
+        };
+    }
+
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR>
     [[nodiscard("You must use translation matrix")]]
     constexpr Mat<4, 4, Type, St> mat_translation(const Vector3<Type>& diff) noexcept
@@ -806,13 +819,15 @@ namespace omath
     constexpr Mat<4, 4, Type, St> mat_camera_view(const Vector3<Type>& forward, const Vector3<Type>& right,
                                                   const Vector3<Type>& up, const Vector3<Type>& camera_origin) noexcept
     {
-        return Mat<4, 4, Type, St>{
-                       {right.x, right.y, right.z, 0},
-                       {up.x, up.y, up.z, 0},
-                       {forward.x, forward.y, forward.z, 0},
-                       {0, 0, 0, 1},
-               }
-               * mat_translation<Type, St>(-camera_origin);
+        // Closed form of the basis matrix times mat_translation(-camera_origin). The translation matrix is the identity
+        // apart from its last column, so a full 4x4 multiply spends 64 multiplies to reproduce the basis unchanged and
+        // compute three dot products - which is all this writes out directly.
+        return {
+                {right.x, right.y, right.z, -right.dot(camera_origin)},
+                {up.x, up.y, up.z, -up.dot(camera_origin)},
+                {forward.x, forward.y, forward.z, -forward.dot(camera_origin)},
+                {0, 0, 0, 1},
+        };
     }
 
     template<class Type = float, MatStoreType St = MatStoreType::ROW_MAJOR,

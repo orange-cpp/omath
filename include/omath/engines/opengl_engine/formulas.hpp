@@ -12,33 +12,30 @@ namespace omath::opengl_engine
     [[nodiscard("forward vector result should not be discarded")]]
     constexpr Vector3<float> forward_vector(const ViewAngles& angles) noexcept
     {
-        const auto vec =
-                rotation_matrix(angles) * mat_column_from_vector<float, MatStoreType::COLUMN_MAJOR>(k_abs_forward);
-
-        return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
+        return mat_rotate_vector(rotation_matrix(angles), k_abs_forward);
     }
 
     [[nodiscard("right vector result should not be discarded")]]
     constexpr Vector3<float> right_vector(const ViewAngles& angles) noexcept
     {
-        const auto vec =
-                rotation_matrix(angles) * mat_column_from_vector<float, MatStoreType::COLUMN_MAJOR>(k_abs_right);
-
-        return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
+        return mat_rotate_vector(rotation_matrix(angles), k_abs_right);
     }
 
     [[nodiscard("up vector result should not be discarded")]]
     constexpr Vector3<float> up_vector(const ViewAngles& angles) noexcept
     {
-        const auto vec = rotation_matrix(angles) * mat_column_from_vector<float, MatStoreType::COLUMN_MAJOR>(k_abs_up);
-
-        return {vec.at(0, 0), vec.at(1, 0), vec.at(2, 0)};
+        return mat_rotate_vector(rotation_matrix(angles), k_abs_up);
     }
 
     [[nodiscard("view matrix result should not be discarded")]]
     constexpr Mat4X4 calc_view_matrix(const ViewAngles& angles, const Vector3<float>& cam_origin) noexcept
     {
-        return mat_look_at_right_handed(cam_origin, cam_origin + forward_vector(angles), up_vector(angles));
+        // Build the rotation once - calling forward_vector() and up_vector() separately would redo two 4x4 multiplies
+        // and six sin/cos evaluations twice over
+        const auto rotation = rotation_matrix(angles);
+
+        return mat_look_at_right_handed(cam_origin, cam_origin + mat_rotate_vector(rotation, k_abs_forward),
+                                        mat_rotate_vector(rotation, k_abs_up));
     }
 
     [[nodiscard("rotation matrix result should not be discarded")]]
