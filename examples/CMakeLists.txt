@@ -4,6 +4,17 @@ add_subdirectory(example_proj_mat_builder)
 add_subdirectory(example_signature_scan)
 add_subdirectory(example_hud)
 
+if(WIN32)
+    add_subdirectory(example_kf1_dumper)
+
+    find_package(imgui CONFIG QUIET)
+    if(imgui_FOUND)
+        add_subdirectory(example_kf1_overlay)
+    else()
+        message(STATUS "[omath] imgui not found - kf1 overlay example skipped")
+    endif()
+endif()
+
 if(OMATH_ENABLE_HOOKING AND WIN32)
     # Requires imgui with dx9-binding, dx11-binding, dx12-binding, opengl3-binding, win32-binding.
     # Install via: vcpkg install imgui[dx9-binding,dx11-binding,dx12-binding,opengl3-binding,win32-binding]

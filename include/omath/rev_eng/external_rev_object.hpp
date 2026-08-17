@@ -15,6 +15,7 @@ namespace omath::rev_eng
         explicit ExternalReverseEngineeredObject(const std::uintptr_t addr): m_object_address(addr)
         {
         }
+
     private:
         std::uintptr_t m_object_address{};
 
@@ -23,13 +24,13 @@ namespace omath::rev_eng
         [[nodiscard]]
         Type get_by_offset(const std::ptrdiff_t offset) const
         {
-            return ExternalMemoryManagementTrait::read_memory(m_object_address+offset);
+            return ExternalMemoryManagementTrait::template read_memory<Type>(m_object_address + offset);
         }
 
         template<class Type>
         void set_by_offset(const std::ptrdiff_t offset, const Type& value) const
         {
-            return ExternalMemoryManagementTrait::write_memory(m_object_address+offset, value);
+            return ExternalMemoryManagementTrait::write_memory(m_object_address + offset, value);
         }
     };
 } // namespace omath::rev_eng

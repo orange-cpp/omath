@@ -16,7 +16,7 @@
 
 OMath is a 100% independent, constexpr template blazingly fast math/physics/games/mods/cheats development framework that doesn't have legacy C++ code.
 
-It provides the latest features, is highly customizable, has all for cheat development, DirectX/OpenGL/Vulkan support, premade support for different game engines, much more constexpr stuff than in other libraries and more...
+It provides the latest features, is highly customizable, has all for cheat development, DirectX/OpenGL hooking, premade support for different game engines, much more constexpr stuff than in other libraries and more...
 <br>
 <br>
 
@@ -62,6 +62,46 @@ if (auto screen = camera.world_to_screen(world_position)) {
 
 **[See more examples and tutorials][TUTORIALS]**
 
+## Reverse Engineering Toolkit
+
+`omath::rev_eng` gives every reversed structure typed, self-documenting field access instead of raw `reinterpret_cast` and magic offsets. The same class works against a process you injected into (`InternalReverseEngineeredObject`, plain memory access) or a target read from outside (`ExternalReverseEngineeredObject`, backed by any trait you write around `ReadProcessMemory`/`process_vm_readv`/a driver):
+
+```cpp
+#include <omath/linear_algebra/vector3.hpp>
+#include <omath/rev_eng/external_rev_object.hpp>
+
+using omath::Vector3;
+using omath::rev_eng::ExternalReverseEngineeredObject;
+
+// Any trait with read_memory<T>/write_memory<T> works - ReadProcessMemory, process_vm_readv, a DMA device, ...
+struct RpmTrait {
+    template<class T>
+    static T read_memory(std::uintptr_t address) {
+        T value{};
+        ReadProcessMemory(g_handle, reinterpret_cast<LPCVOID>(address), &value, sizeof(T), nullptr);
+        return value;
+    }
+};
+
+class Player final : public ExternalReverseEngineeredObject<RpmTrait> {
+public:
+    using ExternalReverseEngineeredObject::ExternalReverseEngineeredObject;
+
+    [[nodiscard]] Vector3<float> origin() const { return get_by_offset<Vector3<float>>(0x134); }
+    [[nodiscard]] int health() const { return get_by_offset<int>(0x140); }
+};
+
+Player local_player{local_player_address};
+auto pos = local_player.origin();
+```
+
+See [external_rev_object.md](docs/rev_eng/external_rev_object.md) and [internal_rev_object.md](docs/rev_eng/internal_rev_object.md) for the full API. On top of that foundation OMath ships ready-made helpers for the harder, engine-specific parts of reverse engineering:
+
+- **Byte pattern scanning** with wildcards across **PE, ELF and Mach-O** - files, loaded modules, or a memory dump, works even against Wine apps.
+- **Function hooking** for **DirectX 9/11/12** and **OpenGL** via `omath::hooks::HooksManager`, for drawing an overlay into someone else's render loop.
+- **Unreal Engine name resolution** - `get_actor_name`/`get_object_by_index` walk `GNames`/`GObjects` across **UE 2.5 through UE 5** (pointer-array, chunked-array and `FNamePool` layouts) to turn a raw `UObject*` into its class and instance name. See [actor_name.md](docs/engines/unreal_engine/actor_name.md) and [object_array.md](docs/engines/unreal_engine/object_array.md).
+- A full, runnable example that ties all three together - process attach, `GObjects` walk, `FName` resolution, and a live GLFW/OpenGL/ImGui overlay with `world_to_screen`/`world_to_radar` - lives in [`examples/example_kf1_dumper`](examples/example_kf1_dumper) and [`examples/example_kf1_overlay`](examples/example_kf1_overlay).
+
 # Features
 - **Efficiency**: Optimized for performance, ensuring quick computations using AVX2.
 - **Versatility**: Includes a wide array of mathematical functions and algorithms.
@@ -73,7 +113,8 @@ if (auto screen = camera.world_to_screen(world_position)) {
 - **Ready for meta-programming**: Omath use templates for common types like Vectors, Matrixes etc, to handle all types!
 - **Engine support**: Supports coordinate systems of **Source, Rage, Unity, Unreal, Frostbite, IWEngine, CryEngine and canonical OpenGL**.
 - **Cross platform**: Supports Windows, MacOS and Linux.
-- **Algorithms**: Has ability to scan for byte pattern with wildcards in ELF/Mach-O/PE files/modules, binary slices, works even with Wine apps. 
+- **Reverse Engineering**: Typed offset access over internal or external process memory, byte pattern scanning with wildcards in ELF/Mach-O/PE files/modules and loaded processes (works even with Wine apps), and per-engine helpers to resolve names and walk the global object table - see the [Reverse Engineering Toolkit](#reverse-engineering-toolkit) section above.
+- **Hooking**: `omath::hooks::HooksManager` hooks DirectX 9/11/12 and OpenGL's present/swap calls for you, so you only write the draw code.
 - **Scripting**: Supports to make scripts in Lua out of box.
 - **Handy**: Allow to design wall hacks in modern jetpack compose like way.
 - **Battle tested**: It's already used by some big players on the market like wraith.su and bluedream.ltd
