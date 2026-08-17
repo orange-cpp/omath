@@ -171,7 +171,12 @@ TEST(unit_test_unreal_actor_name, ue4_legacy_chunked_array)
     game.write<std::uint32_t>(actor + 0x18, name_index);
     game.write<std::uint32_t>(actor + 0x1C, 1);
 
-    const auto name = get_actor_name(actor, g_names, NameLayout::ue4_legacy());
+    // FakeGame hands out real addresses of this very process via InternalMemoryTrait, so the pointer width used for
+    // the chunk table stride above has to match this test binary's own build, not ue4_legacy()'s fixed 8 bytes
+    auto layout = NameLayout::ue4_legacy();
+    layout.pointer_size = sizeof(std::uintptr_t);
+
+    const auto name = get_actor_name(actor, g_names, layout);
 
     ASSERT_TRUE(name.has_value());
     EXPECT_EQ(*name, "MyPawn_0");

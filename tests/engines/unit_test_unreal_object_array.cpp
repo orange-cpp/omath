@@ -66,12 +66,17 @@ TEST(unit_test_unreal_object_array, ue5_chunked_array)
     game.write<std::uintptr_t>(g_objects + 0x10, chunks);
     game.write<std::uint32_t>(g_objects + 0x24, index + 1);
 
-    const auto count = get_object_count(g_objects, ObjectArrayLayout::ue5());
+    // FakeGame hands out real addresses of this very process via InternalMemoryTrait, so the pointer width used for
+    // the chunk table stride above has to match this test binary's own build, not ue5()'s fixed 8 bytes
+    auto layout = ObjectArrayLayout::ue5();
+    layout.pointer_size = sizeof(std::uintptr_t);
+
+    const auto count = get_object_count(g_objects, layout);
 
     ASSERT_TRUE(count.has_value());
     EXPECT_EQ(*count, index + 1);
 
-    const auto object = get_object_by_index(g_objects, index, ObjectArrayLayout::ue5());
+    const auto object = get_object_by_index(g_objects, index, layout);
 
     ASSERT_TRUE(object.has_value());
     EXPECT_EQ(*object, actor);
