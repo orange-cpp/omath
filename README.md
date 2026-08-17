@@ -1,6 +1,6 @@
 <div align = center>
 
-![banner](docs/images/logos/omath_logo_macro.png)
+![banner](https://blog.libomath.org/wp-content/uploads/2026/08/omath_logo2.png)
 
 ![GitHub License](https://img.shields.io/github/license/orange-cpp/omath)
 ![GitHub contributors](https://img.shields.io/github/contributors/orange-cpp/omath)
