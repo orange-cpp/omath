@@ -14,7 +14,7 @@
 [![discord badge](https://dcbadge.limes.pink/api/server/https://discord.gg/eDgdaWbqwZ?style=flat)](https://discord.gg/eDgdaWbqwZ)
 [![telegram badge](https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white)](https://t.me/orangennotes)
 
-OMath is a 100% independent, constexpr template blazingly fast math/physics/games/mods/cheats development framework that doesn't have legacy C++ code.
+omath is a 100% independent, constexpr template blazingly fast math/physics/games/mods/cheats development framework that doesn't have legacy C++ code.
 
 It provides the latest features, is highly customizable, has all for cheat development, DirectX/OpenGL hooking, premade support for different game engines, much more constexpr stuff than in other libraries and more...
 <br>
