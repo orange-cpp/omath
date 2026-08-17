@@ -96,15 +96,18 @@
 #include "omath/engines/rage_engine/traits/pred_engine_trait.hpp"
 
 // Unreal Engine
+#include "omath/engines/unreal_engine/actor_name.hpp"
 #include "omath/engines/unreal_engine/constants.hpp"
 #include "omath/engines/unreal_engine/formulas.hpp"
 #include "omath/engines/unreal_engine/camera.hpp"
+#include "omath/engines/unreal_engine/object_array.hpp"
 #include "omath/engines/unreal_engine/traits/camera_trait.hpp"
 #include "omath/engines/unreal_engine/traits/pred_engine_trait.hpp"
 
 // Reverse Engineering
 #include "omath/rev_eng/external_rev_object.hpp"
 #include "omath/rev_eng/internal_rev_object.hpp"
+#include "omath/rev_eng/memory_trait.hpp"
 
 // Utility
 #include "omath/utility/pattern_scan.hpp"
