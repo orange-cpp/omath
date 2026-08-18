@@ -194,24 +194,69 @@ namespace omath::collision
             return ray.start + dir * t_hit;
         }
 
+        // Traces the mesh in its own local frame rather than lifting every face into world space. Doing it the old way
+        // costs three 4x4 multiplies per face; folding the ray the other way costs two for the whole mesh, whatever
+        // the face count. An affine transform preserves the ray parameter t, so the nearest hit found in local space
+        // is the nearest hit in world space, and the world point is recovered from t on the original ray.
+        // MeshCollider::find_furthest_vertex plays the same trick for support queries.
         template<class MeshType>
         [[nodiscard]]
         constexpr static auto get_ray_hit_point(const RayType& ray, const MeshType& mesh) noexcept
         {
-            auto mesh_hit = ray.end;
+            using VectorType = typename RayType::VectorType;
+
+            const auto to_local = mesh.get_to_world_matrix().inverted();
+
+            if (!to_local)
+                return ray.end; // Degenerate world matrix - a zero scale collapses the mesh to nothing to hit
+
+            const auto& inverse = *to_local;
+            const auto to_local_space = [&inverse](const VectorType& point)
+            {
+                return VectorType{
+                        inverse.at(0, 0) * point.x + inverse.at(0, 1) * point.y + inverse.at(0, 2) * point.z
+                                + inverse.at(0, 3),
+                        inverse.at(1, 0) * point.x + inverse.at(1, 1) * point.y + inverse.at(1, 2) * point.z
+                                + inverse.at(1, 3),
+                        inverse.at(2, 0) * point.x + inverse.at(2, 1) * point.y + inverse.at(2, 2) * point.z
+                                + inverse.at(2, 3)};
+            };
+
+            const RayType local_ray{to_local_space(ray.start), to_local_space(ray.end), ray.infinite_length};
+
+            // Distance along the local ray is |local_dir| * t, and |local_dir| is fixed for the whole loop, so
+            // ordering candidates by local distance is ordering them by t - which is the same order world distance
+            // would give. Squared distance keeps that comparison free of the sqrt the old world-space version paid
+            // twice per face.
+            auto best_local_hit = local_ray.end;
+            auto best_distance_sqr = local_ray.start.distance_to_sqr(local_ray.end);
 
             const auto begin = mesh.m_element_buffer_object.cbegin();
             const auto end = mesh.m_element_buffer_object.cend();
             for (auto current = begin; current < end; current = std::next(current))
             {
-                const auto face = mesh.make_face_in_world_space(current);
+                const auto face = mesh.make_face_in_local_space(current);
 
-                auto ray_stop_point = get_ray_hit_point(ray, face);
-                if (ray_stop_point.distance_to(ray.start) < mesh_hit.distance_to(ray.start))
-                    mesh_hit = ray_stop_point;
+                const auto local_hit = get_ray_hit_point(local_ray, face);
+                // ReSharper disable once CppTooWideScopeInitStatement
+                const auto distance_sqr = local_hit.distance_to_sqr(local_ray.start);
+
+                if (distance_sqr < best_distance_sqr)
+                {
+                    best_local_hit = local_hit;
+                    best_distance_sqr = distance_sqr;
+                }
             }
 
-            return mesh_hit;
+            if (best_local_hit == local_ray.end)
+                return ray.end;
+
+            // Recovered from the original world ray rather than pushed back through the world matrix, so the result
+            // carries no round-trip error from the inverse.
+            const auto local_dir = local_ray.direction_vector();
+            const auto t_hit = (best_local_hit - local_ray.start).dot(local_dir) / local_dir.dot(local_dir);
+
+            return ray.start + ray.direction_vector() * t_hit;
         }
     };
 } // namespace omath::collision

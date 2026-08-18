@@ -2,7 +2,9 @@
 // Created by Vladislav on 09.11.2025.
 //
 #pragma once
+#include "aabb.hpp"
 #include "omath/linear_algebra/triangle.hpp"
+#include <limits>
 #include <omath/linear_algebra/mat.hpp>
 #include <omath/linear_algebra/vector3.hpp>
 #include <utility>
@@ -109,18 +111,63 @@ namespace omath::primitives
             return {abs_vec.at(0, 0), abs_vec.at(1, 0), abs_vec.at(2, 0)};
         }
 
+        // Axis-aligned bounds in the mesh's own frame. No transform is involved, so this is a plain min/max sweep of
+        // the vertex buffer, and the result only changes when the vertex buffer does. Intended as a broadphase
+        // reject in front of a face-by-face trace: hoist it out of the query loop and slab-test against it, rather
+        // than paying the sweep per trace.
         [[nodiscard]]
-        Triangle<VectorType> make_face_in_world_space(const Ebo::const_iterator vao_iterator) const
+        Aabb<typename VectorType::ContainedType> local_bounds() const
+        {
+            using Scalar = VectorType::ContainedType;
+
+            VectorType min{std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max(),
+                           std::numeric_limits<Scalar>::max()};
+            VectorType max{std::numeric_limits<Scalar>::lowest(), std::numeric_limits<Scalar>::lowest(),
+                           std::numeric_limits<Scalar>::lowest()};
+
+            for (const auto& vertex : m_vertex_buffer)
+            {
+                const auto& position = [&vertex]() -> const VectorType&
+                {
+                    if constexpr (HasPosition<VertexType>)
+                        return vertex.position;
+                    else
+                        return vertex;
+                }();
+
+                min.x = std::min(min.x, position.x);
+                min.y = std::min(min.y, position.y);
+                min.z = std::min(min.z, position.z);
+                max.x = std::max(max.x, position.x);
+                max.y = std::max(max.y, position.y);
+                max.z = std::max(max.z, position.z);
+            }
+
+            return {min, max};
+        }
+
+        [[nodiscard]]
+        Triangle<VectorType> make_face_in_local_space(const Ebo::const_iterator vao_iterator) const
         {
             if constexpr (HasPosition<VertexType>)
             {
-                return {vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->x).position),
-                        vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->y).position),
-                        vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->z).position)};
+                return {m_vertex_buffer.at(vao_iterator->x).position, m_vertex_buffer.at(vao_iterator->y).position,
+                        m_vertex_buffer.at(vao_iterator->z).position};
             }
-            return {vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->x)),
-                    vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->y)),
-                    vertex_position_to_world_space(m_vertex_buffer.at(vao_iterator->z))};
+            else
+            {
+                return {m_vertex_buffer.at(vao_iterator->x), m_vertex_buffer.at(vao_iterator->y),
+                        m_vertex_buffer.at(vao_iterator->z)};
+            }
+        }
+
+        [[nodiscard]]
+        Triangle<VectorType> make_face_in_world_space(const Ebo::const_iterator vao_iterator) const
+        {
+            const auto face = make_face_in_local_space(vao_iterator);
+
+            return {vertex_position_to_world_space(face.m_vertex1), vertex_position_to_world_space(face.m_vertex2),
+                    vertex_position_to_world_space(face.m_vertex3)};
         }
 
     private:

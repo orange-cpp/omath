@@ -640,10 +640,10 @@ namespace omath::projection
             const auto extract_plane = [&m](const int sign, const int row) -> FrustumPlane
             {
                 return {
-                        m.at(3, 0) + static_cast<NumericType>(sign) * m.at(row, 0),
-                        m.at(3, 1) + static_cast<NumericType>(sign) * m.at(row, 1),
-                        m.at(3, 2) + static_cast<NumericType>(sign) * m.at(row, 2),
-                        m.at(3, 3) + static_cast<NumericType>(sign) * m.at(row, 3),
+                        .a = m.at(3, 0) + static_cast<NumericType>(sign) * m.at(row, 0),
+                        .b = m.at(3, 1) + static_cast<NumericType>(sign) * m.at(row, 1),
+                        .c = m.at(3, 2) + static_cast<NumericType>(sign) * m.at(row, 2),
+                        .d = m.at(3, 3) + static_cast<NumericType>(sign) * m.at(row, 3),
                 };
             };
 
