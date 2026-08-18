@@ -411,25 +411,85 @@ namespace omath
         [[nodiscard("You must use inverted matrix")]]
         constexpr std::optional<Mat> inverted() const
         {
-            const auto det = determinant();
+            // 4x4 is by far the most common size here - every view, projection and view-projection matrix - and the
+            // generic cofactor path below is quadratic in temporaries for it: one determinant() plus sixteen
+            // alg_complement() calls, each of which strip()s out a fresh smaller Mat and recurses.
+            if constexpr (Rows == 4 && Columns == 4)
+                return inverted_4x4();
+            else
+            {
+                const auto det = determinant();
 
-            if (internal::abs(det) < std::numeric_limits<Type>::epsilon())
-                return std::nullopt;
+                if (internal::abs(det) < std::numeric_limits<Type>::epsilon())
+                    return std::nullopt;
 
-            const auto transposed_mat = transposed();
-            Mat result;
+                const auto transposed_mat = transposed();
+                Mat result;
 
-            for (std::size_t row = 0; row < Rows; row++)
-                for (std::size_t column = 0; column < Rows; column++)
-                    result.at(row, column) = transposed_mat.alg_complement(row, column);
+                for (std::size_t row = 0; row < Rows; row++)
+                    for (std::size_t column = 0; column < Rows; column++)
+                        result.at(row, column) = transposed_mat.alg_complement(row, column);
 
-            result /= det;
+                result /= det;
 
-            return {result};
+                return {result};
+            }
         }
 
     private:
         std::array<Type, Rows * Columns> m_data;
+
+        // Closed form 4x4 inverse. The six 2x2 minors of the top two rows and the six of the bottom two rows are each
+        // shared between the determinant and four entries of the adjugate, so computing them once covers the whole
+        // matrix. Same result as the generic adjugate path, without building any intermediate matrices.
+        [[nodiscard("You must use inverted matrix")]]
+        constexpr std::optional<Mat> inverted_4x4() const
+        {
+            const auto top_01 = at(0, 0) * at(1, 1) - at(1, 0) * at(0, 1);
+            const auto top_02 = at(0, 0) * at(1, 2) - at(1, 0) * at(0, 2);
+            const auto top_03 = at(0, 0) * at(1, 3) - at(1, 0) * at(0, 3);
+            const auto top_12 = at(0, 1) * at(1, 2) - at(1, 1) * at(0, 2);
+            const auto top_13 = at(0, 1) * at(1, 3) - at(1, 1) * at(0, 3);
+            const auto top_23 = at(0, 2) * at(1, 3) - at(1, 2) * at(0, 3);
+
+            const auto bot_01 = at(2, 0) * at(3, 1) - at(3, 0) * at(2, 1);
+            const auto bot_02 = at(2, 0) * at(3, 2) - at(3, 0) * at(2, 2);
+            const auto bot_03 = at(2, 0) * at(3, 3) - at(3, 0) * at(2, 3);
+            const auto bot_12 = at(2, 1) * at(3, 2) - at(3, 1) * at(2, 2);
+            const auto bot_13 = at(2, 1) * at(3, 3) - at(3, 1) * at(2, 3);
+            const auto bot_23 = at(2, 2) * at(3, 3) - at(3, 2) * at(2, 3);
+
+            const auto det = top_01 * bot_23 - top_02 * bot_13 + top_03 * bot_12 + top_12 * bot_03 - top_13 * bot_02
+                             + top_23 * bot_01;
+
+            if (internal::abs(det) < std::numeric_limits<Type>::epsilon())
+                return std::nullopt;
+
+            const auto inv_det = Type{1} / det;
+            Mat result;
+
+            result.at(0, 0) = (at(1, 1) * bot_23 - at(1, 2) * bot_13 + at(1, 3) * bot_12) * inv_det;
+            result.at(0, 1) = (-at(0, 1) * bot_23 + at(0, 2) * bot_13 - at(0, 3) * bot_12) * inv_det;
+            result.at(0, 2) = (at(3, 1) * top_23 - at(3, 2) * top_13 + at(3, 3) * top_12) * inv_det;
+            result.at(0, 3) = (-at(2, 1) * top_23 + at(2, 2) * top_13 - at(2, 3) * top_12) * inv_det;
+
+            result.at(1, 0) = (-at(1, 0) * bot_23 + at(1, 2) * bot_03 - at(1, 3) * bot_02) * inv_det;
+            result.at(1, 1) = (at(0, 0) * bot_23 - at(0, 2) * bot_03 + at(0, 3) * bot_02) * inv_det;
+            result.at(1, 2) = (-at(3, 0) * top_23 + at(3, 2) * top_03 - at(3, 3) * top_02) * inv_det;
+            result.at(1, 3) = (at(2, 0) * top_23 - at(2, 2) * top_03 + at(2, 3) * top_02) * inv_det;
+
+            result.at(2, 0) = (at(1, 0) * bot_13 - at(1, 1) * bot_03 + at(1, 3) * bot_01) * inv_det;
+            result.at(2, 1) = (-at(0, 0) * bot_13 + at(0, 1) * bot_03 - at(0, 3) * bot_01) * inv_det;
+            result.at(2, 2) = (at(3, 0) * top_13 - at(3, 1) * top_03 + at(3, 3) * top_01) * inv_det;
+            result.at(2, 3) = (-at(2, 0) * top_13 + at(2, 1) * top_03 - at(2, 3) * top_01) * inv_det;
+
+            result.at(3, 0) = (-at(1, 0) * bot_12 + at(1, 1) * bot_02 - at(1, 2) * bot_01) * inv_det;
+            result.at(3, 1) = (at(0, 0) * bot_12 - at(0, 1) * bot_02 + at(0, 2) * bot_01) * inv_det;
+            result.at(3, 2) = (-at(3, 0) * top_12 + at(3, 1) * top_02 - at(3, 2) * top_01) * inv_det;
+            result.at(3, 3) = (at(2, 0) * top_12 - at(2, 1) * top_02 + at(2, 2) * top_01) * inv_det;
+
+            return {result};
+        }
 
         template<size_t OtherColumns> [[nodiscard("You must use result matrix")]]
         constexpr Mat<Rows, OtherColumns, Type, MatStoreType::ROW_MAJOR>
@@ -776,14 +836,28 @@ namespace omath
     {
         const auto scale = mat_extract_scale(mat);
         const auto m00 = mat.at(0, 0) / scale.x;
+        const auto m01 = mat.at(0, 1) / scale.y;
+        const auto m02 = mat.at(0, 2) / scale.z;
         const auto m10 = mat.at(1, 0) / scale.x;
         const auto m20 = mat.at(2, 0) / scale.x;
         const auto m21 = mat.at(2, 1) / scale.y;
         const auto m22 = mat.at(2, 2) / scale.z;
 
+        const auto y = angles::radians_to_degrees(internal::asin(std::clamp(-m20, Type{-1}, Type{1})));
+
+        // At y = +/-90 degrees cos(y) is 0, so the x and z rotations act around the same axis and
+        // only x - z (or x + z) is recoverable. Pin z to 0 and fold the whole rotation into x, using
+        // the surviving m01/m02 pair rather than m21/m22/m10/m00, which all vanish here.
+        constexpr auto singularity_epsilon = std::numeric_limits<Type>::epsilon() * Type{8};
+        if (Type{1} - internal::abs(m20) < singularity_epsilon) [[unlikely]]
+        {
+            const auto x = m20 < Type{0} ? internal::atan2(m01, m02) : internal::atan2(-m01, -m02);
+            return {angles::radians_to_degrees(x), y, Type{0}};
+        }
+
         return {
                 angles::radians_to_degrees(internal::atan2(m21, m22)),
-                angles::radians_to_degrees(internal::asin(std::clamp(-m20, Type{-1}, Type{1}))),
+                y,
                 angles::radians_to_degrees(internal::atan2(m10, m00)),
         };
     }

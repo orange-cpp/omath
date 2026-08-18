@@ -281,6 +281,112 @@ TEST(UnitTestMatStandalone, Enverse)
     EXPECT_EQ(mv, m.inverted());
 }
 
+namespace
+{
+    // A * inverse(A) == I is checked instead of comparing against a hand written inverse: it pins down the property
+    // that actually matters and does not have to be re-derived if the implementation changes.
+    template<size_t Size, class Type, MatStoreType StoreType>
+    void expect_identity(const Mat<Size, Size, Type, StoreType>& mat, const Type tolerance)
+    {
+        for (size_t row = 0; row < Size; ++row)
+            for (size_t column = 0; column < Size; ++column)
+                EXPECT_NEAR(mat.at(row, column), row == column ? Type{1} : Type{0}, tolerance)
+                        << "at (" << row << ", " << column << ")";
+    }
+
+    // Rotation, translation and a mild non-uniform scale - the shape of a view matrix, and well conditioned enough to
+    // hold a tight tolerance.
+    constexpr Mat<4, 4, float, MatStoreType::ROW_MAJOR> k_affine{
+            {0.936f, -0.289f, 0.198f, 12.5f},
+            {0.312f, 0.884f, -0.348f, -4.25f},
+            {-0.160f, 0.369f, 0.916f, 3.75f},
+            {0.f, 0.f, 0.f, 1.f},
+    };
+} // namespace
+
+TEST(UnitTestMatStandalone, Inverted4x4RoundTrip)
+{
+    const auto inverse = k_affine.inverted();
+    ASSERT_TRUE(inverse.has_value());
+
+    expect_identity(k_affine * inverse.value(), 1e-5f);
+    expect_identity(inverse.value() * k_affine, 1e-5f);
+}
+
+TEST(UnitTestMatStandalone, Inverted4x4ColumnMajor)
+{
+    constexpr Mat<4, 4, float, MatStoreType::COLUMN_MAJOR> mat{
+            {0.936f, -0.289f, 0.198f, 12.5f},
+            {0.312f, 0.884f, -0.348f, -4.25f},
+            {-0.160f, 0.369f, 0.916f, 3.75f},
+            {0.f, 0.f, 0.f, 1.f},
+    };
+
+    const auto inverse = mat.inverted();
+    ASSERT_TRUE(inverse.has_value());
+
+    expect_identity(mat * inverse.value(), 1e-5f);
+}
+
+// The matrix screen_to_world actually inverts. A perspective matrix has a zero in the bottom right corner and a 1 in
+// the bottom row, so it exercises rows the affine case leaves as identity.
+TEST(UnitTestMatStandalone, Inverted4x4ViewProjection)
+{
+    const auto projection = mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR,
+                                                                     NDCDepthRange::ZERO_TO_ONE>(73.7f, 16.f / 9.f,
+                                                                                                 1.f, 1000.f);
+    const auto view = mat_camera_view<float, MatStoreType::ROW_MAJOR>({0.936f, 0.312f, -0.160f},
+                                                                      {-0.289f, 0.884f, 0.369f},
+                                                                      {0.198f, -0.348f, 0.916f}, {128.f, -512.f, 64.f});
+    const auto view_projection = projection * view;
+
+    const auto inverse = view_projection.inverted();
+    ASSERT_TRUE(inverse.has_value());
+
+    // Looser than the affine case: a near/far spread of three orders of magnitude costs precision in float
+    expect_identity(view_projection * inverse.value(), 1e-3f);
+}
+
+TEST(UnitTestMatStandalone, Inverted4x4Singular)
+{
+    // Row 3 is row 1 doubled, so the determinant is zero
+    constexpr Mat<4, 4> singular{
+            {1.f, 2.f, 3.f, 4.f},
+            {5.f, 6.f, 7.f, 8.f},
+            {2.f, 4.f, 6.f, 8.f},
+            {9.f, 1.f, 2.f, 3.f},
+    };
+
+    EXPECT_FALSE(singular.inverted().has_value());
+}
+
+TEST(UnitTestMatStandalone, Inverted3x3RoundTrip)
+{
+    constexpr Mat<3, 3> mat{{2.f, 0.f, 1.f}, {1.f, 3.f, 2.f}, {1.f, 1.f, 2.f}};
+
+    const auto inverse = mat.inverted();
+    ASSERT_TRUE(inverse.has_value());
+
+    expect_identity(mat * inverse.value(), 1e-5f);
+}
+
+// view_port_to_world() inverts under `if consteval`, so this has to keep working at compile time.
+static_assert(
+        []
+        {
+            constexpr auto inverse = k_affine.inverted();
+            if (!inverse.has_value())
+                return false;
+
+            const auto product = k_affine * inverse.value();
+            for (size_t row = 0; row < 4; ++row)
+                for (size_t column = 0; column < 4; ++column)
+                    if (!close_to(product.at(row, column), row == column ? 1.0f : 0.0f, 1e-5f))
+                        return false;
+            return true;
+        }(),
+        "Mat 4x4 inverse should be constexpr and round trip to identity");
+
 TEST(UnitTestMatStandalone, Equanity)
 {
     constexpr omath::Vector3<float> left_handed = {0, 2, 10};

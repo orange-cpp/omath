@@ -233,9 +233,28 @@ namespace omath::projection
         constexpr const Mat4X4Type& get_view_projection_matrix() const noexcept
         {
             if (!m_view_projection_matrix.has_value())
+            {
                 m_view_projection_matrix = get_projection_matrix() * get_view_matrix();
+                // Any cached inverse describes the matrix we just replaced. Dropping it here rather than in every
+                // setter means a new setter cannot forget to invalidate it, as long as it invalidates the
+                // view-projection matrix itself - which it has to anyway.
+                m_inv_view_projection_matrix = std::nullopt;
+            }
 
             return m_view_projection_matrix.value();
+        }
+
+        // Empty when the view-projection matrix is not invertible. That is a degenerate camera (zero field of view,
+        // near equal to far), and it is the one case that re-inverts on every call instead of caching the failure.
+        [[nodiscard("You must use inverted view-projection matrix")]]
+        constexpr const std::optional<Mat4X4Type>& get_inv_view_projection_matrix() const noexcept
+        {
+            const auto& view_projection = get_view_projection_matrix();
+
+            if (!m_inv_view_projection_matrix.has_value())
+                m_inv_view_projection_matrix = view_projection.inverted();
+
+            return m_inv_view_projection_matrix;
         }
 
         [[nodiscard("You must use view matrix")]]
@@ -530,15 +549,10 @@ namespace omath::projection
         view_port_to_world(const Vector3<NumericType>& ndc) const noexcept
         {
             auto view_port_to_world =
-                    [&ndc](const Mat4X4Type& view_projection) -> std::expected<Vector3<NumericType>, Error>
+                    [&ndc](const Mat4X4Type& inv_view_proj) -> std::expected<Vector3<NumericType>, Error>
             {
-                const auto inv_view_proj = view_projection.inverted();
-
-                if (!inv_view_proj)
-                    return std::unexpected(Error::INV_VIEW_PROJ_MAT_DET_EQ_ZERO);
-
-                auto inverted_projection = inv_view_proj.value()
-                                           * mat_column_from_vector<NumericType, Mat4X4Type::get_store_ordering()>(ndc);
+                auto inverted_projection =
+                        inv_view_proj * mat_column_from_vector<NumericType, Mat4X4Type::get_store_ordering()>(ndc);
 
                 const auto& w = inverted_projection.at(3, 0);
 
@@ -553,10 +567,20 @@ namespace omath::projection
 
             if consteval
             {
-                return view_port_to_world(calc_view_projection_matrix());
+                const auto inv_view_proj = calc_view_projection_matrix().inverted();
+
+                if (!inv_view_proj)
+                    return std::unexpected(Error::INV_VIEW_PROJ_MAT_DET_EQ_ZERO);
+
+                return view_port_to_world(inv_view_proj.value());
             }
 
-            return view_port_to_world(get_view_projection_matrix());
+            const auto& inv_view_proj = get_inv_view_projection_matrix();
+
+            if (!inv_view_proj)
+                return std::unexpected(Error::INV_VIEW_PROJ_MAT_DET_EQ_ZERO);
+
+            return view_port_to_world(inv_view_proj.value());
         }
 
         template<ScreenStart screen_start = ScreenStart::TOP_LEFT_CORNER>
@@ -588,6 +612,10 @@ namespace omath::projection
 
         ViewAnglesType m_view_angles;
         Vector3<NumericType> m_origin;
+
+        // Last, and deliberately so: only view_port_to_world() and screen_to_world() read this, and keeping it behind
+        // the members the projection path touches leaves their cache layout as it was before this cache existed.
+        mutable std::optional<Mat4X4Type> m_inv_view_projection_matrix;
 
     private:
         struct FrustumPlane final
