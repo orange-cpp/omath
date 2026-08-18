@@ -918,6 +918,7 @@ namespace omath
         // Closed form of the basis matrix times mat_translation(-camera_origin). The translation matrix is the identity
         // apart from its last column, so a full 4x4 multiply spends 64 multiplies to reproduce the basis unchanged and
         // compute three dot products - which is all this writes out directly.
+        // originally it view_matrix * translation matrix with -origin
         return {
                 {right.x, right.y, right.z, -right.dot(camera_origin)},
                 {up.x, up.y, up.z, -up.dot(camera_origin)},
