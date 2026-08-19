@@ -684,6 +684,19 @@ namespace omath::internal
     template<class Type>
     requires std::is_floating_point_v<Type>
     [[nodiscard]]
+    constexpr Type hypot(const Type& x, const Type& y, const Type& z, const Type& w) noexcept
+    {
+        if consteval
+        {
+            return math_detail::sqrt(x * x + y * y + z * z + w * w);
+        }
+        // NOTE: std::hypot has no 4 argument overload, nesting it keeps the overflow safety.
+        return std::hypot(std::hypot(x, y, z), w);
+    }
+
+    template<class Type>
+    requires std::is_floating_point_v<Type>
+    [[nodiscard]]
     constexpr Type abs(const Type& value) noexcept
     {
         if consteval

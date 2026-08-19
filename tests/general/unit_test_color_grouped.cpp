@@ -169,7 +169,7 @@ TEST(UnitTestColorGrouped_More, FloatCtorAndClampForRGB)
     EXPECT_FLOAT_EQ(c.value().x, 1.0f);
     EXPECT_FLOAT_EQ(c.value().y, 0.0f);
     EXPECT_FLOAT_EQ(c.value().z, 0.5f);
-    EXPECT_FLOAT_EQ(c.value().w, 2.0f);
+    EXPECT_FLOAT_EQ(c.value().w, 1.0f);
 }
 
 TEST(UnitTestColorGrouped_More, FromRgbaProducesScaledComponents)

@@ -34,7 +34,7 @@ TEST(Vector4More, ComparisonsAndHashFormatter)
 
     // exercise to_string via formatting if available by converting via std::format
     // call length and comparison to exercise more branches
-    EXPECT_LT(a.length(), b.length());
+    EXPECT_LT(a.length_sqr(), b.length_sqr());
 }
 
 class UnitTestVector4 : public ::testing::Test
@@ -279,7 +279,7 @@ TEST_F(UnitTestVector4, Clamp)
     EXPECT_FLOAT_EQ(v3.x, 1.5f);
     EXPECT_FLOAT_EQ(v3.y, 2.0f);
     EXPECT_FLOAT_EQ(v3.z, 2.5f);
-    EXPECT_FLOAT_EQ(v3.w, 4.0f); // w is not clamped in this method
+    EXPECT_FLOAT_EQ(v3.w, 2.5f);
 }
 TEST_F(UnitTestVector4, LessOperator)
 {

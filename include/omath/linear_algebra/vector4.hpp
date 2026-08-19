@@ -14,7 +14,7 @@ namespace omath
     {
     public:
         using ContainedType = Type;
-        Type w;
+        Type w = static_cast<Type>(0);
 
         constexpr Vector4(const Type& x, const Type& y, const Type& z, const Type& w): Vector3<Type>(x, y, z), w(w)
         {
@@ -54,6 +54,22 @@ namespace omath
         {
             Vector3<Type>::operator-=(other);
             w -= other.w;
+
+            return *this;
+        }
+
+        constexpr Vector4& operator+=(const Type& value) noexcept
+        {
+            Vector3<Type>::operator+=(value);
+            w += value;
+
+            return *this;
+        }
+
+        constexpr Vector4& operator-=(const Type& value) noexcept
+        {
+            Vector3<Type>::operator-=(value);
+            w -= value;
 
             return *this;
         }
@@ -101,15 +117,38 @@ namespace omath
             return Vector3<Type>::dot(other) + w * other.w;
         }
 
-        [[nodiscard("You must use length")]] Type length() const noexcept
+        [[nodiscard("You must use length")]]
+        constexpr Type length() const noexcept
+        requires std::is_floating_point_v<Type>
         {
-            return std::sqrt(length_sqr());
+            return internal::hypot(this->x, this->y, this->z, w);
+        }
+
+        [[nodiscard("You must use squared distance")]]
+        constexpr Type distance_to_sqr(const Vector4& other) const noexcept
+        {
+            return (*this - other).length_sqr();
+        }
+
+        [[nodiscard("You must use distance")]]
+        constexpr Type distance_to(const Vector4& other) const noexcept
+        requires std::is_floating_point_v<Type>
+        {
+            return (*this - other).length();
+        }
+
+        [[nodiscard("You must use normalized vector")]]
+        constexpr Vector4 normalized() const noexcept
+        requires std::is_floating_point_v<Type>
+        {
+            const Type len = length();
+            return len != static_cast<Type>(0) ? *this / len : *this;
         }
 
         constexpr Vector4& abs() noexcept
         {
             Vector3<Type>::abs();
-            w = w < 0.f ? -w : w;
+            w = w < static_cast<Type>(0) ? -w : w;
 
             return *this;
         }
@@ -123,6 +162,7 @@ namespace omath
             this->x = std::clamp(this->x, min, max);
             this->y = std::clamp(this->y, min, max);
             this->z = std::clamp(this->z, min, max);
+            w = std::clamp(w, min, max);
 
             return *this;
         }
@@ -175,28 +215,61 @@ namespace omath
             return Vector3<Type>::sum() + w;
         }
 
-        [[nodiscard("You must use comparison result")]]
-        bool operator<(const Vector4& other) const noexcept
+        [[nodiscard("You must use direction check result")]]
+        constexpr bool point_to_same_direction(const Vector4& other) const noexcept
         {
-            return length() < other.length();
+            return dot(other) > static_cast<Type>(0);
+        }
+
+        // NOTE: SelfType defaults to Type so the return type is only formed when the function is called. Naming
+        // Angle directly would instantiate it for integer vectors and violate its floating point constraint.
+        template<class SelfType = Type>
+        requires std::is_same_v<SelfType, Type> && std::is_floating_point_v<SelfType>
+        [[nodiscard("You must use angle between vectors")]]
+        constexpr std::expected<Angle<SelfType, SelfType{0}, SelfType{180}, AngleFlags::Clamped>, Vector3Error>
+        angle_between(const Vector4& other) const noexcept
+        {
+            const auto bottom = length() * other.length();
+
+            if (bottom == static_cast<Type>(0))
+                return std::unexpected(Vector3Error::IMPOSSIBLE_BETWEEN_ANGLE);
+            return Angle<SelfType, SelfType{0}, SelfType{180}, AngleFlags::Clamped>::from_radians(
+                    internal::acos(dot(other) / bottom));
+        }
+
+        [[nodiscard("You must use perpendicularity check result")]]
+        constexpr bool is_perpendicular(const Vector4& other, Type epsilon = static_cast<Type>(0.0001)) const noexcept
+        requires std::is_floating_point_v<Type>
+        {
+            if (const auto angle = angle_between(other))
+                return internal::abs(angle->as_degrees() - static_cast<Type>(90)) <= epsilon;
+
+            return false;
+        }
+
+        // NOTE: Ordering by squared length, sqrt is monotonic so the order is identical without the cost.
+        [[nodiscard("You must use comparison result")]]
+        constexpr bool operator<(const Vector4& other) const noexcept
+        {
+            return length_sqr() < other.length_sqr();
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator>(const Vector4& other) const noexcept
+        constexpr bool operator>(const Vector4& other) const noexcept
         {
-            return length() > other.length();
+            return length_sqr() > other.length_sqr();
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator<=(const Vector4& other) const noexcept
+        constexpr bool operator<=(const Vector4& other) const noexcept
         {
-            return length() <= other.length();
+            return length_sqr() <= other.length_sqr();
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator>=(const Vector4& other) const noexcept
+        constexpr bool operator>=(const Vector4& other) const noexcept
         {
-            return length() >= other.length();
+            return length_sqr() >= other.length_sqr();
         }
 
         [[nodiscard("You must use array")]]
@@ -217,9 +290,10 @@ namespace omath
             };
         }
         [[nodiscard("You must use vector from ImVec4")]]
-        static Vector4<float> from_im_vec4(const ImVec4& other) noexcept
+        static Vector4 from_im_vec4(const ImVec4& other) noexcept
         {
-            return {static_cast<Type>(other.x), static_cast<Type>(other.y), static_cast<Type>(other.z)};
+            return {static_cast<Type>(other.x), static_cast<Type>(other.y), static_cast<Type>(other.z),
+                    static_cast<Type>(other.w)};
         }
 #endif
     };

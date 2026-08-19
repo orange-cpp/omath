@@ -118,6 +118,7 @@ namespace omath
         // Basic vector operations
         [[nodiscard("You must use distance")]]
         constexpr Type distance_to(const Vector2& other) const noexcept
+        requires std::is_floating_point_v<Type>
         {
             return internal::sqrt(distance_to_sqr(other));
         }
@@ -134,31 +135,21 @@ namespace omath
             return x * other.x + y * other.y;
         }
 
-#ifndef _MSC_VER
-        [[nodiscard("You must use length")]] constexpr Type length() const noexcept
-        {
-            return internal::hypot(this->x, this->y);
-        }
-
-        [[nodiscard("You must use normalized vector")]] constexpr Vector2 normalized() const noexcept
-        {
-            const Type len = length();
-            return len > 0.f ? *this / len : *this;
-        }
-#else
         [[nodiscard("You must use length")]]
         constexpr Type length() const noexcept
+        requires std::is_floating_point_v<Type>
         {
             return internal::hypot(x, y);
         }
 
         [[nodiscard("You must use normalized vector")]]
         constexpr Vector2 normalized() const noexcept
+        requires std::is_floating_point_v<Type>
         {
             const Type len = length();
             return len > static_cast<Type>(0) ? *this / len : *this;
         }
-#endif
+
         [[nodiscard("You must use squared length")]]
         constexpr Type length_sqr() const noexcept
         {
@@ -204,9 +195,21 @@ namespace omath
         }
 
         [[nodiscard("You must use result vector")]]
+        constexpr Vector2 operator*(const Vector2& other) const noexcept
+        {
+            return {x * other.x, y * other.y};
+        }
+
+        [[nodiscard("You must use result vector")]]
         constexpr Vector2 operator/(const Type& value) const noexcept
         {
             return {x / value, y / value};
+        }
+
+        [[nodiscard("You must use result vector")]]
+        constexpr Vector2 operator/(const Vector2& other) const noexcept
+        {
+            return {x / other.x, y / other.y};
         }
 
         // Sum of elements
@@ -216,27 +219,28 @@ namespace omath
             return x + y;
         }
 
+        // NOTE: Ordering by squared length, sqrt is monotonic so the order is identical without the cost.
         [[nodiscard("You must use comparison result")]]
         constexpr bool operator<(const Vector2& other) const noexcept
         {
-            return length() < other.length();
+            return length_sqr() < other.length_sqr();
         }
         [[nodiscard("You must use comparison result")]]
         constexpr bool operator>(const Vector2& other) const noexcept
         {
-            return length() > other.length();
+            return length_sqr() > other.length_sqr();
         }
 
         [[nodiscard("You must use comparison result")]]
         constexpr bool operator<=(const Vector2& other) const noexcept
         {
-            return length() <= other.length();
+            return length_sqr() <= other.length_sqr();
         }
 
         [[nodiscard("You must use comparison result")]]
         constexpr bool operator>=(const Vector2& other) const noexcept
         {
-            return length() >= other.length();
+            return length_sqr() >= other.length_sqr();
         }
 
         [[nodiscard("You must use tuple")]]

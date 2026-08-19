@@ -118,7 +118,7 @@ namespace omath
         constexpr Vector3& abs() noexcept
         {
             Vector2<Type>::abs();
-            z = z < 0.f ? -z : z;
+            z = z < static_cast<Type>(0) ? -z : z;
 
             return *this;
         }
@@ -140,35 +140,16 @@ namespace omath
             return Vector2<Type>::dot(other) + z * other.z;
         }
 
-#ifndef _MSC_VER
-        [[nodiscard("You must use length")]] constexpr Type length() const noexcept
-        {
-            return internal::hypot(this->x, this->y, z);
-        }
-
-        [[nodiscard("You must use 2D length")]] constexpr Type length_2d() const noexcept
-        {
-            return Vector2<Type>::length();
-        }
-        [[nodiscard("You must use distance")]] constexpr Type distance_to(const Vector3& other) const noexcept
-        {
-            return (*this - other).length();
-        }
-        [[nodiscard("You must use normalized vector")]] constexpr Vector3 normalized() const noexcept
-        {
-            const Type length_value = this->length();
-
-            return length_value != 0 ? *this / length_value : *this;
-        }
-#else
         [[nodiscard("You must use length")]]
         constexpr Type length() const noexcept
+        requires std::is_floating_point_v<Type>
         {
             return internal::hypot(this->x, this->y, this->z);
         }
 
         [[nodiscard("You must use normalized vector")]]
         constexpr Vector3 normalized() const noexcept
+        requires std::is_floating_point_v<Type>
         {
             const Type len = this->length();
 
@@ -177,16 +158,17 @@ namespace omath
 
         [[nodiscard("You must use 2D length")]]
         constexpr Type length_2d() const noexcept
+        requires std::is_floating_point_v<Type>
         {
             return Vector2<Type>::length();
         }
 
         [[nodiscard("You must use distance")]]
-        constexpr Type distance_to(const Vector3& v_other) const noexcept
+        constexpr Type distance_to(const Vector3& other) const noexcept
+        requires std::is_floating_point_v<Type>
         {
-            return (*this - v_other).length();
+            return (*this - other).length();
         }
-#endif
 
         [[nodiscard("You must use squared length")]]
         constexpr Type length_sqr() const noexcept
@@ -254,22 +236,28 @@ namespace omath
         {
             return dot(other) > static_cast<Type>(0);
         }
+        // NOTE: SelfType defaults to Type so the return type is only formed when the function is called. Naming
+        // Angle directly would instantiate it for integer vectors and violate its floating point constraint.
+        template<class SelfType = Type>
+        requires std::is_same_v<SelfType, Type> && std::is_floating_point_v<SelfType>
         [[nodiscard("You must use angle between vectors")]]
-        constexpr std::expected<Angle<float, 0.f, 180.f, AngleFlags::Clamped>, Vector3Error>
+        constexpr std::expected<Angle<SelfType, SelfType{0}, SelfType{180}, AngleFlags::Clamped>, Vector3Error>
         angle_between(const Vector3& other) const noexcept
         {
             const auto bottom = length() * other.length();
 
             if (bottom == static_cast<Type>(0))
                 return std::unexpected(Vector3Error::IMPOSSIBLE_BETWEEN_ANGLE);
-            return Angle<float, 0.f, 180.f, AngleFlags::Clamped>::from_radians(internal::acos(dot(other) / bottom));
+            return Angle<SelfType, SelfType{0}, SelfType{180}, AngleFlags::Clamped>::from_radians(
+                    internal::acos(dot(other) / bottom));
         }
 
         [[nodiscard("You must use perpendicularity check result")]]
         constexpr bool is_perpendicular(const Vector3& other, Type epsilon = static_cast<Type>(0.0001)) const noexcept
+        requires std::is_floating_point_v<Type>
         {
             if (const auto angle = angle_between(other))
-                return std::abs(angle->as_degrees() - static_cast<Type>(90)) <= epsilon;
+                return internal::abs(angle->as_degrees() - static_cast<Type>(90)) <= epsilon;
 
             return false;
         }
@@ -286,28 +274,29 @@ namespace omath
             return std::make_tuple(this->x, this->y, z);
         }
 
+        // NOTE: Ordering by squared length, sqrt is monotonic so the order is identical without the cost.
         [[nodiscard("You must use comparison result")]]
         constexpr bool operator<(const Vector3& other) const noexcept
         {
-            return length() < other.length();
+            return length_sqr() < other.length_sqr();
         }
 
         [[nodiscard("You must use comparison result")]]
         constexpr bool operator>(const Vector3& other) const noexcept
         {
-            return length() > other.length();
+            return length_sqr() > other.length_sqr();
         }
 
         [[nodiscard("You must use comparison result")]]
         constexpr bool operator<=(const Vector3& other) const noexcept
         {
-            return length() <= other.length();
+            return length_sqr() <= other.length_sqr();
         }
 
         [[nodiscard("You must use comparison result")]]
         constexpr bool operator>=(const Vector3& other) const noexcept
         {
-            return length() >= other.length();
+            return length_sqr() >= other.length_sqr();
         }
 
         [[nodiscard("You must use array")]]
