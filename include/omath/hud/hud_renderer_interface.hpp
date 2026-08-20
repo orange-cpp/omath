@@ -44,6 +44,12 @@ namespace omath::hud
         virtual void add_filled_circle(const Vector2<float>& center, float radius, const Color& color,
                                        int segments = 0) = 0;
 
+        virtual void add_gradient_filled_circle(const Vector2<float>& center, float radius, const Gradient& gradient,
+                                                int segments = 0)
+        {
+            add_filled_circle(center, radius, gradient.top_left, segments);
+        }
+
         /// Draw an arc (partial circle outline). Angles in radians, 0 = right (+X), counter-clockwise.
         virtual void add_arc(const Vector2<float>& center, float radius, float a_min, float a_max, const Color& color,
                              float thickness, int segments = 0) = 0;

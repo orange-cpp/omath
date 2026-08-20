@@ -25,12 +25,13 @@ namespace omath::hud::widget
         float dot_radius = 0.f;
     };
 
-    /// Field-of-view boundary circle drawn around the center of the screen.
+    /// Field-of-view boundary circle drawn around the center of the screen. `fill` accepts a
+    /// solid Color or a Gradient (optionally animated), same paint vocabulary as Box::fill.
     struct FovCircle
     {
         Color color;
         float radius;
-        Color fill{0.f, 0.f, 0.f, 0.f};
+        Paint fill{Color{0.f, 0.f, 0.f, 0.f}};
         float thickness = 1.f;
         int segments = 0;
     };

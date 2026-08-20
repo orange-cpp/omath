@@ -120,6 +120,10 @@ namespace imgui_desktop::gui
         omath::Color m_fov_fill = omath::Color::from_rgba(255, 255, 0, 25);
         float m_fov_radius = 120.f, m_fov_thickness = 1.5f;
         bool m_show_fov = false;
+        bool m_gradient_fov_fill = false;
+        omath::Color m_fov_gradient_left{0.f, 0.8f, 1.f, 0.35f};
+        omath::Color m_fov_gradient_right{1.f, 0.2f, 0.7f, 0.35f};
+        omath::hud::GradientDirection m_fov_gradient_direction = omath::hud::GradientDirection::RightToLeft;
 
         // Threat arrow
         omath::Color m_threat_color = omath::Color::from_rgba(255, 40, 40, 255);

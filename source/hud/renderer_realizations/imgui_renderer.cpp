@@ -63,6 +63,48 @@ namespace omath::hud
                 gradient.bottom_right.to_im_color(), gradient.bottom_left.to_im_color());
     }
 
+    void ImguiHudRenderer::add_gradient_filled_circle(const Vector2<float>& center, const float radius,
+                                                      const Gradient& gradient, const int segments)
+    {
+        auto* draw_list = ImGui::GetBackgroundDrawList();
+        const int vertex_start = draw_list->VtxBuffer.Size;
+        draw_list->AddCircleFilled(center.to_im_vec2(), radius, IM_COL32_WHITE, segments);
+
+        if (gradient.animated)
+        {
+            const float animation_offset = static_cast<float>(ImGui::GetTime()) * gradient.animation_speed;
+            const float direction = gradient.direction == GradientDirection::RightToLeft ? 1.f : -1.f;
+            for (int i = vertex_start; i < draw_list->VtxBuffer.Size; ++i)
+            {
+                auto& vertex = draw_list->VtxBuffer[i];
+                const float angle = std::atan2(vertex.pos.y - center.y, vertex.pos.x - center.x);
+                const float blend =
+                        (std::sin(animation_offset + direction * angle * gradient.animation_spread) + 1.f) * 0.5f;
+                const auto color = gradient.top_left.value() * (1.f - blend) + gradient.top_right.value() * blend;
+                const auto alpha = static_cast<int>(((vertex.col >> IM_COL32_A_SHIFT) & 0xff) * color.w);
+                vertex.col = IM_COL32(static_cast<int>(color.x * 255.f), static_cast<int>(color.y * 255.f),
+                                      static_cast<int>(color.z * 255.f), alpha);
+            }
+            return;
+        }
+
+        // Static case: bilinear-blend the gradient's four corners across the circle's bounding
+        // box, same technique as add_gradient_text's static branch.
+        const float diameter = std::max(radius * 2.f, 1.f);
+        for (int i = vertex_start; i < draw_list->VtxBuffer.Size; ++i)
+        {
+            auto& vertex = draw_list->VtxBuffer[i];
+            const float x = std::clamp((vertex.pos.x - (center.x - radius)) / diameter, 0.f, 1.f);
+            const float y = std::clamp((vertex.pos.y - (center.y - radius)) / diameter, 0.f, 1.f);
+            const auto top = gradient.top_left.value() * (1.f - x) + gradient.top_right.value() * x;
+            const auto bottom = gradient.bottom_left.value() * (1.f - x) + gradient.bottom_right.value() * x;
+            const auto color = top * (1.f - y) + bottom * y;
+            const auto alpha = static_cast<int>(((vertex.col >> IM_COL32_A_SHIFT) & 0xff) * color.w);
+            vertex.col = IM_COL32(static_cast<int>(color.x * 255.f), static_cast<int>(color.y * 255.f),
+                                  static_cast<int>(color.z * 255.f), alpha);
+        }
+    }
+
     void ImguiHudRenderer::add_circle(const Vector2<float>& center, const float radius, const Color& color,
                                       const float thickness, const int segments)
     {

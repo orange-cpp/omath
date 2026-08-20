@@ -26,6 +26,8 @@ namespace omath::hud
                         int segments = 0) override;
         void add_filled_circle(const Vector2<float>& center, float radius, const Color& color,
                                int segments = 0) override;
+        void add_gradient_filled_circle(const Vector2<float>& center, float radius, const Gradient& gradient,
+                                        int segments = 0) override;
         void add_arc(const Vector2<float>& center, float radius, float a_min, float a_max, const Color& color,
                      float thickness, int segments = 0) override;
         void add_image(const std::any& texture_id, const Vector2<float>& min, const Vector2<float>& max,

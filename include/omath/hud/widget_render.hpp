@@ -30,6 +30,12 @@ namespace omath::hud
     void draw_filled_rectangle(HudRendererInterface& renderer, const Vector2<float>& min, const Vector2<float>& max,
                                const widget::Paint& paint);
 
+    /// Fills a circle with a solid color or a gradient mapped onto its bounding box, depending
+    /// on which alternative `paint` currently holds. No-op for a solid Color with zero alpha; a
+    /// Gradient is always drawn since it has no single alpha to gate on.
+    void draw_filled_circle(HudRendererInterface& renderer, const Vector2<float>& center, float radius,
+                            const widget::Paint& paint, int segments);
+
     /// Resolves a bar's BarPaint into a drawable Paint. Color/Gradient pass through
     /// unchanged; BarGradient blends toward `full_color` by `ratio` and builds a two-stop
     /// Gradient oriented along the bar's fill axis (`vertical` selects top-to-bottom vs

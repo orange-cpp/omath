@@ -243,7 +243,24 @@ namespace imgui_desktop::gui
         {
             ImGui::Checkbox("Show##fov", &m_show_fov);
             ImGui::ColorEdit4("Color##fov", reinterpret_cast<float*>(&m_fov_color), ImGuiColorEditFlags_NoInputs);
-            ImGui::ColorEdit4("Fill##fov", reinterpret_cast<float*>(&m_fov_fill), ImGuiColorEditFlags_NoInputs);
+            ImGui::Checkbox("Gradient fill##fov", &m_gradient_fov_fill);
+            if (m_gradient_fov_fill)
+            {
+                ImGui::ColorEdit4("Gradient left##fov", reinterpret_cast<float*>(&m_fov_gradient_left),
+                                  ImGuiColorEditFlags_NoInputs);
+                ImGui::ColorEdit4("Gradient right##fov", reinterpret_cast<float*>(&m_fov_gradient_right),
+                                  ImGuiColorEditFlags_NoInputs);
+                if (m_animate_gradients)
+                {
+                    int direction = static_cast<int>(m_fov_gradient_direction);
+                    if (ImGui::Combo("Direction##fov", &direction, "Right to left\0Left to right\0"))
+                        m_fov_gradient_direction = static_cast<omath::hud::GradientDirection>(direction);
+                }
+            }
+            else
+            {
+                ImGui::ColorEdit4("Fill##fov", reinterpret_cast<float*>(&m_fov_fill), ImGuiColorEditFlags_NoInputs);
+            }
             ImGui::SliderFloat("Radius##fov", &m_fov_radius, 10.f, 300.f);
             ImGui::SliderFloat("Thick##fov", &m_fov_thickness, 0.5f, 5.f);
         }
@@ -398,6 +415,12 @@ namespace imgui_desktop::gui
                                                               m_animate_gradients, 4.f, 0.7f,
                                                               m_label_gradient_direction}}
                                  : Paint{omath::Color::from_rgba(255, 255, 255, 255)};
+        const Paint fov_fill =
+                m_gradient_fov_fill
+                        ? Paint{omath::hud::Gradient{m_fov_gradient_left, m_fov_gradient_right, m_fov_gradient_right,
+                                                     m_fov_gradient_left, m_animate_gradients, 4.f, 0.7f,
+                                                     m_fov_gradient_direction}}
+                        : Paint{m_fov_fill};
 
         auto outline_helper = [](const bool is_outline) -> Outlined
         {
@@ -485,7 +508,7 @@ namespace imgui_desktop::gui
                         when(m_show_crosshair,
                              Crosshair{m_crosshair_color, m_crosshair_gap, m_crosshair_length, m_crosshair_thickness,
                                        m_crosshair_outline, m_crosshair_dot_radius}),
-                        when(m_show_fov, FovCircle{m_fov_color, m_fov_radius, m_fov_fill, m_fov_thickness}),
+                        when(m_show_fov, FovCircle{m_fov_color, m_fov_radius, fov_fill, m_fov_thickness}),
                         when(m_show_threat, ThreatArrow{threat_angle, m_threat_color, m_threat_radius, m_threat_size}),
                         when(m_show_hit, HitMarker{m_hit_color, m_hit_size, m_hit_gap, m_hit_thickness,
                                                    omath::Color{0.f, 0.f, 0.f, 1.f}, m_hit_alpha}),

@@ -112,6 +112,24 @@ namespace omath::hud
                 paint);
     }
 
+    void draw_filled_circle(HudRendererInterface& renderer, const Vector2<float>& center, const float radius,
+                            const widget::Paint& paint, const int segments)
+    {
+        std::visit(
+                widget::Overloaded{
+                        [&](const Color& color)
+                        {
+                            if (color.value().w > 0.f)
+                                renderer.add_filled_circle(center, radius, color, segments);
+                        },
+                        [&](const Gradient& gradient)
+                        {
+                            renderer.add_gradient_filled_circle(center, radius, gradient, segments);
+                        },
+                },
+                paint);
+    }
+
     widget::Paint resolve_bar_paint(const widget::BarPaint& paint, const float ratio, const bool vertical)
     {
         return std::visit(

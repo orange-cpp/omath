@@ -50,8 +50,7 @@ namespace omath::hud
 
     ScreenOverlay& ScreenOverlay::add_fov_circle(const widget::FovCircle& fov_circle)
     {
-        if (fov_circle.fill.value().w > 0.f)
-            m_renderer->add_filled_circle(m_center, fov_circle.radius, fov_circle.fill, fov_circle.segments);
+        draw_filled_circle(*m_renderer, m_center, fov_circle.radius, fov_circle.fill, fov_circle.segments);
 
         m_renderer->add_circle(m_center, fov_circle.radius, fov_circle.color, fov_circle.thickness,
                                fov_circle.segments);
