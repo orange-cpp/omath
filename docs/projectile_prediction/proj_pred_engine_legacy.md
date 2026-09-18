@@ -1,90 +1,85 @@
-# `omath::projectile_prediction::ProjPredEngineLegacy` — Legacy trait-based aim solver
+# `omath::projectile_prediction::ProjPredEngineLegacy` — Trait-based aim solver
 
 > Header: `omath/projectile_prediction/proj_pred_engine_legacy.hpp`
 > Namespace: `omath::projectile_prediction`
-> Inherits: `ProjPredEngineInterface`
-> Template param (default): `EngineTrait = source_engine::PredEngineTrait`
-> Purpose: compute a world-space **aim point** to hit a (possibly moving) target using a **discrete time scan** and a **closed-form ballistic pitch** under constant gravity.
+> Inherits: `ProjPredEngineInterface<ArithmeticType>`
+> Template: `ProjPredEngineLegacy<EngineTrait = source_engine::PredEngineTrait, ArithmeticType = float>`
+> Purpose: compute a world-space **aim point** or **aim angles** to hit a (possibly moving) target using a **fixed-step time scan** and a **closed-form ballistic pitch** under constant gravity.
+
+> This class is kept for backward compatibility (`OMATH_ENABLE_LEGACY`). It is portable and trait-driven; `ProjPredEngineAvx2` is the vectorised alternative for `float` on x86.
 
 ---
 
 ## Overview
 
-`ProjPredEngineLegacy` is a portable, trait-driven projectile lead solver. At each simulation time step `t` it:
+`ProjPredEngineLegacy` is a trait-driven projectile lead solver. For each time step `t = 0, Δt, 2Δt, …` below the horizon it:
 
-1. **Predicts target position** with `EngineTrait::predict_target_position(target, t, g)`.
-2. **Computes launch pitch** via a gravity-aware closed form (or a direct angle if gravity is zero).
-3. **Validates** that a projectile fired with that pitch (and direct yaw) actually reaches the predicted target within a **distance tolerance** at time `t`.
-4. On success, **returns an aim point** computed by `EngineTrait::calc_viewpoint_from_angles(...)`.
+1. **Predicts the target position** with `EngineTrait::predict_target_position(target, t, g)`.
+2. **Computes the launch pitch** from the closed-form low-arc solution (or the direct angle when the projectile has no gravity, or when the target is straight above or below).
+3. **Validates** that a projectile fired with that pitch and the direct yaw is within `distance_tolerance` of the predicted target position at time `t`.
+4. On success, returns either the aim point from `EngineTrait::calc_viewpoint_from_angles(...)` or the `{pitch, yaw}` pair.
 
-If no time step yields a feasible solution up to `maximum_simulation_time`, returns `std::nullopt`.
+If no time step yields a feasible solution, both methods return `std::nullopt`.
 
 ---
 
 ## API
 
 ```cpp
-template<class EngineTrait = source_engine::PredEngineTrait>
-requires PredEngineConcept<EngineTrait>
-class ProjPredEngineLegacy final : public ProjPredEngineInterface {
+template<class EngineTrait = source_engine::PredEngineTrait, class ArithmeticType = float>
+requires PredEngineConcept<EngineTrait, ArithmeticType>
+class ProjPredEngineLegacy final : public ProjPredEngineInterface<ArithmeticType> {
 public:
-  ProjPredEngineLegacy(float gravity_constant,
-                       float simulation_time_step,
-                       float maximum_simulation_time,
-                       float distance_tolerance);
+  explicit ProjPredEngineLegacy(ArithmeticType gravity_constant,
+                                ArithmeticType simulation_time_step,
+                                ArithmeticType maximum_simulation_time,
+                                ArithmeticType distance_tolerance) noexcept;
 
-  [[nodiscard]]
-  std::optional<Vector3<float>>
-  maybe_calculate_aim_point(const Projectile& projectile,
-                            const Target& target) const override;
+  // World-space point to look at (via EngineTrait::calc_viewpoint_from_angles)
+  [[nodiscard]] std::optional<Vector3<ArithmeticType>>
+  maybe_calculate_aim_point(const Projectile<ArithmeticType>&, const Target<ArithmeticType>&) const noexcept override;
 
-private:
-  // Closed-form ballistic pitch solver (internal)
-  std::optional<float>
-  maybe_calculate_projectile_launch_pitch_angle(const Projectile& projectile,
-                                                const Vector3<float>& target_position) const noexcept;
-
-  bool is_projectile_reached_target(const Vector3<float>& target_position,
-                                    const Projectile& projectile,
-                                    float pitch, float time) const noexcept;
-
-  const float m_gravity_constant;
-  const float m_simulation_time_step;
-  const float m_maximum_simulation_time;
-  const float m_distance_tolerance;
+  // Launch pitch and yaw in degrees, measured from projectile.m_origin + projectile.m_launch_offset
+  [[nodiscard]] std::optional<AimAngles<ArithmeticType>>
+  maybe_calculate_aim_angles(const Projectile<ArithmeticType>&, const Target<ArithmeticType>&) const noexcept override;
 };
+
+template<class ArithmeticType = float>
+struct AimAngles { ArithmeticType pitch{}; ArithmeticType yaw{}; };
 ```
+
+The engine is copyable and assignable, so it can live in containers or be swapped at runtime.
 
 ### Constructor parameters
 
-* `gravity_constant` — magnitude of gravity (e.g., `9.81f`), world units/s².
-* `simulation_time_step` — Δt for the scan (e.g., `1/240.f`).
-* `maximum_simulation_time` — search horizon in seconds.
-* `distance_tolerance` — max allowed miss distance at time `t` to accept a solution.
+* `gravity_constant` — magnitude of gravity in world units/s² (e.g. `800.f` for Source, `9.81f` for SI). Multiplied by `projectile.m_gravity_scale` for the projectile; applied unscaled to airborne targets.
+* `simulation_time_step` — Δt of the scan. Must be positive.
+* `maximum_simulation_time` — search horizon in seconds. Must be positive.
+* `distance_tolerance` — maximum miss distance at time `t` to accept a solution.
+
+A non-positive step or horizon makes both methods return `std::nullopt` immediately.
 
 ---
 
-## Trait requirements (`PredEngineConcept`)
+## Trait requirements (`PredEngineConcept<EngineTrait, ArithmeticType>`)
 
-Your `EngineTrait` must expose **noexcept** static methods with these signatures:
+Your `EngineTrait` must expose **noexcept** static functions with these signatures (`T = ArithmeticType`):
 
 ```cpp
-Vector3<float> predict_projectile_position(const Projectile&, float pitch_deg, float yaw_deg,
-                                           float time, float gravity) noexcept;
+Vector3<T> predict_projectile_position(const Projectile<T>&, T pitch_deg, T yaw_deg, T time, T gravity) noexcept;
+Vector3<T> predict_target_position(const Target<T>&, T time, T gravity) noexcept;
 
-Vector3<float> predict_target_position(const Target&, float time, float gravity) noexcept;
+T          calc_vector_2d_distance(const Vector3<T>& v) noexcept;      // horizontal length, e.g. hypot(x, y)
+T          get_vector_height_coordinate(const Vector3<T>& v) noexcept; // vertical component, e.g. z
 
-float          calc_vector_2d_distance(const Vector3<float>& v) noexcept;   // typically length in XZ plane
-float          get_vector_height_coordinate(const Vector3<float>& v) noexcept; // typically Y
+Vector3<T> calc_viewpoint_from_angles(const Projectile<T>&, Vector3<T> predicted_target,
+                                      std::optional<T> pitch_deg) noexcept;
 
-Vector3<float> calc_viewpoint_from_angles(const Projectile&, Vector3<float> target,
-                                          std::optional<float> maybe_pitch_deg) noexcept;
-
-float          calc_direct_pitch_angle(const Vector3<float>& from, const Vector3<float>& to) noexcept;
-float          calc_direct_yaw_angle  (const Vector3<float>& from, const Vector3<float>& to) noexcept;
+T          calc_direct_pitch_angle(const Vector3<T>& from, const Vector3<T>& to) noexcept; // +89 up, -89 down
+T          calc_direct_yaw_angle  (const Vector3<T>& from, const Vector3<T>& to) noexcept;
 ```
 
-> This design lets you adapt different game/physics conventions (axes, units, handedness) without changing the solver.
+Ready-made traits exist for every supported engine, e.g. `source_engine::PredEngineTrait`, `unity_engine::PredEngineTrait`, `unreal_engine::PredEngineTrait`.
 
 ---
 
@@ -92,33 +87,35 @@ float          calc_direct_yaw_angle  (const Vector3<float>& from, const Vector3
 
 ### Time scan
 
-For `t = 0 .. maximum_simulation_time` in steps of `simulation_time_step`:
+The scan runs `ceil(maximum_simulation_time / simulation_time_step)` steps with `t = simulation_time_step * i`. Computing `t` from the index rather than accumulating keeps the step count exact and avoids float drift over long horizons.
+
+For each step:
 
 1. `T = EngineTrait::predict_target_position(target, t, g)`
-2. `pitch = maybe_calculate_projectile_launch_pitch_angle(projectile, T)`
-
-    * If `std::nullopt`: continue
-3. `yaw = EngineTrait::calc_direct_yaw_angle(projectile.m_origin, T)`
+2. `pitch = launch_pitch(T)`; on `std::nullopt` continue
+3. `yaw = EngineTrait::calc_direct_yaw_angle(launch_origin, T)`
 4. `P = EngineTrait::predict_projectile_position(projectile, pitch, yaw, t, g)`
-5. Accept if `|P - T| <= distance_tolerance`
-6. Return `EngineTrait::calc_viewpoint_from_angles(projectile, T, pitch)`
+5. Accept if `|P - T|² <= distance_tolerance²`
 
-### Closed-form pitch (gravity on)
+where `launch_origin = projectile.m_origin + projectile.m_launch_offset`.
 
-Implements the classic ballistic formula (low-arc branch), where:
+### Launch pitch
 
-* `v` = muzzle speed,
-* `g` = `gravity_constant * projectile.m_gravity_scale`,
-* `x` = horizontal (2D) distance to target,
-* `y` = vertical offset to target.
+With `v` = launch speed, `g = gravity_constant * m_gravity_scale`, `x` = horizontal distance and `y` = height difference to the predicted target:
 
-[
-\theta ;=; \arctan!\left(\frac{v^{2} ;-; \sqrt{v^{4}-g!\left(gx^{2}+2yv^{2}\right)}}{gx}\right)
-]
+* `g == 0` → `EngineTrait::calc_direct_pitch_angle(launch_origin, T)`.
+* Discriminant `D = v⁴ - g(gx² + 2yv²) < 0` → no real solution for this step.
+* `x == 0` (straight up or down) → `calc_direct_pitch_angle`, i.e. ±90°.
+* Otherwise the low-arc root
 
-* If the **discriminant** ( v^{4}-g(gx^{2}+2yv^{2}) < 0 ) ⇒ **no real solution**.
-* If `g == 0`, falls back to `EngineTrait::calc_direct_pitch_angle(...)`.
-* Returns **degrees** (internally converts from radians).
+  ```
+  tan θ = (v² - √D) / (g x)
+        = (g x² + 2 y v²) / (x (v² + √D))       // conjugate form used in code
+  ```
+
+  The two are algebraically identical. The conjugate form avoids subtracting two nearly equal numbers, which for fast projectiles (thousands of units/s) costs about 0.002° in `float`; the conjugate form stays within 1e-5°.
+
+Angles are returned in **degrees**.
 
 ---
 
@@ -127,20 +124,19 @@ Implements the classic ballistic formula (low-arc branch), where:
 ```cpp
 using namespace omath::projectile_prediction;
 
-ProjPredEngineLegacy solver(
-  /*gravity*/ 9.81f,
-  /*dt*/      1.f / 240.f,
-  /*Tmax*/    3.0f,
-  /*tol*/     0.05f
-);
+const ProjPredEngineLegacy<> solver(/*gravity*/ 800.f, /*dt*/ 1.f / 1000.f, /*horizon*/ 10.f, /*tolerance*/ 5.f);
 
-Projectile proj; // fill: m_origin, m_launch_speed, m_gravity_scale, etc.
-Target     tgt;  // fill: position/velocity as required by your trait
+constexpr Projectile<float> proj{.m_origin = {0, 0, 64}, .m_launch_speed = 3000.f, .m_gravity_scale = 0.5f};
+constexpr Target<float> tgt{.m_origin = {900, 120, 0}, .m_velocity = {-40, 15, 0}, .m_is_airborne = false};
 
-if (auto aim = solver.maybe_calculate_aim_point(proj, tgt)) {
-  // Drive your turret/reticle toward *aim
-} else {
-  // No feasible intercept in the given horizon
+if (const auto aim = solver.maybe_calculate_aim_point(proj, tgt))
+{
+    // point the camera at *aim
+}
+
+if (const auto angles = solver.maybe_calculate_aim_angles(proj, tgt))
+{
+    // angles->pitch, angles->yaw in degrees
 }
 ```
 
@@ -148,19 +144,19 @@ if (auto aim = solver.maybe_calculate_aim_point(proj, tgt)) {
 
 ## Behavior & edge cases
 
-* **Zero gravity or zero distance**: uses direct pitch toward the target.
-* **Negative discriminant** in the pitch formula: returns `std::nullopt` for that time step.
-* **Very small `x`** (horizontal distance): the formula’s denominator `gx` approaches zero; your trait’s direct pitch helper provides a stable fallback.
-* **Tolerance**: `distance_tolerance` controls acceptance; tighten for accuracy, loosen for robustness.
+* **Zero gravity** → straight-line solution via the direct pitch.
+* **Straight up or down** → direct pitch (±90°); the reach check still has to pass.
+* **Negative discriminant** → that step is skipped; if every step fails, `std::nullopt`.
+* **Launch offset and yaw.** `maybe_calculate_aim_angles` measures yaw from the launch origin (`m_origin + m_launch_offset`). The Source trait's `calc_viewpoint_from_angles` builds the aim point relative to `m_origin`. With a purely forward offset both agree; with a lateral offset the yaw from the camera to the aim point differs from the reported yaw.
+* **Tolerance** controls acceptance; tighten for accuracy, loosen for robustness. It is compared squared, so no square root runs per step.
 
 ---
 
 ## Complexity & tuning
 
-* Time: **O(T)** where ( T \approx \frac{\text{maximum_simulation_time}}{\text{simulation_time_step}} )
-  plus trait costs for prediction and angle math per step.
-* Smaller `simulation_time_step` improves precision but increases runtime.
-* If needed, do a **coarse-to-fine** search: coarse Δt scan, then refine around the best hit time.
+* Time: **O(N)**, `N = ceil(maximum_simulation_time / simulation_time_step)`. Steps whose discriminant is negative cost a few flops; steps that reach the validation call the trait's projectile predictor, which dominates.
+* Smaller `simulation_time_step` improves precision at linear cost.
+* For many targets per frame at long range, prefer `ProjPredEngineAvx2` or a coarse-to-fine scan built on top of this engine.
 
 ---
 
@@ -170,15 +166,9 @@ if (auto aim = solver.maybe_calculate_aim_point(proj, tgt)) {
 * Elevated/depressed targets → pitch positive/negative as expected.
 * Receding fast target → unsolved within horizon ⇒ `nullopt`.
 * Gravity scale = 0 → identical to straight-line solution.
-* Near-horizon shots (large range, small arc) → discriminant near zero; verify stability.
+* Straight above / below → ±90°.
+* Non-positive step or horizon → `nullopt`, no hang.
 
 ---
 
-## Notes
-
-* All angles produced/consumed by the trait in this implementation are **degrees**.
-* `calc_viewpoint_from_angles` defines what “aim point” means in your engine (e.g., a point along the initial ray or the predicted impact point). Keep this consistent with your HUD/reticle.
-
----
-
-*Last updated: 1 Nov 2025*
+*Last updated: 18 Sep 2026*

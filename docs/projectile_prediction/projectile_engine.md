@@ -1,17 +1,19 @@
-# `omath::projectile_prediction::ProjPredEngineInterface` — Aim-point solver interface
+# `omath::projectile_prediction::ProjPredEngineInterface` — Aim solver interface
 
-> Header: your project’s `projectile_prediction/proj_pred_engine_interface.hpp`
+> Header: `omath/projectile_prediction/proj_pred_engine.hpp`
 > Namespace: `omath::projectile_prediction`
-> Depends on: `Vector3<float>`, `Projectile`, `Target`
-> Purpose: **contract** for engines that compute a lead/aim point to hit a moving target.
+> Template: `ProjPredEngineInterface<ArithmeticType = float>`
+> Depends on: `Vector3<ArithmeticType>`, `Projectile<ArithmeticType>`, `Target<ArithmeticType>`
+> Purpose: **contract** for engines that compute a lead/aim solution to hit a moving target.
+> Implementations: `ProjPredEngineLegacy`, `ProjPredEngineAvx2`
 
 ---
 
 ## Overview
 
-`ProjPredEngineInterface` defines a single pure-virtual method that attempts to compute the **world-space aim point** where a projectile should be launched to intersect a target under the engine’s physical model (e.g., constant projectile speed, gravity, drag, max flight time, etc.).
+`ProjPredEngineInterface` defines two pure-virtual methods that attempt to solve the intercept under the engine’s physical model (e.g., constant projectile speed, gravity, drag, max flight time, etc.): one returns the **world-space aim point** to look at, the other the **launch pitch and yaw** in degrees.
 
-If a valid solution exists, the engine returns the 3D aim point. Otherwise, it returns `std::nullopt` (no feasible intercept).
+If a valid solution exists, the engine returns it. Otherwise, it returns `std::nullopt` (no feasible intercept).
 
 ---
 
@@ -20,12 +22,24 @@ If a valid solution exists, the engine returns the 3D aim point. Otherwise, it r
 ```cpp
 namespace omath::projectile_prediction {
 
+template<class ArithmeticType = float>
+struct AimAngles {
+  ArithmeticType pitch{};   // degrees
+  ArithmeticType yaw{};     // degrees
+};
+
+template<class ArithmeticType = float>
 class ProjPredEngineInterface {
 public:
   [[nodiscard]]
-  virtual std::optional<Vector3<float>>
-  maybe_calculate_aim_point(const Projectile& projectile,
-                            const Target& target) const = 0;
+  virtual std::optional<Vector3<ArithmeticType>>
+  maybe_calculate_aim_point(const Projectile<ArithmeticType>& projectile,
+                            const Target<ArithmeticType>& target) const = 0;
+
+  [[nodiscard]]
+  virtual std::optional<AimAngles<ArithmeticType>>
+  maybe_calculate_aim_angles(const Projectile<ArithmeticType>& projectile,
+                             const Target<ArithmeticType>& target) const = 0;
 
   virtual ~ProjPredEngineInterface() = default;
 };
@@ -159,4 +173,4 @@ Return `nullopt` if `t*` is absent.
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 18 Sep 2026*

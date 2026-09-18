@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 #include <omath/projectile_prediction/proj_pred_engine_legacy.hpp>
 #include <omath/engines/source_engine/traits/camera_trait.hpp>
+#include <cmath>
+#include <numbers>
+#include <type_traits>
 
 using Projectile = omath::projectile_prediction::Projectile<float>;
 using Target     = omath::projectile_prediction::Target<float>;
@@ -297,4 +300,75 @@ TEST(UnitTestPrediction, AimAnglesReturnsNulloptWhenNoSolution)
 
     EXPECT_FALSE(aim_point.has_value());
     EXPECT_FALSE(aim_angles.has_value());
+}
+
+// Regression tests for the legacy engine cleanup: fixed step count, conjugate pitch formula, vertical shots.
+TEST(UnitTestPrediction, ZeroTimeStepReturnsNulloptInsteadOfHanging)
+{
+    constexpr Target target{.m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {3, 2, 1}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+
+    EXPECT_FALSE(Engine(400.f, 0.f, 50.f, 5.f).maybe_calculate_aim_point(proj, target).has_value());
+    EXPECT_FALSE(Engine(400.f, -1.f, 50.f, 5.f).maybe_calculate_aim_angles(proj, target).has_value());
+    EXPECT_FALSE(Engine(400.f, 1.f / 1000.f, 0.f, 5.f).maybe_calculate_aim_point(proj, target).has_value());
+}
+
+TEST(UnitTestPrediction, HighSpeedPitchMatchesDoubleReference)
+{
+    // Static target, so the solved pitch is the closed form for a fixed (horizontal distance, height) pair.
+    constexpr Target target{.m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {3, 2, 1}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+
+    const auto aim_angles = Engine(400.f, 1.f / 1000.f, 50.f, 5.f).maybe_calculate_aim_angles(proj, target);
+    ASSERT_TRUE(aim_angles.has_value());
+
+    const double v = 5000.0;
+    const double g = 400.0 * 0.4;
+    const double x = std::hypot(100.0 - 3.0, 0.0 - 2.0);
+    const double y = 90.0 - 1.0;
+    const double reference =
+            std::atan((v * v - std::sqrt(v * v * v * v - g * (g * x * x + 2.0 * y * v * v))) / (g * x)) * 180.0
+            / std::numbers::pi;
+
+    // The plain v^2 - sqrt(D) form is off by about 0.002 degrees here; the conjugate form is within 1e-5.
+    EXPECT_NEAR(aim_angles->pitch, static_cast<float>(reference), 1e-4f);
+}
+
+TEST(UnitTestPrediction, VerticalShotsUseDirectPitch)
+{
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 500.f, .m_gravity_scale = 1.f};
+    const Engine engine(400.f, 1.f / 1000.f, 5.f, 5.f);
+
+    constexpr Target above{.m_origin = {0, 0, 100}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    const auto up = engine.maybe_calculate_aim_angles(proj, above);
+    ASSERT_TRUE(up.has_value());
+    EXPECT_FLOAT_EQ(up->pitch, 90.f);
+
+    constexpr Target below{.m_origin = {0, 0, -100}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    const auto down = engine.maybe_calculate_aim_angles(proj, below);
+    ASSERT_TRUE(down.has_value());
+    EXPECT_FLOAT_EQ(down->pitch, -90.f);
+}
+
+TEST(UnitTestPrediction, AimAnglesYawIsMeasuredFromLaunchOrigin)
+{
+    // The engine fires from m_origin + m_launch_offset and reports yaw from there. Note that the Source trait's
+    // calc_viewpoint_from_angles() builds the aim point relative to m_origin instead, so with a lateral offset the yaw
+    // from the camera to the aim point is 0 degrees here while the engine reports about -14.
+    constexpr Target target{.m_origin = {200, 0, 0}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {
+            .m_origin = {0, 0, 0}, .m_launch_offset = {0, 50, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+
+    const auto aim_angles = Engine(400.f, 1.f / 1000.f, 50.f, 5.f).maybe_calculate_aim_angles(proj, target);
+    ASSERT_TRUE(aim_angles.has_value());
+
+    const float expected_yaw = omath::angles::radians_to_degrees(std::atan2(0.f - 50.f, 200.f - 0.f));
+    EXPECT_NEAR(aim_angles->yaw, expected_yaw, 0.05f);
+}
+
+TEST(UnitTestPrediction, EngineIsAssignable)
+{
+    static_assert(std::is_copy_assignable_v<Engine>);
+    static_assert(std::is_nothrow_constructible_v<Engine, float, float, float, float>);
+    SUCCEED();
 }

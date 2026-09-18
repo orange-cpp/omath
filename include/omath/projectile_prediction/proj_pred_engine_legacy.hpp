@@ -9,6 +9,10 @@
 #include "omath/projectile_prediction/proj_pred_engine.hpp"
 #include "omath/projectile_prediction/projectile.hpp"
 #include "omath/projectile_prediction/target.hpp"
+#include "omath/trigonometry/angles.hpp"
+#include <cmath>
+#include <concepts>
+#include <cstddef>
 #include <optional>
 
 namespace omath::projectile_prediction
@@ -45,7 +49,7 @@ namespace omath::projectile_prediction
     public:
         explicit ProjPredEngineLegacy(const ArithmeticType gravity_constant, const ArithmeticType simulation_time_step,
                                       const ArithmeticType maximum_simulation_time,
-                                      const ArithmeticType distance_tolerance)
+                                      const ArithmeticType distance_tolerance) noexcept
             : m_gravity_constant(gravity_constant), m_simulation_time_step(simulation_time_step),
               m_maximum_simulation_time(maximum_simulation_time), m_distance_tolerance(distance_tolerance)
         {
@@ -54,7 +58,7 @@ namespace omath::projectile_prediction
         [[nodiscard]]
         std::optional<Vector3<ArithmeticType>>
         maybe_calculate_aim_point(const Projectile<ArithmeticType>& projectile,
-                                  const Target<ArithmeticType>& target) const override
+                                  const Target<ArithmeticType>& target) const noexcept override
         {
             const auto solution = find_solution(projectile, target);
             if (!solution)
@@ -67,7 +71,7 @@ namespace omath::projectile_prediction
         [[nodiscard]]
         std::optional<AimAngles<ArithmeticType>>
         maybe_calculate_aim_angles(const Projectile<ArithmeticType>& projectile,
-                                   const Target<ArithmeticType>& target) const override
+                                   const Target<ArithmeticType>& target) const noexcept override
         {
             const auto solution = find_solution(projectile, target);
             if (!solution)
@@ -97,8 +101,13 @@ namespace omath::projectile_prediction
 
         [[nodiscard]]
         std::optional<Solution> find_solution(const Projectile<ArithmeticType>& projectile,
-                                              const Target<ArithmeticType>& target) const
+                                              const Target<ArithmeticType>& target) const noexcept
         {
+            // A non-positive step or horizon has no scan to run. Without this the accumulating loop below would
+            // never terminate for a zero step.
+            if (!(m_simulation_time_step > ArithmeticType{0}) || !(m_maximum_simulation_time > ArithmeticType{0}))
+                return std::nullopt;
+
             const auto launch_speed_sqr = projectile.m_launch_speed * projectile.m_launch_speed;
             const LaunchContext launch{
                     .origin = projectile.m_origin + projectile.m_launch_offset,
@@ -107,9 +116,14 @@ namespace omath::projectile_prediction
                     .speed_pow4 = launch_speed_sqr * launch_speed_sqr,
             };
 
-            for (ArithmeticType time = ArithmeticType{0}; time < m_maximum_simulation_time;
-                 time += m_simulation_time_step)
+            // time = step * index rather than time += step: repeated addition drifts (a 1 ms step over 50 s lands
+            // 16 steps and 16 ms off), and the count below is exactly what the parameters say.
+            const auto step_count =
+                    static_cast<std::size_t>(std::ceil(m_maximum_simulation_time / m_simulation_time_step));
+
+            for (std::size_t step = 0; step < step_count; ++step)
             {
+                const auto time = m_simulation_time_step * static_cast<ArithmeticType>(step);
                 const auto predicted_target_position =
                         EngineTrait::predict_target_position(target, time, m_gravity_constant);
 
@@ -128,12 +142,12 @@ namespace omath::projectile_prediction
             return std::nullopt;
         }
 
-        const ArithmeticType m_gravity_constant;
-        const ArithmeticType m_simulation_time_step;
-        const ArithmeticType m_maximum_simulation_time;
-        const ArithmeticType m_distance_tolerance;
+        ArithmeticType m_gravity_constant;
+        ArithmeticType m_simulation_time_step;
+        ArithmeticType m_maximum_simulation_time;
+        ArithmeticType m_distance_tolerance;
 
-        // Realization of this formula:
+        // Realization of this formula (low arc branch):
         // https://stackoverflow.com/questions/54917375/how-to-calculate-the-angle-to-shoot-a-bullet-in-order-to-hit-a-moving-target
         /*
         \[
@@ -156,21 +170,25 @@ namespace omath::projectile_prediction
             const auto delta = target_position - launch.origin;
 
             const auto distance2d = EngineTrait::calc_vector_2d_distance(delta);
-            const auto distance2d_sqr = distance2d * distance2d;
+            const auto height = EngineTrait::get_vector_height_coordinate(delta);
 
-            ArithmeticType root = launch.speed_pow4
-                                  - launch.gravity
-                                            * (launch.gravity * distance2d_sqr
-                                               + ArithmeticType{2} * EngineTrait::get_vector_height_coordinate(delta)
-                                                         * launch.speed_sqr);
+            // g x^2 + 2 y v^2, shared by the discriminant and the tangent below
+            const auto inner = launch.gravity * distance2d * distance2d + ArithmeticType{2} * height * launch.speed_sqr;
+            const auto discriminant = launch.speed_pow4 - launch.gravity * inner;
 
-            if (root < ArithmeticType{0}) [[unlikely]]
+            if (discriminant < ArithmeticType{0}) [[unlikely]]
                 return std::nullopt;
 
-            root = std::sqrt(root);
-            const ArithmeticType angle = std::atan((launch.speed_sqr - root) / (launch.gravity * distance2d));
+            // Straight up or down: the formula divides by g x. The direct angle is the only launch direction anyway.
+            if (distance2d == ArithmeticType{0})
+                return EngineTrait::calc_direct_pitch_angle(launch.origin, target_position);
 
-            return angles::radians_to_degrees(angle);
+            // tan(theta) = (v^2 - sqrt(D)) / (g x) multiplied through by (v^2 + sqrt(D)). For fast projectiles v^2 and
+            // sqrt(D) are nearly equal and the plain form cancels most of the float mantissa (about 0.002 degrees of
+            // error at 5000 units/s); the conjugate form adds them instead.
+            const auto tangent = inner / (distance2d * (launch.speed_sqr + std::sqrt(discriminant)));
+
+            return angles::radians_to_degrees(std::atan(tangent));
         }
 
         [[nodiscard]]
