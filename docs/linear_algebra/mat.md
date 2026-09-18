@@ -172,8 +172,7 @@ T const& operator[](size_t r, size_t c) const; // C++23
 * **Comparison / formatting**
 
   ```cpp
-  bool operator==(const Mat&) const;
-  bool operator!=(const Mat&) const;
+  constexpr bool operator==(const Mat&) const noexcept;   // != is synthesized by C++20
 
   std::string  to_string()  const noexcept;
   std::wstring to_wstring() const noexcept;
@@ -289,7 +288,7 @@ Mat<4,4,T,St> mat_look_at_right_handed(const Vector3<T>& eye,
 
 ```cpp
 template<class Type=float>
-static constexpr Mat<4,4> to_screen_mat(const Type& screen_w, const Type& screen_h) noexcept;
+static constexpr Mat to_screen_mat(const Type& screen_w, const Type& screen_h) noexcept;   // 4x4 only; keeps Type and StoreType
 // Maps NDC to screen space (origin top-left, y down)
 ```
 
@@ -353,14 +352,14 @@ concept MatTemplateEqual =
   (M1::store_type == M2::store_type);
 ```
 
-> Use this concept to constrain generic functions that operate on like-shaped matrices.
+> Use this concept to constrain generic functions that operate on like-shaped matrices. `Mat` exposes the required `rows`, `columns`, `value_type` and `store_type` static members.
 
 ---
 
 ## Exceptions
 
 * `std::invalid_argument` — initializer list dimensions mismatch.
-* `std::out_of_range` — out-of-bounds in `at()` when bounds checking is active (see source guard).
+* `std::out_of_range` — out-of-bounds in `at()`. Checking is active only in debug builds (`NDEBUG` undefined) with `OMATH_SUPRESS_SAFETY_CHECKS` undefined.
 * `inverted()` does **not** throw; returns `std::nullopt` if `determinant() == 0`.
 
 ---
@@ -414,6 +413,7 @@ Type sum() const noexcept;
 
 template<size_t OC> Mat<Rows,OC,Type,StoreType> operator*(const Mat<Columns,OC,Type,StoreType>&) const;
 Mat& operator*=(const Type&); Mat operator*(const Type&) const;
+Mat& operator*=(const Mat&);                          // square only
 Mat& operator/=(const Type&); Mat operator/(const Type&) const;
 
 Mat<Columns,Rows,Type,StoreType> transposed() const noexcept;
@@ -429,12 +429,11 @@ std::string  to_string() const noexcept;
 std::wstring to_wstring() const noexcept;
 std::u8string to_u8string() const noexcept;
 
-bool operator==(const Mat&) const;
-bool operator!=(const Mat&) const;
+constexpr bool operator==(const Mat&) const noexcept;   // != is synthesized by C++20
 
 // Helpers (see sections above)
 ```
 
 ---
 
-*Last updated: 31 Oct 2025*
+*Last updated: 18 Sep 2026*

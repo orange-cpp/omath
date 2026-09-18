@@ -3,14 +3,19 @@
 //
 #pragma once
 #include "omath/internal/constexpr_math.hpp"
-#include "vector3.hpp"
+#include "omath/linear_algebra/vector3.hpp"
 #include <algorithm>
 #include <array>
-#include <cmath>
-#include <iomanip>
+#include <cstddef>
+#include <cstdint>
+#include <format>
+#include <initializer_list>
+#include <iterator>
+#include <limits>
 #include <numeric>
-#include <sstream>
+#include <optional>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -56,6 +61,11 @@ namespace omath
     {
     public:
         using ContainedType = Type;
+        using value_type = Type;
+        static constexpr size_t rows = Rows;
+        static constexpr size_t columns = Columns;
+        static constexpr MatStoreType store_type = StoreType;
+
         constexpr Mat() noexcept
         {
             clear();
@@ -81,7 +91,7 @@ namespace omath
                 auto col_it = row_it->begin();
                 for (size_t j = 0; j < Columns; ++j, ++col_it)
                 {
-                    at(i, j) = std::move(*col_it);
+                    at(i, j) = *col_it;
                 }
             }
         }
@@ -91,10 +101,10 @@ namespace omath
             std::copy_n(raw_data, Rows * Columns, m_data.begin());
         }
 
-        constexpr Mat(const Mat& other) noexcept
-        {
-            m_data = other.m_data;
-        }
+        constexpr Mat(const Mat& other) noexcept = default;
+        constexpr Mat(Mat&& other) noexcept = default;
+        constexpr Mat& operator=(const Mat& other) noexcept = default;
+        constexpr Mat& operator=(Mat&& other) noexcept = default;
 
         [[nodiscard("You must use element reference")]]
         constexpr Type& operator[](const size_t row, const size_t col)
@@ -106,11 +116,6 @@ namespace omath
         constexpr const Type& operator[](const size_t row, const size_t col) const
         {
             return at(row, col);
-        }
-
-        constexpr Mat(Mat&& other) noexcept
-        {
-            m_data = std::move(other.m_data);
         }
 
         [[nodiscard("You must use row count")]]
@@ -134,7 +139,7 @@ namespace omath
         [[nodiscard("You must use element reference")]]
         constexpr const Type& at(const size_t row_index, const size_t column_index) const
         {
-#if !defined(NDEBUG) && defined(OMATH_SUPRESS_SAFETY_CHECKS)
+#if !defined(NDEBUG) && !defined(OMATH_SUPRESS_SAFETY_CHECKS)
             if (row_index >= Rows || column_index >= Columns)
                 throw std::out_of_range("Index out of range");
 #endif
@@ -217,9 +222,9 @@ namespace omath
             return *this;
         }
 
-        template<size_t OtherColumns> constexpr Mat<Rows, OtherColumns, Type, StoreType>
-        operator*=(const Mat<Columns, OtherColumns, Type, StoreType>& other)
+        constexpr Mat& operator*=(const Mat& other)
         {
+            static_assert(Rows == Columns, "In-place matrix multiplication is only defined for square matrices.");
             return *this = *this * other;
         }
 
@@ -247,22 +252,6 @@ namespace omath
             Mat result(*this);
             result /= value;
             return result;
-        }
-
-        constexpr Mat& operator=(const Mat& other) noexcept
-        {
-            if (this != &other)
-                m_data = other.m_data;
-
-            return *this;
-        }
-
-        constexpr Mat& operator=(Mat&& other) noexcept
-        {
-            if (this != &other)
-                m_data = std::move(other.m_data);
-
-            return *this;
         }
 
         [[nodiscard("You must use transposed matrix")]]
@@ -332,7 +321,7 @@ namespace omath
         constexpr Type alg_complement(const size_t row, const size_t column) const
         {
             const auto minor_value = minor(row, column);
-            return (row + column + 2) % 2 == 0 ? minor_value : -minor_value;
+            return (row + column) % 2 == 0 ? minor_value : -minor_value;
         }
 
         [[nodiscard("You must use raw array")]]
@@ -350,23 +339,22 @@ namespace omath
         [[nodiscard("You must use string representation")]]
         std::string to_string() const noexcept
         {
-            std::ostringstream oss;
-            oss << "[[";
+            std::string result = "[[";
 
             for (size_t i = 0; i < Rows; ++i)
             {
                 if (i > 0)
-                    oss << " [";
+                    result += " [";
 
                 for (size_t j = 0; j < Columns; ++j)
                 {
-                    oss << std::setw(9) << std::fixed << std::setprecision(3) << at(i, j);
+                    std::format_to(std::back_inserter(result), "{:9.3f}", static_cast<double>(at(i, j)));
                     if (j != Columns - 1)
-                        oss << ", ";
+                        result += ", ";
                 }
-                oss << (i == Rows - 1 ? "]]" : "]\n");
+                result += i == Rows - 1 ? "]]" : "]\n";
             }
-            return oss.str();
+            return result;
         }
 
         [[nodiscard("You must use wide string representation")]]
@@ -385,21 +373,16 @@ namespace omath
         }
 
         [[nodiscard("You must use comparison result")]]
-        bool operator==(const Mat& mat) const
+        constexpr bool operator==(const Mat& mat) const noexcept
         {
             return m_data == mat.m_data;
         }
 
-        [[nodiscard("You must use comparison result")]]
-        bool operator!=(const Mat& mat) const
-        {
-            return !operator==(mat);
-        }
-
         // Static methods that return fixed-size matrices
         [[nodiscard("You must use screen matrix")]]
-        constexpr static Mat<4, 4> to_screen_mat(const Type& screen_width, const Type& screen_height) noexcept
+        constexpr static Mat to_screen_mat(const Type& screen_width, const Type& screen_height) noexcept
         {
+            static_assert(Rows == 4 && Columns == 4, "Screen matrix is only defined for 4x4 matrices.");
             return {
                     {screen_width / 2, 0, 0, 0},
                     {0, -screen_height / 2, 0, 0},
@@ -594,7 +577,7 @@ namespace omath
                             c_col[i] += this_mat_data[i + k * Rows] * other_mat_data[k + j * Columns];
                 }
             }
-            else if (std::is_same_v<Type, double>)
+            else if constexpr (std::is_same_v<Type, double>)
             {
                 constexpr std::size_t vector_size = 4;
                 constexpr std::size_t block_size = vector_size * 4;
@@ -700,7 +683,7 @@ namespace omath
                             c_row[j] += this_mat_data[i * Columns + k] * other_mat_data[k * OtherColumns + j];
                 }
             }
-            else if (std::is_same_v<Type, double>)
+            else if constexpr (std::is_same_v<Type, double>)
             {
                 constexpr std::size_t vector_size = 4;
                 constexpr std::size_t block_size = vector_size * 4;
@@ -1095,13 +1078,6 @@ struct std::formatter<omath::Mat<Rows, Columns, Type, StoreType>> final // NOLIN
     [[nodiscard("You must use format iterator")]]
     static auto format(const MatType& mat, FormatContext& ctx)
     {
-        if constexpr (std::is_same_v<typename FormatContext::char_type, char>)
-            return std::format_to(ctx.out(), "{}", mat.to_string());
-
-        if constexpr (std::is_same_v<typename FormatContext::char_type, wchar_t>)
-            return std::format_to(ctx.out(), L"{}", mat.to_wstring());
-
-        if constexpr (std::is_same_v<typename FormatContext::char_type, char8_t>)
-            return std::format_to(ctx.out(), u8"{}", mat.to_u8string());
+        return std::ranges::copy(mat.to_string(), ctx.out()).out;
     }
 };

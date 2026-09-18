@@ -2,10 +2,10 @@
 // This file merges multiple color-related unit test files into one grouped TU
 // to make the tests look more organized.
 
+#include <algorithm>
+#include <format>
 #include <gtest/gtest.h>
 #include <omath/utility/color.hpp>
-#include <format>
-#include <algorithm>
 
 using namespace omath;
 
@@ -175,10 +175,10 @@ TEST(UnitTestColorGrouped_More, FloatCtorAndClampForRGB)
 TEST(UnitTestColorGrouped_More, FromRgbaProducesScaledComponents)
 {
     constexpr Color c = Color::from_rgba(25u, 128u, 230u, 64u);
-    EXPECT_NEAR(c.value().x, 25.0f/255.0f, 1e-6f);
-    EXPECT_NEAR(c.value().y, 128.0f/255.0f, 1e-6f);
-    EXPECT_NEAR(c.value().z, 230.0f/255.0f, 1e-6f);
-    EXPECT_NEAR(c.value().w, 64.0f/255.0f, 1e-6f);
+    EXPECT_NEAR(c.value().x, 25.0f / 255.0f, 1e-6f);
+    EXPECT_NEAR(c.value().y, 128.0f / 255.0f, 1e-6f);
+    EXPECT_NEAR(c.value().z, 230.0f / 255.0f, 1e-6f);
+    EXPECT_NEAR(c.value().w, 64.0f / 255.0f, 1e-6f);
 }
 
 TEST(UnitTestColorGrouped_More, BlendProducesIntermediate)
@@ -227,7 +227,8 @@ TEST(UnitTestColorGrouped_More2, FromHsvCases)
 {
     constexpr float eps = 1e-5f;
 
-    auto check_hue = [&](float h) {
+    auto check_hue = [&](float h)
+    {
         SCOPED_TRACE(::testing::Message() << "h=" << h);
         Color c = Color::from_hsv(h, 1.f, 1.f);
         EXPECT_TRUE(std::isfinite(c.value().x));
@@ -322,4 +323,64 @@ TEST(UnitTestColorGrouped_More2, FormatterHsv)
     EXPECT_NE(s.find("h:"), std::string::npos);
     EXPECT_NE(s.find("s:"), std::string::npos);
     EXPECT_NE(s.find("v:"), std::string::npos);
+}
+
+TEST(UnitTestColorGrouped_Fixes, HsvSettersPreserveAlpha)
+{
+    Color c = Color::from_rgba(255, 0, 0, 128);
+    const float alpha = c.value().w;
+
+    c.set_hue(0.5f);
+    EXPECT_FLOAT_EQ(c.value().w, alpha);
+
+    c.set_saturation(0.3f);
+    EXPECT_FLOAT_EQ(c.value().w, alpha);
+
+    c.set_value(0.7f);
+    EXPECT_FLOAT_EQ(c.value().w, alpha);
+}
+
+TEST(UnitTestColorGrouped_Fixes, FromHsvWrapsHue)
+{
+    constexpr Color wrapped_up = Color::from_hsv(1.25f, 1.0f, 1.0f);
+    constexpr Color wrapped_down = Color::from_hsv(-0.75f, 1.0f, 1.0f);
+    constexpr Color expected = Color::from_hsv(0.25f, 1.0f, 1.0f);
+
+    EXPECT_NEAR(wrapped_up.value().x, expected.value().x, 1e-5f);
+    EXPECT_NEAR(wrapped_up.value().y, expected.value().y, 1e-5f);
+    EXPECT_NEAR(wrapped_up.value().z, expected.value().z, 1e-5f);
+    EXPECT_NEAR(wrapped_down.value().x, expected.value().x, 1e-5f);
+    EXPECT_NEAR(wrapped_down.value().y, expected.value().y, 1e-5f);
+    EXPECT_NEAR(wrapped_down.value().z, expected.value().z, 1e-5f);
+}
+
+TEST(UnitTestColorGrouped_Fixes, HsvRoundTrip)
+{
+    for (int i = 0; i < 36; ++i)
+    {
+        const float hue = static_cast<float>(i) / 36.f;
+        const Color c = Color::from_hsv(hue, 0.75f, 0.5f);
+        const auto hsv = c.to_hsv();
+        EXPECT_NEAR(hsv.hue, hue, 1e-4f);
+        EXPECT_NEAR(hsv.saturation, 0.75f, 1e-4f);
+        EXPECT_NEAR(hsv.value, 0.5f, 1e-4f);
+    }
+}
+
+TEST(UnitTestColorGrouped_Fixes, Equality)
+{
+    constexpr Color a(0.1f, 0.2f, 0.3f, 0.4f);
+    constexpr Color b(0.1f, 0.2f, 0.3f, 0.4f);
+    constexpr Color c(0.1f, 0.2f, 0.3f, 0.5f);
+
+    EXPECT_TRUE(a == b);
+    EXPECT_FALSE(a == c);
+    EXPECT_TRUE(a != c);
+}
+
+TEST(UnitTestColorGrouped_Fixes, ToStringRoundsChannels)
+{
+    const Color blended = Color::red().blend(Color::green(), 0.5f);
+    EXPECT_EQ(blended.to_string(), "[r:128, g:128, b:0, a:255]");
+    EXPECT_EQ(std::format("{}", blended), "[r:128, g:128, b:0, a:255]");
 }

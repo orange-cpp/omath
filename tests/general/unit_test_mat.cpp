@@ -232,7 +232,7 @@ TEST_F(UnitTestMat, StaticMethod_ToScreenMat)
 // Test exception handling in At() method
 TEST_F(UnitTestMat, Method_At_OutOfRange)
 {
-#if !defined(NDEBUG) && defined(OMATH_SUPRESS_SAFETY_CHECKS)
+#if !defined(NDEBUG) && !defined(OMATH_SUPRESS_SAFETY_CHECKS)
     EXPECT_THROW(std::ignore = m2.at(2, 0), std::out_of_range);
     EXPECT_THROW(std::ignore = m2.at(0, 2), std::out_of_range);
 #endif
@@ -332,12 +332,11 @@ TEST(UnitTestMatStandalone, Inverted4x4ColumnMajor)
 // the bottom row, so it exercises rows the affine case leaves as identity.
 TEST(UnitTestMatStandalone, Inverted4x4ViewProjection)
 {
-    const auto projection = mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR,
-                                                                     NDCDepthRange::ZERO_TO_ONE>(73.7f, 16.f / 9.f,
-                                                                                                 1.f, 1000.f);
-    const auto view = mat_camera_view<float, MatStoreType::ROW_MAJOR>({0.936f, 0.312f, -0.160f},
-                                                                      {-0.289f, 0.884f, 0.369f},
-                                                                      {0.198f, -0.348f, 0.916f}, {128.f, -512.f, 64.f});
+    const auto projection =
+            mat_perspective_left_handed_vertical_fov<float, MatStoreType::ROW_MAJOR, NDCDepthRange::ZERO_TO_ONE>(
+                    73.7f, 16.f / 9.f, 1.f, 1000.f);
+    const auto view = mat_camera_view<float, MatStoreType::ROW_MAJOR>(
+            {0.936f, 0.312f, -0.160f}, {-0.289f, 0.884f, 0.369f}, {0.198f, -0.348f, 0.916f}, {128.f, -512.f, 64.f});
     const auto view_projection = projection * view;
 
     const auto inverse = view_projection.inverted();
@@ -746,3 +745,58 @@ static_assert(
                    && close_to(projection.at(3, 2), -1.0f, 1e-5f);
         }(),
         "Mat horizontal-FOV perspective should be constexpr with embedded constexpr math");
+
+// Regression tests for the Mat cleanup (bounds-check macro, screen matrix type, trivial copyability, concept).
+TEST(UnitTestMatStandalone, ToScreenMatKeepsScalarType)
+{
+    constexpr auto screen = Mat<4, 4, double>::to_screen_mat(800.0, 600.0);
+    static_assert(std::is_same_v<std::remove_cvref_t<decltype(screen)>, Mat<4, 4, double>>);
+    EXPECT_DOUBLE_EQ(screen.at(0, 0), 400.0);
+    EXPECT_DOUBLE_EQ(screen.at(1, 1), -300.0);
+    EXPECT_DOUBLE_EQ(screen.at(3, 0), 400.0);
+    EXPECT_DOUBLE_EQ(screen.at(3, 1), 300.0);
+
+    constexpr auto column_major = Mat<4, 4, float, MatStoreType::COLUMN_MAJOR>::to_screen_mat(800.f, 600.f);
+    static_assert(column_major.get_store_ordering() == MatStoreType::COLUMN_MAJOR);
+    EXPECT_FLOAT_EQ(column_major.at(3, 1), 300.f);
+}
+
+TEST(UnitTestMatStandalone, IsTriviallyCopyable)
+{
+    static_assert(std::is_trivially_copyable_v<Mat<4, 4>>);
+    static_assert(std::is_trivially_copyable_v<Mat<3, 2, double, MatStoreType::COLUMN_MAJOR>>);
+    static_assert(MatTemplateEqual<Mat<4, 4>, Mat<4, 4>>);
+    static_assert(!MatTemplateEqual<Mat<4, 4>, Mat<4, 4, double>>);
+    static_assert(!MatTemplateEqual<Mat<4, 4>, Mat<3, 4>>);
+    static_assert(Mat<2, 3>::rows == 2 && Mat<2, 3>::columns == 3);
+    SUCCEED();
+}
+
+TEST(UnitTestMatStandalone, InPlaceMultiplyReturnsSelf)
+{
+    Mat<2, 2> a{{1, 2}, {3, 4}};
+    const Mat<2, 2> b{{0, 1}, {1, 0}};
+    static_assert(std::is_same_v<decltype(a *= b), Mat<2, 2>&>);
+
+    Mat<2, 2>& ref = (a *= b);
+    EXPECT_EQ(&ref, &a);
+    EXPECT_EQ(a, (Mat<2, 2>{{2, 1}, {4, 3}}));
+}
+
+TEST(UnitTestMatStandalone, EqualityIsConstexpr)
+{
+    constexpr Mat<2, 2> a{{1, 2}, {3, 4}};
+    constexpr Mat<2, 2> b{{1, 2}, {3, 4}};
+    constexpr Mat<2, 2> c{{1, 2}, {3, 5}};
+    static_assert(a == b);
+    static_assert(a != c);
+    static_assert(noexcept(a == b));
+    SUCCEED();
+}
+
+TEST(UnitTestMatStandalone, ToStringFormatting)
+{
+    const Mat<2, 2> a{{1, 2}, {3, 4}};
+    EXPECT_EQ(a.to_string(), "[[    1.000,     2.000]\n [    3.000,     4.000]]");
+    EXPECT_EQ(std::format("{}", a), a.to_string());
+}

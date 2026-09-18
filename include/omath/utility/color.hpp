@@ -5,7 +5,12 @@
 #pragma once
 
 #include "omath/linear_algebra/vector4.hpp"
+#include <algorithm>
 #include <cstdint>
+#include <format>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace omath
 {
@@ -19,6 +24,7 @@ namespace omath
     class Color final
     {
         Vector4<float> m_value;
+
     public:
         constexpr const Vector4<float>& value() const
         {
@@ -29,11 +35,15 @@ namespace omath
             m_value.clamp(0.f, 1.f);
         }
 
-        constexpr explicit Color(const Vector4<float>& value) : m_value(value)
+        constexpr explicit Color(const Vector4<float>& value) noexcept: m_value(value)
         {
             m_value.clamp(0.f, 1.f);
         }
-        constexpr explicit Color() noexcept = default;
+        constexpr Color() noexcept = default;
+
+        [[nodiscard("You must use comparison result")]]
+        constexpr bool operator==(const Color& other) const noexcept = default;
+
         [[nodiscard("color result should not be discarded")]]
         constexpr static Color from_rgba(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) noexcept
         {
@@ -41,11 +51,17 @@ namespace omath
         }
 
         [[nodiscard("color result should not be discarded")]]
-        constexpr static Color from_hsv(float hue, const float saturation, const float value) noexcept
+        constexpr static Color from_hsv(float hue, float saturation, float value) noexcept
         {
             float r{}, g{}, b{};
 
-            hue = std::clamp(hue, 0.f, 1.f);
+            // hue is cyclic: wrap into [0, 1)
+            hue -= static_cast<float>(static_cast<int>(hue));
+            if (hue < 0.f)
+                hue += 1.f;
+
+            saturation = std::clamp(saturation, 0.f, 1.f);
+            value = std::clamp(value, 0.f, 1.f);
 
             const int i = static_cast<int>(hue * 6.f);
             const float f = hue * 6.f - static_cast<float>(i);
@@ -55,26 +71,26 @@ namespace omath
 
             switch (i % 6)
             {
-                case 0:
-                    r = value, g = t, b = p;
-                    break;
-                case 1:
-                    r = q, g = value, b = p;
-                    break;
-                case 2:
-                    r = p, g = value, b = t;
-                    break;
-                case 3:
-                    r = p, g = q, b = value;
-                    break;
-                case 4:
-                    r = t, g = p, b = value;
-                    break;
-                case 5:
-                    r = value, g = p, b = q;
-                    break;
-                default:
-                    std::unreachable();
+            case 0:
+                r = value, g = t, b = p;
+                break;
+            case 1:
+                r = q, g = value, b = p;
+                break;
+            case 2:
+                r = p, g = value, b = t;
+                break;
+            case 3:
+                r = p, g = q, b = value;
+                break;
+            case 4:
+                r = t, g = p, b = value;
+                break;
+            case 5:
+                r = value, g = p, b = q;
+                break;
+            default:
+                std::unreachable();
             }
 
             return {r, g, b, 1.f};
@@ -99,20 +115,19 @@ namespace omath
             const float min = std::min({red, green, blue});
             const float delta = max - min;
 
+            // hue as a fraction of the six 60-degree sectors, i.e. already in [0, 1)
             if (delta == 0.f)
                 hsv_data.hue = 0.f;
-
             else if (max == red)
-                hsv_data.hue = 60.f * (std::fmod(static_cast<float>((green - blue) / delta), 6.f));
+                hsv_data.hue = ((green - blue) / delta) / 6.f;
             else if (max == green)
-                hsv_data.hue = 60.f * (((blue - red) / delta) + 2.f);
-            else if (max == blue)
-                hsv_data.hue = 60.f * (((red - green) / delta) + 4.f);
+                hsv_data.hue = (((blue - red) / delta) + 2.f) / 6.f;
+            else
+                hsv_data.hue = (((red - green) / delta) + 4.f) / 6.f;
 
             if (hsv_data.hue < 0.f)
-                hsv_data.hue += 360.f;
+                hsv_data.hue += 1.f;
 
-            hsv_data.hue /= 360.f;
             hsv_data.saturation = max == 0.f ? 0.f : delta / max;
             hsv_data.value = max;
 
@@ -123,7 +138,7 @@ namespace omath
             auto hsv = to_hsv();
             hsv.hue = hue;
 
-            *this = from_hsv(hsv);
+            apply_hsv(hsv);
         }
 
         constexpr void set_saturation(const float saturation) noexcept
@@ -131,7 +146,7 @@ namespace omath
             auto hsv = to_hsv();
             hsv.saturation = saturation;
 
-            *this = from_hsv(hsv);
+            apply_hsv(hsv);
         }
 
         constexpr void set_value(const float value) noexcept
@@ -139,7 +154,7 @@ namespace omath
             auto hsv = to_hsv();
             hsv.value = value;
 
-            *this = from_hsv(hsv);
+            apply_hsv(hsv);
         }
         [[nodiscard("blended color result should not be discarded")]]
         constexpr Color blend(const Color& other, float ratio) const noexcept
@@ -169,16 +184,12 @@ namespace omath
 #endif
         [[nodiscard("string result should not be discarded")]] std::string to_string() const noexcept
         {
-            return std::format("[r:{}, g:{}, b:{}, a:{}]",
-                            static_cast<int>(m_value.x * 255.f),
-                            static_cast<int>(m_value.y * 255.f),
-                            static_cast<int>(m_value.z * 255.f),
-                            static_cast<int>(m_value.w * 255.f));
+            return std::format("[r:{}, g:{}, b:{}, a:{}]", to_byte(m_value.x), to_byte(m_value.y), to_byte(m_value.z),
+                               to_byte(m_value.w));
         }
         [[nodiscard("string result should not be discarded")]] std::string to_rgbf_string() const noexcept
         {
-            return std::format("[r:{}, g:{}, b:{}, a:{}]",
-                            m_value.x, m_value.y, m_value.z, m_value.w);
+            return std::format("[r:{}, g:{}, b:{}, a:{}]", m_value.x, m_value.y, m_value.z, m_value.w);
         }
         [[nodiscard("string result should not be discarded")]] std::string to_hsv_string() const noexcept
         {
@@ -197,12 +208,32 @@ namespace omath
             const auto ascii_string = to_string();
             return {ascii_string.cbegin(), ascii_string.cend()};
         }
+
+    private:
+        // Rebuild RGB from HSV while keeping the current alpha.
+        constexpr void apply_hsv(const Hsv& hsv) noexcept
+        {
+            const float alpha = m_value.w;
+            *this = from_hsv(hsv);
+            m_value.w = alpha;
+        }
+
+        [[nodiscard]]
+        constexpr static int to_byte(const float channel) noexcept
+        {
+            return static_cast<int>(channel * 255.f + 0.5f);
+        }
     };
 } // namespace omath
 template<>
 struct std::formatter<omath::Color> // NOLINT(*-dcl58-cpp)
 {
-    enum class ColorFormat { rgb, rgbf, hsv };
+    enum class ColorFormat
+    {
+        rgb,
+        rgbf,
+        hsv
+    };
     ColorFormat color_format = ColorFormat::rgb;
 
     constexpr auto parse(std::format_parse_context& ctx)
@@ -240,18 +271,17 @@ struct std::formatter<omath::Color> // NOLINT(*-dcl58-cpp)
         std::string str;
         switch (color_format)
         {
-            case ColorFormat::rgb:  str = col.to_string();      break;
-            case ColorFormat::rgbf: str = col.to_rgbf_string(); break;
-            case ColorFormat::hsv:  str = col.to_hsv_string();  break;
+        case ColorFormat::rgb:
+            str = col.to_string();
+            break;
+        case ColorFormat::rgbf:
+            str = col.to_rgbf_string();
+            break;
+        case ColorFormat::hsv:
+            str = col.to_hsv_string();
+            break;
         }
 
-        if constexpr (std::is_same_v<typename FormatContext::char_type, char>)
-            return std::format_to(ctx.out(), "{}", str);
-        if constexpr (std::is_same_v<typename FormatContext::char_type, wchar_t>)
-            return std::format_to(ctx.out(), L"{}", std::wstring(str.cbegin(), str.cend()));
-        if constexpr (std::is_same_v<typename FormatContext::char_type, char8_t>)
-            return std::format_to(ctx.out(), u8"{}", std::u8string(str.cbegin(), str.cend()));
-
-        std::unreachable();
+        return std::ranges::copy(str, ctx.out()).out;
     }
 };

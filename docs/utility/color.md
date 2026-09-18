@@ -1,100 +1,94 @@
-# `omath::Color` — RGBA color with HSV helpers (C++20/23)
+# `omath::Color` — RGBA color with HSV helpers (C++23)
 
-> Header: your project’s `color.hpp`
+> Header: `omath/utility/color.hpp`
 > Namespace: `omath`
-> Inherits: `Vector4<float>` (`x=r`, `y=g`, `z=b`, `w=a`)
-> Depends on: `<cstdint>`, `Vector4`, optionally ImGui (`OMATH_IMGUI_INTEGRATION`)
-> Formatting: provides `std::formatter<omath::Color>`
+> Storage: a private `Vector4<float>` (`x=r`, `y=g`, `z=b`, `w=a`), exposed read-only via `value()`
+> Depends on: `Vector4`, `<format>`, optionally ImGui (`OMATH_IMGUI_INTEGRATION`)
+> Formatting: provides `std::formatter<omath::Color>` (narrow `char` only)
 
-`Color` is a tiny RGBA utility on top of `Vector4<float>`. It offers sRGB-style channel construction, HSV↔RGB conversion, in-place HSV setters, linear blending, and string/formatter helpers.
+`Color` is a small RGBA value type built on top of `Vector4<float>`. It offers 8-bit channel construction, HSV↔RGB conversion, in-place HSV setters that keep alpha, linear blending, and string/formatter helpers.
 
 ---
 
 ## Quick start
 
 ```cpp
-#include "color.hpp"
+#include "omath/utility/color.hpp"
 using omath::Color;
 
-// RGBA in [0,1] (r,g,b clamped to [0,1] on construction)
+// RGBA in [0,1]; every channel (including alpha) is clamped to [0,1] on construction
 Color c{0.2f, 0.4f, 0.8f, 0.5f};
 
 // From 8-bit channels
 auto red   = Color::from_rgba(255, 0, 0, 255);
 auto green = Color::from_rgba(0, 255, 0, 160);
 
-// From HSV (h ∈ [0,1], s ∈ [0,1], v ∈ [0,1])
+// From HSV (h wraps cyclically, s and v are clamped to [0,1])
 auto cyan = Color::from_hsv(0.5f, 1.0f, 1.0f);   // a = 1
 
 // Read/modify via HSV
-auto hsv   = cyan.to_hsv();       // hue ∈ [0,1], saturation ∈ [0,1], value ∈ [0,1]
-cyan.set_value(0.6f);             // converts back to RGB (alpha becomes 1)
+auto hsv = cyan.to_hsv();     // hue ∈ [0,1), saturation ∈ [0,1], value ∈ [0,1]
+cyan.set_value(0.6f);         // converts back to RGB, alpha is preserved
 
 // Blend linearly (lerp)
 auto mid = red.blend(green, 0.5f);
 
-// Printable (0–255 per channel)
-std::string s = std::format("{}", mid);   // "[r:128, g:128, b:0, a:207]" for example
+// Read channels
+float r = mid.value().x;
+
+// Printable (0–255 per channel, rounded)
+std::string s = std::format("{}", mid);        // "[r:128, g:128, b:0, a:208]"
+std::string f = std::format("{:rgbf}", mid);   // floats in [0,1]
+std::string h = std::format("{:hsv}", mid);    // "[h:..., s:..., v:...]"
 ```
 
 ---
 
 ## Data model
 
-* Inherits `Vector4<float>`:
-
-    * `x` = **red**, `y` = **green**, `z` = **blue**, `w` = **alpha**.
-* Construction clamps **RGB** to `[0,1]` (via `Vector4::clamp(0,1)`), **alpha is not clamped** by that call (see notes).
+* Holds a `Vector4<float>` as a private member; `value()` returns it by const reference.
+* `x` = **red**, `y` = **green**, `z` = **blue**, `w` = **alpha**.
+* Every constructor clamps **all four** channels to `[0,1]` via `Vector4::clamp(0,1)`.
+* `operator==` / `operator!=` compare all four channels exactly.
 
 ---
 
 ## Construction & factories
 
 ```cpp
-// RGBA in [0,1] (RGB clamped to [0,1]; alpha untouched by clamp)
-constexpr Color(float r, float g, float b, float a) noexcept;
-
-// Default
-constexpr Color() noexcept;
+constexpr Color() noexcept;                                          // (0,0,0,0)
+constexpr Color(float r, float g, float b, float a) noexcept;        // clamped to [0,1]
+constexpr explicit Color(const Vector4<float>& value) noexcept;      // clamped to [0,1]
 
 // From 8-bit RGBA (0–255) → normalized to [0,1]
-constexpr static Color from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept;
+static constexpr Color from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept;
 
-// From HSV where hue ∈ [0,1], saturation ∈ [0,1], value ∈ [0,1]
+// From HSV
 struct Hsv { float hue{}, saturation{}, value{}; };
 
-constexpr static Color from_hsv(float hue, float saturation, float value) noexcept;
-constexpr static Color from_hsv(const Hsv& hsv) noexcept;    // delegates to the above
-
-// Construct from a Vector4 (RGB clamped, alpha not clamped)
-constexpr explicit Color(const Vector4& vec) noexcept;
+static constexpr Color from_hsv(float hue, float saturation, float value) noexcept;
+static constexpr Color from_hsv(const Hsv& hsv) noexcept;    // delegates to the above
 ```
 
 **HSV details**
 
-* `from_hsv(h, s, v)`: `h` is **normalized** (`[0,1]`); it is clamped, then mapped to the 6 hue sectors; **alpha = 1.0**.
-* `to_hsv()`: returns `Hsv{h,s,v}` with **`h ∈ [0,1]`** (internally computes degrees and divides by 360), `s,v ∈ [0,1]`.
+* `from_hsv(h, s, v)`: `h` is **normalized** and **cyclic** — `1.25` and `-0.75` both mean `0.25`. `s` and `v` are clamped to `[0,1]`. **Alpha = 1.0**.
+* `to_hsv()`: returns `Hsv{h,s,v}` with `h ∈ [0,1)`, `s,v ∈ [0,1]`. A grey (zero chroma) color reports `h = 0`.
 
 ---
 
 ## Mutators
 
 ```cpp
-constexpr void set_hue(float h) noexcept;         // h ∈ [0,1] recommended
-constexpr void set_saturation(float s) noexcept;  // s ∈ [0,1]
-constexpr void set_value(float v) noexcept;       // v ∈ [0,1]
+constexpr void set_hue(float h) noexcept;         // cyclic, like from_hsv
+constexpr void set_saturation(float s) noexcept;  // clamped to [0,1]
+constexpr void set_value(float v) noexcept;       // clamped to [0,1]
 
 // Linear blend: (1-ratio)*this + ratio*other, ratio clamped to [0,1]
 constexpr Color blend(const Color& other, float ratio) const noexcept;
 ```
 
-> ⚠️ **Alpha reset on HSV setters:** each `set_*` converts HSV→RGB using `from_hsv(...)`, which **sets alpha to 1.0** (overwriting previous `w`). If you need to preserve alpha:
->
-> ```cpp
-> float a = col.w;
-> col.set_value(0.5f);
-> col.w = a;
-> ```
+The `set_*` mutators convert through HSV and back but **keep the current alpha**.
 
 ---
 
@@ -111,14 +105,27 @@ static constexpr Color blue();   // (0,0,1,1)
 ## String & formatting
 
 ```cpp
-// "[r:R, g:G, b:B, a:A]" with each channel shown as 0–255 integer
-std::string  to_string()  const noexcept;
-std::wstring to_wstring() const noexcept;
-std::u8string to_u8string() const noexcept;
+// "[r:R, g:G, b:B, a:A]" with each channel as a 0–255 integer (rounded to nearest)
+std::string   to_string()      const noexcept;
+std::wstring  to_wstring()     const noexcept;   // same text, widened
+std::u8string to_u8string()    const noexcept;   // same text, as UTF-8
 
-// Formatter forwards to the above (char/wchar_t/char8_t)
-template<> struct std::formatter<omath::Color>;
+// "[r:R, g:G, b:B, a:A]" with channels as floats in [0,1]
+std::string   to_rgbf_string() const noexcept;
+
+// "[h:H, s:S, v:V]" with normalized HSV floats
+std::string   to_hsv_string()  const noexcept;
 ```
+
+`std::formatter<omath::Color>` accepts three format specifiers:
+
+| Spec       | Output                | Equivalent         |
+|------------|-----------------------|--------------------|
+| `{}` / `{:rgb}` | 0–255 integers   | `to_string()`      |
+| `{:rgbf}`  | floats in [0,1]       | `to_rgbf_string()` |
+| `{:hsv}`   | normalized HSV floats | `to_hsv_string()`  |
+
+Any other specifier throws `std::format_error`. The formatter is specialized for `char` only; use `to_wstring()` / `to_u8string()` for other character types.
 
 ---
 
@@ -126,23 +133,16 @@ template<> struct std::formatter<omath::Color>;
 
 ```cpp
 #ifdef OMATH_IMGUI_INTEGRATION
-ImColor to_im_color() const noexcept;   // constructs from Vector4's to_im_vec4()
+ImColor to_im_color() const noexcept;   // constructs from Vector4::to_im_vec4()
 #endif
 ```
-
-Ensure `<imgui.h>` is included somewhere before this header when the macro is enabled.
 
 ---
 
 ## Notes & caveats
 
-* **Alpha clamping:** `Vector4::clamp(min,max)` (called by `Color` ctors) clamps **x,y,z** only in the provided `Vector4` implementation; `w` is **left unchanged**. If you require strict `[0,1]` alpha, clamp it yourself:
-
-  ```cpp
-  col.w = std::clamp(col.w, 0.0f, 1.0f);
-  ```
-* **HSV range:** The API consistently uses **normalized hue** (`[0,1]`). Convert degrees ↔ normalized as `h_norm = h_deg / 360.f`.
 * **Blend space:** `blend` is a **linear** interpolation in RGBA; it is not perceptually uniform.
+* **Hue range:** the API consistently uses **normalized hue**. Convert degrees ↔ normalized as `h_norm = h_deg / 360.f`.
 
 ---
 
@@ -151,11 +151,14 @@ Ensure `<imgui.h>` is included somewhere before this header when the macro is en
 ```cpp
 struct Hsv { float hue{}, saturation{}, value{}; };
 
-class Color final : public Vector4<float> {
+class Color final {
 public:
-  constexpr Color(float r, float g, float b, float a) noexcept;
   constexpr Color() noexcept;
-  constexpr explicit Color(const Vector4& vec) noexcept;
+  constexpr Color(float r, float g, float b, float a) noexcept;
+  constexpr explicit Color(const Vector4<float>& value) noexcept;
+
+  constexpr const Vector4<float>& value() const;
+  constexpr bool operator==(const Color& other) const noexcept;
 
   static constexpr Color from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept;
   static constexpr Color from_hsv(float hue, float saturation, float value) noexcept;
@@ -177,14 +180,16 @@ public:
   ImColor to_im_color() const noexcept;
 #endif
 
-  std::string  to_string()  const noexcept;
-  std::wstring to_wstring() const noexcept;
-  std::u8string to_u8string() const noexcept;
+  std::string   to_string()      const noexcept;
+  std::string   to_rgbf_string() const noexcept;
+  std::string   to_hsv_string()  const noexcept;
+  std::wstring  to_wstring()     const noexcept;
+  std::u8string to_u8string()    const noexcept;
 };
 
-// formatter<omath::Color> provided
+// std::formatter<omath::Color> provided: {}, {:rgb}, {:rgbf}, {:hsv}
 ```
 
 ---
 
-*Last updated: 31 Oct 2025*
+*Last updated: 18 Sep 2026*

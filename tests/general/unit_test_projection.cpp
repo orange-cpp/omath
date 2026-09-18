@@ -1290,3 +1290,44 @@ TEST(UnitTestProjection, TriangleStraddlingFrustumNotCulled)
     const omath::Triangle<omath::Vector3<float>> tri{{100.f, 0.f, 0.f}, {100.f, 5000.f, 0.f}, {100.f, 0.f, 5000.f}};
     EXPECT_FALSE(cam.is_culled_by_frustum(tri));
 }
+
+TEST(UnitTestProjection, NdcScreenRoundTripThroughPublicHelpers)
+{
+    constexpr auto fov = omath::projection::FieldOfView::from_degrees(90.f);
+    constexpr auto cam = omath::source_engine::Camera({0, 0, 0}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f},
+                                                      fov, 0.01f, 1000.f);
+    using ScreenStart = omath::source_engine::Camera::ScreenStart;
+    static_assert(noexcept(cam.calc_look_at_angles({1.f, 0.f, 0.f})));
+
+    constexpr omath::Vector3<float> ndc{0.25f, -0.5f, 0.75f};
+    constexpr auto top_left = cam.ndc_to_screen_position_from_top_left_corner(ndc);
+    constexpr auto bottom_left = cam.ndc_to_screen_position_from_bottom_left_corner(ndc);
+
+    EXPECT_NEAR(top_left.x, 1200.f, 1e-3f);
+    EXPECT_NEAR(top_left.y, 810.f, 1e-3f);
+    EXPECT_NEAR(bottom_left.y, 270.f, 1e-3f);
+
+    constexpr auto back_top_left = cam.screen_to_ndc<ScreenStart::TOP_LEFT_CORNER>(top_left);
+    constexpr auto back_bottom_left = cam.screen_to_ndc<ScreenStart::BOTTOM_LEFT_CORNER>(bottom_left);
+    EXPECT_NEAR(back_top_left.x, ndc.x, 1e-5f);
+    EXPECT_NEAR(back_top_left.y, ndc.y, 1e-5f);
+    EXPECT_NEAR(back_bottom_left.x, ndc.x, 1e-5f);
+    EXPECT_NEAR(back_bottom_left.y, ndc.y, 1e-5f);
+}
+
+TEST(UnitTestProjection, WorldToViewCoordinatesMatchesMatrixMultiply)
+{
+    auto cam = omath::source_engine::Camera({10.f, -5.f, 3.f}, omath::source_engine::ViewAngles{}, {1920.f, 1080.f},
+                                            omath::projection::FieldOfView::from_degrees(90.f), 0.01f, 1000.f);
+    cam.look_at({100.f, 40.f, -20.f});
+
+    const omath::Vector3<float> world{57.f, 12.f, -3.f};
+    const auto expected =
+            cam.get_view_matrix()
+            * omath::mat_column_from_vector<float, omath::source_engine::Mat4X4::get_store_ordering()>(world);
+    const auto actual = cam.world_to_view_coordinates(world);
+
+    EXPECT_NEAR(actual.x, expected.at(0, 0), 1e-4f);
+    EXPECT_NEAR(actual.y, expected.at(1, 0), 1e-4f);
+    EXPECT_NEAR(actual.z, expected.at(2, 0), 1e-4f);
+}
