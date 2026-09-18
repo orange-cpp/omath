@@ -49,7 +49,8 @@ There is no distance tolerance: a time step is accepted when the speed needed to
    Lanes with `v_req² ≤ v0²` are candidates.
 3. **Scalar solve** on the first candidate, searching two steps either side of it, with `pitch = atan(term / d)`.
 4. **Refine once** if the muzzle offset is view-relative: move the muzzle to `launcher.launch_origin(basis(pitch, yaw))`, re-solve the pitch at the same time, recompute the yaw.
-5. **Return** `angles`, `aim_point = eye + forward(angles) * distance(eye, target)`, the predicted target position and the time.
+5. **Convert to view angles**: view pitch = launch pitch − `launcher.launch_pitch_offset`. Every muzzle placement above uses the view pitch too.
+6. **Return** `angles`, `aim_point = eye + forward(angles) * distance(eye, target)`, the predicted target position and the time.
 
 The accepted time is the first feasible step, so the projectile can be up to one step of travel away from the target at `time_of_flight`. Use a smaller step for fast projectiles.
 
@@ -80,6 +81,7 @@ if (const auto aim = solver.maybe_calculate_aim(proj, launcher, tgt))
 * **Target receding faster than the projectile** → `nullopt`.
 * **Solutions only beyond `maximum_simulation_time`** → `nullopt`.
 * **Straight above or below** (`d == 0`) → ±90°.
+* **Pitch offset pushes the view past Source's ±89°** → `nullopt`. This engine solves only the first feasible time, so unlike the legacy engine it does not keep scanning.
 * **Built without AVX2** or on a non-x86 target → `std::runtime_error` on every call. Use `ProjPredEngineLegacy` there.
 
 ---

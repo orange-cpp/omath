@@ -43,6 +43,14 @@ namespace omath::projectile_prediction
         // compatibility wrappers of ProjPredEngineInterface put the old Projectile::m_launch_offset here.
         Vector3<ArithmeticType> world_offset{};
 
+        // Degrees by which the round leaves above the view direction (negative: below). Some weapons launch at
+        // forward * a + up * b in the view frame instead of straight along the crosshair, TF2's pipe and sticky
+        // launchers being the usual example with b = 200. Forward and up span the view's vertical plane, so that is
+        // exactly a pitch offset of atan(b / a) with Projectile::m_launch_speed = hypot(a, b): 1200 and 200 give
+        // 9.46 degrees at 1216.6 units/s. The engines solve the launch pitch and report the view pitch, which is the
+        // launch pitch minus this.
+        ArithmeticType launch_pitch_offset{};
+
         [[nodiscard("You must use launch origin")]]
         constexpr Vector3<ArithmeticType> launch_origin(const ViewBasis<ArithmeticType>& basis) const noexcept
         {

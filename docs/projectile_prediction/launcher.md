@@ -36,6 +36,7 @@ struct Launcher {
   Vector3<T>      eye_origin;        // where the view angles apply (camera / eye)
   MuzzleOffset<T> muzzle_offset{};   // rotates with the view angles
   Vector3<T>      world_offset{};    // fixed world-space part, if the engine has one
+  T               launch_pitch_offset{}; // degrees the round leaves above the view direction
 
   // eye + world_offset + forward * a + right * b + up * c for the given basis
   constexpr Vector3<T> launch_origin(const ViewBasis<T>& basis) const noexcept;
@@ -51,6 +52,49 @@ struct Launcher {
 Engines spawn projectiles at `eye + forward * a + right * b + up * c`, so the world-space launch position depends on the very angles the solver is looking for. A fixed world-space offset can only be right when the shooter already faces the target. The engines therefore place the muzzle from the direct angles to the target first, solve, and then re-solve once from where the muzzle ends up with the solved angles.
 
 `world_offset` exists for engines whose spawn offset really is fixed in world space, and for the compatibility wrappers that map the old `Projectile::m_launch_offset` onto it. Both parts add up; leave either at zero.
+
+---
+
+## Launch pitch offset
+
+Some weapons do not fire along the crosshair. TF2's pipe and sticky launchers set the launch velocity to
+
+```
+velocity = view_forward * a + view_up * 200
+```
+
+Forward and up span the view's vertical plane, so that is exactly the view direction pitched up by a fixed angle, at a slightly higher speed:
+
+```
+launch_pitch_offset      = degrees(atan2(up_speed, forward_speed))
+Projectile::m_launch_speed = hypot(forward_speed, up_speed)
+```
+
+| Weapon (forward / up) | `launch_pitch_offset` | `m_launch_speed` |
+|---|---|---|
+| 1200 / 200 | 9.46° | 1216.6 |
+| 1500 / 200 | 7.59° | 1513.3 |
+| 900 / 200 (uncharged sticky) | 12.53° | 922.0 |
+| 2400 / 200 (full charge) | 4.76° | 2408.3 |
+
+The engines solve the **launch** pitch as before and report the **view** pitch, `launch - launch_pitch_offset`. The muzzle offset keeps rotating with the view, not with the round. Yaw is unaffected. A negative value means the round leaves below the crosshair.
+
+With an offset the required view pitch can fall outside what the engine lets a player look at (Source stops at ±89°). Such a time step is rejected, so a target almost straight below that is reachable without an offset can be `nullopt` with one.
+
+Ignoring the offset is not a small error: a 1200 / 200 pipe fired at a target 600 units away lands about 100 units off.
+
+```cpp
+const float forward_speed = 1200.f, up_speed = 200.f;
+
+const Projectile<float> pipe{.m_launch_speed = std::hypot(forward_speed, up_speed), .m_gravity_scale = 0.5f};
+const Launcher<float> launcher{
+    .eye_origin          = eye_position,
+    .muzzle_offset       = {.forward = 16.f, .right = 8.f, .up = -6.f},
+    .launch_pitch_offset = omath::angles::radians_to_degrees(std::atan2(up_speed, forward_speed)),
+};
+```
+
+The offset has to be constant for the shot. Weapons whose launch pitch depends on the view pitch itself are not covered.
 
 ---
 

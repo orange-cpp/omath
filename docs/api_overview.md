@@ -242,6 +242,7 @@ struct Launcher {
     Vector3<T>      eye_origin;      // where the view angles apply
     MuzzleOffset<T> muzzle_offset;   // forward / right / up, rotates with the view
     Vector3<T>      world_offset;    // fixed world-space part, usually zero
+    T               launch_pitch_offset; // degrees the round leaves above the crosshair (TF2 pipes: 9.46)
 };
 ```
 

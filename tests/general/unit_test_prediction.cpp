@@ -358,10 +358,11 @@ static void expect_launcher_solution_hits(const Projectile& proj, const Launcher
     const auto solution = engine.maybe_calculate_aim(proj, launcher, target);
     ASSERT_TRUE(solution.has_value()) << "engine must find a solution";
 
+    // The muzzle turns with the view; the round leaves along the view raised by the launcher's pitch offset
     const auto& [pitch, yaw] = solution->angles;
     const auto launch_origin = launcher.launch_origin(Trait::calc_view_basis(pitch, yaw));
-    const auto proj_pos =
-            Trait::predict_projectile_position(launch_origin, proj, pitch, yaw, solution->time_of_flight, gravity);
+    const auto proj_pos = Trait::predict_projectile_position(launch_origin, proj, pitch + launcher.launch_pitch_offset,
+                                                             yaw, solution->time_of_flight, gravity);
     const auto tgt_pos = Trait::predict_target_position(target, solution->time_of_flight, gravity);
 
     EXPECT_LE(proj_pos.distance_to(tgt_pos), hit_tolerance)
@@ -455,4 +456,122 @@ TEST(UnitTestPredictionLauncher, WrappersMatchLauncherWithWorldOffset)
     EXPECT_EQ(solution->aim_point, point.value());
     EXPECT_FLOAT_EQ(solution->angles.pitch, angles->pitch);
     EXPECT_FLOAT_EQ(solution->angles.yaw, angles->yaw);
+}
+
+// ---- Launch pitch offset: weapons that fire above the crosshair, such as TF2's pipe and sticky launchers ----
+
+// TF2 sets a pipe's velocity to forward * 1200 + up * 200 in the view frame
+static float pipe_speed()
+{
+    return std::hypot(1200.f, 200.f);
+}
+static float pipe_pitch_offset()
+{
+    return omath::angles::radians_to_degrees(std::atan2(200.f, 1200.f));
+}
+
+TEST(UnitTestPredictionLauncher, PitchOffsetIsForwardPlusUpVelocity)
+{
+    // The equivalence the feature rests on: forward * a + up * b in the view frame is the view direction pitched up by
+    // atan(b / a), at a speed of hypot(a, b).
+    using Trait = omath::source_engine::PredEngineTrait;
+
+    const auto basis = Trait::calc_view_basis(20.f, 35.f);
+    const auto game_velocity = basis.forward * 1200.f + basis.up * 200.f;
+    const auto offset_velocity = Trait::calc_view_basis(20.f + pipe_pitch_offset(), 35.f).forward * pipe_speed();
+
+    EXPECT_NEAR(pipe_pitch_offset(), 9.4623f, 1e-3f);
+    EXPECT_NEAR(pipe_speed(), 1216.55f, 1e-2f);
+    EXPECT_NEAR(game_velocity.distance_to(offset_velocity), 0.f, 1e-2f);
+}
+
+TEST(UnitTestPredictionLauncher, PipeLauncherFiredLikeTheGameHits)
+{
+    using Trait = omath::source_engine::PredEngineTrait;
+    constexpr float gravity = 800.f;
+    constexpr Target target{.m_origin = {600, 150, 0}, .m_velocity = {-40, 30, 0}, .m_is_airborne = false};
+    const Projectile proj = {.m_launch_speed = pipe_speed(), .m_gravity_scale = 0.5f};
+    const Launcher launcher{
+            .eye_origin = {0, 0, 64}, .muzzle_offset = k_source_muzzle, .launch_pitch_offset = pipe_pitch_offset()};
+
+    const auto aim = Engine(gravity, 1.f / 1000.f, 5.f, 5.f).maybe_calculate_aim(proj, launcher, target);
+    ASSERT_TRUE(aim.has_value());
+
+    // Fire the way the game does rather than through the offset: forward * 1200 + up * 200 in the view frame, from the
+    // view-relative muzzle, with the view angles the engine returned.
+    const auto basis = Trait::calc_view_basis(aim->angles.pitch, aim->angles.yaw);
+    const float time = aim->time_of_flight;
+    auto position = launcher.launch_origin(basis) + (basis.forward * 1200.f + basis.up * 200.f) * time;
+    position.z -= 0.5f * gravity * proj.m_gravity_scale * time * time;
+
+    EXPECT_LE(position.distance_to(Trait::predict_target_position(target, time, gravity)), 6.f);
+
+    // Left out, the same shot lands far away: the engine would aim the crosshair where the round has to go
+    const Launcher no_offset{.eye_origin = {0, 0, 64}, .muzzle_offset = k_source_muzzle};
+    const auto naive = Engine(gravity, 1.f / 1000.f, 5.f, 5.f).maybe_calculate_aim(proj, no_offset, target);
+    ASSERT_TRUE(naive.has_value());
+    const auto naive_basis = Trait::calc_view_basis(naive->angles.pitch, naive->angles.yaw);
+    const float naive_time = naive->time_of_flight;
+    auto naive_position =
+            no_offset.launch_origin(naive_basis) + (naive_basis.forward * 1200.f + naive_basis.up * 200.f) * naive_time;
+    naive_position.z -= 0.5f * gravity * proj.m_gravity_scale * naive_time * naive_time;
+    EXPECT_GT(naive_position.distance_to(Trait::predict_target_position(target, naive_time, gravity)), 50.f);
+}
+
+TEST(UnitTestPredictionLauncher, PitchOffsetWithSideAndAirborneTargets)
+{
+    const Projectile proj = {.m_launch_speed = pipe_speed(), .m_gravity_scale = 0.5f};
+    const Launcher launcher{
+            .eye_origin = {0, 0, 64}, .muzzle_offset = k_source_muzzle, .launch_pitch_offset = pipe_pitch_offset()};
+
+    constexpr Target side{.m_origin = {-50, 300, 80}, .m_velocity = {10, -5, 0}, .m_is_airborne = false};
+    expect_launcher_solution_hits(proj, launcher, side, 800, 1.f / 1000.f, 30, 5.f, 10.f);
+
+    constexpr Target airborne{.m_origin = {400, -100, 300}, .m_velocity = {10, -5, -20}, .m_is_airborne = true};
+    expect_launcher_solution_hits(proj, launcher, airborne, 800, 1.f / 1000.f, 30, 5.f, 10.f);
+
+    // A weapon that fires below the crosshair
+    const Launcher downward{.eye_origin = {0, 0, 64}, .muzzle_offset = k_source_muzzle, .launch_pitch_offset = -4.f};
+    expect_launcher_solution_hits(proj, downward, side, 800, 1.f / 1000.f, 30, 5.f, 10.f);
+}
+
+TEST(UnitTestPredictionLauncher, PitchOffsetShiftsViewPitchByExactlyTheOffset)
+{
+    // Without a rotating muzzle the launch is the same shot either way; only the view pitch that produces it moves
+    constexpr Target target{.m_origin = {500, 100, 40}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    const Projectile proj = {.m_launch_speed = pipe_speed(), .m_gravity_scale = 0.5f};
+    const Engine engine(800.f, 1.f / 1000.f, 5.f, 5.f);
+
+    const auto plain = engine.maybe_calculate_aim(proj, Launcher{.eye_origin = {0, 0, 64}}, target);
+    const auto offset = engine.maybe_calculate_aim(
+            proj, Launcher{.eye_origin = {0, 0, 64}, .launch_pitch_offset = pipe_pitch_offset()}, target);
+    ASSERT_TRUE(plain.has_value());
+    ASSERT_TRUE(offset.has_value());
+
+    EXPECT_NEAR(offset->angles.pitch, plain->angles.pitch - pipe_pitch_offset(), 1e-4f);
+    EXPECT_FLOAT_EQ(offset->angles.yaw, plain->angles.yaw);
+    EXPECT_FLOAT_EQ(offset->time_of_flight, plain->time_of_flight);
+
+    // The aim point follows the view, not the launch
+    const auto [cam_pitch, cam_yaw, cam_roll] =
+            omath::source_engine::CameraTrait::calc_look_at_angle({0, 0, 64}, offset->aim_point);
+    EXPECT_NEAR(offset->angles.pitch, -cam_pitch.as_degrees(), 0.01f);
+}
+
+TEST(UnitTestPredictionLauncher, UnreachableViewPitchIsRejected)
+{
+    // Almost straight down: the launch pitch is about -88, so with a +9.46 offset the view would have to sit near
+    // -97.5. Source stops at -89, so nobody can set that shot up.
+    constexpr Target below{.m_origin = {30, 0, 0}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    const Projectile proj = {.m_launch_speed = pipe_speed(), .m_gravity_scale = 0.5f};
+    const Engine engine(800.f, 1.f / 1000.f, 5.f, 5.f);
+
+    const auto plain = engine.maybe_calculate_aim(proj, Launcher{.eye_origin = {0, 0, 1000}}, below);
+    ASSERT_TRUE(plain.has_value());
+    EXPECT_LT(plain->angles.pitch, -85.f);
+
+    EXPECT_FALSE(
+            engine.maybe_calculate_aim(
+                          proj, Launcher{.eye_origin = {0, 0, 1000}, .launch_pitch_offset = pipe_pitch_offset()}, below)
+                    .has_value());
 }

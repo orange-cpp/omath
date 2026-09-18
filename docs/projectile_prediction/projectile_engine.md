@@ -28,7 +28,7 @@ struct AimAngles { T pitch{}; T yaw{}; };
 
 template<class T = float>
 struct AimSolution {
-  AimAngles<T> angles;                  // set these on the eye; the muzzle shares its orientation
+  AimAngles<T> angles;                  // set these on the eye; launch pitch = angles.pitch + launcher.launch_pitch_offset
   Vector3<T>   aim_point;               // on the eye's aim ray, as far away as the predicted target
   Vector3<T>   predicted_target_position;
   T            time_of_flight{};
@@ -62,12 +62,12 @@ protected:
 * **Input**
 
     * `Projectile` — launch speed and gravity scale.
-    * `Launcher` — eye origin, view-relative muzzle offset, optional fixed world offset.
+    * `Launcher` — eye origin, view-relative muzzle offset, optional fixed world offset, optional launch pitch offset.
     * `Target` — position, velocity, airborne flag.
 
 * **Output**
 
-    * `angles` — the camera angles that make the shot connect. Because the eye and the muzzle share one orientation these are also the launch angles.
+    * `angles` — the camera angles that make the shot connect. The round leaves along them, raised by `Launcher::launch_pitch_offset` for weapons that fire above the crosshair.
     * `aim_point` — `eye_origin + forward(angles) * distance(eye, predicted target)`. Any point on that ray projects to the same pixel, so `world_to_screen(aim_point)` is where the crosshair must go. The angles and the point can never disagree.
     * `std::nullopt` — no solution (target outruns the projectile, out of range, degenerate input).
 

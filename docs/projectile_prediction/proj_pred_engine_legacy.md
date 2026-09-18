@@ -19,7 +19,8 @@ For each time step `t = 0, Δt, 2Δt, …` below the horizon the engine:
 3. **Solves the launch pitch** from the closed-form low-arc solution (or the direct angle when the projectile has no gravity, or when the target is straight above or below), and the yaw as the bearing from the muzzle to the target.
 4. **Re-places the muzzle** from the solved angles and solves once more (view-relative offset only).
 5. **Validates** that a projectile fired from that muzzle with those angles is within `distance_tolerance` of the target at time `t`.
-6. On success returns an `AimSolution`.
+6. **Converts to view angles**: view pitch = launch pitch − `launcher.launch_pitch_offset`, rejecting the step if the engine would not let a player look there.
+7. On success returns an `AimSolution`.
 
 If no time step yields a feasible solution the result is `std::nullopt`.
 
@@ -108,6 +109,12 @@ With `v` = launch speed, `g = gravity_constant * m_gravity_scale`, `x` = horizon
 
   The two are algebraically identical. The conjugate form avoids subtracting two nearly equal numbers, which for fast projectiles (thousands of units/s) costs about 0.002° in `float`; the conjugate form stays within 1e-5°.
 
+### Launch pitch offset
+
+For weapons that fire above the crosshair (see [`Launcher`](launcher.md#launch-pitch-offset)) the solve above is unchanged: it finds the direction the round has to leave in. What changes is everything tied to the **view**: the muzzle is placed from `calc_view_basis(launch_pitch − offset, yaw)`, the reported `angles.pitch` is `launch_pitch − offset`, and the aim point is built on that view ray. A zero offset costs nothing per step.
+
+A view pitch outside the engine's range is detected through `calc_view_basis`, which clamps the way the engine does: if the forward vector it returns no longer has the requested pitch (0.1° tolerance), the step is skipped and the scan continues.
+
 ### Aim point
 
 `aim_point = eye_origin + calc_view_basis(pitch, yaw).forward * distance(eye_origin, predicted_target_position)`. Every point on that ray projects to the same pixel, so the angles and the point can never disagree, whatever the muzzle offset.
@@ -140,6 +147,7 @@ Code written against the previous interface keeps working: `maybe_calculate_aim_
 * **Zero gravity** → straight-line solution via the direct pitch.
 * **Straight up or down** → direct pitch (±90°); the reach check still has to pass.
 * **Negative discriminant** → that step is skipped; if every step fails, `std::nullopt`.
+* **Pitch offset pushes the view past the engine's limit** (e.g. below −89° in Source for a target almost straight down) → that step is skipped.
 * **Tolerance** controls acceptance; tighten for accuracy, loosen for robustness. It is compared squared, so no square root runs per step.
 
 ---
@@ -163,6 +171,7 @@ Code written against the previous interface keeps working: `maybe_calculate_aim_
 * Non-positive step or horizon → `nullopt`, no hang.
 * Fire from `launcher.launch_origin(basis(angles))` with the returned angles and check the miss at `time_of_flight`.
 * Camera angles towards `aim_point` equal `angles`, including with a lateral muzzle offset.
+* With a pitch offset, fire `forward * a + up * b` from the rotated muzzle using the returned view angles and check the miss.
 
 ---
 

@@ -37,13 +37,17 @@ namespace omath::projectile_prediction
 
         // The vectorised scan needs one fixed launch origin. With a view-relative muzzle offset the muzzle is first
         // placed from the direct angles to the target, and the solve is refined once from the angles that come out.
+        //
+        // `pitch` is the launch pitch, the direction the round leaves in. The muzzle turns with the view, so every
+        // basis is built from the view pitch: launch pitch minus the launcher's offset.
         const bool muzzle_rotates = !launcher.muzzle_offset.is_zero();
+        const float pitch_offset = launcher.launch_pitch_offset;
         auto launch_origin = launcher.eye_origin + launcher.world_offset;
 
         if (muzzle_rotates)
-            launch_origin = launcher.launch_origin(
-                    Trait::calc_view_basis(Trait::calc_direct_pitch_angle(launcher.eye_origin, target.m_origin),
-                                           Trait::calc_direct_yaw_angle(launcher.eye_origin, target.m_origin)));
+            launch_origin = launcher.launch_origin(Trait::calc_view_basis(
+                    Trait::calc_direct_pitch_angle(launcher.eye_origin, target.m_origin) - pitch_offset,
+                    Trait::calc_direct_yaw_angle(launcher.eye_origin, target.m_origin)));
 
         const auto candidate = find_candidate(launch_origin, target, bullet_gravity, launch_speed);
         if (!candidate)
@@ -54,7 +58,7 @@ namespace omath::projectile_prediction
 
         if (muzzle_rotates)
         {
-            launch_origin = launcher.launch_origin(Trait::calc_view_basis(pitch, yaw));
+            launch_origin = launcher.launch_origin(Trait::calc_view_basis(pitch - pitch_offset, yaw));
 
             const auto refined_pitch = calculate_pitch(launch_origin, candidate->target_position, bullet_gravity,
                                                        launch_speed, candidate->time);
@@ -65,11 +69,19 @@ namespace omath::projectile_prediction
             yaw = Trait::calc_direct_yaw_angle(launch_origin, candidate->target_position);
         }
 
-        const auto forward = Trait::calc_view_basis(pitch, yaw).forward;
+        const float view_pitch = pitch - pitch_offset;
+        const auto forward = Trait::calc_view_basis(view_pitch, yaw).forward;
+
+        // With an offset the view pitch can land outside what the engine lets a player look at. calc_view_basis()
+        // clamps the way the engine does, so a forward vector without the requested pitch means the shot cannot be
+        // set up. This engine only solves the first feasible time, so that is the end of it.
+        if (pitch_offset != 0.f && std::abs(Trait::calc_direct_pitch_angle({}, forward) - view_pitch) > 0.1f)
+            return std::nullopt;
+
         const auto distance = launcher.eye_origin.distance_to(candidate->target_position);
 
         return AimSolution<float>{
-                .angles = {pitch, yaw},
+                .angles = {view_pitch, yaw},
                 .aim_point = launcher.eye_origin + forward * distance,
                 .predicted_target_position = candidate->target_position,
                 .time_of_flight = candidate->time,

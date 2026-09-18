@@ -81,6 +81,7 @@ namespace omath::projectile_prediction
         struct Solution
         {
             Vector3<ArithmeticType> predicted_target_position;
+            // View angles: the launch pitch with the launcher's pitch offset already taken off
             ArithmeticType pitch;
             ArithmeticType yaw;
             ArithmeticType time;
@@ -128,6 +129,9 @@ namespace omath::projectile_prediction
         // muzzle is first placed from the direct angles to the target and the solve is repeated once from where it
         // ends up. One pass is enough: the offset is a few units against a target hundreds away, so the second
         // correction is far below the step tolerance.
+        //
+        // `pitch` below is always the launch pitch, the direction the round leaves in. The muzzle turns with the view,
+        // not with the round, so every basis is built from the view pitch: launch pitch minus the launcher's offset.
         template<bool MuzzleRotates>
         [[nodiscard]]
         std::optional<Solution> scan(const LaunchContext& launch, const Projectile<ArithmeticType>& projectile,
@@ -137,6 +141,7 @@ namespace omath::projectile_prediction
             // 16 steps and 16 ms off), and the count below is exactly what the parameters say.
             const auto step_count =
                     static_cast<std::size_t>(std::ceil(m_maximum_simulation_time / m_simulation_time_step));
+            const auto pitch_offset = launch.launcher.launch_pitch_offset;
 
             for (std::size_t step = 0; step < step_count; ++step)
             {
@@ -147,7 +152,8 @@ namespace omath::projectile_prediction
                 auto origin = launch.fixed_origin;
                 if constexpr (MuzzleRotates)
                     origin = launch.launcher.launch_origin(EngineTrait::calc_view_basis(
-                            EngineTrait::calc_direct_pitch_angle(launch.launcher.eye_origin, predicted_target_position),
+                            EngineTrait::calc_direct_pitch_angle(launch.launcher.eye_origin, predicted_target_position)
+                                    - pitch_offset,
                             EngineTrait::calc_direct_yaw_angle(launch.launcher.eye_origin, predicted_target_position)));
 
                 auto pitch = maybe_calculate_projectile_launch_pitch_angle(launch, origin, predicted_target_position);
@@ -159,7 +165,7 @@ namespace omath::projectile_prediction
 
                 if constexpr (MuzzleRotates)
                 {
-                    origin = launch.launcher.launch_origin(EngineTrait::calc_view_basis(*pitch, yaw));
+                    origin = launch.launcher.launch_origin(EngineTrait::calc_view_basis(*pitch - pitch_offset, yaw));
 
                     pitch = maybe_calculate_projectile_launch_pitch_angle(launch, origin, predicted_target_position);
                     if (!pitch.has_value())
@@ -171,9 +177,28 @@ namespace omath::projectile_prediction
                 if (!is_projectile_reached_target(origin, predicted_target_position, projectile, *pitch, yaw, time))
                     continue;
 
-                return Solution{predicted_target_position, *pitch, yaw, time};
+                const auto view_pitch = *pitch - pitch_offset;
+                if (pitch_offset != ArithmeticType{0} && !is_view_pitch_reachable(view_pitch, yaw))
+                    continue;
+
+                return Solution{predicted_target_position, view_pitch, yaw, time};
             }
             return std::nullopt;
+        }
+
+        // A pitch offset can put the view pitch that produces the launch outside what the engine lets a player look
+        // at (Source stops at +-89 degrees). calc_view_basis() clamps the way the engine does, so a forward vector
+        // that no longer has the requested pitch means nobody can set this shot up. Without an offset the launch pitch
+        // is the view pitch, and the reach check above already flies it through the same clamp.
+        [[nodiscard]]
+        static bool is_view_pitch_reachable(const ArithmeticType view_pitch, const ArithmeticType yaw) noexcept
+        {
+            constexpr auto tolerance_degrees = static_cast<ArithmeticType>(0.1);
+
+            const auto forward = EngineTrait::calc_view_basis(view_pitch, yaw).forward;
+            const auto reachable_pitch = EngineTrait::calc_direct_pitch_angle(Vector3<ArithmeticType>{}, forward);
+
+            return std::abs(reachable_pitch - view_pitch) <= tolerance_degrees;
         }
 
         ArithmeticType m_gravity_constant;

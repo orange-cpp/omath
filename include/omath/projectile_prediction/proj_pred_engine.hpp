@@ -21,7 +21,8 @@ namespace omath::projectile_prediction
     template<class ArithmeticType = float>
     struct AimSolution final
     {
-        // View angles to set on the eye. The muzzle shares the eye's orientation, so these are the launch angles too.
+        // View angles to set on the eye. The round leaves along them, raised by Launcher::launch_pitch_offset if the
+        // weapon has one, so the launch pitch is angles.pitch + launcher.launch_pitch_offset.
         AimAngles<ArithmeticType> angles;
         // A point on the eye's aim ray, as far away as the predicted target. Any point on that ray projects to the same
         // pixel, so this is where a crosshair or marker belongs on screen.
@@ -69,7 +70,10 @@ namespace omath::projectile_prediction
         static constexpr Launcher<ArithmeticType>
         launcher_from_projectile(const Projectile<ArithmeticType>& projectile) noexcept
         {
-            return {.eye_origin = projectile.m_origin, .muzzle_offset = {}, .world_offset = projectile.m_launch_offset};
+            return {.eye_origin = projectile.m_origin,
+                    .muzzle_offset = {},
+                    .world_offset = projectile.m_launch_offset,
+                    .launch_pitch_offset = {}};
         }
 
         virtual ~ProjPredEngineInterface() = default;
