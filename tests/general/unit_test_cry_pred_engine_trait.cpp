@@ -14,12 +14,13 @@ using namespace omath::cry_engine;
 TEST(CryPredEngineTrait, PredictProjectilePositionAtTimeZero)
 {
     projectile_prediction::Projectile p;
-    p.m_origin       = {1.f, 2.f, 3.f};
+    p.m_origin = {1.f, 2.f, 3.f};
     p.m_launch_offset = {4.f, 5.f, 6.f};
-    p.m_launch_speed  = 100.f;
+    p.m_launch_speed = 100.f;
     p.m_gravity_scale = 1.f;
 
-    const auto pos = PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 0.f, 9.81f);
+    const auto pos =
+            PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.f, 0.f, 0.f, 9.81f);
 
     // At t=0 no velocity is applied, just origin+offset
     EXPECT_NEAR(pos.x, 5.f, 1e-4f);
@@ -31,11 +32,12 @@ TEST(CryPredEngineTrait, PredictProjectilePositionZeroAnglesForwardIsY)
 {
     // Cry engine forward = +Y. At pitch=0, yaw=0 the projectile travels along +Y.
     projectile_prediction::Projectile p;
-    p.m_origin       = {0.f, 0.f, 0.f};
-    p.m_launch_speed  = 10.f;
+    p.m_origin = {0.f, 0.f, 0.f};
+    p.m_launch_speed = 10.f;
     p.m_gravity_scale = 0.f; // no gravity so we isolate direction
 
-    const auto pos = PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 1.f, 9.81f);
+    const auto pos =
+            PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.f, 0.f, 1.f, 9.81f);
 
     EXPECT_NEAR(pos.x, 0.f, 1e-4f);
     EXPECT_NEAR(pos.y, 10.f, 1e-4f);
@@ -45,11 +47,12 @@ TEST(CryPredEngineTrait, PredictProjectilePositionZeroAnglesForwardIsY)
 TEST(CryPredEngineTrait, PredictProjectilePositionGravityDropsZ)
 {
     projectile_prediction::Projectile p;
-    p.m_origin       = {0.f, 0.f, 0.f};
-    p.m_launch_speed  = 10.f;
+    p.m_origin = {0.f, 0.f, 0.f};
+    p.m_launch_speed = 10.f;
     p.m_gravity_scale = 1.f;
 
-    const auto pos = PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 2.f, 9.81f);
+    const auto pos =
+            PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.f, 0.f, 2.f, 9.81f);
 
     // z = 0 - (9.81 * 1) * (4) * 0.5 = -19.62
     EXPECT_NEAR(pos.z, -9.81f * 4.f * 0.5f, 1e-3f);
@@ -58,11 +61,12 @@ TEST(CryPredEngineTrait, PredictProjectilePositionGravityDropsZ)
 TEST(CryPredEngineTrait, PredictProjectilePositionGravityScaleZeroNoZDrop)
 {
     projectile_prediction::Projectile p;
-    p.m_origin       = {0.f, 0.f, 0.f};
-    p.m_launch_speed  = 10.f;
+    p.m_origin = {0.f, 0.f, 0.f};
+    p.m_launch_speed = 10.f;
     p.m_gravity_scale = 0.f;
 
-    const auto pos = PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 3.f, 9.81f);
+    const auto pos =
+            PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.f, 0.f, 3.f, 9.81f);
 
     EXPECT_NEAR(pos.z, 0.f, 1e-4f);
 }
@@ -70,17 +74,18 @@ TEST(CryPredEngineTrait, PredictProjectilePositionGravityScaleZeroNoZDrop)
 TEST(CryPredEngineTrait, PredictProjectilePositionWithLaunchOffset)
 {
     projectile_prediction::Projectile p;
-    p.m_origin        = {5.f, 0.f, 0.f};
+    p.m_origin = {5.f, 0.f, 0.f};
     p.m_launch_offset = {0.f, 0.f, 2.f};
-    p.m_launch_speed  = 10.f;
+    p.m_launch_speed = 10.f;
     p.m_gravity_scale = 0.f;
 
-    const auto pos = PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 1.f, 0.f);
+    const auto pos =
+            PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.f, 0.f, 1.f, 0.f);
 
     // launch position = {5, 0, 2}, travels along +Y by 10
-    EXPECT_NEAR(pos.x, 5.f,  1e-4f);
+    EXPECT_NEAR(pos.x, 5.f, 1e-4f);
     EXPECT_NEAR(pos.y, 10.f, 1e-4f);
-    EXPECT_NEAR(pos.z, 2.f,  1e-4f);
+    EXPECT_NEAR(pos.z, 2.f, 1e-4f);
 }
 
 // ---- predict_target_position ----
@@ -88,36 +93,36 @@ TEST(CryPredEngineTrait, PredictProjectilePositionWithLaunchOffset)
 TEST(CryPredEngineTrait, PredictTargetPositionGroundedStationary)
 {
     projectile_prediction::Target t;
-    t.m_origin     = {10.f, 20.f, 5.f};
-    t.m_velocity   = {0.f, 0.f, 0.f};
+    t.m_origin = {10.f, 20.f, 5.f};
+    t.m_velocity = {0.f, 0.f, 0.f};
     t.m_is_airborne = false;
 
     const auto pred = PredEngineTrait::predict_target_position(t, 5.f, 9.81f);
 
     EXPECT_NEAR(pred.x, 10.f, 1e-6f);
     EXPECT_NEAR(pred.y, 20.f, 1e-6f);
-    EXPECT_NEAR(pred.z,  5.f, 1e-6f);
+    EXPECT_NEAR(pred.z, 5.f, 1e-6f);
 }
 
 TEST(CryPredEngineTrait, PredictTargetPositionGroundedMoving)
 {
     projectile_prediction::Target t;
-    t.m_origin     = {0.f, 0.f, 0.f};
-    t.m_velocity   = {3.f, 4.f, 0.f};
+    t.m_origin = {0.f, 0.f, 0.f};
+    t.m_velocity = {3.f, 4.f, 0.f};
     t.m_is_airborne = false;
 
     const auto pred = PredEngineTrait::predict_target_position(t, 2.f, 9.81f);
 
-    EXPECT_NEAR(pred.x, 6.f,  1e-6f);
-    EXPECT_NEAR(pred.y, 8.f,  1e-6f);
-    EXPECT_NEAR(pred.z, 0.f,  1e-6f); // grounded — no gravity
+    EXPECT_NEAR(pred.x, 6.f, 1e-6f);
+    EXPECT_NEAR(pred.y, 8.f, 1e-6f);
+    EXPECT_NEAR(pred.z, 0.f, 1e-6f); // grounded — no gravity
 }
 
 TEST(CryPredEngineTrait, PredictTargetPositionAirborneGravityDropsZ)
 {
     projectile_prediction::Target t;
-    t.m_origin     = {0.f, 0.f, 20.f};
-    t.m_velocity   = {0.f, 0.f, 0.f};
+    t.m_origin = {0.f, 0.f, 20.f};
+    t.m_velocity = {0.f, 0.f, 0.f};
     t.m_is_airborne = true;
 
     const auto pred = PredEngineTrait::predict_target_position(t, 2.f, 9.81f);
@@ -129,8 +134,8 @@ TEST(CryPredEngineTrait, PredictTargetPositionAirborneGravityDropsZ)
 TEST(CryPredEngineTrait, PredictTargetPositionAirborneMovingWithGravity)
 {
     projectile_prediction::Target t;
-    t.m_origin     = {0.f, 0.f, 50.f};
-    t.m_velocity   = {10.f, 5.f, 0.f};
+    t.m_origin = {0.f, 0.f, 50.f};
+    t.m_velocity = {10.f, 5.f, 0.f};
     t.m_is_airborne = true;
 
     const auto pred = PredEngineTrait::predict_target_position(t, 3.f, 9.81f);
@@ -228,48 +233,26 @@ TEST(CryPredEngineTrait, CalcDirectYawAngle_OffOriginCamera)
     EXPECT_NEAR(yaw_a, yaw_b, 1e-4f);
 }
 
-// ---- calc_viewpoint_from_angles ----
+// ---- calc_view_basis ----
 
-TEST(CryPredEngineTrait, CalcViewpointFromAngles_45Degrees)
+TEST(CryPredEngineTrait, CalcViewBasis_ZeroAnglesIsWorldAxes)
 {
-    projectile_prediction::Projectile p;
-    p.m_origin      = {0.f, 0.f, 0.f};
-    p.m_launch_speed = 10.f;
+    const auto basis = PredEngineTrait::calc_view_basis(0.f, 0.f);
 
-    // Target along +Y at distance 10; pitch=45° → height = 10 * tan(45°) = 10
-    const Vector3<float> target{0.f, 10.f, 0.f};
-    const auto vp = PredEngineTrait::calc_viewpoint_from_angles(p, target, 45.f);
-
-    EXPECT_NEAR(vp.x, 0.f,  1e-4f);
-    EXPECT_NEAR(vp.y, 10.f, 1e-4f);
-    EXPECT_NEAR(vp.z, 10.f, 1e-3f);
+    EXPECT_NEAR(basis.forward.x, k_abs_forward.x, 1e-5f);
+    EXPECT_NEAR(basis.forward.y, k_abs_forward.y, 1e-5f);
+    EXPECT_NEAR(basis.forward.z, k_abs_forward.z, 1e-5f);
+    EXPECT_NEAR(basis.right.x, k_abs_right.x, 1e-5f);
+    EXPECT_NEAR(basis.up.z, k_abs_up.z, 1e-5f);
 }
 
-TEST(CryPredEngineTrait, CalcViewpointFromAngles_ZeroPitch)
+TEST(CryPredEngineTrait, CalcViewBasis_PositivePitchLooksUp)
 {
-    projectile_prediction::Projectile p;
-    p.m_origin      = {0.f, 0.f, 5.f};
-    p.m_launch_speed = 1.f;
+    // Trait pitch is positive upwards: forward gains height, the frame stays orthonormal
+    const auto basis = PredEngineTrait::calc_view_basis(45.f, 0.f);
 
-    const Vector3<float> target{3.f, 4.f, 0.f};
-    const auto vp = PredEngineTrait::calc_viewpoint_from_angles(p, target, 0.f);
-
-    // tan(0) = 0 → viewpoint Z = origin.z + 0 = 5
-    EXPECT_NEAR(vp.x, 3.f, 1e-4f);
-    EXPECT_NEAR(vp.y, 4.f, 1e-4f);
-    EXPECT_NEAR(vp.z, 5.f, 1e-4f);
-}
-
-TEST(CryPredEngineTrait, CalcViewpointXYMatchesPredictedTargetXY)
-{
-    projectile_prediction::Projectile p;
-    p.m_origin      = {1.f, 2.f, 3.f};
-    p.m_launch_speed = 50.f;
-
-    const Vector3<float> target{10.f, 20.f, 5.f};
-    const auto vp = PredEngineTrait::calc_viewpoint_from_angles(p, target, 30.f);
-
-    // X and Y always match the predicted target position
-    EXPECT_NEAR(vp.x, target.x, 1e-4f);
-    EXPECT_NEAR(vp.y, target.y, 1e-4f);
+    EXPECT_NEAR(basis.forward.z, std::sin(angles::degrees_to_radians(45.f)), 1e-5f);
+    EXPECT_NEAR(basis.forward.length(), 1.f, 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.right), 0.f, 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.up), 0.f, 1e-5f);
 }

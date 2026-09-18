@@ -14,7 +14,7 @@
 * `predict_target_position` – computes where a moving target will be after `time` seconds
 * `calc_vector_2d_distance` – horizontal distance (X/Z plane, ignoring Y)
 * `get_vector_height_coordinate` – extracts vertical coordinate (Y in Unity Engine)
-* `calc_viewpoint_from_angles` – computes aim point given pitch angle
+* `calc_view_basis` – forward, right and up of the view frame for a pitch and yaw
 * `calc_direct_pitch_angle` – pitch angle to look from origin to target
 * `calc_direct_yaw_angle` – yaw angle to look from origin to target
 
@@ -31,7 +31,8 @@ class PredEngineTrait final {
 public:
   // Predict projectile position after `time` seconds
   static constexpr Vector3<float>
-  predict_projectile_position(const projectile_prediction::Projectile& projectile,
+  predict_projectile_position(const Vector3<float>& launch_origin,
+                             const projectile_prediction::Projectile& projectile,
                              float pitch, float yaw, float time,
                              float gravity) noexcept;
 
@@ -48,11 +49,9 @@ public:
   static constexpr float
   get_vector_height_coordinate(const Vector3<float>& vec) noexcept;
 
-  // Compute aim point from angles
-  static Vector3<float>
-  calc_viewpoint_from_angles(const projectile_prediction::Projectile& projectile,
-                            Vector3<float> predicted_target_position,
-                            std::optional<float> projectile_pitch) noexcept;
+  // Forward, right and up of the view frame for the given angles
+  static constexpr projectile_prediction::ViewBasis<float>
+  calc_view_basis(float pitch, float yaw) noexcept;
 
   // Compute pitch angle to look at target
   static float
@@ -74,7 +73,8 @@ public:
 
 ```cpp
 auto pos = PredEngineTrait::predict_projectile_position(
-  projectile,    // initial position, speed, gravity scale
+  launch_origin, // where the projectile spawns (see Launcher)
+  projectile,    // speed, gravity scale
   pitch_deg,     // launch pitch (positive = up)
   yaw_deg,       // launch yaw
   time,          // time in seconds
@@ -133,17 +133,14 @@ Used to compute ballistic arc parameters.
 
 ---
 
-## Viewpoint from angles
+## View basis
 
 ```cpp
-auto aim_point = PredEngineTrait::calc_viewpoint_from_angles(
-  projectile,
-  predicted_target_pos,
-  optional_pitch_deg
-);
+auto basis = PredEngineTrait::calc_view_basis(pitch_deg, yaw_deg);
+// basis.forward, basis.right, basis.up
 ```
 
-Computes where to aim in 3D space given a desired pitch angle. Uses horizontal distance and `tan(pitch)` to compute height offset. Result has adjusted Y coordinate.
+Rotates the engine's world axes by the given view angles (trait pitch is positive upwards). `Launcher::launch_origin(basis)` uses it to place a view-relative muzzle offset, and the engines use `basis.forward` to build the aim point on the eye's aim ray.
 
 ---
 
@@ -185,7 +182,7 @@ float pitch = PredEngineTrait::calc_direct_pitch_angle(proj.m_origin, target_pos
 float yaw   = PredEngineTrait::calc_direct_yaw_angle(proj.m_origin, target_pos);
 
 // Predict projectile position with those angles
-auto proj_pos = PredEngineTrait::predict_projectile_position(proj, pitch, yaw, time, gravity);
+auto proj_pos = PredEngineTrait::predict_projectile_position(proj.m_origin, proj, pitch, yaw, time, gravity);
 ```
 
 ---

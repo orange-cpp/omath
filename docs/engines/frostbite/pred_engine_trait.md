@@ -1,105 +1,150 @@
-// Created by Vlad on 8/6/2025.
-#pragma once
+# `omath::frostbite_engine::PredEngineTrait` — projectile prediction trait
 
-#include <cmath> // sqrt, hypot, tan, asin, atan2
-#include <optional>
+> Header: `omath/engines/frostbite_engine/traits/pred_engine_trait.hpp`
+> Namespace: `omath::frostbite_engine`
+> Purpose: provide Frostbite-specific projectile and target prediction for ballistic calculations
 
-#include "omath/engines/frostbite_engine/formulas.hpp"
-#include "omath/projectile_prediction/projectile.hpp"
-#include "omath/projectile_prediction/target.hpp"
+---
 
-namespace omath::frostbite_engine
-{
-class PredEngineTrait final
-{
+## Summary
+
+`PredEngineTrait` implements engine-specific helpers for **projectile prediction**:
+
+* `predict_projectile_position` – computes where a projectile will be after `time` seconds
+* `predict_target_position` – computes where a moving target will be after `time` seconds
+* `calc_vector_2d_distance` – horizontal distance (X/Z plane, ignoring Y)
+* `get_vector_height_coordinate` – extracts vertical coordinate (Y in Frostbite)
+* `calc_view_basis` – forward, right and up of the view frame for a pitch and yaw
+* `calc_direct_pitch_angle` – pitch angle to look from origin to target
+* `calc_direct_yaw_angle` – yaw angle to look from origin to target
+
+These methods satisfy the `PredEngineConcept` required by `ProjPredEngineLegacy`.
+
+---
+
+## API
+
+```cpp
+namespace omath::frostbite_engine {
+
+class PredEngineTrait final {
 public:
-// Predict projectile position given launch angles (degrees), time (s), and world gravity (m/s^2).
-// Note: kept runtime function; remove constexpr to avoid CTAD surprises across toolchains.
-static Vector3<float> predict_projectile_position(
-const projectile_prediction::Projectile& projectile,
-float pitch_deg, float yaw_deg,
-float time, float gravity) noexcept
-{
-// Engine convention: negative pitch looks up (your original used -pitch).
-const auto fwd = forward_vector({
-PitchAngle::from_degrees(-pitch_deg),
-YawAngle::from_degrees(yaw_deg),
-RollAngle::from_degrees(0.0f)
-});
+  // Predict projectile position after `time` seconds, launched from `launch_origin`
+  static constexpr Vector3<float>
+  predict_projectile_position(const Vector3<float>& launch_origin,
+                             const projectile_prediction::Projectile& projectile,
+                             float pitch, float yaw, float time,
+                             float gravity) noexcept;
 
-            Vector3<float> pos =
-                projectile.m_origin +
-                fwd * (projectile.m_launch_speed * time);
+  // Predict target position after `time` seconds
+  static constexpr Vector3<float>
+  predict_target_position(const projectile_prediction::Target& target,
+                         float time, float gravity) noexcept;
 
-            // s = 1/2 a t^2 downward
-            pos.y -= (gravity * projectile.m_gravity_scale) * (time * time) * 0.5f;
-            return pos;
-        }
+  // Compute horizontal (2D) distance
+  static float
+  calc_vector_2d_distance(const Vector3<float>& delta) noexcept;
 
-        [[nodiscard]]
-        static Vector3<float> predict_target_position(
-            const projectile_prediction::Target& target,
-            float time, float gravity) noexcept
-        {
-            Vector3<float> predicted = target.m_origin + target.m_velocity * time;
+  // Get vertical coordinate (Y in Frostbite)
+  static constexpr float
+  get_vector_height_coordinate(const Vector3<float>& vec) noexcept;
 
-            if (target.m_is_airborne) {
-                // If targets also have a gravity scale in your model, multiply here.
-                predicted.y -= gravity * (time * time) * 0.5f;
-            }
-            return predicted;
-        }
+  // Forward, right and up of the view frame for the given angles
+  static constexpr projectile_prediction::ViewBasis<float>
+  calc_view_basis(float pitch, float yaw) noexcept;
 
-        [[nodiscard]]
-        static float calc_vector_2d_distance(const Vector3<float>& delta) noexcept
-        {
-            // More stable than sqrt(x*x + z*z)
-            return std::hypot(delta.x, delta.z);
-        }
+  // Compute pitch angle to look at target
+  static float
+  calc_direct_pitch_angle(const Vector3<float>& origin,
+                         const Vector3<float>& view_to) noexcept;
 
-        [[nodiscard]]
-        static float get_vector_height_coordinate(const Vector3<float>& vec) noexcept
-        {
-            return vec.y;
-        }
+  // Compute yaw angle to look at target
+  static float
+  calc_direct_yaw_angle(const Vector3<float>& origin,
+                       const Vector3<float>& view_to) noexcept;
+};
 
-        // Computes a viewpoint above the predicted target, using an optional projectile pitch.
-        // If pitch is absent, we leave Y unchanged (or you can choose a sensible default).
-        [[nodiscard]]
-        static Vector3<float> calc_viewpoint_from_angles(
-            const projectile_prediction::Projectile& projectile,
-            const Vector3<float>& predicted_target_position,
-            const std::optional<float> projectile_pitch_deg) noexcept
-        {
-            // Lateral separation from projectile to target (X/Z plane).
-            const auto delta2d = calc_vector_2d_distance(predicted_target_position - projectile.m_origin);
-
-            float y = predicted_target_position.y;
-            if (projectile_pitch_deg.has_value()) {
-                const float pitch_rad = angles::degrees_to_radians(*projectile_pitch_deg);
-                const float height = delta2d * std::tan(pitch_rad);
-                y += height;
-            }
-
-            // Use the target's Z, not the projectile's Z (likely bugfix).
-            return { predicted_target_position.x, y, predicted_target_position.z };
-        }
-
-        // Due to maybe_calculate_projectile_launch_pitch_angle spec: +89° up, -89° down.
-        [[nodiscard]]
-        static float calc_direct_pitch_angle(const Vector3<float>& origin,
-                                             const Vector3<float>& view_to) noexcept
-        {
-            const auto direction = (view_to - origin).normalized();
-            return angles::radians_to_degrees(std::asin(direction.y));
-        }
-
-        [[nodiscard]]
-        static float calc_direct_yaw_angle(const Vector3<float>& origin,
-                                           const Vector3<float>& view_to) noexcept
-        {
-            const auto direction = (view_to - origin).normalized();
-            return angles::radians_to_degrees(std::atan2(direction.x, direction.z));
-        }
-    };
 } // namespace omath::frostbite_engine
+```
+
+---
+
+## Projectile prediction
+
+```cpp
+auto pos = PredEngineTrait::predict_projectile_position(
+  launch_origin, // where the projectile spawns (see Launcher)
+  projectile,    // speed, gravity scale
+  pitch_deg,     // launch pitch (positive = up)
+  yaw_deg,       // launch yaw
+  time,          // time in seconds
+  gravity        // gravity constant (m/s²)
+);
+```
+
+Computes:
+
+1. Forward vector from pitch/yaw (using `forward_vector`; Frostbite's own pitch is negative upwards, so the trait negates it)
+2. Initial velocity: `forward * launch_speed`
+3. Position after `time`: `launch_origin + velocity*time - 0.5*gravity*gravityScale*time²` (Y component only)
+
+---
+
+## Target prediction
+
+```cpp
+auto pos = PredEngineTrait::predict_target_position(target, time, gravity);
+```
+
+Linear extrapolation plus gravity if the target is airborne:
+
+```
+predicted = origin + velocity * time
+if (airborne)
+  predicted.y -= 0.5 * gravity * time²
+```
+
+---
+
+## Distance & height helpers
+
+* `calc_vector_2d_distance(delta)` → `sqrt(delta.x² + delta.z²)` (horizontal distance)
+* `get_vector_height_coordinate(vec)` → `vec.y` (vertical coordinate)
+
+---
+
+## Aim angle calculation
+
+* `calc_direct_pitch_angle(origin, target)` → `asin(direction.y)` in degrees; positive = looking up
+* `calc_direct_yaw_angle(origin, target)` → `atan2(direction.x, direction.z)` in degrees
+
+---
+
+## View basis
+
+```cpp
+auto basis = PredEngineTrait::calc_view_basis(pitch_deg, yaw_deg);
+// basis.forward, basis.right, basis.up
+```
+
+Rotates the engine's world axes by the given view angles (trait pitch is positive upwards). `Launcher::launch_origin(basis)` uses it to place a view-relative muzzle offset, and the engines use `basis.forward` to build the aim point on the eye's aim ray.
+
+---
+
+## Conventions
+
+* **Coordinate system**: Y-up, forward +Z, right +X
+* **Trait pitch**: +90° = straight up, -90° = straight down (the engine's own `PitchAngle` is the opposite sign)
+* **Gravity**: applied along -Y
+
+---
+
+## See also
+
+* `omath/engines/frostbite_engine/formulas.hpp` — direction vectors and matrix builders
+* [`Launcher`](../../projectile_prediction/launcher.md), [`Projectile`](../../projectile_prediction/projectile.md), [`Target`](../../projectile_prediction/target.md)
+* [`ProjPredEngineLegacy`](../../projectile_prediction/proj_pred_engine_legacy.md)
+
+---
+
+*Last updated: 18 Sep 2026*

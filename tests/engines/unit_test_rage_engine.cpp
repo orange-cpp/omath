@@ -81,7 +81,8 @@ TEST(unit_test_rage_engine, PredEngineTraitUsesZAsHeight)
     projectile.m_launch_speed = 10.f;
     projectile.m_gravity_scale = 1.f;
 
-    const auto pos = rage_engine::PredEngineTrait::predict_projectile_position(projectile, 0.f, 0.f, 1.f, 9.81f);
+    const auto pos = rage_engine::PredEngineTrait::predict_projectile_position(
+            projectile.m_origin + projectile.m_launch_offset, projectile, 0.f, 0.f, 1.f, 9.81f);
 
     EXPECT_NEAR(pos.x, 0.f, 0.0001f);
     EXPECT_NEAR(pos.y, 10.f, 0.0001f);

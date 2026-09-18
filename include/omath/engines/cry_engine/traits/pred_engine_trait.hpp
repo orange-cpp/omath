@@ -3,9 +3,9 @@
 //
 #pragma once
 #include "omath/engines/cry_engine/formulas.hpp"
+#include "omath/projectile_prediction/launcher.hpp"
 #include "omath/projectile_prediction/projectile.hpp"
 #include "omath/projectile_prediction/target.hpp"
-#include <optional>
 
 namespace omath::cry_engine
 {
@@ -13,13 +13,13 @@ namespace omath::cry_engine
     {
     public:
         [[nodiscard("projectile position result should not be discarded")]]
-        constexpr static Vector3<float> predict_projectile_position(const projectile_prediction::Projectile<float>& projectile,
-                                                                    const float pitch, const float yaw,
-                                                                    const float time, const float gravity) noexcept
+        constexpr static Vector3<float>
+        predict_projectile_position(const Vector3<float>& launch_origin,
+                                    const projectile_prediction::Projectile<float>& projectile, const float pitch,
+                                    const float yaw, const float time, const float gravity) noexcept
         {
-            const auto launch_pos = projectile.m_origin + projectile.m_launch_offset;
-            auto current_pos = launch_pos
-                               + forward_vector({PitchAngle::from_degrees(-pitch), YawAngle::from_degrees(yaw),
+            auto current_pos = launch_origin
+                               + forward_vector({PitchAngle::from_degrees(pitch), YawAngle::from_degrees(yaw),
                                                  RollAngle::from_degrees(0)})
                                          * projectile.m_launch_speed * time;
             current_pos.z -= (gravity * projectile.m_gravity_scale) * (time * time) * 0.5f;
@@ -49,15 +49,16 @@ namespace omath::cry_engine
             return vec.z;
         }
 
-        [[nodiscard("viewpoint result should not be discarded")]]
-        static Vector3<float> calc_viewpoint_from_angles(const projectile_prediction::Projectile<float>& projectile,
-                                                         Vector3<float> predicted_target_position,
-                                                         const std::optional<float> projectile_pitch) noexcept
+        [[nodiscard("view basis result should not be discarded")]]
+        constexpr static projectile_prediction::ViewBasis<float> calc_view_basis(const float pitch,
+                                                                                 const float yaw) noexcept
         {
-            const auto delta2d = calc_vector_2d_distance(predicted_target_position - projectile.m_origin);
-            const auto height = delta2d * std::tan(angles::degrees_to_radians(projectile_pitch.value()));
+            const auto rotation = rotation_matrix(
+                    {PitchAngle::from_degrees(pitch), YawAngle::from_degrees(yaw), RollAngle::from_degrees(0)});
 
-            return {predicted_target_position.x, predicted_target_position.y, projectile.m_origin.z + height};
+            return {.forward = mat_rotate_vector(rotation, k_abs_forward),
+                    .right = mat_rotate_vector(rotation, k_abs_right),
+                    .up = mat_rotate_vector(rotation, k_abs_up)};
         }
         // Due to specification of maybe_calculate_projectile_launch_pitch_angle, pitch angle must be:
         // 89 look up, -89 look down

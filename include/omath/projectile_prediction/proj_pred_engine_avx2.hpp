@@ -6,26 +6,39 @@
 
 namespace omath::projectile_prediction
 {
+    // Source-style solver (z up, yaw about z) that scans candidate flight times eight at a time with AVX2. Only
+    // available when the library is built with OMATH_USE_AVX2 on x86; every call throws otherwise.
     class ProjPredEngineAvx2 final : public ProjPredEngineInterface<float>
     {
     public:
-        [[nodiscard]] std::optional<Vector3<float>>
-        maybe_calculate_aim_point(const Projectile<float>& projectile, const Target<float>& target) const override;
+        ProjPredEngineAvx2(float gravity_constant, float simulation_time_step, float maximum_simulation_time) noexcept;
 
-        [[nodiscard]] std::optional<AimAngles<float>>
-        maybe_calculate_aim_angles(const Projectile<float>& projectile, const Target<float>& target) const override;
-
-        ProjPredEngineAvx2(float gravity_constant, float simulation_time_step, float maximum_simulation_time);
-        ~ProjPredEngineAvx2() override = default;
+        [[nodiscard]]
+        std::optional<AimSolution<float>> maybe_calculate_aim(const Projectile<float>& projectile,
+                                                              const Launcher<float>& launcher,
+                                                              const Target<float>& target) const override;
 
     private:
-        [[nodiscard]] static std::optional<float> calculate_pitch(const Vector3<float>& proj_origin,
-                                                                  const Vector3<float>& target_pos,
-                                                                  float bullet_gravity, float v0, float time);
+        struct Candidate
+        {
+            float time;
+            Vector3<float> target_position;
+            float pitch;
+        };
 
-        // We use [[maybe_unused]] here since AVX2 is not available for ARM and ARM64 CPU
-        [[maybe_unused]] const float m_gravity_constant;
-        [[maybe_unused]] const float m_simulation_time_step;
-        [[maybe_unused]] const float m_maximum_simulation_time;
+        // First flight time at which the projectile can reach the predicted target from launch_origin
+        [[nodiscard]]
+        std::optional<Candidate> find_candidate(const Vector3<float>& launch_origin, const Target<float>& target,
+                                                float bullet_gravity, float launch_speed) const;
+
+        [[nodiscard]]
+        static std::optional<float> calculate_pitch(const Vector3<float>& launch_origin,
+                                                    const Vector3<float>& target_pos, float bullet_gravity,
+                                                    float launch_speed, float time);
+
+        // [[maybe_unused]] because the members are only read on x86 with AVX2 enabled
+        [[maybe_unused]] float m_gravity_constant;
+        [[maybe_unused]] float m_simulation_time_step;
+        [[maybe_unused]] float m_maximum_simulation_time;
     };
 } // namespace omath::projectile_prediction

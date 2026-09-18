@@ -90,7 +90,8 @@ static void verify_launch_offset_at_time_zero(const Vector3<AT>& origin, const V
     p.m_launch_speed = static_cast<AT>(100);
     p.m_gravity_scale = static_cast<AT>(1);
 
-    const auto pos = Trait::predict_projectile_position(p, AT{0}, AT{0}, AT{0}, static_cast<AT>(9.81));
+    const auto pos = Trait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, AT{0}, AT{0}, AT{0},
+                                                        static_cast<AT>(9.81));
     const auto expected = origin + offset;
     EXPECT_NEAR(static_cast<double>(pos.x), static_cast<double>(expected.x), 1e-4);
     EXPECT_NEAR(static_cast<double>(pos.y), static_cast<double>(expected.y), 1e-4);
@@ -111,10 +112,12 @@ static void verify_zero_offset_matches_default()
     p2.m_launch_speed = static_cast<AT>(50);
     p2.m_gravity_scale = static_cast<AT>(1);
 
-    const auto pos1 = Trait::predict_projectile_position(p, static_cast<AT>(15), static_cast<AT>(30),
-                                                         static_cast<AT>(1), static_cast<AT>(9.81));
-    const auto pos2 = Trait::predict_projectile_position(p2, static_cast<AT>(15), static_cast<AT>(30),
-                                                         static_cast<AT>(1), static_cast<AT>(9.81));
+    const auto pos1 =
+            Trait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, static_cast<AT>(15),
+                                               static_cast<AT>(30), static_cast<AT>(1), static_cast<AT>(9.81));
+    const auto pos2 =
+            Trait::predict_projectile_position(p2.m_origin + p2.m_launch_offset, p2, static_cast<AT>(15),
+                                               static_cast<AT>(30), static_cast<AT>(1), static_cast<AT>(9.81));
 #if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || defined(_M_ARM64)
     constexpr double tol = 1e-6;
 #else
@@ -196,9 +199,10 @@ TEST(LaunchOffsetTests, OffsetShiftsTrajectory)
     p_with_offset.m_launch_speed = 100.f;
     p_with_offset.m_gravity_scale = 1.f;
 
-    const auto pos1 = source_engine::PredEngineTrait::predict_projectile_position(p_no_offset, 20.f, 45.f, 2.f, 9.81f);
-    const auto pos2 =
-            source_engine::PredEngineTrait::predict_projectile_position(p_with_offset, 20.f, 45.f, 2.f, 9.81f);
+    const auto pos1 = source_engine::PredEngineTrait::predict_projectile_position(
+            p_no_offset.m_origin + p_no_offset.m_launch_offset, p_no_offset, 20.f, 45.f, 2.f, 9.81f);
+    const auto pos2 = source_engine::PredEngineTrait::predict_projectile_position(
+            p_with_offset.m_origin + p_with_offset.m_launch_offset, p_with_offset, 20.f, 45.f, 2.f, 9.81f);
 
     // The difference should be exactly the launch offset
     EXPECT_NEAR(pos2.x - pos1.x, 10.f, 1e-4f);
@@ -216,7 +220,8 @@ TEST(TraitTests, Frostbite_Pred_And_Mesh_And_Camera)
     p.m_launch_speed = 10.f;
     p.m_gravity_scale = 1.f;
 
-    const auto pos = e::PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 1.f, 9.81f);
+    const auto pos =
+            e::PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.f, 0.f, 1.f, 9.81f);
     EXPECT_NEAR(pos.x, 0.f, 1e-4f);
     EXPECT_NEAR(pos.z, 10.f, 1e-4f);
     EXPECT_NEAR(pos.y, -9.81f * 0.5f, 1e-4f);
@@ -238,9 +243,11 @@ TEST(TraitTests, Frostbite_Pred_And_Mesh_And_Camera)
     EXPECT_NEAR(e::PredEngineTrait::calc_vector_2d_distance({3.f, 0.f, 4.f}), 5.f, 1e-6f);
     EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate({1.f, 2.5f, 3.f}), 2.5f, 1e-6f);
 
-    std::optional<float> pitch = 45.f;
-    auto vp = e::PredEngineTrait::calc_viewpoint_from_angles(p, {10.f, 0.f, 0.f}, pitch);
-    EXPECT_NEAR(vp.y, 0.f + 10.f * std::tan(angles::degrees_to_radians(45.f)), 1e-6f);
+    const auto basis = e::PredEngineTrait::calc_view_basis(45.f, 0.f);
+    EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate(basis.forward),
+                std::sin(angles::degrees_to_radians(45.f)), 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.right), 0.f, 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.up), 0.f, 1e-5f);
 
     // Direct angles
     Vector3<float> origin{0.f, 0.f, 0.f};
@@ -284,7 +291,8 @@ TEST(TraitTests, IW_Pred_And_Mesh_And_Camera)
     p.m_launch_speed = 10.f;
     p.m_gravity_scale = 1.f;
 
-    const auto pos = e::PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 1.f, 9.81f);
+    const auto pos =
+            e::PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.f, 0.f, 1.f, 9.81f);
     EXPECT_NEAR(pos.x, 10.f, 1e-4f);
     EXPECT_NEAR(pos.z, -9.81f * 0.5f, 1e-4f);
 
@@ -299,9 +307,11 @@ TEST(TraitTests, IW_Pred_And_Mesh_And_Camera)
     EXPECT_NEAR(e::PredEngineTrait::calc_vector_2d_distance({3.f, 4.f, 0.f}), 5.f, 1e-6f);
     EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate({1.f, 2.5f, 3.f}), 3.f, 1e-6f);
 
-    std::optional<float> pitch = 45.f;
-    auto vp = e::PredEngineTrait::calc_viewpoint_from_angles(p, {10.f, 0.f, 0.f}, pitch);
-    EXPECT_NEAR(vp.z, 0.f + 10.f * std::tan(angles::degrees_to_radians(45.f)), 1e-6f);
+    const auto basis = e::PredEngineTrait::calc_view_basis(45.f, 0.f);
+    EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate(basis.forward),
+                std::sin(angles::degrees_to_radians(45.f)), 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.right), 0.f, 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.up), 0.f, 1e-5f);
 
     Vector3<float> origin{0.f, 0.f, 0.f};
     Vector3<float> view_to{1.f, 1.f, 1.f};
@@ -344,7 +354,8 @@ TEST(TraitTests, OpenGL_Pred_And_Mesh_And_Camera)
     p.m_launch_speed = 10.f;
     p.m_gravity_scale = 1.f;
 
-    const auto pos = e::PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 1.f, 9.81f);
+    const auto pos =
+            e::PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.f, 0.f, 1.f, 9.81f);
     EXPECT_NEAR(pos.z, -10.f, 1e-4f);
     EXPECT_NEAR(pos.y, -9.81f * 0.5f, 1e-4f);
 
@@ -359,9 +370,11 @@ TEST(TraitTests, OpenGL_Pred_And_Mesh_And_Camera)
     EXPECT_NEAR(e::PredEngineTrait::calc_vector_2d_distance({3.f, 0.f, 4.f}), 5.f, 1e-6f);
     EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate({1.f, 2.5f, 3.f}), 2.5f, 1e-6f);
 
-    std::optional<float> pitch = 45.f;
-    auto vp = e::PredEngineTrait::calc_viewpoint_from_angles(p, {10.f, 0.f, 0.f}, pitch);
-    EXPECT_NEAR(vp.y, 0.f + 10.f * std::tan(angles::degrees_to_radians(45.f)), 1e-6f);
+    const auto basis = e::PredEngineTrait::calc_view_basis(45.f, 0.f);
+    EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate(basis.forward),
+                std::sin(angles::degrees_to_radians(45.f)), 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.right), 0.f, 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.up), 0.f, 1e-5f);
 
     Vector3<float> origin{0.f, 0.f, 0.f};
     Vector3<float> view_to{0.f, 1.f, 1.f};
@@ -403,7 +416,8 @@ TEST(TraitTests, Unity_Pred_And_Mesh_And_Camera)
     p.m_launch_speed = 10.f;
     p.m_gravity_scale = 1.f;
 
-    const auto pos = e::PredEngineTrait::predict_projectile_position(p, 0.f, 0.f, 1.f, 9.81f);
+    const auto pos =
+            e::PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.f, 0.f, 1.f, 9.81f);
     EXPECT_NEAR(pos.z, 10.f, 1e-4f);
     EXPECT_NEAR(pos.y, -9.81f * 0.5f, 1e-4f);
 
@@ -418,9 +432,11 @@ TEST(TraitTests, Unity_Pred_And_Mesh_And_Camera)
     EXPECT_NEAR(e::PredEngineTrait::calc_vector_2d_distance({3.f, 0.f, 4.f}), 5.f, 1e-6f);
     EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate({1.f, 2.5f, 3.f}), 2.5f, 1e-6f);
 
-    std::optional<float> pitch = 45.f;
-    auto vp = e::PredEngineTrait::calc_viewpoint_from_angles(p, {10.f, 0.f, 0.f}, pitch);
-    EXPECT_NEAR(vp.y, 0.f + 10.f * std::tan(angles::degrees_to_radians(45.f)), 1e-6f);
+    const auto basis = e::PredEngineTrait::calc_view_basis(45.f, 0.f);
+    EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate(basis.forward),
+                std::sin(angles::degrees_to_radians(45.f)), 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.right), 0.f, 1e-5f);
+    EXPECT_NEAR(basis.forward.dot(basis.up), 0.f, 1e-5f);
 
     Vector3<float> origin{0.f, 0.f, 0.f};
     Vector3<float> view_to{0.f, 1.f, 1.f};
@@ -462,24 +478,27 @@ TEST(TraitTests, Unreal_Pred_And_Mesh_And_Camera)
     p.m_launch_speed = 10.0;
     p.m_gravity_scale = 1.0;
 
-    const auto pos = e::PredEngineTrait::predict_projectile_position(p, 0.0, 0.0, 1.0, 9.81);
+    const auto pos =
+            e::PredEngineTrait::predict_projectile_position(p.m_origin + p.m_launch_offset, p, 0.0, 0.0, 1.0, 9.81);
     EXPECT_NEAR(pos.x, 10.0, 1e-4);
-    EXPECT_NEAR(pos.y, -9.81 * 0.5, 1e-4);
+    EXPECT_NEAR(pos.z, -9.81 * 0.5, 1e-4);
 
     projectile_prediction::Target<double> t;
-    t.m_origin = {0.0, 5.0, 0.0};
+    t.m_origin = {0.0, 0.0, 5.0};
     t.m_velocity = {2.0, 0.0, 0.0};
     t.m_is_airborne = true;
     const auto pred = e::PredEngineTrait::predict_target_position(t, 2.0, 9.81);
     EXPECT_NEAR(pred.x, 4.0, 1e-6);
-    EXPECT_NEAR(pred.y, 5.0 - 9.81 * (2.0 * 2.0) * 0.5, 1e-6);
+    EXPECT_NEAR(pred.z, 5.0 - 9.81 * (2.0 * 2.0) * 0.5, 1e-6);
 
-    EXPECT_NEAR(e::PredEngineTrait::calc_vector_2d_distance({3.0, 0.0, 4.0}), 5.0, 1e-6);
-    EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate({1.0, 2.5, 3.0}), 2.5, 1e-6);
+    EXPECT_NEAR(e::PredEngineTrait::calc_vector_2d_distance({3.0, 4.0, 0.0}), 5.0, 1e-6);
+    EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate({1.0, 2.5, 3.0}), 3.0, 1e-6);
 
-    std::optional<double> pitch = 45.0;
-    auto vp = e::PredEngineTrait::calc_viewpoint_from_angles(p, Vector3<double>{10.0, 0.0, 0.0}, pitch);
-    EXPECT_NEAR(vp.z, 0.0 + 10.0 * std::tan(angles::degrees_to_radians(45.0)), 1e-6);
+    const auto basis = e::PredEngineTrait::calc_view_basis(45.0, 0.0);
+    EXPECT_NEAR(e::PredEngineTrait::get_vector_height_coordinate(basis.forward),
+                std::sin(angles::degrees_to_radians(45.0)), 1e-9);
+    EXPECT_NEAR(basis.forward.dot(basis.right), 0.0, 1e-9);
+    EXPECT_NEAR(basis.forward.dot(basis.up), 0.0, 1e-9);
 
     Vector3<double> origin{0.0, 0.0, 0.0};
     Vector3<double> view_to{1.0, 1.0, 1.0};

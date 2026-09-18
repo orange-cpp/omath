@@ -1,35 +1,30 @@
-#include <gtest/gtest.h>
-#include <omath/projectile_prediction/proj_pred_engine_legacy.hpp>
-#include <omath/engines/source_engine/traits/camera_trait.hpp>
 #include <cmath>
+#include <gtest/gtest.h>
 #include <numbers>
+#include <omath/engines/source_engine/traits/camera_trait.hpp>
+#include <omath/projectile_prediction/proj_pred_engine_legacy.hpp>
 #include <type_traits>
 
 using Projectile = omath::projectile_prediction::Projectile<float>;
-using Target     = omath::projectile_prediction::Target<float>;
-using Engine     = omath::projectile_prediction::ProjPredEngineLegacy<>;
+using Target = omath::projectile_prediction::Target<float>;
+using Engine = omath::projectile_prediction::ProjPredEngineLegacy<>;
 
 TEST(UnitTestPrediction, PredictionTest)
 {
-    constexpr Target target{
-            .m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {3, 2, 1}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
-    const auto viewPoint =
-            Engine(400.f, 1.f / 1000.f, 50.f, 5.f).maybe_calculate_aim_point(proj, target);
+    constexpr Target target{.m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {3, 2, 1}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+    const auto viewPoint = Engine(400.f, 1.f / 1000.f, 50.f, 5.f).maybe_calculate_aim_point(proj, target);
 
-
-    const auto [pitch, yaw, _] =omath::source_engine::CameraTrait::calc_look_at_angle(proj.m_origin, viewPoint.value());
+    const auto [pitch, yaw, _] =
+            omath::source_engine::CameraTrait::calc_look_at_angle(proj.m_origin, viewPoint.value());
 
     EXPECT_NEAR(-42.547142, pitch.as_degrees(), 0.01f);
     EXPECT_NEAR(-1.181189, yaw.as_degrees(), 0.01f);
 }
 
 // Helper: verify aim_angles match angles derived from aim_point via CameraTrait
-static void expect_angles_match_aim_point(const Projectile& proj,
-                                          const Target& target,
-                                          float gravity, float step, float max_time, float tolerance,
-                                          float angle_eps = 0.01f)
+static void expect_angles_match_aim_point(const Projectile& proj, const Target& target, float gravity, float step,
+                                          float max_time, float tolerance, float angle_eps = 0.01f)
 {
     const Engine engine(gravity, step, max_time, tolerance);
 
@@ -53,30 +48,24 @@ static void expect_angles_match_aim_point(const Projectile& proj,
 
 TEST(UnitTestPrediction, AimAnglesMatchAimPoint_StaticTarget)
 {
-    constexpr Target target{
-            .m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {3, 2, 1}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+    constexpr Target target{.m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {3, 2, 1}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
     expect_angles_match_aim_point(proj, target, 400, 1.f / 1000.f, 50, 5.f);
 }
 
 TEST(UnitTestPrediction, AimAnglesMatchAimPoint_MovingTarget)
 {
-    constexpr Target target{
-            .m_origin = {500, 100, 0}, .m_velocity = {-50, 20, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {0, 0, 0}, .m_launch_speed = 3000.f, .m_gravity_scale = 1.0f};
+    constexpr Target target{.m_origin = {500, 100, 0}, .m_velocity = {-50, 20, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 3000.f, .m_gravity_scale = 1.0f};
 
     expect_angles_match_aim_point(proj, target, 800, 1.f / 500.f, 30, 10.f);
 }
 
 TEST(UnitTestPrediction, AimAnglesMatchAimPoint_AirborneTarget)
 {
-    constexpr Target target{
-            .m_origin = {200, 50, 300}, .m_velocity = {10, -5, -20}, .m_is_airborne = true};
-    constexpr Projectile proj = {
-            .m_origin = {0, 0, 0}, .m_launch_speed = 4000.f, .m_gravity_scale = 0.5f};
+    constexpr Target target{.m_origin = {200, 50, 300}, .m_velocity = {10, -5, -20}, .m_is_airborne = true};
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 4000.f, .m_gravity_scale = 0.5f};
 
     expect_angles_match_aim_point(proj, target, 400, 1.f / 1000.f, 50, 10.f);
 }
@@ -84,10 +73,8 @@ TEST(UnitTestPrediction, AimAnglesMatchAimPoint_AirborneTarget)
 TEST(UnitTestPrediction, AimAnglesMatchAimPoint_HighArc)
 {
     // Target nearly directly above — high pitch angle
-    constexpr Target target{
-            .m_origin = {10, 0, 500}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {0, 0, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.3f};
+    constexpr Target target{.m_origin = {10, 0, 500}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.3f};
 
     expect_angles_match_aim_point(proj, target, 400, 1.f / 1000.f, 50, 5.f);
 }
@@ -95,18 +82,15 @@ TEST(UnitTestPrediction, AimAnglesMatchAimPoint_HighArc)
 TEST(UnitTestPrediction, AimAnglesMatchAimPoint_NegativeYaw)
 {
     // Target behind and to the left — negative yaw quadrant
-    constexpr Target target{
-            .m_origin = {-200, -150, 10}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {0, 0, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+    constexpr Target target{.m_origin = {-200, -150, 10}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
     expect_angles_match_aim_point(proj, target, 400, 1.f / 1000.f, 50, 5.f);
 }
 
 TEST(UnitTestPrediction, AimAnglesMatchAimPoint_WithLaunchOffset)
 {
-    constexpr Target target{
-            .m_origin = {200, 0, 50}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Target target{.m_origin = {200, 0, 50}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
     const Projectile proj = {
             .m_origin = {0, 0, 0}, .m_launch_offset = {5, 0, -3}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
@@ -116,9 +100,8 @@ TEST(UnitTestPrediction, AimAnglesMatchAimPoint_WithLaunchOffset)
 // Helper: simulate projectile flight using aim_angles and verify it reaches the target.
 // Steps the projectile forward in small increments, simultaneously predicts target position,
 // and checks that the minimum distance is within hit_tolerance.
-static void expect_projectile_hits_target(const Projectile& proj,
-                                          const Target& target,
-                                          float gravity, float engine_step, float max_time, float engine_tolerance,
+static void expect_projectile_hits_target(const Projectile& proj, const Target& target, float gravity,
+                                          float engine_step, float max_time, float engine_tolerance,
                                           float hit_tolerance, float sim_step = 1.f / 2000.f)
 {
     using Trait = omath::source_engine::PredEngineTrait;
@@ -132,7 +115,8 @@ static void expect_projectile_hits_target(const Projectile& proj,
 
     for (float t = 0.f; t <= max_time; t += sim_step)
     {
-        const auto proj_pos = Trait::predict_projectile_position(proj, aim_angles->pitch, aim_angles->yaw, t, gravity);
+        const auto proj_pos = Trait::predict_projectile_position(proj.m_origin + proj.m_launch_offset, proj,
+                                                                 aim_angles->pitch, aim_angles->yaw, t, gravity);
         const auto tgt_pos = Trait::predict_target_position(target, t, gravity);
         const float dist = proj_pos.distance_to(tgt_pos);
 
@@ -147,59 +131,48 @@ static void expect_projectile_hits_target(const Projectile& proj,
             break;
     }
 
-    EXPECT_LE(min_dist, hit_tolerance)
-            << "Projectile must reach target. Closest approach: " << min_dist
-            << " at t=" << best_time;
+    EXPECT_LE(min_dist, hit_tolerance) << "Projectile must reach target. Closest approach: " << min_dist
+                                       << " at t=" << best_time;
 }
 
 // ── Simulation hit tests: no launch offset ─────────────────────────────────
 
 TEST(ProjectileSimulation, HitsStaticTarget_NoOffset)
 {
-    constexpr Target target{
-            .m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {3, 2, 1}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+    constexpr Target target{.m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {3, 2, 1}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
     expect_projectile_hits_target(proj, target, 400, 1.f / 1000.f, 50, 5.f, 10.f);
 }
 
 TEST(ProjectileSimulation, HitsMovingTarget_NoOffset)
 {
-    constexpr Target target{
-            .m_origin = {500, 100, 0}, .m_velocity = {-50, 20, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {0, 0, 0}, .m_launch_speed = 3000.f, .m_gravity_scale = 1.0f};
+    constexpr Target target{.m_origin = {500, 100, 0}, .m_velocity = {-50, 20, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 3000.f, .m_gravity_scale = 1.0f};
 
     expect_projectile_hits_target(proj, target, 800, 1.f / 500.f, 30, 10.f, 15.f);
 }
 
 TEST(ProjectileSimulation, HitsAirborneTarget_NoOffset)
 {
-    constexpr Target target{
-            .m_origin = {200, 50, 300}, .m_velocity = {10, -5, -20}, .m_is_airborne = true};
-    constexpr Projectile proj = {
-            .m_origin = {0, 0, 0}, .m_launch_speed = 4000.f, .m_gravity_scale = 0.5f};
+    constexpr Target target{.m_origin = {200, 50, 300}, .m_velocity = {10, -5, -20}, .m_is_airborne = true};
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 4000.f, .m_gravity_scale = 0.5f};
 
     expect_projectile_hits_target(proj, target, 400, 1.f / 1000.f, 50, 10.f, 15.f);
 }
 
 TEST(ProjectileSimulation, HitsHighTarget_NoOffset)
 {
-    constexpr Target target{
-            .m_origin = {10, 0, 500}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {0, 0, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.3f};
+    constexpr Target target{.m_origin = {10, 0, 500}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.3f};
 
     expect_projectile_hits_target(proj, target, 400, 1.f / 1000.f, 50, 5.f, 10.f);
 }
 
 TEST(ProjectileSimulation, HitsNegativeYawTarget_NoOffset)
 {
-    constexpr Target target{
-            .m_origin = {-200, -150, 10}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {0, 0, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+    constexpr Target target{.m_origin = {-200, -150, 10}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
     expect_projectile_hits_target(proj, target, 400, 1.f / 1000.f, 50, 5.f, 10.f);
 }
@@ -208,8 +181,7 @@ TEST(ProjectileSimulation, HitsNegativeYawTarget_NoOffset)
 
 TEST(ProjectileSimulation, HitsStaticTarget_SmallOffset)
 {
-    constexpr Target target{
-            .m_origin = {200, 0, 50}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Target target{.m_origin = {200, 0, 50}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
     const Projectile proj = {
             .m_origin = {0, 0, 0}, .m_launch_offset = {5, 0, -3}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
@@ -218,8 +190,7 @@ TEST(ProjectileSimulation, HitsStaticTarget_SmallOffset)
 
 TEST(ProjectileSimulation, HitsStaticTarget_LargeXOffset)
 {
-    constexpr Target target{
-            .m_origin = {300, 100, 0}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Target target{.m_origin = {300, 100, 0}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
     const Projectile proj = {
             .m_origin = {0, 0, 0}, .m_launch_offset = {20, 0, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
@@ -228,8 +199,7 @@ TEST(ProjectileSimulation, HitsStaticTarget_LargeXOffset)
 
 TEST(ProjectileSimulation, HitsStaticTarget_LargeYOffset)
 {
-    constexpr Target target{
-            .m_origin = {150, -200, 30}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Target target{.m_origin = {150, -200, 30}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
     const Projectile proj = {
             .m_origin = {0, 0, 0}, .m_launch_offset = {0, 15, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
@@ -238,8 +208,7 @@ TEST(ProjectileSimulation, HitsStaticTarget_LargeYOffset)
 
 TEST(ProjectileSimulation, HitsStaticTarget_LargeZOffset)
 {
-    constexpr Target target{
-            .m_origin = {100, 0, 200}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Target target{.m_origin = {100, 0, 200}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
     const Projectile proj = {
             .m_origin = {0, 0, 0}, .m_launch_offset = {0, 0, -10}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
@@ -248,8 +217,7 @@ TEST(ProjectileSimulation, HitsStaticTarget_LargeZOffset)
 
 TEST(ProjectileSimulation, HitsStaticTarget_AllAxesOffset)
 {
-    constexpr Target target{
-            .m_origin = {250, 80, 60}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Target target{.m_origin = {250, 80, 60}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
     const Projectile proj = {
             .m_origin = {10, 5, 20}, .m_launch_offset = {8, -4, -6}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
@@ -258,8 +226,7 @@ TEST(ProjectileSimulation, HitsStaticTarget_AllAxesOffset)
 
 TEST(ProjectileSimulation, HitsMovingTarget_WithOffset)
 {
-    constexpr Target target{
-            .m_origin = {400, 0, 50}, .m_velocity = {-30, 10, 5}, .m_is_airborne = false};
+    constexpr Target target{.m_origin = {400, 0, 50}, .m_velocity = {-30, 10, 5}, .m_is_airborne = false};
     const Projectile proj = {
             .m_origin = {0, 0, 0}, .m_launch_offset = {10, -5, 2}, .m_launch_speed = 3000.f, .m_gravity_scale = 0.8f};
 
@@ -268,8 +235,7 @@ TEST(ProjectileSimulation, HitsMovingTarget_WithOffset)
 
 TEST(ProjectileSimulation, HitsAirborneTarget_WithOffset)
 {
-    constexpr Target target{
-            .m_origin = {150, 80, 250}, .m_velocity = {5, -10, -30}, .m_is_airborne = true};
+    constexpr Target target{.m_origin = {150, 80, 250}, .m_velocity = {5, -10, -30}, .m_is_airborne = true};
     const Projectile proj = {
             .m_origin = {0, 0, 50}, .m_launch_offset = {3, 7, -5}, .m_launch_speed = 4000.f, .m_gravity_scale = 0.5f};
 
@@ -278,8 +244,7 @@ TEST(ProjectileSimulation, HitsAirborneTarget_WithOffset)
 
 TEST(ProjectileSimulation, HitsNegativeYawTarget_WithOffset)
 {
-    constexpr Target target{
-            .m_origin = {-200, -150, 10}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Target target{.m_origin = {-200, -150, 10}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
     const Projectile proj = {
             .m_origin = {0, 0, 0}, .m_launch_offset = {-5, 3, 2}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
@@ -288,10 +253,8 @@ TEST(ProjectileSimulation, HitsNegativeYawTarget_WithOffset)
 
 TEST(UnitTestPrediction, AimAnglesReturnsNulloptWhenNoSolution)
 {
-    constexpr Target target{
-            .m_origin = {100000, 0, 0}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
-    constexpr Projectile proj = {
-            .m_origin = {0, 0, 0}, .m_launch_speed = 1.f, .m_gravity_scale = 1.f};
+    constexpr Target target{.m_origin = {100000, 0, 0}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {0, 0, 0}, .m_launch_speed = 1.f, .m_gravity_scale = 1.f};
 
     const Engine engine(9.81f, 0.1f, 2.f, 5.f);
 
@@ -326,9 +289,8 @@ TEST(UnitTestPrediction, HighSpeedPitchMatchesDoubleReference)
     const double g = 400.0 * 0.4;
     const double x = std::hypot(100.0 - 3.0, 0.0 - 2.0);
     const double y = 90.0 - 1.0;
-    const double reference =
-            std::atan((v * v - std::sqrt(v * v * v * v - g * (g * x * x + 2.0 * y * v * v))) / (g * x)) * 180.0
-            / std::numbers::pi;
+    const double reference = std::atan((v * v - std::sqrt(v * v * v * v - g * (g * x * x + 2.0 * y * v * v))) / (g * x))
+                             * 180.0 / std::numbers::pi;
 
     // The plain v^2 - sqrt(D) form is off by about 0.002 degrees here; the conjugate form is within 1e-5.
     EXPECT_NEAR(aim_angles->pitch, static_cast<float>(reference), 1e-4f);
@@ -350,20 +312,27 @@ TEST(UnitTestPrediction, VerticalShotsUseDirectPitch)
     EXPECT_FLOAT_EQ(down->pitch, -90.f);
 }
 
-TEST(UnitTestPrediction, AimAnglesYawIsMeasuredFromLaunchOrigin)
+TEST(UnitTestPrediction, AimPointAndAnglesAgreeWithLateralOffset)
 {
-    // The engine fires from m_origin + m_launch_offset and reports yaw from there. Note that the Source trait's
-    // calc_viewpoint_from_angles() builds the aim point relative to m_origin instead, so with a lateral offset the yaw
-    // from the camera to the aim point is 0 degrees here while the engine reports about -14.
+    // The aim point lies on the eye's aim ray, so the camera angles towards it are the launch angles even when the
+    // muzzle sits 50 units to the side and fires along a different bearing than the camera-to-target line.
     constexpr Target target{.m_origin = {200, 0, 0}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
     constexpr Projectile proj = {
             .m_origin = {0, 0, 0}, .m_launch_offset = {0, 50, 0}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
 
-    const auto aim_angles = Engine(400.f, 1.f / 1000.f, 50.f, 5.f).maybe_calculate_aim_angles(proj, target);
+    const Engine engine(400.f, 1.f / 1000.f, 50.f, 5.f);
+    const auto aim_angles = engine.maybe_calculate_aim_angles(proj, target);
+    const auto aim_point = engine.maybe_calculate_aim_point(proj, target);
     ASSERT_TRUE(aim_angles.has_value());
+    ASSERT_TRUE(aim_point.has_value());
 
     const float expected_yaw = omath::angles::radians_to_degrees(std::atan2(0.f - 50.f, 200.f - 0.f));
     EXPECT_NEAR(aim_angles->yaw, expected_yaw, 0.05f);
+
+    const auto [cam_pitch, cam_yaw, cam_roll] =
+            omath::source_engine::CameraTrait::calc_look_at_angle(proj.m_origin, aim_point.value());
+    EXPECT_NEAR(aim_angles->pitch, -cam_pitch.as_degrees(), 0.01f);
+    EXPECT_NEAR(aim_angles->yaw, cam_yaw.as_degrees(), 0.01f);
 }
 
 TEST(UnitTestPrediction, EngineIsAssignable)
@@ -371,4 +340,119 @@ TEST(UnitTestPrediction, EngineIsAssignable)
     static_assert(std::is_copy_assignable_v<Engine>);
     static_assert(std::is_nothrow_constructible_v<Engine, float, float, float, float>);
     SUCCEED();
+}
+
+// ---- The Launcher API: view-relative muzzle offset ----
+
+using Launcher = omath::projectile_prediction::Launcher<float>;
+
+// The projectile leaves from eye + basis(angles) * offset, so the returned angles have to hit from exactly there.
+// Simulate that with the trait at the solution's own time of flight.
+static void expect_launcher_solution_hits(const Projectile& proj, const Launcher& launcher, const Target& target,
+                                          float gravity, float engine_step, float max_time, float engine_tolerance,
+                                          float hit_tolerance)
+{
+    using Trait = omath::source_engine::PredEngineTrait;
+    const Engine engine(gravity, engine_step, max_time, engine_tolerance);
+
+    const auto solution = engine.maybe_calculate_aim(proj, launcher, target);
+    ASSERT_TRUE(solution.has_value()) << "engine must find a solution";
+
+    const auto& [pitch, yaw] = solution->angles;
+    const auto launch_origin = launcher.launch_origin(Trait::calc_view_basis(pitch, yaw));
+    const auto proj_pos =
+            Trait::predict_projectile_position(launch_origin, proj, pitch, yaw, solution->time_of_flight, gravity);
+    const auto tgt_pos = Trait::predict_target_position(target, solution->time_of_flight, gravity);
+
+    EXPECT_LE(proj_pos.distance_to(tgt_pos), hit_tolerance)
+            << "projectile fired from the rotated muzzle must reach the target";
+    EXPECT_NEAR(solution->predicted_target_position.x, tgt_pos.x, 1e-3f);
+    EXPECT_NEAR(solution->predicted_target_position.y, tgt_pos.y, 1e-3f);
+    EXPECT_NEAR(solution->predicted_target_position.z, tgt_pos.z, 1e-3f);
+
+    // The aim point sits on the eye's aim ray
+    const auto [cam_pitch, cam_yaw, cam_roll] =
+            omath::source_engine::CameraTrait::calc_look_at_angle(launcher.eye_origin, solution->aim_point);
+    EXPECT_NEAR(pitch, -cam_pitch.as_degrees(), 0.01f);
+    EXPECT_NEAR(yaw, cam_yaw.as_degrees(), 0.01f);
+}
+
+// Source-style spawn: 16 forward, 8 to the right, 6 down from the eye
+constexpr omath::projectile_prediction::MuzzleOffset<float> k_source_muzzle{.forward = 16.f, .right = 8.f, .up = -6.f};
+
+TEST(UnitTestPredictionLauncher, StaticTargetWithMuzzleOffset)
+{
+    constexpr Target target{.m_origin = {200, 0, 50}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+    constexpr Launcher launcher{.eye_origin = {0, 0, 64}, .muzzle_offset = k_source_muzzle};
+
+    expect_launcher_solution_hits(proj, launcher, target, 400, 1.f / 1000.f, 50, 5.f, 10.f);
+}
+
+TEST(UnitTestPredictionLauncher, MovingTargetWithMuzzleOffset)
+{
+    constexpr Target target{.m_origin = {500, 100, 0}, .m_velocity = {-50, 20, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_launch_speed = 3000.f, .m_gravity_scale = 1.0f};
+    constexpr Launcher launcher{.eye_origin = {0, 0, 64}, .muzzle_offset = k_source_muzzle};
+
+    expect_launcher_solution_hits(proj, launcher, target, 800, 1.f / 500.f, 30, 10.f, 15.f);
+}
+
+TEST(UnitTestPredictionLauncher, SideTargetWithMuzzleOffset)
+{
+    // Target off to the left so the rotated muzzle ends up well away from where a world-space offset would put it
+    constexpr Target target{.m_origin = {-50, 300, 80}, .m_velocity = {10, -5, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_launch_speed = 2500.f, .m_gravity_scale = 1.0f};
+    constexpr Launcher launcher{.eye_origin = {0, 0, 64}, .muzzle_offset = k_source_muzzle};
+
+    expect_launcher_solution_hits(proj, launcher, target, 800, 1.f / 1000.f, 30, 10.f, 15.f);
+}
+
+TEST(UnitTestPredictionLauncher, WorldAndViewOffsetsCombine)
+{
+    constexpr Target target{.m_origin = {300, -120, 20}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_launch_speed = 4000.f, .m_gravity_scale = 0.5f};
+    constexpr Launcher launcher{
+            .eye_origin = {10, 5, 64}, .muzzle_offset = k_source_muzzle, .world_offset = {0, 0, -10}};
+
+    expect_launcher_solution_hits(proj, launcher, target, 400, 1.f / 1000.f, 50, 5.f, 10.f);
+}
+
+TEST(UnitTestPredictionLauncher, MuzzleOffsetChangesTheAnswer)
+{
+    // A muzzle 8 units to the right must fire on a different bearing than one at the eye
+    constexpr Target target{.m_origin = {300, 0, 64}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+    const Engine engine(400.f, 1.f / 1000.f, 50.f, 5.f);
+
+    const auto centred = engine.maybe_calculate_aim(proj, Launcher{.eye_origin = {0, 0, 64}}, target);
+    const auto offset = engine.maybe_calculate_aim(
+            proj, Launcher{.eye_origin = {0, 0, 64}, .muzzle_offset = {.forward = 0.f, .right = 8.f, .up = 0.f}},
+            target);
+    ASSERT_TRUE(centred.has_value());
+    ASSERT_TRUE(offset.has_value());
+
+    // Source right is -Y at zero yaw, so the muzzle sits at y = -8 and must yaw towards +Y by atan(8 / 300)
+    const float expected_shift = omath::angles::radians_to_degrees(std::atan2(8.f, 300.f));
+    EXPECT_NEAR(centred->angles.yaw, 0.f, 0.05f);
+    EXPECT_NEAR(offset->angles.yaw - centred->angles.yaw, expected_shift, 0.05f);
+}
+
+TEST(UnitTestPredictionLauncher, WrappersMatchLauncherWithWorldOffset)
+{
+    constexpr Target target{.m_origin = {200, 0, 50}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {
+            .m_origin = {0, 0, 64}, .m_launch_offset = {5, 0, -3}, .m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+    const Engine engine(400.f, 1.f / 1000.f, 50.f, 5.f);
+
+    const auto solution = engine.maybe_calculate_aim(proj, Engine::launcher_from_projectile(proj), target);
+    const auto point = engine.maybe_calculate_aim_point(proj, target);
+    const auto angles = engine.maybe_calculate_aim_angles(proj, target);
+    ASSERT_TRUE(solution.has_value());
+    ASSERT_TRUE(point.has_value());
+    ASSERT_TRUE(angles.has_value());
+
+    EXPECT_EQ(solution->aim_point, point.value());
+    EXPECT_FLOAT_EQ(solution->angles.pitch, angles->pitch);
+    EXPECT_FLOAT_EQ(solution->angles.yaw, angles->yaw);
 }

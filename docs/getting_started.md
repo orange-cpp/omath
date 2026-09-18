@@ -222,21 +222,26 @@ if (auto screen = cam.world_to_screen(enemy_position)) {
 ```cpp
 using namespace omath::projectile_prediction;
 
-Projectile bullet{
-    Vector3<float>{0, 0, 0},      // shooter position
-    1000.0f,                       // muzzle velocity (m/s)
-    Vector3<float>{0, 0, -9.81f}  // gravity
+constexpr Projectile<float> bullet{
+    .m_launch_speed = 1000.0f,     // muzzle velocity (units/s)
+    .m_gravity_scale = 1.0f,       // multiplier for the engine's gravity constant
 };
 
-Target enemy{
-    Vector3<float>{100, 200, 50},  // position
-    Vector3<float>{10, 0, 0}       // velocity
+constexpr Launcher<float> launcher{
+    .eye_origin = {0, 0, 64},                                    // camera / eye position
+    .muzzle_offset = {.forward = 16.f, .right = 8.f, .up = -6.f}, // where the round spawns, in view space
 };
 
-// Calculate where to aim
-ProjPredEngineLegacy engine;
-if (auto aim_point = engine.maybe_calculate_aim_point(bullet, enemy)) {
-    // Aim at *aim_point to hit moving target
+constexpr Target<float> enemy{
+    .m_origin = {100, 200, 50},    // position
+    .m_velocity = {10, 0, 0},      // velocity
+    .m_is_airborne = false,
+};
+
+// Calculate the view angles that make the shot connect
+const ProjPredEngineLegacy<> engine(/*gravity*/ 800.f, /*step*/ 1.f / 1000.f, /*horizon*/ 10.f, /*tolerance*/ 5.f);
+if (const auto aim = engine.maybe_calculate_aim(bullet, launcher, enemy)) {
+    // set aim->angles.pitch / yaw on the camera, or draw aim->aim_point
 }
 ```
 

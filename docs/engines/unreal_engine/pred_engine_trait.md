@@ -13,8 +13,8 @@
 * `predict_projectile_position` – computes where a projectile will be after `time` seconds
 * `predict_target_position` – computes where a moving target will be after `time` seconds
 * `calc_vector_2d_distance` – horizontal distance (X/Y plane, ignoring Z)
-* `get_vector_height_coordinate` – extracts vertical coordinate (Y in Unreal Engine, note: code uses Z)
-* `calc_viewpoint_from_angles` – computes aim point given pitch angle
+* `get_vector_height_coordinate` – extracts vertical coordinate (Z in Unreal Engine)
+* `calc_view_basis` – forward, right and up of the view frame for a pitch and yaw
 * `calc_direct_pitch_angle` – pitch angle to look from origin to target
 * `calc_direct_yaw_angle` – yaw angle to look from origin to target
 
@@ -31,7 +31,8 @@ class PredEngineTrait final {
 public:
   // Predict projectile position after `time` seconds
   static constexpr Vector3<float>
-  predict_projectile_position(const projectile_prediction::Projectile& projectile,
+  predict_projectile_position(const Vector3<double>& launch_origin,
+                             const projectile_prediction::Projectile& projectile,
                              float pitch, float yaw, float time,
                              float gravity) noexcept;
 
@@ -44,15 +45,13 @@ public:
   static float
   calc_vector_2d_distance(const Vector3<float>& delta) noexcept;
 
-  // Get vertical coordinate (implementation returns Y, but UE is Z-up)
+  // Get vertical coordinate (Z in Unreal Engine)
   static constexpr float
   get_vector_height_coordinate(const Vector3<float>& vec) noexcept;
 
-  // Compute aim point from angles
-  static Vector3<float>
-  calc_viewpoint_from_angles(const projectile_prediction::Projectile& projectile,
-                            Vector3<float> predicted_target_position,
-                            std::optional<float> projectile_pitch) noexcept;
+  // Forward, right and up of the view frame for the given angles
+  static constexpr projectile_prediction::ViewBasis<double>
+  calc_view_basis(double pitch, double yaw) noexcept;
 
   // Compute pitch angle to look at target
   static float
@@ -74,7 +73,8 @@ public:
 
 ```cpp
 auto pos = PredEngineTrait::predict_projectile_position(
-  projectile,    // initial position, speed, gravity scale
+  launch_origin, // where the projectile spawns (see Launcher)
+  projectile,    // speed, gravity scale
   pitch_deg,     // launch pitch (positive = up)
   yaw_deg,       // launch yaw
   time,          // time in seconds
@@ -86,9 +86,9 @@ Computes:
 
 1. Forward vector from pitch/yaw (using `forward_vector`)
 2. Initial velocity: `forward * launch_speed`
-3. Position after `time`: `origin + velocity*time - 0.5*gravity*gravityScale*time²` (Y component per implementation, though UE is Z-up)
+3. Position after `time`: `origin + velocity*time - 0.5*gravity*gravityScale*time²` (Z component only)
 
-**Note**: Negative pitch in `forward_vector` convention → positive pitch looks up.
+**Note**: this engine's own pitch is positive upwards, so the trait passes it to `forward_vector` unchanged.
 
 ---
 
@@ -107,15 +107,15 @@ Simple linear extrapolation plus gravity if target is airborne:
 ```
 predicted = origin + velocity * time
 if (airborne)
-  predicted.y -= 0.5 * gravity * time²  // Note: implementation uses Y
+  predicted.z -= 0.5 * gravity * time²
 ```
 
 ---
 
 ## Distance & height helpers
 
-* `calc_vector_2d_distance(delta)` → `sqrt(delta.x² + delta.z²)` (horizontal distance in X/Z plane)
-* `get_vector_height_coordinate(vec)` → `vec.y` (implementation returns Y; UE convention is Z-up)
+* `calc_vector_2d_distance(delta)` → `sqrt(delta.x² + delta.y²)` (horizontal distance in X/Y plane)
+* `get_vector_height_coordinate(vec)` → `vec.z` (vertical coordinate in Unreal Engine)
 
 Used to compute ballistic arc parameters.
 
@@ -133,17 +133,14 @@ Used to compute ballistic arc parameters.
 
 ---
 
-## Viewpoint from angles
+## View basis
 
 ```cpp
-auto aim_point = PredEngineTrait::calc_viewpoint_from_angles(
-  projectile,
-  predicted_target_pos,
-  optional_pitch_deg
-);
+auto basis = PredEngineTrait::calc_view_basis(pitch_deg, yaw_deg);
+// basis.forward, basis.right, basis.up
 ```
 
-Computes where to aim in 3D space given a desired pitch angle. Uses horizontal distance and `tan(pitch)` to compute height offset.
+Rotates the engine's world axes by the given view angles (trait pitch is positive upwards). `Launcher::launch_origin(basis)` uses it to place a view-relative muzzle offset, and the engines use `basis.forward` to build the aim point on the eye's aim ray.
 
 ---
 
@@ -151,10 +148,9 @@ Computes where to aim in 3D space given a desired pitch angle. Uses horizontal d
 
 * **Coordinate system**: Z-up (height increases with Z)
 * **Angles**: pitch in [-90°, +90°], yaw in [-180°, +180°]
-* **Gravity**: applied downward (implementation uses Y component, but UE is Z-up)
+* **Gravity**: applied downward along -Z
 * **Pitch convention**: +90° = straight up, -90° = straight down
 
-**Note**: Some implementation details (gravity application to Y coordinate) may need adjustment for full Unreal Engine Z-up consistency.
 
 ---
 
@@ -187,7 +183,7 @@ float pitch = PredEngineTrait::calc_direct_pitch_angle(proj.m_origin, target_pos
 float yaw   = PredEngineTrait::calc_direct_yaw_angle(proj.m_origin, target_pos);
 
 // Predict projectile position with those angles
-auto proj_pos = PredEngineTrait::predict_projectile_position(proj, pitch, yaw, time, gravity);
+auto proj_pos = PredEngineTrait::predict_projectile_position(proj.m_origin, proj, pitch, yaw, time, gravity);
 ```
 
 ---

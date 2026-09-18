@@ -3,9 +3,9 @@
 //
 #pragma once
 #include "omath/engines/unreal_engine/formulas.hpp"
+#include "omath/projectile_prediction/launcher.hpp"
 #include "omath/projectile_prediction/projectile.hpp"
 #include "omath/projectile_prediction/target.hpp"
-#include <optional>
 
 namespace omath::unreal_engine
 {
@@ -13,17 +13,16 @@ namespace omath::unreal_engine
     {
     public:
         [[nodiscard("projectile position result should not be discarded")]]
-        static Vector3<double> predict_projectile_position(const projectile_prediction::Projectile<double>& projectile,
-                                                           const double pitch, const double yaw,
-                                                           const double time, const double gravity) noexcept
+        static Vector3<double> predict_projectile_position(const Vector3<double>& launch_origin,
+                                                           const projectile_prediction::Projectile<double>& projectile,
+                                                           const double pitch, const double yaw, const double time,
+                                                           const double gravity) noexcept
         {
-            const auto launch_pos = projectile.m_origin + projectile.m_launch_offset;
-            const auto fwd_d = forward_vector({PitchAngle::from_degrees(-pitch), YawAngle::from_degrees(yaw),
-                                               RollAngle::from_degrees(0)});
-            auto current_pos = launch_pos
-                               + Vector3<double>{fwd_d.x, fwd_d.y, fwd_d.z}
-                                         * projectile.m_launch_speed * time;
-            current_pos.y -= (gravity * projectile.m_gravity_scale) * (time * time) * 0.5;
+            const auto fwd_d = forward_vector(
+                    {PitchAngle::from_degrees(pitch), YawAngle::from_degrees(yaw), RollAngle::from_degrees(0)});
+            auto current_pos =
+                    launch_origin + Vector3<double>{fwd_d.x, fwd_d.y, fwd_d.z} * projectile.m_launch_speed * time;
+            current_pos.z -= (gravity * projectile.m_gravity_scale) * (time * time) * 0.5;
 
             return current_pos;
         }
@@ -35,7 +34,7 @@ namespace omath::unreal_engine
             auto predicted = target.m_origin + target.m_velocity * time;
 
             if (target.m_is_airborne)
-                predicted.y -= gravity * (time * time) * 0.5;
+                predicted.z -= gravity * (time * time) * 0.5;
 
             return predicted;
         }
@@ -43,24 +42,25 @@ namespace omath::unreal_engine
         [[nodiscard("2d distance result should not be discarded")]]
         static double calc_vector_2d_distance(const Vector3<double>& delta) noexcept
         {
-            return std::sqrt(delta.x * delta.x + delta.z * delta.z);
+            return std::sqrt(delta.x * delta.x + delta.y * delta.y);
         }
 
         [[nodiscard("height coordinate result should not be discarded")]]
         static double get_vector_height_coordinate(const Vector3<double>& vec) noexcept
         {
-            return vec.y;
+            return vec.z;
         }
 
-        [[nodiscard("viewpoint result should not be discarded")]]
-        static Vector3<double> calc_viewpoint_from_angles(const projectile_prediction::Projectile<double>& projectile,
-                                                          Vector3<double> predicted_target_position,
-                                                          const std::optional<double> projectile_pitch) noexcept
+        [[nodiscard("view basis result should not be discarded")]]
+        constexpr static projectile_prediction::ViewBasis<double> calc_view_basis(const double pitch,
+                                                                                  const double yaw) noexcept
         {
-            const auto delta2d = calc_vector_2d_distance(predicted_target_position - projectile.m_origin);
-            const auto height = delta2d * std::tan(angles::degrees_to_radians(projectile_pitch.value()));
+            const auto rotation = rotation_matrix(
+                    {PitchAngle::from_degrees(pitch), YawAngle::from_degrees(yaw), RollAngle::from_degrees(0)});
 
-            return {predicted_target_position.x, predicted_target_position.y, projectile.m_origin.z + height};
+            return {.forward = mat_rotate_vector(rotation, k_abs_forward),
+                    .right = mat_rotate_vector(rotation, k_abs_right),
+                    .up = mat_rotate_vector(rotation, k_abs_up)};
         }
 
         // Due to specification of maybe_calculate_projectile_launch_pitch_angle, pitch angle must be:

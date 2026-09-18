@@ -207,8 +207,12 @@ namespace omath::collision {
 **`ProjPredEngineInterface`** - Base interface for all prediction engines
 
 ```cpp
-virtual std::optional<Vector3<float>>
-maybe_calculate_aim_point(const Projectile&, const Target&) const = 0;
+virtual std::optional<AimSolution<T>>
+maybe_calculate_aim(const Projectile<T>&, const Launcher<T>&, const Target<T>&) const = 0;
+
+// Compatibility wrappers, kept for one release
+std::optional<Vector3<T>>   maybe_calculate_aim_point (const Projectile<T>&, const Target<T>&) const;
+std::optional<AimAngles<T>> maybe_calculate_aim_angles(const Projectile<T>&, const Target<T>&) const;
 ```
 
 ### Implementations
@@ -220,13 +224,24 @@ maybe_calculate_aim_point(const Projectile&, const Target&) const = 0;
 
 ### Supporting Types
 
-**`Projectile`** - Defines projectile properties:
+**`Projectile`** - Defines the round itself:
 ```cpp
-struct Projectile {
-    Vector3<float> origin;
-    float speed;
-    Vector3<float> gravity;
-    // ... additional properties
+template<class T = float>
+class Projectile {
+public:
+    T m_launch_speed;    // muzzle velocity
+    T m_gravity_scale;   // multiplier for the engine's gravity constant
+    // m_origin / m_launch_offset: read only by the compatibility wrappers
+};
+```
+
+**`Launcher`** - Who fires, and from where:
+```cpp
+template<class T = float>
+struct Launcher {
+    Vector3<T>      eye_origin;      // where the view angles apply
+    MuzzleOffset<T> muzzle_offset;   // forward / right / up, rotates with the view
+    Vector3<T>      world_offset;    // fixed world-space part, usually zero
 };
 ```
 

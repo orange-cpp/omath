@@ -2,9 +2,10 @@
 
 > Header: `omath/projectile_prediction/projectile.hpp`
 > Namespace: `omath::projectile_prediction`
-> Used by: `ProjPredEngineInterface` implementations (e.g., `ProjPredEngineLegacy`, `ProjPredEngineAvx2`)
+> Template: `Projectile<ArithmeticType = float>`
+> Used by: `ProjPredEngineInterface` implementations (`ProjPredEngineLegacy`, `ProjPredEngineAvx2`)
 
-`Projectile` is a tiny data holder that describes how a projectile is launched: **origin** (world position), **launch speed**, and a **gravity scale** (multiplier applied to the engine’s gravity constant).
+`Projectile` describes the round itself: **launch speed** and a **gravity scale** (multiplier applied to the engine’s gravity constant). Where it is fired from is described by [`Launcher`](launcher.md).
 
 ---
 
@@ -13,11 +14,15 @@
 ```cpp
 namespace omath::projectile_prediction {
 
+template<class ArithmeticType = float>
 class Projectile final {
 public:
-  Vector3<float> m_origin;     // Launch position (world space)
-  float          m_launch_speed{};   // Initial speed magnitude (units/sec)
-  float          m_gravity_scale{};  // Multiplier for global gravity (dimensionless)
+  // Read only by the compatibility wrappers of ProjPredEngineInterface (see below)
+  Vector3<ArithmeticType> m_origin;
+  Vector3<ArithmeticType> m_launch_offset{};
+
+  ArithmeticType m_launch_speed{};   // Initial speed magnitude (units/sec)
+  ArithmeticType m_gravity_scale{};  // Multiplier for the engine's gravity constant (dimensionless)
 };
 
 } // namespace omath::projectile_prediction
@@ -27,18 +32,18 @@ public:
 
 ## Field semantics
 
-* **`m_origin`**
-  World-space position where the projectile is spawned (e.g., muzzle or emitter point).
-
 * **`m_launch_speed`**
-  Initial speed **magnitude** in your world units per second. Direction is determined by the solver (from yaw/pitch).
+  Initial speed **magnitude** in your world units per second. Direction is determined by the solver.
 
     * Must be **non-negative**. Zero disables meaningful ballistic solutions.
 
 * **`m_gravity_scale`**
-  Multiplies the engine’s gravity constant provided to the solver (e.g., `g = gravity_constant * m_gravity_scale`).
+  Multiplies the engine’s gravity constant (`g = gravity_constant * m_gravity_scale`).
 
-    * Use `1.0f` for normal gravity, `0.0f` for no-drop projectiles, other values to simulate heavier/lighter rounds.
+    * Use `1.0f` for normal gravity, `0.0f` for no-drop projectiles, other values for heavier or lighter rounds.
+
+* **`m_origin`, `m_launch_offset`** (compatibility only)
+  The one-release compatibility wrappers `maybe_calculate_aim_point` and `maybe_calculate_aim_angles` read the eye from `m_origin` and treat `m_launch_offset` as a fixed world-space spawn offset. `maybe_calculate_aim` ignores both and takes a `Launcher` instead; new code leaves them default.
 
 > Units must be consistent across your project (e.g., meters & seconds). If `gravity_constant = 9.81f`, then `m_launch_speed` is in m/s and positions are in meters.
 
@@ -49,29 +54,15 @@ public:
 ```cpp
 using namespace omath::projectile_prediction;
 
-Projectile proj;
-proj.m_origin        = { 0.0f, 1.6f, 0.0f }; // player eye / muzzle height
-proj.m_launch_speed  = 850.0f;               // e.g., 850 m/s
-proj.m_gravity_scale = 1.0f;                 // normal gravity
+constexpr Projectile<float> proj{.m_launch_speed = 850.f, .m_gravity_scale = 1.f};
+constexpr Launcher<float> launcher{.eye_origin = {0.f, 1.6f, 0.f},
+                                   .muzzle_offset = {.forward = 0.4f, .right = 0.1f, .up = -0.1f}};
 
-// With an aim solver:
-auto aim = engine->maybe_calculate_aim_point(proj, target);
-if (aim) {
-  // rotate/aim toward *aim and fire
+if (const auto aim = engine->maybe_calculate_aim(proj, launcher, target))
+{
+    // set aim->angles on the camera, or draw aim->aim_point
 }
 ```
-
----
-
-## With gravity-aware solver (outline)
-
-Engines typically compute the firing angles to reach a predicted target position:
-
-* Horizontal distance `x` and vertical offset `y` are derived from `target - m_origin`.
-* Gravity used is `g = gravity_constant * m_gravity_scale`.
-* Launch direction has speed `m_launch_speed` and angles solved by the engine.
-
-If `m_gravity_scale == 0`, engines usually fall back to straight-line (no-drop) solutions.
 
 ---
 
@@ -79,18 +70,18 @@ If `m_gravity_scale == 0`, engines usually fall back to straight-line (no-drop) 
 
 * Keep `m_launch_speed ≥ 0`. Negative values are nonsensical.
 * If your weapon can vary muzzle speed (charge-up, attachments), update `m_launch_speed` per shot.
-* For different ammo types (tracers, grenades), prefer tweaking **`m_gravity_scale`** (and possibly the engine’s gravity constant) to match observed arc.
+* For different ammo types (tracers, grenades), tweak **`m_gravity_scale`** (and possibly the engine’s gravity constant) to match the observed arc.
 
 ---
 
 ## See also
 
-* `ProjPredEngineInterface` — common interface for aim solvers
-* `ProjPredEngineLegacy` — trait-based, time-stepped ballistic solver
-* `ProjPredEngineAvx2` — AVX2-accelerated solver with fixed-time pitch solve
-* `Target` — target state consumed by the solvers
-* `Vector3<float>` — math type used for positions and directions
+* [`Launcher`](launcher.md) — eye origin and muzzle offset
+* [`ProjPredEngineInterface`](projectile_engine.md) — common interface for aim solvers
+* [`ProjPredEngineLegacy`](proj_pred_engine_legacy.md) — trait-based, time-stepped ballistic solver
+* [`ProjPredEngineAvx2`](proj_pred_engine_avx2.md) — AVX2-accelerated solver
+* [`Target`](target.md) — target state consumed by the solvers
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 18 Sep 2026*

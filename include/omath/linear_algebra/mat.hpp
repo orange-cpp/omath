@@ -76,12 +76,12 @@ namespace omath
         {
             return StoreType;
         }
-        constexpr Mat(const std::initializer_list<std::initializer_list<Type>>& rows)
+        constexpr Mat(const std::initializer_list<std::initializer_list<Type>>& row_lists)
         {
-            if (rows.size() != Rows)
+            if (row_lists.size() != Rows)
                 throw std::invalid_argument("Initializer list rows size does not match template parameter Rows");
 
-            auto row_it = rows.begin();
+            auto row_it = row_lists.begin();
             for (size_t i = 0; i < Rows; ++i, ++row_it)
             {
                 if (row_it->size() != Columns)

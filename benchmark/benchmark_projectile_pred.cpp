@@ -82,3 +82,21 @@ BENCHMARK(projectile_prediction_short_range)->Iterations(200'000);
 BENCHMARK(projectile_prediction_long_range_moving)->Iterations(20'000);
 BENCHMARK(projectile_prediction_no_solution)->Iterations(20'000);
 BENCHMARK(projectile_prediction_aim_angles)->Iterations(200'000);
+// Same short-range solve through the Launcher query with a Source-style view-relative muzzle offset. The muzzle moves
+// with the angles being solved for, so every step places it twice and solves the pitch twice.
+namespace
+{
+    void projectile_prediction_muzzle_offset(benchmark::State& state)
+    {
+        constexpr Target<float> target{.m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+        constexpr Projectile<float> projectile{.m_launch_speed = 5000.f, .m_gravity_scale = 0.4f};
+        constexpr Launcher<float> launcher{.eye_origin = {3, 2, 1},
+                                           .muzzle_offset = {.forward = 16.f, .right = 8.f, .up = -6.f}};
+        const Engine engine(400.f, simulation_time_step, 50.f, hit_distance_tolerance);
+
+        for ([[maybe_unused]] const auto _ : state)
+            benchmark::DoNotOptimize(engine.maybe_calculate_aim(projectile, launcher, target));
+    }
+} // namespace
+
+BENCHMARK(projectile_prediction_muzzle_offset)->Iterations(200'000);

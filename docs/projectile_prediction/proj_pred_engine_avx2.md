@@ -1,98 +1,57 @@
 # `omath::projectile_prediction::ProjPredEngineAvx2` — AVX2-accelerated ballistic aim solver
 
-> Header: your project’s `projectile_prediction/proj_pred_engine_avx2.hpp`
+> Header: `omath/projectile_prediction/proj_pred_engine_avx2.hpp`
 > Namespace: `omath::projectile_prediction`
-> Inherits: `ProjPredEngineInterface`
-> Depends on: `Vector3<float>`, `Projectile`, `Target`
-> CPU: Uses AVX2 when available; falls back to scalar elsewhere (fields are marked `[[maybe_unused]]` for non-x86/AVX2 builds).
+> Inherits: `ProjPredEngineInterface<float>`
+> Conventions: Source-style, Z up, yaw about Z (it does not take an engine trait)
+> Availability: x86 / x86-64 builds with `OMATH_USE_AVX2`; every call throws `std::runtime_error` otherwise
 
-This engine computes a **world-space aim point** (and implicitly the firing **yaw/pitch**) to intersect a moving target under a **constant gravity** model and **constant muzzle speed**. It typically scans candidate times of flight and solves for the elevation (`pitch`) that makes the vertical and horizontal kinematics meet at the same time.
+This engine scans candidate times of flight **eight at a time** with AVX2 FMA, keeps the ones at which the target is reachable at the launch speed, and solves the elevation for the first of them. It implements the same `maybe_calculate_aim` contract as the legacy engine and returns the same `AimSolution`.
 
 ---
 
 ## API
 
 ```cpp
-class ProjPredEngineAvx2 final : public ProjPredEngineInterface {
+class ProjPredEngineAvx2 final : public ProjPredEngineInterface<float> {
 public:
+  ProjPredEngineAvx2(float gravity_constant, float simulation_time_step, float maximum_simulation_time) noexcept;
+
   [[nodiscard]]
-  std::optional<Vector3<float>>
-  maybe_calculate_aim_point(const Projectile& projectile,
-                            const Target& target) const override;
+  std::optional<AimSolution<float>>
+  maybe_calculate_aim(const Projectile<float>& projectile, const Launcher<float>& launcher,
+                      const Target<float>& target) const override;
 
-  ProjPredEngineAvx2(float gravity_constant,
-                     float simulation_time_step,
-                     float maximum_simulation_time);
-  ~ProjPredEngineAvx2() override = default;
-
-private:
-  // Solve for pitch at a fixed time-of-flight t.
-  [[nodiscard]]
-  static std::optional<float>
-  calculate_pitch(const Vector3<float>& proj_origin,
-                  const Vector3<float>& target_pos,
-                  float bullet_gravity, float v0, float time);
-
-  // Tunables (may be unused on non-AVX2 builds)
-  [[maybe_unused]] const float m_gravity_constant;      // |g| (e.g., 9.81)
-  [[maybe_unused]] const float m_simulation_time_step;  // Δt (e.g., 1/240 s)
-  [[maybe_unused]] const float m_maximum_simulation_time; // Tmax (e.g., 3 s)
+  // maybe_calculate_aim_point / maybe_calculate_aim_angles: inherited compatibility wrappers
 };
 ```
 
 ### Parameters (constructor)
 
-* `gravity_constant` — magnitude of gravity (units consistent with your world, e.g., **m/s²**).
-* `simulation_time_step` — Δt used to scan candidate intercept times.
-* `maximum_simulation_time` — cap on time of flight; larger allows longer-range solutions but increases cost.
+* `gravity_constant` — magnitude of gravity in world units/s² (e.g. `800.f` for Source).
+* `simulation_time_step` — Δt between scanned candidate times.
+* `maximum_simulation_time` — cap on time of flight.
 
-### Return (solver)
-
-* `maybe_calculate_aim_point(...)`
-
-    * **`Vector3<float>`**: a world-space **aim point** yielding an intercept under the model.
-    * **`std::nullopt`**: no feasible solution (e.g., target receding too fast, out of range, or kinematics inconsistent).
+There is no distance tolerance: a time step is accepted when the speed needed to be at the predicted target at exactly that time is at most the launch speed.
 
 ---
 
-## How it solves (expected flow)
+## How it solves
 
-1. **Predict target at time `t`** (constant-velocity model unless your `Target` carries more):
+1. **Place the muzzle.** `launch_origin = launcher.eye_origin + world_offset`, plus the view-relative muzzle offset rotated by the direct angles from the eye to the target's current position.
+2. **Vectorised scan.** For eight times `t` at once: predict the target (`origin + velocity t`, minus `½ g t²` if airborne), take the horizontal distance `d` and the height `h` from the launch origin, and compute the speed that would be needed to be there at `t`:
 
    ```
-   T(t) = target.position + target.velocity * t
+   term  = h + ½ g_bullet t²
+   v_req² = (d² + term²) / t²
    ```
-2. **Horizontal/vertical kinematics at fixed `t`** with muzzle speed `v0` and gravity `g`:
 
-    * Let `Δ = T(t) - proj_origin`, `d = length(Δ.xz)`, `h = Δ.y`.
-    * Required initial components:
+   Lanes with `v_req² ≤ v0²` are candidates.
+3. **Scalar solve** on the first candidate, searching two steps either side of it, with `pitch = atan(term / d)`.
+4. **Refine once** if the muzzle offset is view-relative: move the muzzle to `launcher.launch_origin(basis(pitch, yaw))`, re-solve the pitch at the same time, recompute the yaw.
+5. **Return** `angles`, `aim_point = eye + forward(angles) * distance(eye, target)`, the predicted target position and the time.
 
-      ```
-      cosθ = d / (v0 * t)
-      sinθ = (h + 0.5 * g * t^2) / (v0 * t)
-      ```
-    * If `cosθ` ∈ [−1,1] and `sinθ` ∈ [−1,1] and `sin²θ + cos²θ ≈ 1`, then
-
-      ```
-      θ = atan2(sinθ, cosθ)
-      ```
-
-      That is what `calculate_pitch(...)` returns on success.
-3. **Yaw** is the azimuth toward `Δ.xz`.
-4. **Pick the earliest feasible `t`** in `[Δt, Tmax]` (scanned in steps of `Δt`; AVX2 batches several `t` at once).
-5. **Return the aim point.** Common choices:
-
-    * The **impact point** `T(t*)` (useful as a HUD marker), or
-    * A point along the **initial firing ray** at some convenient range using `(yaw, pitch)`; both are consistent—pick the convention your caller expects.
-
-> The private `calculate_pitch(...)` matches step **2** and returns `nullopt` if the trigonometric constraints are violated for that `t`.
-
----
-
-## AVX2 notes
-
-* On x86/x64 with AVX2, candidate times `t` can be evaluated **8 at a time** using FMA (great for dense scans).
-* On ARM/ARM64 (no AVX2), code falls back to scalar math; the `[[maybe_unused]]` members acknowledge compilation without SIMD.
+The accepted time is the first feasible step, so the projectile can be up to one step of travel away from the target at `time_of_flight`. Use a smaller step for fast projectiles.
 
 ---
 
@@ -101,20 +60,15 @@ private:
 ```cpp
 using namespace omath::projectile_prediction;
 
-ProjPredEngineAvx2 solver(
-  /*gravity*/ 9.81f,
-  /*dt*/       1.0f/240.0f,
-  /*Tmax*/     3.0f
-);
+const ProjPredEngineAvx2 solver(/*gravity*/ 800.f, /*dt*/ 1.f / 1000.f, /*Tmax*/ 5.f);
 
-Projectile proj; // fill: origin, muzzle_speed, etc.
-Target     tgt;  // fill: position, velocity
+constexpr Projectile<float> proj{.m_launch_speed = 1100.f, .m_gravity_scale = 1.f};
+constexpr Launcher<float> launcher{.eye_origin = {0, 0, 64}, .muzzle_offset = {.forward = 16, .right = 8, .up = -6}};
+Target<float> tgt = /* position, velocity, airborne */;
 
-if (auto aim = solver.maybe_calculate_aim_point(proj, tgt)) {
-  // Aim your weapon at *aim and fire with muzzle speed proj.v0
-  // If you need yaw/pitch explicitly, replicate the pitch solve and azimuth.
-} else {
-  // No solution (out of envelope) — pick a fallback
+if (const auto aim = solver.maybe_calculate_aim(proj, launcher, tgt))
+{
+    // aim->angles.pitch / yaw, aim->aim_point
 }
 ```
 
@@ -122,40 +76,37 @@ if (auto aim = solver.maybe_calculate_aim_point(proj, tgt)) {
 
 ## Edge cases & failure modes
 
-* **Zero or tiny `v0`** → no solution.
-* **Target collinear & receding faster than `v0`** → no solution.
-* **`t` constraints**: if viable solutions exist only beyond `Tmax`, you’ll get `nullopt`.
-* **Geometric infeasibility** at a given `t` (e.g., `d > v0*t`) causes `calculate_pitch` to fail that sample.
-* **Numerical tolerance**: check `sin²θ + cos²θ` against 1 with a small epsilon (e.g., `1e-3`).
+* **Zero or tiny launch speed** → no candidate lane, `nullopt`.
+* **Target receding faster than the projectile** → `nullopt`.
+* **Solutions only beyond `maximum_simulation_time`** → `nullopt`.
+* **Straight above or below** (`d == 0`) → ±90°.
+* **Built without AVX2** or on a non-x86 target → `std::runtime_error` on every call. Use `ProjPredEngineLegacy` there.
 
 ---
 
 ## Performance & tuning
 
-* Work is roughly `O(Nt)` where `Nt ≈ Tmax / Δt`.
-* Smaller `Δt` → better accuracy, higher cost. With AVX2 you can afford smaller steps.
-* If you frequently miss solutions **between** steps, consider:
-
-    * **Coarse-to-fine**: coarse scan, then local refine around the best `t`.
-    * **Newton on time**: root-find `‖horizontal‖ − v0 t cosθ(t) = 0` shaped from the kinematics.
+* Work is `O(Tmax / Δt / 8)` for the scan plus a handful of scalar solves.
+* Smaller `Δt` → tighter hits at linear cost.
 
 ---
 
 ## Testing checklist
 
-* **Stationary target** at same height → θ ≈ 0, aim point ≈ target.
-* **Higher target** → positive pitch; **lower target** → negative pitch.
-* **Perpendicular moving target** → feasible at moderate speeds.
-* **Very fast receding target** → `nullopt`.
-* **Boundary**: `d ≈ v0*Tmax` and `h` large → verify pass/fail around thresholds.
+* Stationary target at the same height → pitch ≈ 0.
+* Higher target → positive pitch; lower target → negative pitch.
+* Fire from `launcher.launch_origin(basis(angles))` with the returned angles and check the miss at `time_of_flight`.
+* Camera angles towards `aim_point` equal `angles`.
+* Very fast receding target → `nullopt`.
 
 ---
 
 ## See also
 
-* `ProjPredEngineInterface` — base interface and general contract
-* `Projectile`, `Target` — data carriers for solver inputs (speed, origin, position, velocity, etc.)
+* [`ProjPredEngineInterface`](projectile_engine.md) — base interface and general contract
+* [`ProjPredEngineLegacy`](proj_pred_engine_legacy.md) — portable trait-based engine
+* [`Launcher`](launcher.md), [`Projectile`](projectile.md), [`Target`](target.md) — solver inputs
 
 ---
 
-*Last updated: 1 Nov 2025*
+*Last updated: 18 Sep 2026*
