@@ -8,7 +8,7 @@
 
 The closed-form engines pick their launch pitch from a parabola, and there is no closed form once drag is involved. For Team Fortress 2's pipe the parabola is 90 units long at a level view and over 500 at 40° up, because the error grows with the flight time. This engine returns the same `AimSolution` through the same interface, so it is interchangeable with [`ProjPredEngineLegacy`](proj_pred_engine_legacy.md) to everything downstream.
 
-Use it for rounds that have drag (`Projectile::has_drag()`). A round without drag is better served by the closed-form engines, which are exact for it and do not depend on the game's physics step.
+Use it for rounds that have drag (`Projectile::has_drag()`), and for rounds with **no gravity**: a straight flight stepped at any rate is exact, and this engine closes in on its answer instead of hoping a scan step lands inside the tolerance, so it cannot come back empty for a target that closes faster than the scan allowed for (see [below](#why-not-the-scan-for-rockets)). What it is wrong for is a round with gravity and no drag in a game that moves such rounds on a true parabola: the stepped fall drops a little further than that, and the closed-form engines are exact.
 
 ---
 
@@ -20,7 +20,7 @@ Where the target will be depends on how long the round takes, and how long the r
 2. **Predict the target** at that time with `EngineTrait::predict_target_position(target, t, g)`.
 3. **Find the yaw** from where the muzzle ends up, since a muzzle that sits off to one side swings with the yaw.
 4. **Find the view pitch** that flies the round through that point (see below), which also gives the round's real arrival time.
-5. **Repeat from 2** with the arrival time, until the target stops moving between passes (closer than `distance_tolerance / 64`). Nothing on foot outruns a projectile, so the error shrinks by about the ratio of the two speeds per pass: three or four passes is typical, twelve is the cap.
+5. **Solve for the time** at which those agree: `mismatch(t) = arrival(t) − t = 0`. The first step feeds the arrival time back in; every one after it is a **secant** step through the last two mismatches, until the target stops moving between passes (closer than `distance_tolerance / 64`). Three or four passes is typical, twelve is the cap.
 6. **Check the answer**: the horizon, the engine's view pitch limit, and that the flight really is within `distance_tolerance` of the target at the time claimed.
 
 If any stage fails the result is `std::nullopt`.
@@ -65,6 +65,15 @@ A non-positive step, horizon or launch speed returns `std::nullopt` immediately.
 
 ## Algorithm details
 
+### Solving for the time
+
+Feeding each arrival time back in as the next guess is the obvious loop, and it only works while the target is slow. It closes in by the ratio of the target's speed along the line of fire to the round's every pass: quick at walking pace, a crawl for a target blown away at two thirds of the round's speed, and **divergent** for one blown towards the shooter faster than the round flies, where each pass overshoots by more than the last. The secant step has no such ratio to depend on.
+
+Two things keep it from giving up on a shot that exists:
+
+* **A step can land on a time the target cannot be reached at**, although the answer is one it can. The engine backs off halfway towards the last time that could be shot at, twice at most.
+* **The first guess can be such a time**, a jumper at the top of their arc for one. A shot that fails has failed for being too far, so the engine looks along the horizon for the time that brings the target nearest and tries that, once, and only if it is nearer than the first guess was. A target that is simply out of reach costs one failed search, not one per time looked at.
+
 ### The flight
 
 Every probe is a real flight through [`ProjectileFlight`](projectile_flight.md): gravity, then drag, then the move, one step at a time. The drag coefficients and the speed cap live on the [`Projectile`](projectile.md).
@@ -73,10 +82,12 @@ Every probe is a real flight through [`ProjectileFlight`](projectile_flight.md):
 
 For a fixed target point and yaw, the engine looks for the **low-arc** view pitch whose flight passes through the point:
 
-1. **Start** from the pitch a drag-free round would need: the same closed-form low-arc root `ProjPredEngineLegacy` solves with, less `launcher.launch_pitch_offset`. If even a parabola cannot reach, drag only shortens the reach, so there is no solution.
+1. **Start** from the pitch a drag-free round would need: the same closed-form low-arc root `ProjPredEngineLegacy` solves with, less `launcher.launch_pitch_offset`. If even a parabola cannot reach, drag only shortens the reach, so there is no solution. Every pass starts here, from its own target point. Carrying the last pass's pitch over instead is a trap: a step in time can move the target by tens of degrees, and a search started far too steep finds itself on the **high arc**, where raising the pitch lowers the round, and walks itself into the limit.
 2. **Fly** the round until it has covered the horizontal distance to the point, and take the height it passes at (linear within a step, as the round itself is).
 3. **Walk** away from the start in whichever direction the miss says, doubling the step (0.5° first, 4° at most) until the round passes on the other side. Raising the pitch has to raise the round at the target; once it stops doing that the arc is over its peak and the target is out of reach.
 4. **Close in** between the pass below and the pass above with regula falsi and the Illinois correction, 24 refinements at most.
+
+After the first pass the walk is usually skipped. Drag asks for about the same extra loft over the parabola from one pass to the next, so a shade over the last loft is tried as a **hint**: if the round passes on the other side of the target from there, that pair is the bracket. The hint is only ever paired with the pass from the parabola's pitch, which is known to be on the low arc, and is dropped if it does not bracket, so a wrong one costs a flight and can never turn a shot down.
 
 The muzzle is placed from each probe's own angles, so the way it swings with the view is part of the answer rather than an error in it. Probe flights are allowed to run past the horizon (`1.5 × horizon + 0.5 s`) so that a shot right at it still has a pass on either side to close in from; the horizon itself is enforced on the answer.
 
@@ -128,6 +139,12 @@ return legacy_engine.maybe_calculate_aim(projectile, launcher, target);
 
 ---
 
+## Why not the scan for rockets
+
+`ProjPredEngineLegacy` accepts the first scan step that lands within `distance_tolerance`. Between two steps the gap closes by `(round speed + target's closing speed) × simulation_time_step`, and once that exceeds `2 × distance_tolerance` a step can jump clean over the window, in which case every step fails and the solve returns nothing. With a 1980 units/s rocket, a 5 ms step and a tolerance of 5, that lost **3–5 %** of solves against a walking target and **20–30 %** against one blown towards the shooter, in measurement; this engine lost none of either. Keeping `simulation_time_step ≤ 2 × distance_tolerance / (speed + fastest closing speed)` avoids it, at the cost of that many more steps; this engine has no such condition.
+
+---
+
 ## Accuracy
 
 The constants above were measured rather than estimated: Team Fortress 2's own `vphysics.dll` was run offline on the game's real grenade hull, launched with the calls the game makes. Fired through that engine, shots solved here pass within **0.3 units (median) and 1.9 (worst)** of the predicted target at the predicted time, across 250–1250 units, ±35° of elevation, moving and airborne targets, and the farthest level target accepted (1350 units) matches the engine's real reach (1352).
@@ -138,7 +155,8 @@ What is left is the game's own dice. It spins every pipe differently, which move
 
 ## Complexity & tuning
 
-* Each probe flight costs one step per `simulation_time_step` of flight. A solve is a handful of time passes, each a handful of probes: **10–20 µs** for a Team Fortress 2 pipe on a desktop CPU.
+* Each probe flight costs one step per `simulation_time_step` of flight. A solve is a handful of time passes, each a handful of probes: **8–15 µs** for a Team Fortress 2 pipe on a desktop CPU, 3–17 µs for a rocket between 400 and 3200 units.
+* A shot that is refused costs more than one that is made, because it takes a whole failed search to be sure: 25–70 µs, bounded at two searches.
 * Unlike the scan engines, cost does not grow with `maximum_simulation_time` for targets that are close.
 * A looser `distance_tolerance` stops both searches earlier.
 
@@ -151,6 +169,7 @@ What is left is the game's own dice. It spins every pipe differently, which move
 * With drag → more pitch and more time than the parabola for the same target.
 * Moving and airborne targets → `predicted_target_position` equals the trait's prediction at `time_of_flight`.
 * Beyond the round's reach, past the horizon, or past the engine's view pitch limit → `nullopt`.
+* A target closing faster than the round flies, and one fleeing at two thirds of its speed → solved, and the flight lands.
 * Non-positive step, horizon or launch speed → `nullopt`, no hang.
 * A y-up trait and a `double` trait solve the same way.
 

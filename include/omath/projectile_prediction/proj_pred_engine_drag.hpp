@@ -26,8 +26,13 @@ namespace omath::projectile_prediction
     // returns is a shot that flight lands.
     //
     // It answers ProjPredEngineInterface and fills AimSolution the same way ProjPredEngineLegacy does, so the two are
-    // interchangeable to everything downstream. A round without drag is better served by the closed-form engines,
-    // which are exact for it and do not depend on the game's physics step.
+    // interchangeable to everything downstream.
+    //
+    // It is not only for drag. A round with no gravity flies a straight line, which stepping follows exactly at any
+    // step, and this engine finds its answer by closing in on it rather than by hoping a scan step lands inside the
+    // tolerance, so it cannot come back empty for a target that closes faster than the scan allowed for. What it is
+    // wrong for is a round with gravity and no drag in a game that moves such rounds on a true parabola: the stepped
+    // fall here drops a little further than that (see ProjectileFlight), and the closed-form engines are exact.
     template<class EngineTrait = source_engine::PredEngineTrait, class ArithmeticType = float>
     requires PredEngineConcept<EngineTrait, ArithmeticType>
     class ProjPredEngineDrag final : public ProjPredEngineInterface<ArithmeticType>
@@ -60,61 +65,142 @@ namespace omath::projectile_prediction
                     m_maximum_simulation_time * static_cast<ArithmeticType>(1.5) + static_cast<ArithmeticType>(0.5);
 
             // Where the target will be depends on how long the round takes, and how long the round takes depends on
-            // where the target will be. Every pass of this loop settles both a little further, and because nothing
-            // on foot outruns a projectile it closes in fast: the error shrinks by about the ratio of the two speeds
-            // each time.
+            // where the target will be. The time that satisfies both is the one where the round, aimed at where the
+            // target is at that time, takes exactly that long to get there: mismatch(time) = arrival - time = 0.
+            //
+            // Feeding each arrival back in as the next guess would find it only while the target is slow. That
+            // closes in by the ratio of the target's speed along the line of fire to the round's every pass, which
+            // is a crawl for a target blown away at two thirds of the round's speed and gets further out every pass
+            // for one blown towards the shooter faster than the round flies. So the first step is that guess, and
+            // every one after it is a secant step through the last two mismatches, which does not care.
             auto time = launcher.eye_origin.distance_to(target.m_origin) / projectile.m_launch_speed;
             auto yaw = EngineTrait::calc_direct_yaw_angle(launcher.eye_origin, target.m_origin);
 
-            std::optional<ArithmeticType> view_pitch;
             auto predicted = target.m_origin;
 
-            for (int iteration = 0; iteration < max_iterations; ++iteration)
+            // How far above the parabola's pitch the last pass ended up. Drag asks for about the same extra loft from
+            // one pass to the next, which makes it a good guess at where the next search will end.
+            std::optional<ArithmeticType> loft;
+
+            // One shot at the target as it will be at `at`: the view pitch that lands there, and when the round does.
+            // The search is always anchored to what a parabola would need for that same point. Carrying the last
+            // pass's pitch over instead looks cheaper and is a trap: a step in time can move the target by tens of
+            // degrees, and a search started far too steep finds itself on the high arc, where raising the pitch
+            // lowers the round and it walks itself into the limit.
+            const auto shoot_at = [&](const ArithmeticType at) -> std::optional<PitchSolution>
             {
-                predicted = EngineTrait::predict_target_position(target, time, m_gravity_constant);
+                predicted = EngineTrait::predict_target_position(target, at, m_gravity_constant);
 
-                if (!view_pitch)
-                {
-                    const auto start =
-                            maybe_calculate_parabola_launch_pitch(projectile, launcher.eye_origin, predicted);
-                    if (!start)
-                        return std::nullopt;
+                const auto start = maybe_calculate_parabola_launch_pitch(projectile, launcher.eye_origin, predicted);
+                if (!start)
+                    return std::nullopt;
 
-                    view_pitch = *start - launcher.launch_pitch_offset;
-                }
+                const auto start_pitch = *start - launcher.launch_pitch_offset;
 
                 // The muzzle sits off to one side and swings with the yaw, so the yaw that points the muzzle's own
                 // flight plane at the target is found from where the muzzle ends up
                 for (int pass = 0; pass < 2; ++pass)
                     yaw = EngineTrait::calc_direct_yaw_angle(
-                            launcher.launch_origin(EngineTrait::calc_view_basis(*view_pitch, yaw)), predicted);
+                            launcher.launch_origin(EngineTrait::calc_view_basis(start_pitch, yaw)), predicted);
 
-                // After the first pass the target has barely moved, so the search starts tight
-                const auto first_step = static_cast<ArithmeticType>(iteration == 0 ? 0.5 : 0.125);
-                const auto solved =
-                        solve_view_pitch(projectile, launcher, yaw, predicted, *view_pitch, first_step, time_limit);
-                if (!solved)
+                // A shade over the last loft, so that the round passes above the target and the pair of passes
+                // closes on the answer straight away
+                std::optional<ArithmeticType> hint;
+                if (loft)
+                    hint = start_pitch + *loft * static_cast<ArithmeticType>(1.05) + static_cast<ArithmeticType>(0.1);
+
+                const auto shot = solve_view_pitch(projectile, launcher, yaw, predicted, start_pitch, hint, time_limit);
+                if (shot)
+                    loft = shot->view_pitch - start_pitch;
+
+                return shot;
+            };
+
+            auto solved = shoot_at(time);
+
+            // The first guess can fall on a time at which the target cannot be reached although it can be later, a
+            // jumper at the top of their arc for one. A shot that fails has failed for being too far, so the one
+            // other time worth a search is the one along the horizon that brings the target nearest, and only if
+            // that is nearer than it was. A target that is simply out of reach is refused at the price of one search,
+            // not of one per time looked at.
+            if (!solved)
+            {
+                constexpr int candidates = 8;
+
+                auto nearest = launcher.eye_origin.distance_to(predicted);
+                std::optional<ArithmeticType> nearest_time;
+
+                for (int candidate = 1; candidate <= candidates; ++candidate)
+                {
+                    const auto at = m_maximum_simulation_time * static_cast<ArithmeticType>(candidate)
+                                    / static_cast<ArithmeticType>(candidates);
+                    const auto distance = launcher.eye_origin.distance_to(
+                            EngineTrait::predict_target_position(target, at, m_gravity_constant));
+
+                    if (distance < nearest)
+                    {
+                        nearest = distance;
+                        nearest_time = at;
+                    }
+                }
+
+                if (!nearest_time)
                     return std::nullopt;
 
-                // The round gets to `predicted` at solved->time, by when the target has moved on to where it will be
-                // at that time. Once those two are the same place, the shot is the answer.
-                const auto drift = EngineTrait::predict_target_position(target, solved->time, m_gravity_constant)
-                                           .distance_to(predicted);
+                time = *nearest_time;
+                solved = shoot_at(time);
 
-                view_pitch = solved->view_pitch;
-                time = solved->time;
-
-                if (drift <= m_distance_tolerance / ArithmeticType{64})
-                    break;
+                if (!solved)
+                    return std::nullopt;
             }
 
-            if (time > m_maximum_simulation_time || !is_view_pitch_reachable(*view_pitch, yaw))
+            std::optional<ArithmeticType> previous_time;
+            ArithmeticType previous_mismatch{};
+
+            for (int iteration = 0; iteration < max_iterations; ++iteration)
+            {
+                // The round gets to `predicted` at solved->time, by when the target has moved on to where it will be
+                // at that time. Once those two are the same place, the shot is the answer.
+                const auto settled = EngineTrait::predict_target_position(target, solved->time, m_gravity_constant)
+                                             .distance_to(predicted)
+                                     <= m_distance_tolerance / ArithmeticType{64};
+
+                const auto mismatch = solved->time - time;
+                auto next_time = solved->time;
+
+                if (!settled && previous_time && mismatch != previous_mismatch)
+                    next_time = time - mismatch * (time - *previous_time) / (mismatch - previous_mismatch);
+
+                previous_time = time;
+                previous_mismatch = mismatch;
+                time = std::clamp(next_time, ArithmeticType{0}, time_limit);
+
+                if (settled)
+                    break;
+
+                auto next = shoot_at(time);
+
+                // A step can land on a time at which the target is somewhere the round cannot be put at all, although
+                // the answer is somewhere it can. Back off towards the last time that could be shot at.
+                for (int retry = 0; !next && retry < 2; ++retry)
+                {
+                    time = (time + *previous_time) / ArithmeticType{2};
+                    next = shoot_at(time);
+                }
+
+                if (!next)
+                    return std::nullopt;
+
+                solved = next;
+            }
+
+            if (time > m_maximum_simulation_time || !is_view_pitch_reachable(solved->view_pitch, yaw))
                 return std::nullopt;
 
             // Whatever came out above has to put the round on the target, at the time claimed
             predicted = EngineTrait::predict_target_position(target, time, m_gravity_constant);
 
-            const AimAngles<ArithmeticType> angles{*view_pitch, yaw};
+            const AimAngles<ArithmeticType> angles{solved->view_pitch, yaw};
             if (predict_projectile_position(projectile, launcher, angles, time).distance_to(predicted)
                 > m_distance_tolerance)
                 return std::nullopt;
@@ -246,14 +332,20 @@ namespace omath::projectile_prediction
         // Finds the low-arc view pitch that flies the round through target_point. It walks away from start_pitch in
         // whichever direction the first miss says to, until the round passes on the other side of the target, then
         // closes in on the crossing between the two.
+        //
+        // start_pitch has to be on the low arc, which the parabola's pitch always is, because everything the search
+        // concludes it concludes relative to that pass. hint_pitch is a guess at the answer and is only ever used to
+        // pair with it: if the round passes on the other side of the target from there the walk is skipped, and if
+        // it does not the hint is dropped. A wrong hint costs one flight and can never turn a shot down.
         [[nodiscard]]
         std::optional<PitchSolution>
         solve_view_pitch(const Projectile<ArithmeticType>& projectile, const Launcher<ArithmeticType>& launcher,
                          const ArithmeticType yaw, const Vector3<ArithmeticType>& target_point,
-                         const ArithmeticType start_pitch, const ArithmeticType first_step,
+                         const ArithmeticType start_pitch, const std::optional<ArithmeticType> hint_pitch,
                          const ArithmeticType time_limit) const noexcept
         {
             constexpr auto pitch_limit = static_cast<ArithmeticType>(90);
+            constexpr auto first_step = static_cast<ArithmeticType>(0.5);
             constexpr auto max_step = static_cast<ArithmeticType>(4);
             constexpr int max_refinements = 24;
 
@@ -281,7 +373,18 @@ namespace omath::projectile_prediction
             ArithmeticType far_pitch{};
             std::optional<Pass> far;
 
-            for (auto step = first_step;; step = std::min(step * ArithmeticType{2}, max_step))
+            if (hint_pitch)
+            {
+                far_pitch = std::clamp(*hint_pitch, -pitch_limit, pitch_limit);
+                far = probe(far_pitch);
+
+                if (far && std::abs(far->height_error) <= height_tolerance)
+                    return PitchSolution{far_pitch, far->time};
+                if (far && (far->height_error < ArithmeticType{0}) == (near->height_error < ArithmeticType{0}))
+                    far.reset();
+            }
+
+            for (auto step = first_step; !far; step = std::min(step * ArithmeticType{2}, max_step))
             {
                 if (near_pitch * direction >= pitch_limit)
                     return std::nullopt;
@@ -306,6 +409,7 @@ namespace omath::projectile_prediction
 
                 near_pitch = far_pitch;
                 near = far;
+                far.reset();
             }
 
             // Regula falsi with the Illinois correction, between the pass below and the pass above

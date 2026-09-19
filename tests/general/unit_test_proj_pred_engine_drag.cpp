@@ -382,6 +382,47 @@ namespace
         EXPECT_LT(arrival.distance_to(expected), 0.5f);
     }
 
+    TEST(ProjPredEngineDrag, LandsATargetFlungAtTheShooterFasterThanTheRoundFlies)
+    {
+        // Blown towards the shooter at 1400 units/s, against a pipe that covers ground at about 1000. Feeding each
+        // arrival time back in as the next guess overshoots by more every pass here, so the time has to be solved for
+        // rather than iterated on.
+        constexpr Target<float> target{
+                .m_origin = {1068, 0, 250}, .m_velocity = {-1422, -224, 354}, .m_is_airborne = true};
+
+        const auto solution = k_engine.maybe_calculate_aim(k_pipe, k_pipe_launcher, target);
+        ASSERT_TRUE(solution.has_value());
+
+        const auto expected = PredEngineTrait::predict_target_position(target, solution->time_of_flight, k_gravity);
+        const auto arrival = k_engine.predict_projectile_position(k_pipe, k_pipe_launcher, solution->angles,
+                                                                  solution->time_of_flight);
+
+        EXPECT_LT(arrival.distance_to(expected), 0.5f);
+    }
+
+    TEST(ProjPredEngineDrag, CatchesATargetFleeingNearlyAsFastAsTheRound)
+    {
+        // A rocket has neither drag nor drop, and flying one a step at a time is exact for it. The target is going
+        // away at two thirds of its speed, which is a shot that can be made but takes a long time to close on.
+        constexpr Projectile<float> rocket{.m_launch_speed = 1980.f};
+        constexpr Launcher<float> launcher{.eye_origin = {0, 0, 64},
+                                           .muzzle_offset = {.forward = 23.5f, .right = 12, .up = -3}};
+        constexpr Target<float> target{
+                .m_origin = {1280, 0, 250}, .m_velocity = {1263, -283, 528}, .m_is_airborne = true};
+
+        const ProjPredEngineDrag<> engine(k_gravity, k_tick, 3.f, 5.f);
+
+        const auto solution = engine.maybe_calculate_aim(rocket, launcher, target);
+        ASSERT_TRUE(solution.has_value());
+
+        const auto expected = PredEngineTrait::predict_target_position(target, solution->time_of_flight, k_gravity);
+        const auto arrival =
+                engine.predict_projectile_position(rocket, launcher, solution->angles, solution->time_of_flight);
+
+        EXPECT_LT(arrival.distance_to(expected), 0.5f);
+        EXPECT_GT(solution->time_of_flight, 1.5f);
+    }
+
     TEST(ProjPredEngineDrag, ReachIsTheOneTheGameGivesThePipe)
     {
         // Measured in the game's physics, a pipe fired at a level target gets 1352 units and no further. A parabola
