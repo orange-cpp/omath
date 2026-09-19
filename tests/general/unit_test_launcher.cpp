@@ -60,7 +60,8 @@ namespace
     TEST(Launcher, PitchOffsetDoesNotMoveTheMuzzle)
     {
         // It tilts the round, not the weapon: the launch origin only ever depends on the basis handed in
-        constexpr Launcher<float> plain{.eye_origin = {0, 0, 64}, .muzzle_offset = {.forward = 16, .right = 8, .up = -6}};
+        constexpr Launcher<float> plain{.eye_origin = {0, 0, 64},
+                                        .muzzle_offset = {.forward = 16, .right = 8, .up = -6}};
         constexpr Launcher<float> tilted{.eye_origin = {0, 0, 64},
                                          .muzzle_offset = {.forward = 16, .right = 8, .up = -6},
                                          .launch_pitch_offset = 9.46f};
@@ -99,6 +100,18 @@ namespace
         static_assert(std::is_aggregate_v<AimAngles<float>>);
         static_assert(std::is_aggregate_v<AimSolution<float>>);
         static_assert(std::is_aggregate_v<Launcher<double>>);
+        SUCCEED();
+    }
+
+    TEST(Launcher, ProjectileNeedsOnlyItsPhysicalProperties)
+    {
+        // New code describes the round and leaves the legacy origin fields alone. They have to default to zero for
+        // that: without a default initialiser on m_origin this exact spelling warns under clang's -Wextra.
+        constexpr Projectile<float> round{.m_launch_speed = 1100.f, .m_gravity_scale = 0.5f};
+
+        static_assert(round.m_origin == Vector3<float>{0, 0, 0});
+        static_assert(round.m_launch_offset == Vector3<float>{0, 0, 0});
+        static_assert(std::is_aggregate_v<Projectile<float>>);
         SUCCEED();
     }
 

@@ -1,6 +1,6 @@
 // Properties of ProjPredEngineLegacy's answers that hold whatever the numbers are: symmetries of the scene, how the
-// answer moves with range and speed, what the horizon and a rejected step do, and how the answer lines up with a camera.
-// Source trait throughout; the per-engine checks live in tests/engines/unit_test_pred_engine_traits_all.cpp.
+// answer moves with range and speed, what the horizon and a rejected step do, and how the answer lines up with a
+// camera. Source trait throughout; the per-engine checks live in tests/engines/unit_test_pred_engine_traits_all.cpp.
 #include <cmath>
 #include <gtest/gtest.h>
 #include <initializer_list>
@@ -121,7 +121,8 @@ namespace
     {
         constexpr Projectile round{.m_launch_speed = 1500.f, .m_gravity_scale = 1.f};
         // Nothing off to one side on the shooter, so left and right are the same problem
-        constexpr Launcher launcher{.eye_origin = {0, 0, 64}, .muzzle_offset = {.forward = 16.f, .right = 0.f, .up = -6.f}};
+        constexpr Launcher launcher{.eye_origin = {0, 0, 64},
+                                    .muzzle_offset = {.forward = 16.f, .right = 0.f, .up = -6.f}};
         constexpr Target target{.m_origin = {700, 120, 90}, .m_velocity = {-60, 45, -5}, .m_is_airborne = false};
         constexpr Target mirrored{.m_origin = {700, -120, 90}, .m_velocity = {-60, -45, -5}, .m_is_airborne = false};
 
@@ -214,9 +215,9 @@ namespace
             ASSERT_TRUE(aim.has_value()) << "tolerance " << tolerance;
 
             const auto basis = Trait::calc_view_basis(aim->angles.pitch, aim->angles.yaw);
-            const auto position = Trait::predict_projectile_position(launcher.launch_origin(basis), round,
-                                                                     aim->angles.pitch, aim->angles.yaw,
-                                                                     aim->time_of_flight, k_gravity);
+            const auto position =
+                    Trait::predict_projectile_position(launcher.launch_origin(basis), round, aim->angles.pitch,
+                                                       aim->angles.yaw, aim->time_of_flight, k_gravity);
             // +1: the muzzle is placed from the previous pass's angles, which costs a hair
             EXPECT_LE(position.distance_to(aim->predicted_target_position), tolerance + 1.f)
                     << "tolerance " << tolerance;
@@ -301,6 +302,60 @@ namespace
             EXPECT_NEAR(aim->angles.pitch, Trait::calc_direct_pitch_angle(eye, target.m_origin) - offset, 1e-4f);
             EXPECT_NEAR(aim->angles.yaw, Trait::calc_direct_yaw_angle(eye, target.m_origin), 1e-4f);
         }
+    }
+
+    // ---------------------------------------------------------------- offsets and the old call style
+
+    TEST(PredictionProperties, AWorldOffsetBelowTheEyeAimsHigher)
+    {
+        constexpr Projectile round{.m_launch_speed = 1500.f, .m_gravity_scale = 0.5f};
+        constexpr Target target{.m_origin = {900, 100, 64}, .m_velocity = {}, .m_is_airborne = false};
+        const auto engine = make_engine();
+
+        const auto from_the_eye = engine.maybe_calculate_aim(round, Launcher{.eye_origin = {0, 0, 64}}, target);
+        const auto from_below = engine.maybe_calculate_aim(
+                round, Launcher{.eye_origin = {0, 0, 64}, .world_offset = {0, 0, -40}}, target);
+        ASSERT_TRUE(from_the_eye.has_value());
+        ASSERT_TRUE(from_below.has_value());
+
+        // 40 units lower over 900 is about 2.5 degrees more elevation
+        EXPECT_NEAR(from_below->angles.pitch - from_the_eye->angles.pitch,
+                    omath::angles::radians_to_degrees(std::atan2(40.f, 905.f)), 0.1f);
+        EXPECT_NEAR(from_below->angles.yaw, from_the_eye->angles.yaw, 1e-3f);
+
+        // The aim point still belongs to the eye, not to the muzzle
+        const auto [pitch, yaw, roll] =
+                omath::source_engine::CameraTrait::calc_look_at_angle({0, 0, 64}, from_below->aim_point);
+        EXPECT_NEAR(-pitch.as_degrees(), from_below->angles.pitch, 0.01f);
+        EXPECT_NEAR(yaw.as_degrees(), from_below->angles.yaw, 0.01f);
+    }
+
+    TEST(PredictionProperties, OldStyleAimPointStaysOnTheRayTheOldFormulaGave)
+    {
+        // Before Launcher the aim point was (target.x, target.y, eye.z + ground_distance * tan(pitch)). The wrapper now
+        // returns a point at the target's distance along the view ray instead. Code that only looks at it (sets angles
+        // from it, projects it) must see no difference, so the two points have to lie on one ray from the eye.
+        constexpr Projectile round{
+                .m_origin = {3, 2, 1}, .m_launch_offset = {}, .m_launch_speed = 3000.f, .m_gravity_scale = 0.6f};
+        constexpr Target target{.m_origin = {900, -350, 240}, .m_velocity = {-35, 50, 0}, .m_is_airborne = false};
+        const auto engine = make_engine();
+
+        const auto point = engine.maybe_calculate_aim_point(round, target);
+        const auto angles = engine.maybe_calculate_aim_angles(round, target);
+        const auto solution = engine.maybe_calculate_aim(round, Engine::launcher_from_projectile(round), target);
+        ASSERT_TRUE(point.has_value());
+        ASSERT_TRUE(angles.has_value());
+        ASSERT_TRUE(solution.has_value());
+
+        const auto& predicted = solution->predicted_target_position;
+        const float ground_distance = Trait::calc_vector_2d_distance(predicted - round.m_origin);
+        const Vector3<float> old_point{
+                predicted.x, predicted.y,
+                round.m_origin.z + ground_distance * std::tan(omath::angles::degrees_to_radians(angles->pitch))};
+
+        const auto new_direction = (point.value() - round.m_origin).normalized();
+        const auto old_direction = (old_point - round.m_origin).normalized();
+        EXPECT_LE(new_direction.distance_to(old_direction), 1e-4f);
     }
 
     // ---------------------------------------------------------------- together with a camera

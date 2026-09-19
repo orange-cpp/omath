@@ -149,8 +149,7 @@ namespace
     TYPED_TEST(PredEngineTraitAll, BasisIsOrthonormalAndKeepsHandedness)
     {
         using Scalar = typename TypeParam::Scalar;
-        const auto handedness =
-                TypeParam::axis_forward().cross(TypeParam::axis_right()).dot(TypeParam::axis_up());
+        const auto handedness = TypeParam::axis_forward().cross(TypeParam::axis_right()).dot(TypeParam::axis_up());
 
         for (const auto pitch : k_pitches)
             for (const auto yaw : k_yaws)
@@ -246,7 +245,8 @@ namespace
         EXPECT_NEAR(up_shot.dot(TypeParam::axis_right()), 0., 1e-3);
 
         const auto down_shot =
-                Trait::predict_projectile_position(origin, round, Scalar{-30}, Scalar{0}, Scalar{1}, Scalar{0}) - origin;
+                Trait::predict_projectile_position(origin, round, Scalar{-30}, Scalar{0}, Scalar{1}, Scalar{0})
+                - origin;
         EXPECT_NEAR(down_shot.dot(TypeParam::axis_up()), -50., 1e-3);
     }
 
@@ -474,14 +474,13 @@ namespace
         EXPECT_LE(off_the_ray.length(), 0.05);
 
         // and the eye does not look straight at the target: the muzzle is off to the side
-        EXPECT_GT(std::abs(angle_difference(
-                          aim->angles.yaw,
-                          Trait::calc_direct_yaw_angle(scenario.launcher.eye_origin, scenario.target.m_origin))),
+        EXPECT_GT(std::abs(angle_difference(aim->angles.yaw, Trait::calc_direct_yaw_angle(scenario.launcher.eye_origin,
+                                                                                          scenario.target.m_origin))),
                   0.3);
     }
 
-    // The muzzle turns with the view while the round leaves along the view raised by the offset. Placing the muzzle from
-    // the launch pitch instead would put it several units away from where the game spawns the round.
+    // The muzzle turns with the view while the round leaves along the view raised by the offset. Placing the muzzle
+    // from the launch pitch instead would put it several units away from where the game spawns the round.
     TYPED_TEST(PredEngineTraitAll, TiltedRocketFromAnOffsetMuzzleFliesThroughTheTarget)
     {
         using Scalar = typename TypeParam::Scalar;
