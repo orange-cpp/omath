@@ -63,7 +63,7 @@ auto aim = engine->maybe_calculate_aim_point(projectile, tgt);
 
 * `Projectile` — shooter origin, muzzle speed, gravity scale
 * `ProjPredEngineInterface` — common interface for aim solvers
-* `ProjPredEngineLegacy`, `ProjPredEngineAvx2` — concrete solvers using this data
+* `ProjPredEngineLegacy`, `ProjPredEngineAvx2`, `ProjPredEngineDrag` — concrete solvers using this data
 
 ---
 

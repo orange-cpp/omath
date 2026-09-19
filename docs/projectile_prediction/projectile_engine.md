@@ -5,7 +5,7 @@
 > Template: `ProjPredEngineInterface<ArithmeticType = float>`
 > Depends on: `Vector3`, `Projectile`, `Launcher`, `Target`
 > Purpose: **contract** for engines that compute a lead/aim solution to hit a moving target.
-> Implementations: `ProjPredEngineLegacy`, `ProjPredEngineAvx2`
+> Implementations: `ProjPredEngineLegacy`, `ProjPredEngineAvx2`, `ProjPredEngineDrag`
 
 ---
 
@@ -183,6 +183,7 @@ Return `nullopt` if `t*` is absent.
 - [Target Documentation](target.md) - Target state representation
 - [Legacy Implementation](proj_pred_engine_legacy.md) - Standard projectile prediction engine
 - [AVX2 Implementation](proj_pred_engine_avx2.md) - Optimized AVX2 engine
+- [Drag Implementation](proj_pred_engine_drag.md) - Engine for rounds with air drag
 - [Tutorials - Projectile Prediction](../tutorials.md#tutorial-3-projectile-prediction-aim-bot) - Complete aim-bot tutorial
 
 ---

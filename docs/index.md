@@ -92,6 +92,8 @@ auto distance = a.distance_to(b); // ~5.196
 - [Target](projectile_prediction/target.md) - Target state representation
 - [Legacy Engine](projectile_prediction/proj_pred_engine_legacy.md) - Standard implementation
 - [AVX2 Engine](projectile_prediction/proj_pred_engine_avx2.md) - Optimized implementation
+- [Drag Engine](projectile_prediction/proj_pred_engine_drag.md) - Rounds that lose speed to the air
+- [Projectile Flight](projectile_prediction/projectile_flight.md) - One round, a physics step at a time
 
 **Pathfinding**
 - [A* Algorithm](pathfinding/a_star.md) - A* pathfinding implementation

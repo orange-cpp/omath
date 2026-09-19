@@ -45,6 +45,8 @@
 #include "omath/projectile_prediction/target.hpp"
 #include "omath/projectile_prediction/proj_pred_engine.hpp"
 #include "omath/projectile_prediction/proj_pred_engine_legacy.hpp"
+#include "omath/projectile_prediction/proj_pred_engine_drag.hpp"
+#include "omath/projectile_prediction/projectile_flight.hpp"
 #include "omath/projectile_prediction/proj_pred_engine_avx2.hpp"
 
 // Projection functionality

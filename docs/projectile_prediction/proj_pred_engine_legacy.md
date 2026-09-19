@@ -63,7 +63,7 @@ A non-positive step or horizon makes the engine return `std::nullopt` immediatel
 
 ## Trait requirements (`PredEngineConcept<EngineTrait, ArithmeticType>`)
 
-Your `EngineTrait` must expose **noexcept** static functions with these signatures (`T = ArithmeticType`):
+The concept is declared in `omath/projectile_prediction/pred_engine_concept.hpp`, which this header includes. Your `EngineTrait` must expose **noexcept** static functions with these signatures (`T = ArithmeticType`):
 
 ```cpp
 Vector3<T> predict_projectile_position(const Vector3<T>& launch_origin, const Projectile<T>&,
