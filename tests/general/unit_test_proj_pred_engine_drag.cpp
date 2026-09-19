@@ -62,6 +62,18 @@ namespace
         return flight.position();
     }
 
+    // The same float expression evaluated in two places is not the same bits everywhere. GCC folds a constexpr
+    // evaluation at compile time while the library runs it at run time, and a 32-bit x87 build carries extra precision
+    // through whichever intermediates stayed in registers. So anything computed twice is compared within a tolerance;
+    // plain == is kept for values that are copies of one another or exact in any precision.
+    template<class Type>
+    void expect_vectors_near(const Vector3<Type>& actual, const Vector3<Type>& expected, const double tolerance)
+    {
+        EXPECT_NEAR(actual.x, expected.x, tolerance);
+        EXPECT_NEAR(actual.y, expected.y, tolerance);
+        EXPECT_NEAR(actual.z, expected.z, tolerance);
+    }
+
     // ---------------------------------------------------------------- Projectile
 
     TEST(ProjectileDrag, HasDragOnlyWhenACoefficientIsSet)
@@ -85,8 +97,8 @@ namespace
 
         const auto muzzle = k_pipe_launcher.launch_origin(PredEngineTrait::calc_view_basis(angles.pitch, angles.yaw));
 
-        EXPECT_EQ(flight.origin(), muzzle);
-        EXPECT_EQ(flight.position(), muzzle);
+        expect_vectors_near(flight.origin(), muzzle, 1e-3);
+        EXPECT_EQ(flight.position(), flight.origin());
         EXPECT_FLOAT_EQ(flight.time(), 0.f);
     }
 
@@ -136,7 +148,8 @@ namespace
 
         auto plain = k_pipe_launcher;
         plain.launch_pitch_offset = 0.f;
-        EXPECT_EQ(flight.origin(), (ProjectileFlight<>{round, plain, angles, k_gravity, k_tick}.origin()));
+        expect_vectors_near(flight.origin(), ProjectileFlight<>{round, plain, angles, k_gravity, k_tick}.origin(),
+                            1e-3);
     }
 
     TEST(ProjectileFlight, TumblingDragTakesItsShareOfTheSpeedEveryStep)
@@ -346,7 +359,7 @@ namespace
 
         // It aims at where the target will be when the round gets there, and the round does get there
         const auto expected = PredEngineTrait::predict_target_position(target, solution->time_of_flight, k_gravity);
-        EXPECT_EQ(solution->predicted_target_position, expected);
+        expect_vectors_near(solution->predicted_target_position, expected, 1e-3);
         EXPECT_GT(solution->predicted_target_position.y, 150.f);
 
         const auto arrival = k_engine.predict_projectile_position(k_pipe, k_pipe_launcher, solution->angles,
@@ -472,10 +485,12 @@ namespace
         ASSERT_TRUE(dispatched.has_value());
         ASSERT_TRUE(from_copy.has_value());
 
-        EXPECT_FLOAT_EQ(direct->angles.pitch, dispatched->angles.pitch);
-        EXPECT_FLOAT_EQ(direct->angles.yaw, dispatched->angles.yaw);
-        EXPECT_FLOAT_EQ(direct->time_of_flight, from_copy->time_of_flight);
-        EXPECT_EQ(direct->aim_point, from_copy->aim_point);
+        // The solver iterates to a tolerance, so two differently compiled runs of it may stop a refinement apart. A
+        // copy or a dispatch that lost the engine's settings would be out by degrees, not by this.
+        EXPECT_NEAR(direct->angles.pitch, dispatched->angles.pitch, 0.02f);
+        EXPECT_NEAR(direct->angles.yaw, dispatched->angles.yaw, 0.02f);
+        EXPECT_NEAR(direct->time_of_flight, from_copy->time_of_flight, 5e-3f);
+        expect_vectors_near(direct->aim_point, from_copy->aim_point, 0.5);
     }
 
     TEST(ProjPredEngineDrag, SolvesInAnEngineWithHeightOnY)
