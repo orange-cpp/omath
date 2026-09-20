@@ -60,9 +60,10 @@ namespace omath::projectile_prediction
                 return std::nullopt;
 
             // Probe flights may run past the horizon, so that a shot right at it still has a pass on either side to
-            // close in from. The horizon itself is enforced on the answer.
-            const auto time_limit =
-                    m_maximum_simulation_time * static_cast<ArithmeticType>(1.5) + static_cast<ArithmeticType>(0.5);
+            // close in from: the pass above is at most four degrees steeper than the answer, which gets it there a
+            // tenth or so later. Any further than that only makes a flight that was never going to arrive take
+            // longer to give up. The horizon itself is enforced on the answer.
+            const auto time_limit = m_maximum_simulation_time * static_cast<ArithmeticType>(1.25);
 
             // Where the target will be depends on how long the round takes, and how long the round takes depends on
             // where the target will be. The time that satisfies both is the one where the round, aimed at where the
@@ -118,13 +119,22 @@ namespace omath::projectile_prediction
 
             auto solved = shoot_at(time);
 
-            // The first guess can fall on a time at which the target cannot be reached although it can be later, a
-            // jumper at the top of their arc for one. A shot that fails has failed for being too far, so the one
-            // other time worth a search is the one along the horizon that brings the target nearest, and only if
-            // that is nearer than it was. A target that is simply out of reach is refused at the price of one search,
-            // not of one per time looked at.
             if (!solved)
             {
+                // The first guess can fall on a time at which the target cannot be reached although it can be later:
+                // somebody running in from out of range, a jumper coming down into it. A shot that fails has failed
+                // for being too far, so the one other time worth a search is the one along the horizon that brings
+                // the target nearest, and only if that is nearer than it was.
+                //
+                // For a target on the ground only later times count. The guess is how long a straight flight at
+                // launch speed takes, and no round gets anywhere sooner than that, so a target that is only nearer
+                // earlier on is one that is leaving, and earlier is when it cannot be caught. Looking there cost four
+                // more searches to refuse a shot that the first one had already settled.
+                //
+                // Not so for one in the air. It is falling, and the lower it gets the sooner it is reached, however
+                // far off that is, so how near it is says little about whether it can be hit and every time is
+                // looked at. Twice a short cut here that reasoned from distance turned down shots at airborne
+                // targets that were there to be made.
                 constexpr int candidates = 8;
 
                 auto nearest = launcher.eye_origin.distance_to(predicted);
@@ -134,6 +144,9 @@ namespace omath::projectile_prediction
                 {
                     const auto at = m_maximum_simulation_time * static_cast<ArithmeticType>(candidate)
                                     / static_cast<ArithmeticType>(candidates);
+                    if (!target.m_is_airborne && at <= time)
+                        continue;
+
                     const auto distance = launcher.eye_origin.distance_to(
                             EngineTrait::predict_target_position(target, at, m_gravity_constant));
 

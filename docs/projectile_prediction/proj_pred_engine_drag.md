@@ -72,7 +72,7 @@ Feeding each arrival time back in as the next guess is the obvious loop, and it 
 Two things keep it from giving up on a shot that exists:
 
 * **A step can land on a time the target cannot be reached at**, although the answer is one it can. The engine backs off halfway towards the last time that could be shot at, twice at most.
-* **The first guess can be such a time**, a jumper at the top of their arc for one. A shot that fails has failed for being too far, so the engine looks along the horizon for the time that brings the target nearest and tries that, once, and only if it is nearer than the first guess was. A target that is simply out of reach costs one failed search, not one per time looked at.
+* **The first guess can be such a time**: somebody running in from out of range, a jumper coming down into it. A shot that fails has failed for being too far, so the engine looks along the horizon for the time that brings the target nearest and tries that, once, and only if it is nearer than the first guess was. For a target on the ground only **later** times are looked at: the guess is how long a straight flight at launch speed takes, no round gets anywhere sooner, so a target that is only nearer earlier on is leaving and cannot be caught. For an airborne one every time is looked at, because it is falling, and the lower it gets the sooner it is reached however far off that is. A target that is simply out of reach costs one failed search, not one per time looked at.
 
 ### The flight
 
@@ -89,7 +89,7 @@ For a fixed target point and yaw, the engine looks for the **low-arc** view pitc
 
 After the first pass the walk is usually skipped. Drag asks for about the same extra loft over the parabola from one pass to the next, so a shade over the last loft is tried as a **hint**: if the round passes on the other side of the target from there, that pair is the bracket. The hint is only ever paired with the pass from the parabola's pitch, which is known to be on the low arc, and is dropped if it does not bracket, so a wrong one costs a flight and can never turn a shot down.
 
-The muzzle is placed from each probe's own angles, so the way it swings with the view is part of the answer rather than an error in it. Probe flights are allowed to run past the horizon (`1.5 × horizon + 0.5 s`) so that a shot right at it still has a pass on either side to close in from; the horizon itself is enforced on the answer.
+The muzzle is placed from each probe's own angles, so the way it swings with the view is part of the answer rather than an error in it. Probe flights are allowed to run past the horizon, to `1.25 × horizon`, so that a shot right at it still has a pass on either side to close in from: the pass above is at most four degrees steeper than the answer, which gets it there a tenth or so later. Any further only makes a flight that was never going to arrive take longer to give up. The horizon itself is enforced on the answer.
 
 ### Engine independence
 
@@ -156,7 +156,8 @@ What is left is the game's own dice. It spins every pipe differently, which move
 ## Complexity & tuning
 
 * Each probe flight costs one step per `simulation_time_step` of flight. A solve is a handful of time passes, each a handful of probes: **8–15 µs** for a Team Fortress 2 pipe on a desktop CPU, 3–17 µs for a rocket between 400 and 3200 units.
-* A shot that is refused costs more than one that is made, because it takes a whole failed search to be sure: 25–70 µs, bounded at two searches.
+* A shot that is refused costs more than one that is made, because it takes a failed search to be sure: typically 5–45 µs.
+* Both have a long tail, and it is the same one: a target right at the edge of the round's reach, where the time search steps in and out of what can be shot at. A median pipe solve flies about 600 steps, the 99th percentile 4000–7000, and the worst refusals near 30 000 (around 170 µs). Callers that solve many targets every frame should solve once per physics tick rather than once per rendered frame, which is where most of the cost goes.
 * Unlike the scan engines, cost does not grow with `maximum_simulation_time` for targets that are close.
 * A looser `distance_tolerance` stops both searches earlier.
 
