@@ -36,7 +36,8 @@ public:
   explicit ProjPredEngineLegacy(ArithmeticType gravity_constant,
                                 ArithmeticType simulation_time_step,
                                 ArithmeticType maximum_simulation_time,
-                                ArithmeticType distance_tolerance) noexcept;
+                                ArithmeticType distance_tolerance,
+                                Arc arc = Arc::LOW) noexcept;
 
   [[nodiscard]] std::optional<AimSolution<ArithmeticType>>
   maybe_calculate_aim(const Projectile<ArithmeticType>&, const Launcher<ArithmeticType>&,
@@ -56,6 +57,7 @@ The engine is copyable and assignable, so it can live in containers or be swappe
 * `simulation_time_step` — Δt of the scan. Must be positive.
 * `maximum_simulation_time` — search horizon in seconds. Must be positive.
 * `distance_tolerance` — maximum miss distance at time `t` to accept a solution.
+* `arc` — which of the two pitches that reach the target to solve for. `Arc::LOW` (the default) is the flat, quick shot; `Arc::HIGH` is the steep lob that drops onto the target from above and takes far longer, so it is refused wherever it does not fit inside `maximum_simulation_time`. A round without gravity flies one straight line and gets it whichever arc is asked for.
 
 A non-positive step or horizon makes the engine return `std::nullopt` immediately.
 
@@ -100,14 +102,14 @@ With `v` = launch speed, `g = gravity_constant * m_gravity_scale`, `x` = horizon
 * `g == 0` → `EngineTrait::calc_direct_pitch_angle(launch_origin, T)`.
 * Discriminant `D = v⁴ - g(gx² + 2yv²) < 0` → no real solution for this step.
 * `x == 0` (straight up or down) → `calc_direct_pitch_angle`, i.e. ±90°.
-* Otherwise the low-arc root
+* Otherwise the root for the engine's arc
 
   ```
-  tan θ = (v² - √D) / (g x)
-        = (g x² + 2 y v²) / (x (v² + √D))       // conjugate form used in code
+  tan θ = (v² - √D) / (g x)       // Arc::LOW
+  tan θ = (v² + √D) / (g x)       // Arc::HIGH
   ```
 
-  The two are algebraically identical. The conjugate form avoids subtracting two nearly equal numbers, which for fast projectiles (thousands of units/s) costs about 0.002° in `float`; the conjugate form stays within 1e-5°.
+  For fast projectiles `v²` and `√D` are nearly equal and their difference keeps few `float` digits: about 1e-4° of pitch at 1000 units/s, 0.002° to 0.03° at 5000 units/s, which is a hundredth of a unit at the target. Instantiate the engine with `double` if that matters.
 
 ### Launch pitch offset
 

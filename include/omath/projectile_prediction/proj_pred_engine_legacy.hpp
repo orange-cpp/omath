@@ -25,9 +25,9 @@ namespace omath::projectile_prediction
     public:
         explicit ProjPredEngineLegacy(const ArithmeticType gravity_constant, const ArithmeticType simulation_time_step,
                                       const ArithmeticType maximum_simulation_time,
-                                      const ArithmeticType distance_tolerance) noexcept
+                                      const ArithmeticType distance_tolerance, const Arc arc = Arc::LOW) noexcept
             : m_gravity_constant(gravity_constant), m_simulation_time_step(simulation_time_step),
-              m_maximum_simulation_time(maximum_simulation_time), m_distance_tolerance(distance_tolerance)
+              m_maximum_simulation_time(maximum_simulation_time), m_distance_tolerance(distance_tolerance), m_arc(arc)
         {
         }
 
@@ -181,8 +181,9 @@ namespace omath::projectile_prediction
         ArithmeticType m_simulation_time_step;
         ArithmeticType m_maximum_simulation_time;
         ArithmeticType m_distance_tolerance;
+        Arc m_arc;
 
-        // Realization of this formula (low arc branch):
+        // Realization of this formula, minus the root for the low arc and plus it for the high one:
         // https://stackoverflow.com/questions/54917375/how-to-calculate-the-angle-to-shoot-a-bullet-in-order-to-hit-a-moving-target
         /*
         \[
@@ -206,25 +207,27 @@ namespace omath::projectile_prediction
             const auto delta = target_position - launch_origin;
 
             const auto distance2d = EngineTrait::calc_vector_2d_distance(delta);
-            const auto height = EngineTrait::get_vector_height_coordinate(delta);
+            const auto distance2d_sqr = distance2d * distance2d;
 
-            // g x^2 + 2 y v^2, shared by the discriminant and the tangent below
-            const auto inner = launch.gravity * distance2d * distance2d + ArithmeticType{2} * height * launch.speed_sqr;
-            const auto discriminant = launch.speed_pow4 - launch.gravity * inner;
+            ArithmeticType root = launch.speed_pow4
+                                  - launch.gravity
+                                            * (launch.gravity * distance2d_sqr
+                                               + ArithmeticType{2} * EngineTrait::get_vector_height_coordinate(delta)
+                                                         * launch.speed_sqr);
 
-            if (discriminant < ArithmeticType{0}) [[unlikely]]
+            if (root < ArithmeticType{0}) [[unlikely]]
                 return std::nullopt;
 
             // Straight up or down: the formula divides by g x. The direct angle is the only launch direction anyway.
             if (distance2d == ArithmeticType{0})
                 return EngineTrait::calc_direct_pitch_angle(launch_origin, target_position);
 
-            // tan(theta) = (v^2 - sqrt(D)) / (g x) multiplied through by (v^2 + sqrt(D)). For fast projectiles v^2 and
-            // sqrt(D) are nearly equal and the plain form cancels most of the float mantissa (about 0.002 degrees of
-            // error at 5000 units/s); the conjugate form adds them instead.
-            const auto tangent = inner / (distance2d * (launch.speed_sqr + std::sqrt(discriminant)));
+            root = std::sqrt(root);
+            if (m_arc == Arc::HIGH)
+                root = -root;
+            const ArithmeticType angle = std::atan((launch.speed_sqr - root) / (launch.gravity * distance2d));
 
-            return angles::radians_to_degrees(std::atan(tangent));
+            return angles::radians_to_degrees(angle);
         }
 
         [[nodiscard]]

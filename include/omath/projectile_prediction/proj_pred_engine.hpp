@@ -18,6 +18,15 @@ namespace omath::projectile_prediction
         ArithmeticType yaw{};
     };
 
+    // Which of the two pitches that put a round on a point an engine solves for. A round with gravity gets there
+    // either flat and quick, or lobbed steeply and dropping onto it from above; the flat one is what an engine aims
+    // with unless told otherwise. A round without gravity has one straight line and the choice does not apply.
+    enum class Arc
+    {
+        LOW,
+        HIGH,
+    };
+
     template<class ArithmeticType = float>
     struct AimSolution final
     {

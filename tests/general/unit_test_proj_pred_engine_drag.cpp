@@ -17,6 +17,7 @@ namespace
 {
     using omath::Vector3;
     using omath::projectile_prediction::AimAngles;
+    using omath::projectile_prediction::Arc;
     using omath::projectile_prediction::Launcher;
     using omath::projectile_prediction::Projectile;
     using omath::projectile_prediction::ProjectileFlight;
@@ -555,6 +556,109 @@ namespace
 
         EXPECT_LT(arrival.distance_to(expected), 0.01f);
         EXPECT_GT(solution->angles.pitch, Trait::calc_direct_pitch_angle(launcher.eye_origin, expected));
+    }
+
+    // ---------------------------------------------------------------- the high arc
+
+    // Stickies have no fuse, so a lob has the time it needs
+    const ProjPredEngineDrag<> k_low_arc(k_gravity, k_tick, 4.f, 5.f, Arc::LOW);
+    const ProjPredEngineDrag<> k_high_arc(k_gravity, k_tick, 4.f, 5.f, Arc::HIGH);
+
+    TEST(ProjPredEngineDrag, HighArcDropsOntoTheTargetFromAbove)
+    {
+        constexpr Target<float> target{.m_origin = {800, 100, 64}, .m_velocity = {}, .m_is_airborne = false};
+
+        const auto low = k_low_arc.maybe_calculate_aim(k_pipe, k_pipe_launcher, target);
+        const auto high = k_high_arc.maybe_calculate_aim(k_pipe, k_pipe_launcher, target);
+        ASSERT_TRUE(low.has_value());
+        ASSERT_TRUE(high.has_value());
+
+        EXPECT_GT(high->angles.pitch, low->angles.pitch + 20.f);
+        EXPECT_GT(high->time_of_flight, low->time_of_flight + 0.5f);
+        EXPECT_NEAR(high->angles.yaw, low->angles.yaw, 0.1f);
+
+        // It gets there, and it is on its way down when it does
+        const auto arrival =
+                k_high_arc.predict_projectile_position(k_pipe, k_pipe_launcher, high->angles, high->time_of_flight);
+        const auto a_little_before = k_high_arc.predict_projectile_position(k_pipe, k_pipe_launcher, high->angles,
+                                                                            high->time_of_flight - 0.05f);
+
+        EXPECT_LT(arrival.distance_to(target.m_origin), 0.5f);
+        EXPECT_GT(a_little_before.z, arrival.z + 20.f);
+    }
+
+    TEST(ProjPredEngineDrag, HighArcLeadsAMovingTarget)
+    {
+        constexpr Target<float> target{.m_origin = {700, 0, 64}, .m_velocity = {100, 250, 0}, .m_is_airborne = false};
+
+        const auto solution = k_high_arc.maybe_calculate_aim(k_pipe, k_pipe_launcher, target);
+        ASSERT_TRUE(solution.has_value());
+
+        const auto expected = PredEngineTrait::predict_target_position(target, solution->time_of_flight, k_gravity);
+        const auto arrival = k_high_arc.predict_projectile_position(k_pipe, k_pipe_launcher, solution->angles,
+                                                                    solution->time_of_flight);
+
+        expect_vectors_near(solution->predicted_target_position, expected, 1e-2);
+        EXPECT_LT(arrival.distance_to(expected), 0.5f);
+        EXPECT_GT(solution->angles.pitch, 45.f);
+    }
+
+    TEST(ProjPredEngineDrag, HighArcIsRefusedWhenTheLobOutlastsTheHorizon)
+    {
+        constexpr Target<float> target{.m_origin = {800, 100, 64}, .m_velocity = {}, .m_is_airborne = false};
+
+        // A pipe's fuse is 2.13 s, and no lob to 800 units is back down by then
+        EXPECT_TRUE(k_engine.maybe_calculate_aim(k_pipe, k_pipe_launcher, target).has_value());
+        EXPECT_FALSE(ProjPredEngineDrag<>(k_gravity, k_tick, 2.13f, 5.f, Arc::HIGH)
+                             .maybe_calculate_aim(k_pipe, k_pipe_launcher, target)
+                             .has_value());
+    }
+
+    TEST(ProjPredEngineDrag, HighArcIsRefusedWhereTheLowArcIsToo)
+    {
+        // Past the pipe's reach (see ReachIsTheOneTheGameGivesThePipe) there is no arc at all
+        constexpr Target<float> target{.m_origin = {1800, 0, 64}, .m_velocity = {}, .m_is_airborne = false};
+
+        EXPECT_FALSE(k_low_arc.maybe_calculate_aim(k_pipe, k_pipe_launcher, target).has_value());
+        EXPECT_FALSE(k_high_arc.maybe_calculate_aim(k_pipe, k_pipe_launcher, target).has_value());
+    }
+
+    TEST(ProjPredEngineDrag, WithoutGravityTheArcsAreOneAndTheSame)
+    {
+        constexpr Projectile<float> rocket{.m_launch_speed = 1100.f};
+        constexpr Launcher<float> launcher{.eye_origin = {0, 0, 64}, .muzzle_offset = {.forward = 23.5f, .right = 12}};
+        constexpr Target<float> target{.m_origin = {1500, 300, 200}, .m_velocity = {0, 200, 0}, .m_is_airborne = false};
+
+        const auto low = k_low_arc.maybe_calculate_aim(rocket, launcher, target);
+        const auto high = k_high_arc.maybe_calculate_aim(rocket, launcher, target);
+        ASSERT_TRUE(low.has_value());
+        ASSERT_TRUE(high.has_value());
+
+        EXPECT_NEAR(high->angles.pitch, low->angles.pitch, 1e-3f);
+        EXPECT_NEAR(high->angles.yaw, low->angles.yaw, 1e-3f);
+        EXPECT_NEAR(high->time_of_flight, low->time_of_flight, 1e-3f);
+    }
+
+    TEST(ProjPredEngineDrag, SolvesTheHighArcInDoublePrecision)
+    {
+        using Trait = omath::unreal_engine::PredEngineTrait;
+
+        constexpr Projectile<double> round{.m_launch_speed = 3000., .m_gravity_scale = 1., .m_drag = 1e-5};
+        constexpr Launcher<double> launcher{.eye_origin = {0, 0, 170}, .muzzle_offset = {.forward = 40, .right = 15}};
+        constexpr Target<double> target{
+                .m_origin = {4000, 500, 300}, .m_velocity = {0, -300, 0}, .m_is_airborne = false};
+
+        const ProjPredEngineDrag<Trait, double> engine(980., 1. / 60., 8., 5., Arc::HIGH);
+
+        const auto solution = engine.maybe_calculate_aim(round, launcher, target);
+        ASSERT_TRUE(solution.has_value());
+
+        const auto expected = Trait::predict_target_position(target, solution->time_of_flight, 980.);
+        const auto arrival =
+                engine.predict_projectile_position(round, launcher, solution->angles, solution->time_of_flight);
+
+        EXPECT_LT(arrival.distance_to(expected), 0.5);
+        EXPECT_GT(solution->angles.pitch, 45.);
     }
 
     TEST(ProjPredEngineDrag, SolvesInDoublePrecision)

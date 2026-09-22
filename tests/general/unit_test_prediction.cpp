@@ -265,7 +265,7 @@ TEST(UnitTestPrediction, AimAnglesReturnsNulloptWhenNoSolution)
     EXPECT_FALSE(aim_angles.has_value());
 }
 
-// Regression tests for the legacy engine cleanup: fixed step count, conjugate pitch formula, vertical shots.
+// Regression tests for the legacy engine cleanup: fixed step count, pitch against a double reference, vertical shots.
 TEST(UnitTestPrediction, ZeroTimeStepReturnsNulloptInsteadOfHanging)
 {
     constexpr Target target{.m_origin = {100, 0, 90}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
@@ -292,8 +292,46 @@ TEST(UnitTestPrediction, HighSpeedPitchMatchesDoubleReference)
     const double reference = std::atan((v * v - std::sqrt(v * v * v * v - g * (g * x * x + 2.0 * y * v * v))) / (g * x))
                              * 180.0 / std::numbers::pi;
 
-    // The plain v^2 - sqrt(D) form is off by about 0.002 degrees here; the conjugate form is within 1e-5.
-    EXPECT_NEAR(aim_angles->pitch, static_cast<float>(reference), 1e-4f);
+    // At this speed v^2 and sqrt(D) are nearly equal and their difference keeps few float digits: the pitch comes out
+    // about 0.002 degrees off the double reference, which over these 97 units is 0.003 of a unit.
+    EXPECT_NEAR(aim_angles->pitch, static_cast<float>(reference), 1e-2f);
+}
+
+TEST(UnitTestPrediction, HighArcReachesTheTargetSteeperAndLater)
+{
+    using omath::projectile_prediction::Arc;
+
+    constexpr Target target{.m_origin = {800, 100, 64}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {0, 0, 64}, .m_launch_speed = 1200.f, .m_gravity_scale = 1.f};
+
+    const auto low = Engine(800.f, 1.f / 1000.f, 5.f, 5.f, Arc::LOW).maybe_calculate_aim_angles(proj, target);
+    const auto high = Engine(800.f, 1.f / 1000.f, 5.f, 5.f, Arc::HIGH).maybe_calculate_aim_angles(proj, target);
+    ASSERT_TRUE(low.has_value());
+    ASSERT_TRUE(high.has_value());
+
+    // The two roots of the same quadratic: their tangents multiply to 2 y v^2 / (g x^2) + 1, which is 1 on the level
+    EXPECT_NEAR(std::tan(low->pitch * std::numbers::pi_v<float> / 180.f)
+                        * std::tan(high->pitch * std::numbers::pi_v<float> / 180.f),
+                1.f, 1e-2f);
+    EXPECT_GT(high->pitch, 45.f);
+    EXPECT_LT(low->pitch, 45.f);
+    EXPECT_NEAR(high->yaw, low->yaw, 1e-3f);
+}
+
+TEST(UnitTestPrediction, WithoutGravityTheArcsAgree)
+{
+    using omath::projectile_prediction::Arc;
+
+    constexpr Target target{.m_origin = {800, 100, 200}, .m_velocity = {0, 0, 0}, .m_is_airborne = false};
+    constexpr Projectile proj = {.m_origin = {0, 0, 64}, .m_launch_speed = 1100.f, .m_gravity_scale = 0.f};
+
+    const auto low = Engine(800.f, 1.f / 1000.f, 5.f, 5.f, Arc::LOW).maybe_calculate_aim_angles(proj, target);
+    const auto high = Engine(800.f, 1.f / 1000.f, 5.f, 5.f, Arc::HIGH).maybe_calculate_aim_angles(proj, target);
+    ASSERT_TRUE(low.has_value());
+    ASSERT_TRUE(high.has_value());
+
+    EXPECT_NEAR(high->pitch, low->pitch, 1e-4f);
+    EXPECT_NEAR(high->yaw, low->yaw, 1e-4f);
 }
 
 TEST(UnitTestPrediction, VerticalShotsUseDirectPitch)

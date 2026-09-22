@@ -33,6 +33,10 @@ namespace omath::projectile_prediction
     // tolerance, so it cannot come back empty for a target that closes faster than the scan allowed for. What it is
     // wrong for is a round with gravity and no drag in a game that moves such rounds on a true parabola: the stepped
     // fall here drops a little further than that (see ProjectileFlight), and the closed-form engines are exact.
+    //
+    // Built for Arc::HIGH it solves for the lob instead: the steeper of the two pitches that reach the target, which
+    // drops onto it from above and takes longer to get there. Such a shot is refused, like any other, when its flight
+    // would outlast maximum_simulation_time, and a lob to anything near takes a long time.
     template<class EngineTrait = source_engine::PredEngineTrait, class ArithmeticType = float>
     requires PredEngineConcept<EngineTrait, ArithmeticType>
     class ProjPredEngineDrag final : public ProjPredEngineInterface<ArithmeticType>
@@ -42,9 +46,9 @@ namespace omath::projectile_prediction
         // accuracy setting. See ProjectileFlight.
         explicit ProjPredEngineDrag(const ArithmeticType gravity_constant, const ArithmeticType simulation_time_step,
                                     const ArithmeticType maximum_simulation_time,
-                                    const ArithmeticType distance_tolerance) noexcept
+                                    const ArithmeticType distance_tolerance, const Arc arc = Arc::LOW) noexcept
             : m_gravity_constant(gravity_constant), m_simulation_time_step(simulation_time_step),
-              m_maximum_simulation_time(maximum_simulation_time), m_distance_tolerance(distance_tolerance)
+              m_maximum_simulation_time(maximum_simulation_time), m_distance_tolerance(distance_tolerance), m_arc(arc)
         {
         }
 
@@ -65,6 +69,9 @@ namespace omath::projectile_prediction
             // longer to give up. The horizon itself is enforced on the answer.
             const auto time_limit = m_maximum_simulation_time * static_cast<ArithmeticType>(1.25);
 
+            // A round without gravity flies one straight line, and both arcs are it
+            const auto arc = m_gravity_constant * projectile.m_gravity_scale > ArithmeticType{0} ? m_arc : Arc::LOW;
+
             // Where the target will be depends on how long the round takes, and how long the round takes depends on
             // where the target will be. The time that satisfies both is the one where the round, aimed at where the
             // target is at that time, takes exactly that long to get there: mismatch(time) = arrival - time = 0.
@@ -84,19 +91,34 @@ namespace omath::projectile_prediction
             std::optional<ArithmeticType> loft;
 
             // One shot at the target as it will be at `at`: the view pitch that lands there, and when the round does.
-            // The search is always anchored to what a parabola would need for that same point. Carrying the last
-            // pass's pitch over instead looks cheaper and is a trap: a step in time can move the target by tens of
-            // degrees, and a search started far too steep finds itself on the high arc, where raising the pitch
-            // lowers the round and it walks itself into the limit.
+            // The search is always anchored to what a parabola would need for that same point, on the arc being
+            // solved for. Carrying the last pass's pitch over instead looks cheaper and is a trap: a step in time can
+            // move the target by tens of degrees, and a search started on the wrong side of the arc's peak, where
+            // turning the pitch the way it expects moves the round the other way, walks itself into the limit.
             const auto shoot_at = [&](const ArithmeticType at) -> std::optional<PitchSolution>
             {
                 predicted = EngineTrait::predict_target_position(target, at, m_gravity_constant);
 
-                const auto start = maybe_calculate_parabola_launch_pitch(projectile, launcher.eye_origin, predicted);
-                if (!start)
+                const auto parabola =
+                        maybe_calculate_parabola_launch_pitches(projectile, launcher.eye_origin, predicted);
+                if (!parabola)
                     return std::nullopt;
 
-                const auto start_pitch = *start - launcher.launch_pitch_offset;
+                auto start_pitch = (arc == Arc::LOW ? parabola->low : parabola->high) - launcher.launch_pitch_offset;
+
+                // The high arc lies between the two parabola pitches: drag needs more loft than the low one and
+                // stands less than the high one. And no lob steeper than the one whose parabola takes the whole
+                // time limit to cover the distance gets there in time, since drag only ever makes a flight later,
+                // so the search need not start above that either.
+                const auto floor_pitch = parabola->low - launcher.launch_pitch_offset;
+                if (arc == Arc::HIGH)
+                {
+                    const auto cosine = EngineTrait::calc_vector_2d_distance(predicted - launcher.eye_origin)
+                                        / (projectile.m_launch_speed * time_limit);
+                    if (cosine < ArithmeticType{1})
+                        start_pitch = std::min(start_pitch, angles::radians_to_degrees(std::acos(cosine))
+                                                                    - launcher.launch_pitch_offset);
+                }
 
                 // The muzzle sits off to one side and swings with the yaw, so the yaw that points the muzzle's own
                 // flight plane at the target is found from where the muzzle ends up
@@ -104,13 +126,15 @@ namespace omath::projectile_prediction
                     yaw = EngineTrait::calc_direct_yaw_angle(
                             launcher.launch_origin(EngineTrait::calc_view_basis(start_pitch, yaw)), predicted);
 
-                // A shade over the last loft, so that the round passes above the target and the pair of passes
-                // closes on the answer straight away
+                // A shade past the last loft, on the side that has the round pass above the target, so that the
+                // pair of passes closes on the answer straight away
                 std::optional<ArithmeticType> hint;
                 if (loft)
-                    hint = start_pitch + *loft * static_cast<ArithmeticType>(1.05) + static_cast<ArithmeticType>(0.1);
+                    hint = start_pitch + *loft * static_cast<ArithmeticType>(1.05)
+                           + static_cast<ArithmeticType>(0.1) * climb(arc);
 
-                const auto shot = solve_view_pitch(projectile, launcher, yaw, predicted, start_pitch, hint, time_limit);
+                const auto shot = solve_view_pitch(projectile, launcher, yaw, predicted, start_pitch, floor_pitch, hint,
+                                                   time_limit, arc);
                 if (shot)
                     loft = shot->view_pitch - start_pitch;
 
@@ -315,21 +339,31 @@ namespace omath::projectile_prediction
             return std::nullopt;
         }
 
-        // The low-arc pitch a round without drag would need, which is the formula ProjPredEngineLegacy solves with.
-        // With drag the real answer is always a little above it, which makes it the place to start looking from.
-        // Empty when even a parabola falls short, and drag only ever shortens the reach.
+        struct ParabolaPitches
+        {
+            ArithmeticType low;
+            ArithmeticType high;
+        };
+
+        // The two pitches a round without drag would need, the low one being the formula ProjPredEngineLegacy solves
+        // with. With drag the real answers lie between them, each a little in from its own side, which makes them
+        // the places to start looking from. Empty when even a parabola falls short, and drag only ever shortens the
+        // reach.
         [[nodiscard]]
-        std::optional<ArithmeticType>
-        maybe_calculate_parabola_launch_pitch(const Projectile<ArithmeticType>& projectile,
-                                              const Vector3<ArithmeticType>& origin,
-                                              const Vector3<ArithmeticType>& target_point) const noexcept
+        std::optional<ParabolaPitches>
+        maybe_calculate_parabola_launch_pitches(const Projectile<ArithmeticType>& projectile,
+                                                const Vector3<ArithmeticType>& origin,
+                                                const Vector3<ArithmeticType>& target_point) const noexcept
         {
             const auto gravity = m_gravity_constant * projectile.m_gravity_scale;
             const auto delta = target_point - origin;
             const auto distance2d = EngineTrait::calc_vector_2d_distance(delta);
 
             if (gravity == ArithmeticType{0} || distance2d == ArithmeticType{0})
-                return EngineTrait::calc_direct_pitch_angle(origin, target_point);
+            {
+                const auto direct = EngineTrait::calc_direct_pitch_angle(origin, target_point);
+                return ParabolaPitches{direct, direct};
+            }
 
             const auto speed_sqr = projectile.m_launch_speed * projectile.m_launch_speed;
             const auto inner = gravity * distance2d * distance2d
@@ -339,23 +373,38 @@ namespace omath::projectile_prediction
             if (discriminant < ArithmeticType{0})
                 return std::nullopt;
 
-            return angles::radians_to_degrees(std::atan(inner / (distance2d * (speed_sqr + std::sqrt(discriminant)))));
+            const auto root = std::sqrt(discriminant);
+
+            return ParabolaPitches{
+                    angles::radians_to_degrees(std::atan(inner / (distance2d * (speed_sqr + root)))),
+                    angles::radians_to_degrees(std::atan((speed_sqr + root) / (gravity * distance2d))),
+            };
         }
 
-        // Finds the low-arc view pitch that flies the round through target_point. It walks away from start_pitch in
-        // whichever direction the first miss says to, until the round passes on the other side of the target, then
-        // closes in on the crossing between the two.
+        // Which way to turn the pitch to bring the round up at the target: steeper on the low arc, and the other way
+        // about on the high arc, where a steeper lob comes down sooner.
+        [[nodiscard]]
+        static constexpr ArithmeticType climb(const Arc arc) noexcept
+        {
+            return arc == Arc::LOW ? ArithmeticType{1} : ArithmeticType{-1};
+        }
+
+        // Finds the view pitch on the engine's arc that flies the round through target_point. It walks away from
+        // start_pitch in whichever direction the first miss says to, until the round passes on the other side of the
+        // target, then closes in on the crossing between the two.
         //
-        // start_pitch has to be on the low arc, which the parabola's pitch always is, because everything the search
-        // concludes it concludes relative to that pass. hint_pitch is a guess at the answer and is only ever used to
-        // pair with it: if the round passes on the other side of the target from there the walk is skipped, and if
-        // it does not the hint is dropped. A wrong hint costs one flight and can never turn a shot down.
+        // start_pitch has to be on the same arc as the answer, which the parabola's pitch for that arc always is,
+        // because everything the search concludes it concludes relative to that pass. hint_pitch is a guess at the
+        // answer and is only ever used to pair with it: if the round passes on the other side of the target from
+        // there the walk is skipped, and if it does not the hint is dropped. A wrong hint costs one flight and can
+        // never turn a shot down. floor_pitch is the low arc's parabola pitch, below which a high arc cannot lie.
         [[nodiscard]]
         std::optional<PitchSolution>
         solve_view_pitch(const Projectile<ArithmeticType>& projectile, const Launcher<ArithmeticType>& launcher,
                          const ArithmeticType yaw, const Vector3<ArithmeticType>& target_point,
-                         const ArithmeticType start_pitch, const std::optional<ArithmeticType> hint_pitch,
-                         const ArithmeticType time_limit) const noexcept
+                         const ArithmeticType start_pitch, const ArithmeticType floor_pitch,
+                         const std::optional<ArithmeticType> hint_pitch, const ArithmeticType time_limit,
+                         const Arc arc) const noexcept
         {
             constexpr auto pitch_limit = static_cast<ArithmeticType>(90);
             constexpr auto first_step = static_cast<ArithmeticType>(0.5);
@@ -373,22 +422,40 @@ namespace omath::projectile_prediction
                 return fly_past(projectile, launcher, pitch, yaw, heading, target_point, time_limit);
             };
 
-            auto near_pitch = std::clamp(start_pitch, -pitch_limit, pitch_limit);
+            const auto lowest = arc == Arc::LOW ? -pitch_limit : std::max(-pitch_limit, floor_pitch);
+
+            auto near_pitch = std::clamp(start_pitch, lowest, pitch_limit);
             auto near = probe(near_pitch);
+
+            if (arc == Arc::HIGH)
+            {
+                // The parabola's high arc to a near target is all but vertical, and with drag on top of that such a
+                // lob takes longer than any flight is allowed. Come down until one gets there. If the first that
+                // does is already over the target, the crossing lies steeper still, among the flights too long to
+                // count.
+                const auto started_at = near_pitch;
+                while (!near && near_pitch > lowest)
+                {
+                    near_pitch = std::max(near_pitch - max_step, lowest);
+                    near = probe(near_pitch);
+                }
+                if (near && near_pitch != started_at && near->height_error > height_tolerance)
+                    return std::nullopt;
+            }
 
             if (!near)
                 return std::nullopt;
             if (std::abs(near->height_error) <= height_tolerance)
                 return PitchSolution{near_pitch, near->time};
 
-            const auto direction = near->height_error < ArithmeticType{0} ? ArithmeticType{1} : ArithmeticType{-1};
+            const auto direction = near->height_error < ArithmeticType{0} ? climb(arc) : -climb(arc);
 
             ArithmeticType far_pitch{};
             std::optional<Pass> far;
 
             if (hint_pitch)
             {
-                far_pitch = std::clamp(*hint_pitch, -pitch_limit, pitch_limit);
+                far_pitch = std::clamp(*hint_pitch, lowest, pitch_limit);
                 far = probe(far_pitch);
 
                 if (far && std::abs(far->height_error) <= height_tolerance)
@@ -399,14 +466,14 @@ namespace omath::projectile_prediction
 
             for (auto step = first_step; !far; step = std::min(step * ArithmeticType{2}, max_step))
             {
-                if (near_pitch * direction >= pitch_limit)
+                if (direction > ArithmeticType{0} ? near_pitch >= pitch_limit : near_pitch <= lowest)
                     return std::nullopt;
 
-                far_pitch = std::clamp(near_pitch + direction * step, -pitch_limit, pitch_limit);
+                far_pitch = std::clamp(near_pitch + direction * step, lowest, pitch_limit);
                 far = probe(far_pitch);
 
                 // A lob this steep that still cannot cover the distance in time is over the top of what the weapon
-                // can reach
+                // can reach, or on the high arc past what the time limit allows
                 if (!far)
                     return std::nullopt;
                 if (std::abs(far->height_error) <= height_tolerance)
@@ -415,9 +482,9 @@ namespace omath::projectile_prediction
                 if ((far->height_error < ArithmeticType{0}) != (near->height_error < ArithmeticType{0}))
                     break;
 
-                // Raising the pitch has to bring the round up at the target. Once it stops doing that the arc has
-                // gone over its peak without ever getting there: out of reach.
-                if (direction > ArithmeticType{0} && far->height_error <= near->height_error)
+                // Turning the pitch towards the peak has to bring the round up at the target. Once it stops doing
+                // that the arc has gone over its peak without ever getting there: out of reach.
+                if (direction == climb(arc) && far->height_error <= near->height_error)
                     return std::nullopt;
 
                 near_pitch = far_pitch;
@@ -493,5 +560,6 @@ namespace omath::projectile_prediction
         ArithmeticType m_simulation_time_step;
         ArithmeticType m_maximum_simulation_time;
         ArithmeticType m_distance_tolerance;
+        Arc m_arc;
     };
 } // namespace omath::projectile_prediction

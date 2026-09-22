@@ -26,6 +26,11 @@ namespace omath::projectile_prediction {
 template<class T = float>
 struct AimAngles { T pitch{}; T yaw{}; };
 
+// Which of the two pitches that put a round on a point an engine solves for: the flat, quick one (the default) or
+// the steep lob that drops onto it from above. A round without gravity has one straight line and the choice does
+// not apply. Engines take it as a constructor argument.
+enum class Arc { LOW, HIGH };
+
 template<class T = float>
 struct AimSolution {
   AimAngles<T> angles;                  // set these on the eye; launch pitch = angles.pitch + launcher.launch_pitch_offset

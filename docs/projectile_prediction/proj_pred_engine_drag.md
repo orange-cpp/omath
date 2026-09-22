@@ -37,7 +37,8 @@ public:
   explicit ProjPredEngineDrag(ArithmeticType gravity_constant,
                               ArithmeticType simulation_time_step,
                               ArithmeticType maximum_simulation_time,
-                              ArithmeticType distance_tolerance) noexcept;
+                              ArithmeticType distance_tolerance,
+                              Arc arc = Arc::LOW) noexcept;
 
   [[nodiscard]] std::optional<AimSolution<ArithmeticType>>
   maybe_calculate_aim(const Projectile<ArithmeticType>&, const Launcher<ArithmeticType>&,
@@ -58,6 +59,7 @@ The engine is copyable and assignable, and works with any trait satisfying `Pred
 * `simulation_time_step` — **the physics step of the game being predicted**, not an accuracy setting. Drag is integrated the way the game integrates it, so the arc only matches when it is stepped at the game's own rate: Source steps VPhysics once per tick, `0.015` s for Team Fortress 2. This differs from `ProjPredEngineLegacy`, where the same parameter is the resolution of a scan.
 * `maximum_simulation_time` — longest flight accepted, in seconds. For a fused round this is the fuse.
 * `distance_tolerance` — maximum miss accepted at the time of flight. It also sets how hard the solver works: the pitch search stops within `distance_tolerance / 100` of the target's height, and the time loop within `distance_tolerance / 64` of target drift.
+* `arc` — which of the two pitches that reach the target to solve for. `Arc::LOW` (the default) is the flat, quick shot. `Arc::HIGH` is the steep lob that drops onto the target from above; it takes two or three times as long to arrive and is refused, like any other shot, wherever its flight would outlast `maximum_simulation_time`, which for a fused round rules the lob out to anything near. A round without gravity flies one straight line and gets it whichever arc is asked for.
 
 A non-positive step, horizon or launch speed returns `std::nullopt` immediately.
 
@@ -80,14 +82,16 @@ Every probe is a real flight through [`ProjectileFlight`](projectile_flight.md):
 
 ### View pitch search
 
-For a fixed target point and yaw, the engine looks for the **low-arc** view pitch whose flight passes through the point:
+For a fixed target point and yaw, the engine looks for the view pitch on its arc whose flight passes through the point:
 
-1. **Start** from the pitch a drag-free round would need: the same closed-form low-arc root `ProjPredEngineLegacy` solves with, less `launcher.launch_pitch_offset`. If even a parabola cannot reach, drag only shortens the reach, so there is no solution. Every pass starts here, from its own target point. Carrying the last pass's pitch over instead is a trap: a step in time can move the target by tens of degrees, and a search started far too steep finds itself on the **high arc**, where raising the pitch lowers the round, and walks itself into the limit.
+1. **Start** from the pitch a drag-free round would need on that arc: the closed-form root `ProjPredEngineLegacy` solves with, less `launcher.launch_pitch_offset`. If even a parabola cannot reach, drag only shortens the reach, so there is no solution. Every pass starts here, from its own target point. Carrying the last pass's pitch over instead is a trap: a step in time can move the target by tens of degrees, and a search started on the wrong side of the arc's peak, where turning the pitch the way it expects moves the round the other way, walks itself into the limit.
 2. **Fly** the round until it has covered the horizontal distance to the point, and take the height it passes at (linear within a step, as the round itself is).
-3. **Walk** away from the start in whichever direction the miss says, doubling the step (0.5° first, 4° at most) until the round passes on the other side. Raising the pitch has to raise the round at the target; once it stops doing that the arc is over its peak and the target is out of reach.
+3. **Walk** away from the start in whichever direction the miss says, doubling the step (0.5° first, 4° at most) until the round passes on the other side. Turning the pitch towards the peak (up on the low arc, down on the high one) has to raise the round at the target; once it stops doing that the arc is over its peak and the target is out of reach.
 4. **Close in** between the pass below and the pass above with regula falsi and the Illinois correction, 24 refinements at most.
 
-After the first pass the walk is usually skipped. Drag asks for about the same extra loft over the parabola from one pass to the next, so a shade over the last loft is tried as a **hint**: if the round passes on the other side of the target from there, that pair is the bracket. The hint is only ever paired with the pass from the parabola's pitch, which is known to be on the low arc, and is dropped if it does not bracket, so a wrong one costs a flight and can never turn a shot down.
+After the first pass the walk is usually skipped. Drag asks for about the same extra loft over the parabola from one pass to the next, so a shade past the last loft is tried as a **hint**: if the round passes on the other side of the target from there, that pair is the bracket. The hint is only ever paired with the pass from the parabola's pitch, which is known to be on the right arc, and is dropped if it does not bracket, so a wrong one costs a flight and can never turn a shot down.
+
+On the high arc two more things hold. The real answer lies between the two parabola pitches (drag wants more loft than the low one and stands less than the high one), so the walk never goes below the low one. And the parabola's high pitch to a near target is all but vertical, a lob that with drag on top takes longer than any probe flight is allowed: the start is first capped at the pitch whose parabola takes the whole time limit to cover the distance, and if that is still too slow the search comes down 4° at a time until a flight gets there. A first flight that gets there and is already over the target means the crossing lies steeper still, among flights too long to count, and the shot is refused. A high-arc solve costs several times a low-arc one, 70–250 µs for a sticky or a pipe, most of it in those long probe flights.
 
 The muzzle is placed from each probe's own angles, so the way it swings with the view is part of the answer rather than an error in it. Probe flights are allowed to run past the horizon, to `1.25 × horizon`, so that a shot right at it still has a pass on either side to close in from: the pass above is at most four degrees steeper than the answer, which gets it there a tenth or so later. Any further only makes a flight that was never going to arrive take longer to give up. The horizon itself is enforced on the answer.
 
