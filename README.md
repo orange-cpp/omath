@@ -2,18 +2,18 @@
 
 ![banner](https://blog.libomath.org/wp-content/uploads/2026/08/omath_logo.png)
 
-![GitHub License](https://img.shields.io/github/license/alt-orange/omath)
-![GitHub contributors](https://img.shields.io/github/contributors/alt-orange/omath)
-![GitHub top language](https://img.shields.io/github/languages/top/alt-orange/omath)
-![GitHub repo size](https://img.shields.io/github/repo-size/alt-orange/omath)
-[![CodeFactor](https://www.codefactor.io/repository/github/alt-orange/omath/badge)](https://www.codefactor.io/repository/github/alt-orange/omath)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/alt-orange/omath/cmake-multi-platform.yml)
+![GitHub License](https://img.shields.io/github/license/orange-cpp/omath)
+![GitHub contributors](https://img.shields.io/github/contributors/orange-cpp/omath)
+![GitHub top language](https://img.shields.io/github/languages/top/orange-cpp/omath)
+![GitHub repo size](https://img.shields.io/github/repo-size/orange-cpp/omath)
+[![CodeFactor](https://www.codefactor.io/repository/github/orange-cpp/omath/badge)](https://www.codefactor.io/repository/github/orange-cpp/omath)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/orange-cpp/omath/cmake-multi-platform.yml)
 [![Vcpkg package](https://repology.org/badge/version-for-repo/vcpkg/orange-math.svg)](https://repology.org/project/orange-math/versions)
 ![Conan Center](https://img.shields.io/conan/v/omath)
-![GitHub forks](https://img.shields.io/github/forks/alt-orange/omath)
-![GitHub Repo stars](https://img.shields.io/github/stars/alt-orange/omath)
-![GitHub watchers](https://img.shields.io/github/watchers/alt-orange/omath)
-![GitHub Release](https://img.shields.io/github/v/release/alt-orange/omath)
+![GitHub forks](https://img.shields.io/github/forks/orange-cpp/omath)
+![GitHub Repo stars](https://img.shields.io/github/stars/orange-cpp/omath)
+![GitHub watchers](https://img.shields.io/github/watchers/orange-cpp/omath)
+![GitHub Release](https://img.shields.io/github/v/release/orange-cpp/omath)
 [![discord badge](https://dcbadge.limes.pink/api/server/https://discord.gg/eDgdaWbqwZ?style=flat)](https://discord.gg/eDgdaWbqwZ)
 [![telegram badge](https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white)](https://t.me/orangennotes)
 
@@ -171,11 +171,11 @@ See [external_rev_object.md](docs/rev_eng/external_rev_object.md) and [internal_
 
 - **Discord**: [Join our community](https://discord.gg/eDgdaWbqwZ)
 - **Telegram**: [@orangennotes](https://t.me/orangennotes)
-- **Issues**: [Report bugs or request features](https://github.com/alt-orange/omath/issues)
+- **Issues**: [Report bugs or request features](https://github.com/orange-cpp/omath/issues)
 - **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 # Acknowledgments
--  [All contributors](https://github.com/alt-orange/omath/graphs/contributors)
+-  [All contributors](https://github.com/orange-cpp/omath/graphs/contributors)
 
 <!----------------------------------{ Images }--------------------------------->
 [APEX Preview]: docs/images/showcase/apex.png
